@@ -167,7 +167,8 @@
           "- AC2: Driver, connection, and recording events are represented in ASC comments where portable and in a same-basename JSONL sidecar.",
           "- AC3: An overrun, queue overflow, disk error, or unclean close marks the session incomplete and is never reported as a clean capture.",
           "- AC4: Restart detects partial sessions and offers non-destructive recovery/finalization while preserving original artifacts.",
-          "- AC5: Deterministic saturated/error traffic plus the available real capture baseline support a documented 60-minute load test that demonstrates recorder integrity and records queue high-water and driver-loss evidence."
+          "- AC5: Deterministic saturated/error traffic plus the available real capture baseline support a documented 60-minute load test that demonstrates recorder integrity and records queue high-water and driver-loss evidence.",
+          "- AC6: Default 2 GiB rotation produces ordered session segments without overwrite; low space warns at 10 GiB, stops recording at 2 GiB, and marks the session incomplete while thresholds remain configurable."
         ],
         "Problem": [
           "- UI pressure and filtering must not silently remove frames or errors from saved sessions."
@@ -381,11 +382,11 @@
     }
   ],
   "estimates": {
-    "char_count": 18629,
+    "char_count": 18839,
     "companion_doc_count": 0,
     "doc_count": 9
   },
-  "generated_at": "2026-08-22T10:02:48Z",
+  "generated_at": "2026-08-22T10:04:34Z",
   "handoff": {
     "companion_doc_count": 0,
     "enabled": false,

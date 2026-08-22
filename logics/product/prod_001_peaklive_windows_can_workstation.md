@@ -6,7 +6,7 @@
 > Related task: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:02:48
+> Indicators reviewed: 2026-08-22 12:04:33
 
 # Overview
 A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis.
@@ -52,7 +52,7 @@ flowchart LR
 - Decode visible, inspected, plotted, or exported data on demand; use chunked DuckDB/Arrow-backed processing for large offline traces.
 - Keep the product offline and local-only, and never reconnect to a live bus silently at startup.
 - Restore and display the last named measurement profile at startup while requiring an explicit Start Acquisition action.
-- Bind recording to Start Acquisition/Stop Acquisition when enabled by the profile, with collision-safe date/time/profile/iteration filename templates.
+- Bind recording to Start Acquisition/Stop Acquisition when enabled by the profile, with collision-safe date/time/profile/iteration/segment filename templates, 2 GiB default rotation, a 10 GiB free-space warning, and a 2 GiB recording stop threshold.
 - Use deterministic synthetic traffic/error generators to cover load and edge cases absent from the available real ASC samples.
 
 # Success signals
@@ -64,7 +64,6 @@ flowchart LR
 
 # Open product decisions
 - Confirm whether Windows 10 support can be limited to 22H2 and record the exact Windows 11 builds used by the team.
-- Select capture rotation thresholds and the free-space warning policy.
 - Choose the public repository license before code distribution starts.
 
 # References

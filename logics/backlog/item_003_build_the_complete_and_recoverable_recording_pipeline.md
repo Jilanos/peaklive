@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Capture integrity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:02:48
+> Indicators reviewed: 2026-08-22 12:04:33
 
 # AI Context
 - Summary: Persists every adapter-delivered frame and observable acquisition event before display filtering, with explicit integrity and crash-recovery state.
@@ -23,7 +23,7 @@
 - In:
   - Dedicated bounded recorder queue and worker, interoperable ASC writer, JSONL event sidecar, flush policy, and metrics.
   - Partial-session markers, atomic finalization, interrupted-session detection, and recovery workflow.
-  - Profile-controlled recording lifecycle and collision-safe date/time/profile/configurable-iteration filename expansion.
+  - Profile-controlled recording lifecycle, collision-safe date/time/profile/configurable-iteration/segment filename expansion, 2 GiB default rotation, and configurable 10 GiB warning/2 GiB stop free-space thresholds.
   - Disk-full, permission, driver-loss, and recorder-overflow behaviour.
   - Reference-load benchmark and capture-integrity comparison harness.
 - Out:
@@ -35,6 +35,7 @@
 - AC3: An overrun, queue overflow, disk error, or unclean close marks the session incomplete and is never reported as a clean capture.
 - AC4: Restart detects partial sessions and offers non-destructive recovery/finalization while preserving original artifacts.
 - AC5: Deterministic saturated/error traffic plus the available real capture baseline support a documented 60-minute load test that demonstrates recorder integrity and records queue high-water and driver-loss evidence.
+- AC6: Default 2 GiB rotation produces ordered session segments without overwrite; low space warns at 10 GiB, stops recording at 2 GiB, and marks the session incomplete while thresholds remain configurable.
 
 # AC Traceability
 - request-AC4 -> This backlog slice. Proof: AC1: Recording receives normalized events before all UI filtering and writes every adapter-delivered frame to ASC.

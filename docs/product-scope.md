@@ -79,8 +79,15 @@ Stopping acquisition finalizes it. A monitor-only profile may disable recording.
 
 Recording templates support at least `{date}`, `{time}`, `{profile}`, and a
 zero-padded configurable `{iteration}` token. The iteration value is visible
-before starting and advances without overwriting an existing capture. The
-default template is `{date}_{time}_{profile}_{iteration:03d}.asc`.
+before starting and advances without overwriting an existing capture. Sessions
+rotate by default at 2 GiB into numbered segments, so templates also support
+`{segment}`. The default template is
+`{date}_{time}_{profile}_{iteration:03d}_{segment:03d}.asc`.
+
+PeakLive warns when the target volume falls below 10 GiB free and stops the
+recorder cleanly at 2 GiB free. Both thresholds and the segment size are
+configurable. A low-space stop marks the session incomplete while leaving the
+application able to continue live monitoring if acquisition remains safe.
 
 ## Controller-mode language
 

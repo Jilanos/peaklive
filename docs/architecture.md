@@ -142,7 +142,9 @@ The initial bitrate catalog is 125/250/500/1000 kbit/s. The English-only MVP
 uses **Start Acquisition** and **Stop Acquisition**; recording begins and ends
 with that lifecycle when enabled by the active profile. Filename expansion is
 collision-safe and supports date, time, profile, and zero-padded iteration
-tokens.
+and segment tokens. The default writer rotates at 2 GiB, warns at 10 GiB free,
+and stops recording at 2 GiB free; these values are profile-configurable and a
+forced low-space stop marks the session incomplete.
 
 ## Failure model
 
