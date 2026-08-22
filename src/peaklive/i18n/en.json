@@ -1,0 +1,20 @@
+{
+  "app": {
+    "title": "PeakLive"
+  },
+  "acquisition": {
+    "start": "Start Acquisition",
+    "stop": "Stop Acquisition",
+    "disconnected": "Disconnected",
+    "connected": "Connected"
+  },
+  "profile": {
+    "label": "Measurement profile"
+  },
+  "workspace": {
+    "trace": "Trace",
+    "signals": "Signals",
+    "plots": "Plots",
+    "inspector": "Inspector"
+  }
+}

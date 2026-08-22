@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "peaklive"
+version = "0.1.0"
+description = "Local Windows CAN workstation for capture, decoding, plotting, recording, and replay."
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+authors = [{ name = "PeakLive contributors" }]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "platformdirs>=4.3",
+  "PySide6>=6.9",
+  "pyqtgraph>=0.13.7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-qt>=4.5",
+  "ruff>=0.9",
+]
+
+[project.scripts]
+peaklive = "peaklive.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/peaklive"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

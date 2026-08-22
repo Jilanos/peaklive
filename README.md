@@ -36,6 +36,29 @@ listen-only mode.
 
 The ready-to-develop workflow is tracked under `logics/`.
 
+## Development
+
+Prerequisites: Python 3.13+ and [uv](https://docs.astral.sh/uv/).
+
+```bash
+uv sync --all-extras
+uv run peaklive
+uv run ruff check .
+uv run pytest
+uv build
+```
+
+For a headless Qt test session on Linux or CI:
+
+```bash
+QT_QPA_PLATFORM=offscreen uv run pytest
+```
+
+PeakLive persists profiles below the platform user-data directory. Set
+`PEAKLIVE_DATA_DIR` to an explicit local directory for development or tests.
+The application restores the last selected profile but never connects to a bus
+until **Start Acquisition** is selected.
+
 ## License
 
 PeakLive is licensed under the [Apache License 2.0](LICENSE).
