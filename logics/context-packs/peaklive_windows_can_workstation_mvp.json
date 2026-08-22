@@ -1,0 +1,589 @@
+{
+  "budgets": {
+    "max_docs": 80,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_000_deliver_the_peaklive_windows_can_workstation_mvp item_001_establish_the_native_windows_application_foundation item_002_integrate_robust_classic_usb_can_acquisition item_003_build_the_complete_and_recoverable_recording_pipeline item_004_deliver_the_live_trace_and_display_only_filtering_workspace item_005_add_deterministic_multi_dbc_live_decoding item_006_render_bounded_real_time_signal_plots_and_measurements item_007_implement_incremental_asc_and_trc_replay_with_decoded_export item_008_package_and_qualify_the_windows_mvp task_001_orchestrate_the_peaklive_windows_can_workstation_mvp --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_001_establish_the_native_windows_application_foundation",
+          "item_002_integrate_robust_classic_usb_can_acquisition",
+          "item_003_build_the_complete_and_recoverable_recording_pipeline",
+          "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+          "item_005_add_deterministic_multi_dbc_live_decoding",
+          "item_006_render_bounded_real_time_signal_plots_and_measurements",
+          "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+          "item_008_package_and_qualify_the_windows_mvp"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/product/prod_001_peaklive_windows_can_workstation.md",
+      "ref": "prod_001_peaklive_windows_can_workstation",
+      "sections": {
+        "Goals": [
+          "- Make PeakLive the primary workstation for live acquisition and installed offline analysis for a three-engineer team.",
+          "- Protect capture integrity by separating the complete recording stream from bounded display projections.",
+          "- Offer a familiar instrument-style workflow across trace, signal explorer, plots, inspector, and exports.",
+          "- Create measurable adapter, decoder, recorder, and UI boundaries that support future hardware and transmission features.",
+          "- Keep all operational data local and make failures explicit and recoverable."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis."
+        ],
+        "References": [
+          "- Product back-reference: `req_000_deliver_the_peaklive_windows_can_workstation_mvp`",
+          "- Task back-reference: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive Windows CAN Workstation"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "deliver, peaklive, windows, can, workstation, mvp",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_001_establish_the_native_windows_application_foundation",
+          "item_002_integrate_robust_classic_usb_can_acquisition",
+          "item_003_build_the_complete_and_recoverable_recording_pipeline",
+          "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+          "item_005_add_deterministic_multi_dbc_live_decoding",
+          "item_006_render_bounded_real_time_signal_plots_and_measurements",
+          "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+          "item_008_package_and_qualify_the_windows_mvp"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md",
+      "ref": "req_000_deliver_the_peaklive_windows_can_workstation_mvp",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.",
+          "- AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected common bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.",
+          "- AC3: An assisted bitrate scan can evaluate common rates without claiming certainty on a quiet or acknowledgement-dependent bus, and reports confidence and failure reasons.",
+          "- AC4: Physical disconnect, reconnect, bus warning/passive/off, driver overrun, and unsupported configuration states are visible, preserved as events, and do not require an application restart for recovery where the driver permits.",
+          "- AC5: Active recording writes every frame delivered by the adapter regardless of display filters, records representable errors/events in ASC, preserves non-portable events in a JSONL sidecar, and marks any known loss or unclean close.",
+          "- AC6: A 60-minute practical-maximum Classic CAN load test completes without recorder queue overflow on the documented reference machine, while the UI remains interactive and any upstream driver loss remains explicitly detectable."
+        ],
+        "Needs": [
+          "- Give a three-engineer team an installable Windows application for live Classic CAN acquisition, decoding, plotting, recording, and replay.",
+          "- Make saved evidence independent from display filtering and UI performance.",
+          "- Provide materially stronger large-trace and live-compute behaviour than the companion browser-only trace reader.",
+          "- Keep the MVP application-level receive-only while explicitly modelling controller acknowledgement and passive listen-only behaviour for later safe transmission support.",
+          "- Keep all vehicle data local and make future hardware adapters possible without rewriting the product core."
+        ]
+      },
+      "status": "Draft",
+      "title": "Deliver the PeakLive Windows CAN workstation MVP"
+    },
+    {
+      "ai_context": {
+        "keywords": "establish, native, windows, application, foundation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_001_establish_the_native_windows_application_foundation"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_001_establish_the_native_windows_application_foundation.md",
+      "ref": "item_001_establish_the_native_windows_application_foundation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A developer can create the pinned environment, run the desktop shell, and execute unit and Qt smoke tests from documented commands.",
+          "- AC2: Domain modules do not import Qt or a concrete vendor API, and a deterministic fake adapter can drive the shell.",
+          "- AC3: Settings use documented local paths, persist schema-versioned non-sensitive state, and never auto-connect at startup.",
+          "- AC4: The shell establishes the trace, signal explorer, plots, and inspector workspace regions with keyboard-accessible navigation.",
+          "- AC5: CI enforces formatting, static checks, unit tests, and a headless UI launch test."
+        ],
+        "Problem": [
+          "- The repository has no executable desktop skeleton, dependency contract, application state model, or test harness."
+        ]
+      },
+      "status": "Ready",
+      "title": "Establish the native Windows application foundation"
+    },
+    {
+      "ai_context": {
+        "keywords": "integrate, robust, classic, usb, can, acquisition",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_002_integrate_robust_classic_usb_can_acquisition"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_002_integrate_robust_classic_usb_can_acquisition.md",
+      "ref": "item_002_integrate_robust_classic_usb_can_acquisition",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The adapter enumerates supported channels and capability flags and rejects unsupported configurations explicitly.",
+          "- AC2: Manual bitrate connection produces normalized frames and state events without touching Qt objects from the adapter worker.",
+          "- AC3: Assisted scan evaluates configured common rates in passive mode when supported and returns evidence, confidence, and inconclusive reasons.",
+          "- AC4: Disconnect, reconnect, warning, passive, bus-off, and driver overrun scenarios produce deterministic domain events and actionable UI state.",
+          "- AC5: Receive-only and passive listen-only semantics are named and tested independently; no transmit API is reachable from the MVP UI."
+        ],
+        "Problem": [
+          "- The application needs reliable access to the initial Windows USB CAN adapter without coupling the UI to one vendor API."
+        ]
+      },
+      "status": "Ready",
+      "title": "Integrate robust Classic USB CAN acquisition"
+    },
+    {
+      "ai_context": {
+        "keywords": "build, complete, recoverable, recording, pipeline",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_003_build_the_complete_and_recoverable_recording_pipeline"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_003_build_the_complete_and_recoverable_recording_pipeline.md",
+      "ref": "item_003_build_the_complete_and_recoverable_recording_pipeline",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Recording receives normalized events before all UI filtering and writes every adapter-delivered frame to ASC.",
+          "- AC2: Driver, connection, and recording events are represented in ASC comments where portable and in a same-basename JSONL sidecar.",
+          "- AC3: An overrun, queue overflow, disk error, or unclean close marks the session incomplete and is never reported as a clean capture.",
+          "- AC4: Restart detects partial sessions and offers non-destructive recovery/finalization while preserving original artifacts.",
+          "- AC5: The documented 60-minute reference load demonstrates recorder integrity and records queue high-water and driver-loss evidence."
+        ],
+        "Problem": [
+          "- UI pressure and filtering must not silently remove frames or errors from saved sessions."
+        ]
+      },
+      "status": "Ready",
+      "title": "Build the complete and recoverable recording pipeline"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, live, trace, display, only, filtering, workspace",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_004_deliver_the_live_trace_and_display_only_filtering_workspace"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_004_deliver_the_live_trace_and_display_only_filtering_workspace.md",
+      "ref": "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The trace shows the required raw columns and applies frame batches at a controlled UI cadence.",
+          "- AC2: Applying, clearing, pausing, or changing a display filter does not alter recorder input or active capture counts.",
+          "- AC3: Error and state rows are distinguishable, inspectable, and linked to current bus health.",
+          "- AC4: The bounded trace window evicts presentation rows predictably while preserving total counters and saved evidence.",
+          "- AC5: Layout and filter settings restore locally without initiating a hardware connection."
+        ],
+        "Problem": [
+          "- A chronological high-rate trace can overwhelm desktop models if each frame is rendered individually."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver the live trace and display-only filtering workspace"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, deterministic, multi, dbc, live, decoding",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_005_add_deterministic_multi_dbc_live_decoding"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_005_add_deterministic_multi_dbc_live_decoding.md",
+      "ref": "item_005_add_deterministic_multi_dbc_live_decoding",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Users can load, order, disable, remove, and inspect multiple DBC files with actionable parse diagnostics.",
+          "- AC2: Non-equivalent arbitration-ID conflicts block ambiguous decoding until a deterministic mapping is selected.",
+          "- AC3: Fixture tests cover signed, scaled, endian, enum, multiplexed, unknown, malformed, and conflicting definitions.",
+          "- AC4: Decode failures never mutate or discard the raw frame and are isolated to the affected definition.",
+          "- AC5: Live decoding is demand-driven and exposes throughput/latency measurements under the reference load."
+        ],
+        "Problem": [
+          "- Multiple DBCs may define the same arbitration ID differently, and decoding all signals on every frame wastes live compute."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add deterministic multi-DBC live decoding"
+    },
+    {
+      "ai_context": {
+        "keywords": "render, bounded, real, time, signal, plots, measurements",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_006_render_bounded_real_time_signal_plots_and_measurements"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_006_render_bounded_real_time_signal_plots_and_measurements.md",
+      "ref": "item_006_render_bounded_real_time_signal_plots_and_measurements",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Users can select decoded signals and render at least eight synchronized live plots under the reference load.",
+          "- AC2: Plot memory remains bounded and downsampling preserves visible extrema at each zoom level.",
+          "- AC3: Zoom, pan, live/frozen state, and A/B cursor measurements remain usable while recording continues independently.",
+          "- AC4: Typical acquisition-to-presentation latency stays below 250 ms on the reference machine or a visible degraded-state metric explains a breach.",
+          "- AC5: Plot and signal selections restore locally without decoding unrelated signals eagerly."
+        ],
+        "Problem": [
+          "- Signal visualization must stay responsive without retaining or drawing every decoded sample indefinitely."
+        ]
+      },
+      "status": "Ready",
+      "title": "Render bounded real-time signal plots and measurements"
+    },
+    {
+      "ai_context": {
+        "keywords": "implement, incremental, asc, trc, replay, decoded, export",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_007_implement_incremental_asc_and_trc_replay_with_decoded_export.md",
+      "ref": "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Valid ASC and supported text TRC fixtures normalize to equivalent domain frames and preserve timestamps and flags.",
+          "- AC2: Malformed lines become navigable anomalies when safe and never shift or corrupt subsequent valid frames.",
+          "- AC3: Large traces open and navigate without loading the complete file or decoded dataset into UI memory.",
+          "- AC4: CSV and Parquet exports stream selected signals and time ranges and are validated against decoded fixture values.",
+          "- AC5: Replay and export operate without network access and expose cancel/progress/error states."
+        ],
+        "Problem": [
+          "- Engineers need one installed tool for live work and large offline captures without browser memory limits."
+        ]
+      },
+      "status": "Ready",
+      "title": "Implement incremental ASC and TRC replay with decoded export"
+    },
+    {
+      "ai_context": {
+        "keywords": "orchestrate, peaklive, windows, can, workstation, mvp",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_001_establish_the_native_windows_application_foundation",
+          "item_002_integrate_robust_classic_usb_can_acquisition",
+          "item_003_build_the_complete_and_recoverable_recording_pipeline",
+          "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+          "item_005_add_deterministic_multi_dbc_live_decoding",
+          "item_006_render_bounded_real_time_signal_plots_and_measurements",
+          "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+          "item_008_package_and_qualify_the_windows_mvp"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/tasks/task_001_orchestrate_the_peaklive_windows_can_workstation_mvp.md",
+      "ref": "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Orchestrate the PeakLive Windows CAN workstation MVP"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_001_establish_the_native_windows_application_foundation",
+          "item_002_integrate_robust_classic_usb_can_acquisition",
+          "item_003_build_the_complete_and_recoverable_recording_pipeline",
+          "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+          "item_005_add_deterministic_multi_dbc_live_decoding",
+          "item_006_render_bounded_real_time_signal_plots_and_measurements",
+          "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+          "item_008_package_and_qualify_the_windows_mvp"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/product/prod_001_peaklive_windows_can_workstation.md",
+      "ref": "prod_001_peaklive_windows_can_workstation",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive Windows CAN Workstation"
+    },
+    {
+      "ai_context": {
+        "keywords": "package, qualify, windows, mvp",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_008_package_and_qualify_the_windows_mvp"
+        ],
+        "prod": [
+          "prod_001_peaklive_windows_can_workstation"
+        ],
+        "req": [
+          "req_000_deliver_the_peaklive_windows_can_workstation_mvp"
+        ],
+        "task": [
+          "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_008_package_and_qualify_the_windows_mvp.md",
+      "ref": "item_008_package_and_qualify_the_windows_mvp",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The installer deploys, launches, and uninstalls on a clean supported Windows x64 machine without a separate Python installation.",
+          "- AC2: Missing or incompatible hardware drivers produce an actionable diagnostic while offline replay remains usable.",
+          "- AC3: Uninstall behaviour clearly offers or documents retention of captures, DBC references, and user settings.",
+          "- AC4: The documented hardware runbook verifies connect, 60-minute load, display latency, record integrity, physical reconnect, replay, and export.",
+          "- AC5: The release artifact contains version/build provenance and required third-party notices and passes the automated install smoke test."
+        ],
+        "Problem": [
+          "- Source execution is not an acceptable delivery path for the target engineering users."
+        ]
+      },
+      "status": "Ready",
+      "title": "Package and qualify the Windows MVP"
+    }
+  ],
+  "estimates": {
+    "char_count": 20459,
+    "companion_doc_count": 1,
+    "doc_count": 11
+  },
+  "generated_at": "2026-08-22T09:47:30Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_000_deliver_the_peaklive_windows_can_workstation_mvp",
+      "item_001_establish_the_native_windows_application_foundation",
+      "item_002_integrate_robust_classic_usb_can_acquisition",
+      "item_003_build_the_complete_and_recoverable_recording_pipeline",
+      "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+      "item_005_add_deterministic_multi_dbc_live_decoding",
+      "item_006_render_bounded_real_time_signal_plots_and_measurements",
+      "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+      "item_008_package_and_qualify_the_windows_mvp",
+      "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Choose the source locale for app-owned user-facing copy.",
+      "Run logics-manager i18n init --source-locale <locale>.",
+      "Route new UI copy through stable semantic keys."
+    ],
+    "applicable": null,
+    "configured": false,
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "Run logics-manager i18n init --source-locale <locale> for a project that owns user-facing copy.",
+    "ok": true,
+    "state": "absent"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_000_deliver_the_peaklive_windows_can_workstation_mvp,item_001_establish_the_native_windows_application_foundation,item_002_integrate_robust_classic_usb_can_acquisition,item_003_build_the_complete_and_recoverable_recording_pipeline,item_004_deliver_the_live_trace_and_display_only_filtering_workspace,item_005_add_deterministic_multi_dbc_live_decoding,item_006_render_bounded_real_time_signal_plots_and_measurements,item_007_implement_incremental_asc_and_trc_replay_with_decoded_export,item_008_package_and_qualify_the_windows_mvp,task_001_orchestrate_the_peaklive_windows_can_workstation_mvp",
+  "refs": [
+    "req_000_deliver_the_peaklive_windows_can_workstation_mvp",
+    "item_001_establish_the_native_windows_application_foundation",
+    "item_002_integrate_robust_classic_usb_can_acquisition",
+    "item_003_build_the_complete_and_recoverable_recording_pipeline",
+    "item_004_deliver_the_live_trace_and_display_only_filtering_workspace",
+    "item_005_add_deterministic_multi_dbc_live_decoding",
+    "item_006_render_bounded_real_time_signal_plots_and_measurements",
+    "item_007_implement_incremental_asc_and_trc_replay_with_decoded_export",
+    "item_008_package_and_qualify_the_windows_mvp",
+    "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_version": null
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_001_orchestrate_the_peaklive_windows_can_workstation_mvp.md",
+      "ref": "task_001_orchestrate_the_peaklive_windows_can_workstation_mvp"
+    }
+  ]
+}

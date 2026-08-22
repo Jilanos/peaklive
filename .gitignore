@@ -1,0 +1,29 @@
+AGENTS.md
+LOGICS.md
+
+# Python and test environments
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Build and packaging outputs
+build/
+dist/
+*.egg-info/
+
+# Local application and capture artifacts
+.peaklive/
+captures/
+*.partial
+*.peaklive-events.jsonl
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

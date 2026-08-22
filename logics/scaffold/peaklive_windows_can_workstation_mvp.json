@@ -1,0 +1,289 @@
+{
+  "title": "Deliver the PeakLive Windows CAN workstation MVP",
+  "references": [
+    "README.md",
+    "docs/product-scope.md",
+    "docs/architecture.md",
+    "docs/adr/0001-native-python-qt-stack.md",
+    "docs/adr/0002-lossless-recording-bounded-projections.md",
+    "docs/adr/0003-hardware-adapter-boundary.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Windows CAN diagnostics",
+    "needs": [
+      "Give a three-engineer team an installable Windows application for live Classic CAN acquisition, decoding, plotting, recording, and replay.",
+      "Make saved evidence independent from display filtering and UI performance.",
+      "Provide materially stronger large-trace and live-compute behaviour than the companion browser-only trace reader.",
+      "Keep the MVP application-level receive-only while explicitly modelling controller acknowledgement and passive listen-only behaviour for later safe transmission support.",
+      "Keep all vehicle data local and make future hardware adapters possible without rewriting the product core."
+    ],
+    "context": [
+      "The initial hardware is one currently connected Classic USB CAN adapter exposed through an installed Windows driver API.",
+      "The desired visual language and analysis workflows come from the existing companion trace-analysis product.",
+      "ASC is the primary interoperable recording format and supported text TRC files must remain readable.",
+      "Display filters must never remove frames from active recordings, and driver or recording errors must be preserved.",
+      "The MVP excludes frame transmission, dashboards, and alarms but must retain clean architecture seams for those later capabilities."
+    ],
+    "acceptance_criteria": [
+      "AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.",
+      "AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected common bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.",
+      "AC3: An assisted bitrate scan can evaluate common rates without claiming certainty on a quiet or acknowledgement-dependent bus, and reports confidence and failure reasons.",
+      "AC4: Physical disconnect, reconnect, bus warning/passive/off, driver overrun, and unsupported configuration states are visible, preserved as events, and do not require an application restart for recovery where the driver permits.",
+      "AC5: Active recording writes every frame delivered by the adapter regardless of display filters, records representable errors/events in ASC, preserves non-portable events in a JSONL sidecar, and marks any known loss or unclean close.",
+      "AC6: A 60-minute practical-maximum Classic CAN load test completes without recorder queue overflow on the documented reference machine, while the UI remains interactive and any upstream driver loss remains explicitly detectable.",
+      "AC7: The live trace presents chronological raw frames and decoded messages with identifier, direction/type, DLC, payload, timestamp/delta, channel, and error/state information; filters affect presentation only.",
+      "AC8: Users can load multiple DBC files, resolve non-equivalent arbitration-ID conflicts deterministically, inspect decoded values and enums, and retain undecodable frames unchanged.",
+      "AC9: Users can select and render at least eight live decoded signals with a typical presentation latency below 250 ms, bounded memory, zoom/pan, and A/B measurement cursors under the reference load.",
+      "AC10: PeakLive replays ASC and supported text TRC files incrementally, preserves malformed records as anomalies where recovery is safe, and supports large traces without loading the complete file into UI memory.",
+      "AC11: Users can export selected decoded signals and time ranges to streamed CSV and Parquet outputs.",
+      "AC12: Settings, recent DBCs, filters, plots, layout, bitrate, controller mode, and capture path persist locally, but the application never silently reconnects to a live bus on startup.",
+      "AC13: The application opens no listening network service, performs no upload or analytics, and stores captures, DBC references, caches, and settings only in documented local paths.",
+      "AC14: Automated tests exercise the domain core with fake/replay adapters, parsing and DBC fixtures, recorder recovery, display-only filtering, error preservation, and an install smoke test; hardware acceptance steps are documented and repeatable."
+    ]
+  },
+  "product": {
+    "title": "PeakLive Windows CAN Workstation",
+    "overview": "A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis.",
+    "goals": [
+      "Make PeakLive the primary workstation for live acquisition and installed offline analysis for a three-engineer team.",
+      "Protect capture integrity by separating the complete recording stream from bounded display projections.",
+      "Offer a familiar instrument-style workflow across trace, signal explorer, plots, inspector, and exports.",
+      "Create measurable adapter, decoder, recorder, and UI boundaries that support future hardware and transmission features.",
+      "Keep all operational data local and make failures explicit and recoverable."
+    ],
+    "non_goals": [
+      "Transmit user-authored or cyclic CAN frames in the MVP.",
+      "Provide dashboards, gauges, alarms, diagnostics protocols, or scripting in the MVP.",
+      "Replace the companion browser tool for zero-install trace sharing.",
+      "Support CAN FD, LIN, multiple synchronized channels, or every hardware vendor in the first release.",
+      "Provide cloud accounts, remote collaboration, analytics, or automatic update services."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Establish the native Windows application foundation",
+      "priority": "High — every vertical feature depends on a deterministic desktop runtime and domain boundary.",
+      "complexity": "Medium",
+      "theme": "Desktop foundation",
+      "request_acs": ["AC1", "AC12", "AC13", "AC14"],
+      "problem": [
+        "The repository has no executable desktop skeleton, dependency contract, application state model, or test harness."
+      ],
+      "scope_in": [
+        "Python and PySide6 package layout with domain, application, adapter, infrastructure, and UI boundaries.",
+        "Local path policy, settings schema, startup lifecycle, structured logging, fake adapter, and CI test baseline.",
+        "Instrument-style shell matching the companion product's visual vocabulary."
+      ],
+      "scope_out": [
+        "Physical CAN acquisition, complete feature panels, and production installer polish."
+      ],
+      "acceptance_criteria": [
+        "AC1: A developer can create the pinned environment, run the desktop shell, and execute unit and Qt smoke tests from documented commands.",
+        "AC2: Domain modules do not import Qt or a concrete vendor API, and a deterministic fake adapter can drive the shell.",
+        "AC3: Settings use documented local paths, persist schema-versioned non-sensitive state, and never auto-connect at startup.",
+        "AC4: The shell establishes the trace, signal explorer, plots, and inspector workspace regions with keyboard-accessible navigation.",
+        "AC5: CI enforces formatting, static checks, unit tests, and a headless UI launch test."
+      ]
+    },
+    {
+      "title": "Integrate robust Classic USB CAN acquisition",
+      "priority": "High — live hardware access and transparent bus state are the defining MVP capability.",
+      "complexity": "High",
+      "theme": "CAN acquisition",
+      "request_acs": ["AC2", "AC3", "AC4", "AC14"],
+      "problem": [
+        "The application needs reliable access to the initial Windows USB CAN adapter without coupling the UI to one vendor API."
+      ],
+      "scope_in": [
+        "Capability-driven adapter port and first Classic USB Windows implementation.",
+        "Channel discovery, manual common bitrates, normal receive and passive listen-only when supported.",
+        "Advisory bitrate scan, timestamps, bus/error events, disconnect, bounded retry, and reconnect.",
+        "Fake and hardware-in-loop acceptance harnesses."
+      ],
+      "scope_out": [
+        "CAN FD, multiple active channels, frame transmission, and non-initial production adapters."
+      ],
+      "acceptance_criteria": [
+        "AC1: The adapter enumerates supported channels and capability flags and rejects unsupported configurations explicitly.",
+        "AC2: Manual bitrate connection produces normalized frames and state events without touching Qt objects from the adapter worker.",
+        "AC3: Assisted scan evaluates configured common rates in passive mode when supported and returns evidence, confidence, and inconclusive reasons.",
+        "AC4: Disconnect, reconnect, warning, passive, bus-off, and driver overrun scenarios produce deterministic domain events and actionable UI state.",
+        "AC5: Receive-only and passive listen-only semantics are named and tested independently; no transmit API is reachable from the MVP UI."
+      ]
+    },
+    {
+      "title": "Build the complete and recoverable recording pipeline",
+      "priority": "High — trustworthy evidence must exist before visualization work can be accepted.",
+      "complexity": "High",
+      "theme": "Capture integrity",
+      "request_acs": ["AC4", "AC5", "AC6", "AC13", "AC14"],
+      "problem": [
+        "UI pressure and filtering must not silently remove frames or errors from saved sessions."
+      ],
+      "scope_in": [
+        "Dedicated bounded recorder queue and worker, interoperable ASC writer, JSONL event sidecar, flush policy, and metrics.",
+        "Partial-session markers, atomic finalization, interrupted-session detection, and recovery workflow.",
+        "Disk-full, permission, driver-loss, and recorder-overflow behaviour.",
+        "Reference-load benchmark and capture-integrity comparison harness."
+      ],
+      "scope_out": [
+        "Compressed proprietary formats and cloud-backed capture storage."
+      ],
+      "acceptance_criteria": [
+        "AC1: Recording receives normalized events before all UI filtering and writes every adapter-delivered frame to ASC.",
+        "AC2: Driver, connection, and recording events are represented in ASC comments where portable and in a same-basename JSONL sidecar.",
+        "AC3: An overrun, queue overflow, disk error, or unclean close marks the session incomplete and is never reported as a clean capture.",
+        "AC4: Restart detects partial sessions and offers non-destructive recovery/finalization while preserving original artifacts.",
+        "AC5: The documented 60-minute reference load demonstrates recorder integrity and records queue high-water and driver-loss evidence."
+      ]
+    },
+    {
+      "title": "Deliver the live trace and display-only filtering workspace",
+      "priority": "High — engineers need an immediately usable view of raw bus activity while capture remains independent.",
+      "complexity": "Medium",
+      "theme": "Live trace",
+      "request_acs": ["AC4", "AC7", "AC12"],
+      "problem": [
+        "A chronological high-rate trace can overwhelm desktop models if each frame is rendered individually."
+      ],
+      "scope_in": [
+        "Batched bounded chronological trace model, pause/follow-tail, row inspection, counters, and bus-health strip.",
+        "Filters for identifiers, ranges, frame type, payload patterns, channel/state, and decoded text where available.",
+        "Column visibility, ordering, sizing, hexadecimal formatting, change highlighting, and persisted views.",
+        "Clear indication that filters affect display only."
+      ],
+      "scope_out": [
+        "Editing or transmitting frames and unbounded retention in the UI model."
+      ],
+      "acceptance_criteria": [
+        "AC1: The trace shows the required raw columns and applies frame batches at a controlled UI cadence.",
+        "AC2: Applying, clearing, pausing, or changing a display filter does not alter recorder input or active capture counts.",
+        "AC3: Error and state rows are distinguishable, inspectable, and linked to current bus health.",
+        "AC4: The bounded trace window evicts presentation rows predictably while preserving total counters and saved evidence.",
+        "AC5: Layout and filter settings restore locally without initiating a hardware connection."
+      ]
+    },
+    {
+      "title": "Add deterministic multi-DBC live decoding",
+      "priority": "High — decoded engineering values are required before live plots or useful exports can ship.",
+      "complexity": "High",
+      "theme": "DBC decoding",
+      "request_acs": ["AC8", "AC9", "AC11", "AC12", "AC14"],
+      "problem": [
+        "Multiple DBCs may define the same arbitration ID differently, and decoding all signals on every frame wastes live compute."
+      ],
+      "scope_in": [
+        "Content-addressed DBC catalog, parse diagnostics, ordered databases, and deterministic conflict resolution.",
+        "Correct signed, scaled, endian, enum, and multiplexed signal decoding supported by the selected library.",
+        "Demand-driven live decode for visible columns, inspected messages, selected plots, and exports.",
+        "DBC library and selection persistence without copying private DBCs into the repository."
+      ],
+      "scope_out": [
+        "DBC editing, network databases, and diagnostic protocol interpretation."
+      ],
+      "acceptance_criteria": [
+        "AC1: Users can load, order, disable, remove, and inspect multiple DBC files with actionable parse diagnostics.",
+        "AC2: Non-equivalent arbitration-ID conflicts block ambiguous decoding until a deterministic mapping is selected.",
+        "AC3: Fixture tests cover signed, scaled, endian, enum, multiplexed, unknown, malformed, and conflicting definitions.",
+        "AC4: Decode failures never mutate or discard the raw frame and are isolated to the affected definition.",
+        "AC5: Live decoding is demand-driven and exposes throughput/latency measurements under the reference load."
+      ]
+    },
+    {
+      "title": "Render bounded real-time signal plots and measurements",
+      "priority": "Medium — plots depend on stable acquisition, recording, and decoding foundations.",
+      "complexity": "High",
+      "theme": "Live visualization",
+      "request_acs": ["AC6", "AC8", "AC9", "AC12"],
+      "problem": [
+        "Signal visualization must stay responsive without retaining or drawing every decoded sample indefinitely."
+      ],
+      "scope_in": [
+        "Signal explorer, favorites, stacked synchronized plots, bounded sample buffers, and min/max envelope downsampling.",
+        "Live/frozen modes, time-window controls, zoom, pan, A/B cursors, values, delta, and range statistics.",
+        "Persisted signal selection and plot layout.",
+        "Reference-load latency and responsiveness measurements for at least eight signals."
+      ],
+      "scope_out": [
+        "Dashboard gauges, alarm rules, scripting, and arbitrary custom widgets."
+      ],
+      "acceptance_criteria": [
+        "AC1: Users can select decoded signals and render at least eight synchronized live plots under the reference load.",
+        "AC2: Plot memory remains bounded and downsampling preserves visible extrema at each zoom level.",
+        "AC3: Zoom, pan, live/frozen state, and A/B cursor measurements remain usable while recording continues independently.",
+        "AC4: Typical acquisition-to-presentation latency stays below 250 ms on the reference machine or a visible degraded-state metric explains a breach.",
+        "AC5: Plot and signal selections restore locally without decoding unrelated signals eagerly."
+      ]
+    },
+    {
+      "title": "Implement incremental ASC and TRC replay with decoded export",
+      "priority": "Medium — installed offline analysis completes the product but can build on the live domain pipeline.",
+      "complexity": "High",
+      "theme": "Offline analysis",
+      "request_acs": ["AC8", "AC10", "AC11", "AC13", "AC14"],
+      "problem": [
+        "Engineers need one installed tool for live work and large offline captures without browser memory limits."
+      ],
+      "scope_in": [
+        "Incremental ASC and supported text TRC readers normalized to domain events.",
+        "Progressive indexing, time-window navigation, anomaly retention, and cancelable file opening.",
+        "Chunked decode and streamed CSV/Parquet export for selected signals and time ranges.",
+        "Compatibility fixtures shared conceptually with the companion reader."
+      ],
+      "scope_out": [
+        "Every proprietary capture format and full-file eager decode."
+      ],
+      "acceptance_criteria": [
+        "AC1: Valid ASC and supported text TRC fixtures normalize to equivalent domain frames and preserve timestamps and flags.",
+        "AC2: Malformed lines become navigable anomalies when safe and never shift or corrupt subsequent valid frames.",
+        "AC3: Large traces open and navigate without loading the complete file or decoded dataset into UI memory.",
+        "AC4: CSV and Parquet exports stream selected signals and time ranges and are validated against decoded fixture values.",
+        "AC5: Replay and export operate without network access and expose cancel/progress/error states."
+      ]
+    },
+    {
+      "title": "Package and qualify the Windows MVP",
+      "priority": "Medium — distribution follows feature integration but is required for the three-user rollout.",
+      "complexity": "High",
+      "theme": "Windows delivery",
+      "request_acs": ["AC1", "AC2", "AC4", "AC6", "AC9", "AC13", "AC14"],
+      "problem": [
+        "Source execution is not an acceptable delivery path for the target engineering users."
+      ],
+      "scope_in": [
+        "Pinned production build, bundled Python/Qt runtime, Windows x64 installer, shortcuts, uninstall, and local-data retention policy.",
+        "Driver prerequisite detection and actionable launch diagnostics.",
+        "Clean-machine install smoke test, dependency notices, operator quick start, and repeatable hardware acceptance runbook.",
+        "Reference-load performance and reconnect qualification."
+      ],
+      "scope_out": [
+        "Automatic updates, mandatory executable signing, enterprise deployment tooling, and public support commitments."
+      ],
+      "acceptance_criteria": [
+        "AC1: The installer deploys, launches, and uninstalls on a clean supported Windows x64 machine without a separate Python installation.",
+        "AC2: Missing or incompatible hardware drivers produce an actionable diagnostic while offline replay remains usable.",
+        "AC3: Uninstall behaviour clearly offers or documents retention of captures, DBC references, and user settings.",
+        "AC4: The documented hardware runbook verifies connect, 60-minute load, display latency, record integrity, physical reconnect, replay, and export.",
+        "AC5: The release artifact contains version/build provenance and required third-party notices and passes the automated install smoke test."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate the PeakLive Windows CAN workstation MVP",
+    "plan": [
+      "Establish the application foundation, domain contracts, fake adapter, test harness, and visual shell.",
+      "Integrate the first Classic USB adapter and validate explicit receive/passive semantics and recovery states.",
+      "Build and benchmark the recording pipeline before connecting presentation filters.",
+      "Deliver the batched live trace and deterministic multi-DBC decode path.",
+      "Add bounded plots and cursor measurements against the measured live pipeline.",
+      "Implement incremental ASC/TRC replay and streamed decoded exports.",
+      "Package the Windows application and execute clean-machine and hardware acceptance evidence."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_windows_can_workstation_mvp.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
