@@ -1,14 +1,15 @@
 ## task_001_orchestrate_the_peaklive_windows_can_workstation_mvp - Orchestrate the PeakLive Windows CAN workstation MVP
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:50
+> Indicators reviewed: 2026-08-22 12:10:33
+> Owner: Codex
 
 # AI Context
 - Summary: Sequences the eight PeakLive MVP delivery slices so recording integrity and adapter contracts precede dependent UI, analysis, and packaging work.
