@@ -27,9 +27,10 @@ from PySide6.QtWidgets import (
 
 from peaklive.adapters import CanAdapter, default_adapter
 from peaklive.analysis import AmbiguousMessageError, DbcCatalog
-from peaklive.domain import CanFrame, MeasurementProfile
+from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileState, ProfileStore
+from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
 
 APP_STYLE = """
@@ -59,6 +60,7 @@ class MainWindow(QMainWindow):
         self._state: ProfileState = self._store.load()
         self._adapter_factory = adapter_factory
         self._worker: AcquisitionWorker | None = None
+        self._replay_worker: ReplayWorker | None = None
         self._catalog = DbcCatalog()
         self._selected_signal_name: str | None = None
         self._plot_times: list[float] = []
@@ -93,6 +95,10 @@ class MainWindow(QMainWindow):
         self.load_dbc_button.setAccessibleName("Load DBC")
         self.load_dbc_button.clicked.connect(self._choose_dbc)
         control_layout.addWidget(self.load_dbc_button)
+        self.open_trace_button = QPushButton("Open Trace", objectName="openTraceButton")
+        self.open_trace_button.setAccessibleName("Open ASC or TRC trace")
+        self.open_trace_button.clicked.connect(self._choose_trace)
+        control_layout.addWidget(self.open_trace_button)
         self.start_button = QPushButton(
             translate("acquisition.start"), objectName="startAcquisitionButton"
         )
@@ -214,6 +220,33 @@ class MainWindow(QMainWindow):
         self._refresh_signal_explorer()
         self.status.showMessage(f"Loaded DBC: {path.name}")
 
+    def _choose_trace(self) -> None:
+        selected, _ = QFileDialog.getOpenFileName(
+            self, "Open Trace", "", "CAN traces (*.asc *.trc)"
+        )
+        if selected:
+            self._open_trace(Path(selected))
+
+    def _open_trace(self, path: Path) -> None:
+        if self._replay_worker is not None and self._replay_worker.isRunning():
+            self._replay_worker.request_stop()
+            self._replay_worker.wait(1_000)
+        self.trace_table.setRowCount(0)
+        self._plot_times.clear()
+        self._plot_samples.clear()
+        self._plot_origin = None
+        self._replay_worker = ReplayWorker(path)
+        self._replay_worker.frames_received.connect(self._render_frames)
+        self._replay_worker.event_received.connect(self._render_replay_event)
+        self._replay_worker.replay_failed.connect(self._acquisition_failed)
+        self._replay_worker.finished.connect(self._replay_finished)
+        self.status.showMessage(f"Opening trace: {path.name}")
+        self._replay_worker.start()
+
+    def _render_replay_event(self, event: object) -> None:
+        if isinstance(event, BusEvent):
+            self.status.showMessage(f"Replay {event.kind}: {event.message}")
+
     def _refresh_signal_explorer(self) -> None:
         names = self._catalog.signal_names()
         saved = next(
@@ -333,8 +366,15 @@ class MainWindow(QMainWindow):
         self.stop_button.setEnabled(False)
         self._worker = None
 
+    def _replay_finished(self) -> None:
+        self.status.showMessage("Trace replay complete")
+        self._replay_worker = None
+
     def closeEvent(self, event) -> None:  # type: ignore[no-untyped-def]
         if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
             self._worker.wait(1_000)
+        if self._replay_worker is not None and self._replay_worker.isRunning():
+            self._replay_worker.request_stop()
+            self._replay_worker.wait(1_000)
         super().closeEvent(event)
