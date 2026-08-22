@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
@@ -121,14 +122,16 @@ class MainWindow(QMainWindow):
         )
         self.trace_table.setAlternatingRowColors(True)
         layout.addWidget(self.trace_table)
-        plot = QLabel(
-            "PLOTS\nSelect decoded signals to render live measurements.",
-            objectName="plotPlaceholder",
-        )
-        plot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        plot.setMinimumHeight(160)
-        plot.setStyleSheet("background: #0d1219; border: 1px dashed #334155; color: #64748b;")
-        layout.addWidget(plot)
+        self.live_plot = pg.PlotWidget(objectName="livePlot")
+        self.live_plot.setAccessibleName("Live signal plot")
+        self.live_plot.setBackground("#0d1219")
+        self.live_plot.showGrid(x=True, y=True, alpha=0.2)
+        self.live_plot.setLabel("left", "Sample")
+        self.live_plot.setLabel("bottom", "Time", units="s")
+        self.live_plot.setTitle("Live sample preview — select a DBC signal for engineering plots")
+        self._plot_curve = self.live_plot.plot(pen=pg.mkPen("#38bdf8", width=2))
+        self.live_plot.setMinimumHeight(180)
+        layout.addWidget(self.live_plot)
         return panel
 
     def _inspector_panel(self) -> QFrame:
@@ -165,7 +168,9 @@ class MainWindow(QMainWindow):
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
         self.status.showMessage(event.message)
-        for frame in self._adapter.frames():
+        frames = list(self._adapter.frames())
+        origin = frames[0].timestamp if frames else 0.0
+        for frame in frames:
             row = self.trace_table.rowCount()
             self.trace_table.insertRow(row)
             cells = [
@@ -178,6 +183,10 @@ class MainWindow(QMainWindow):
             ]
             for column, value in enumerate(cells):
                 self.trace_table.setItem(row, column, QTableWidgetItem(value))
+        self._plot_curve.setData(
+            [frame.timestamp - origin for frame in frames],
+            [frame.data[0] if frame.data else 0 for frame in frames],
+        )
 
     def _stop_acquisition(self) -> None:
         event = self._adapter.disconnect()
