@@ -1,0 +1,221 @@
+"""Recoverable ASC recording with a JSONL sidecar for acquisition events."""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import TextIO
+
+from peaklive.domain import BusEvent, CanFrame, RecordingSettings
+
+
+class RecordingStopped(RuntimeError):
+    """Raised when the writer safely stops due to an integrity condition."""
+
+
+@dataclass(slots=True)
+class CaptureSegment:
+    final_path: Path
+    partial_path: Path
+    event_final_path: Path
+    event_partial_path: Path
+
+
+@dataclass(slots=True)
+class CaptureResult:
+    segments: list[Path] = field(default_factory=list)
+    incomplete: bool = False
+
+
+class AscRecorder:
+    """Write all supplied frames before any UI-specific projection exists."""
+
+    def __init__(self, free_space: Callable[[Path], int] | None = None) -> None:
+        self._free_space = free_space or self._default_free_space
+        self._settings: RecordingSettings | None = None
+        self._profile_name = "measurement"
+        self._started_at: datetime | None = None
+        self._timestamp_origin: float | None = None
+        self._segment_number = 0
+        self._segment: CaptureSegment | None = None
+        self._asc: TextIO | None = None
+        self._events: TextIO | None = None
+        self._result = CaptureResult()
+
+    @property
+    def active(self) -> bool:
+        return self._asc is not None
+
+    def start(
+        self,
+        settings: RecordingSettings,
+        profile_name: str,
+        now: datetime | None = None,
+    ) -> Path:
+        if self.active:
+            raise RuntimeError("A recording is already active")
+        self._settings = settings
+        self._profile_name = profile_name
+        self._started_at = now or datetime.now().astimezone()
+        self._timestamp_origin = None
+        self._segment_number = 0
+        self._result = CaptureResult()
+        return self._open_next_segment()
+
+    def write_frame(self, frame: CanFrame) -> None:
+        self._require_active()
+        self._ensure_space()
+        assert self._asc is not None
+        if self._timestamp_origin is None:
+            self._timestamp_origin = frame.timestamp
+        timestamp = max(0.0, frame.timestamp - self._timestamp_origin)
+        identifier = f"{frame.arbitration_id:X}{'x' if frame.is_extended_id else ''}"
+        direction = "Rx"
+        kind = "r" if frame.is_remote_frame else "d"
+        payload = ""
+        if not frame.is_remote_frame:
+            payload = " " + " ".join(f"{byte:02X}" for byte in frame.data)
+        self._asc.write(
+            f"   {timestamp:.6f} {self._asc_channel(frame.channel)}  {identifier:<15} "
+            f"{direction}   {kind} {frame.dlc}{payload}\n"
+        )
+        self._rotate_if_needed()
+
+    def write_event(self, event: BusEvent) -> None:
+        self._require_active()
+        self._ensure_space()
+        assert self._asc is not None and self._events is not None
+        relative = 0.0
+        if self._timestamp_origin is not None:
+            relative = max(0.0, event.timestamp - self._timestamp_origin)
+        if event.kind == "error_frame":
+            self._asc.write(f"   {relative:.6f} {self._asc_channel(event.channel)}  ErrorFrame\n")
+        else:
+            escaped = event.message.replace("\n", " ")
+            self._asc.write(f"// PeakLive {event.kind}: {escaped}\n")
+        self._events.write(
+            json.dumps(
+                {
+                    "timestamp": event.timestamp,
+                    "kind": event.kind,
+                    "message": event.message,
+                    "channel": event.channel,
+                },
+                sort_keys=True,
+            )
+            + "\n"
+        )
+
+    def stop(self, clean: bool = True) -> CaptureResult:
+        if not self.active:
+            return self._result
+        self._close_segment(clean)
+        return self._result
+
+    def _open_next_segment(self) -> Path:
+        assert self._settings is not None and self._started_at is not None
+        self._segment_number += 1
+        default_directory = Path.home() / "Documents" / "PeakLive" / "Captures"
+        directory = Path(self._settings.directory or default_directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        filename = self._expanded_filename(
+            self._settings,
+            self._profile_name,
+            self._started_at,
+            self._segment_number,
+        )
+        final_path = self._next_available_path(directory / filename)
+        event_final = final_path.with_suffix(".peaklive-events.jsonl")
+        self._segment = CaptureSegment(
+            final_path=final_path,
+            partial_path=final_path.with_suffix(final_path.suffix + ".partial"),
+            event_final_path=event_final,
+            event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
+        )
+        self._asc = self._segment.partial_path.open("w", encoding="utf-8", newline="\n")
+        self._events = self._segment.event_partial_path.open("w", encoding="utf-8", newline="\n")
+        self._asc.write(f"date {self._started_at.strftime('%a %b %d %H:%M:%S %Y')}\n")
+        self._asc.write("base hex  timestamps absolute\ninternal events logged\n")
+        self._asc.write("// PeakLive ASC recording\n")
+        self._asc.write(f"Begin Triggerblock {self._started_at.strftime('%a %b %d %H:%M:%S %Y')}\n")
+        return final_path
+
+    def _close_segment(self, clean: bool) -> None:
+        assert self._segment is not None and self._asc is not None and self._events is not None
+        if clean:
+            self._asc.write("End Triggerblock\n")
+        self._asc.flush()
+        self._events.flush()
+        self._asc.close()
+        self._events.close()
+        if clean:
+            self._segment.partial_path.replace(self._segment.final_path)
+            self._segment.event_partial_path.replace(self._segment.event_final_path)
+            self._result.segments.append(self._segment.final_path)
+        else:
+            self._result.incomplete = True
+        self._asc = None
+        self._events = None
+        self._segment = None
+
+    def _rotate_if_needed(self) -> None:
+        assert self._settings is not None and self._asc is not None
+        if self._asc.tell() < self._settings.rotate_bytes:
+            return
+        self._close_segment(clean=True)
+        self._open_next_segment()
+
+    def _ensure_space(self) -> None:
+        assert self._settings is not None and self._segment is not None
+        available = self._free_space(self._segment.partial_path.parent)
+        if available <= self._settings.stop_free_bytes:
+            self._close_segment(clean=False)
+            raise RecordingStopped("Recording stopped: free disk threshold reached")
+
+    @staticmethod
+    def _expanded_filename(
+        settings: RecordingSettings,
+        profile_name: str,
+        now: datetime,
+        segment: int,
+    ) -> str:
+        safe_profile = re.sub(r"[^A-Za-z0-9._-]+", "_", profile_name).strip("._") or "measurement"
+        values = {
+            "date": now.strftime("%Y-%m-%d"),
+            "time": now.strftime("%H-%M-%S"),
+            "profile": safe_profile,
+            "iteration": settings.iteration,
+            "segment": segment,
+        }
+        filename = settings.filename_template.format(**values)
+        return filename if filename.lower().endswith(".asc") else f"{filename}.asc"
+
+    @staticmethod
+    def _next_available_path(path: Path) -> Path:
+        if not path.exists() and not path.with_suffix(path.suffix + ".partial").exists():
+            return path
+        suffix = 1
+        while True:
+            candidate = path.with_stem(f"{path.stem}_{suffix:02d}")
+            candidate_partial = candidate.with_suffix(candidate.suffix + ".partial")
+            if not candidate.exists() and not candidate_partial.exists():
+                return candidate
+            suffix += 1
+
+    @staticmethod
+    def _asc_channel(channel: str) -> str:
+        match = re.search(r"(\d+)$", channel)
+        return match.group(1) if match else "1"
+
+    @staticmethod
+    def _default_free_space(path: Path) -> int:
+        return shutil.disk_usage(path).free
+
+    def _require_active(self) -> None:
+        if not self.active:
+            raise RuntimeError("No active recording")
