@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import datetime
+from pathlib import Path
 
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
+    QFileDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -23,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.adapters import CanAdapter, default_adapter
+from peaklive.analysis import AmbiguousMessageError, DbcCatalog
 from peaklive.domain import CanFrame, MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileState, ProfileStore
@@ -55,11 +59,14 @@ class MainWindow(QMainWindow):
         self._state: ProfileState = self._store.load()
         self._adapter_factory = adapter_factory
         self._worker: AcquisitionWorker | None = None
+        self._catalog = DbcCatalog()
+        self._selected_signal_name: str | None = None
         self._plot_times: list[float] = []
         self._plot_samples: list[int] = []
         self._plot_origin: float | None = None
         self._build_ui()
         self._select_last_profile()
+        self._load_profile_dbcs()
 
     @property
     def selected_profile(self) -> MeasurementProfile:
@@ -82,6 +89,10 @@ class MainWindow(QMainWindow):
         control_layout.addWidget(self.profile_selector, 1)
         self.mode_label = QLabel(objectName="modeLabel")
         control_layout.addWidget(self.mode_label)
+        self.load_dbc_button = QPushButton("Load DBC", objectName="loadDbcButton")
+        self.load_dbc_button.setAccessibleName("Load DBC")
+        self.load_dbc_button.clicked.connect(self._choose_dbc)
+        control_layout.addWidget(self.load_dbc_button)
         self.start_button = QPushButton(
             translate("acquisition.start"), objectName="startAcquisitionButton"
         )
@@ -121,6 +132,7 @@ class MainWindow(QMainWindow):
         self.signal_explorer = QListWidget(objectName="signalExplorer")
         self.signal_explorer.setAccessibleName("Signal explorer")
         self.signal_explorer.addItems(["No DBC loaded", "Favorites appear here"])
+        self.signal_explorer.currentTextChanged.connect(self._signal_selected)
         layout.addWidget(self.signal_explorer)
         return panel
 
@@ -168,11 +180,71 @@ class MainWindow(QMainWindow):
         self._state.last_profile_id = self._state.profiles[index].identifier
         self._store.save(self._state)
         self._show_profile(self.selected_profile)
+        self._load_profile_dbcs()
 
     def _show_profile(self, profile: MeasurementProfile) -> None:
         mode = profile.controller_mode.value.replace("_", " ")
         recording = "recording enabled" if profile.recording.enabled else "monitor only"
         self.mode_label.setText(f"{profile.bitrate // 1000} kbit/s · {mode} · {recording}")
+
+    def _load_profile_dbcs(self) -> None:
+        self._catalog.clear()
+        for configured_path in self.selected_profile.dbc_paths:
+            path = Path(configured_path)
+            if path.exists():
+                self._catalog.load(path)
+        self._refresh_signal_explorer()
+
+    def _choose_dbc(self) -> None:
+        selected, _ = QFileDialog.getOpenFileName(self, "Load DBC", "", "DBC files (*.dbc)")
+        if selected:
+            self._load_dbc_path(Path(selected))
+
+    def _load_dbc_path(self, path: Path) -> None:
+        try:
+            self._catalog.load(path)
+        except (OSError, UnicodeDecodeError, ValueError) as error:
+            self.status.showMessage(f"Cannot load DBC: {error}")
+            return
+        profile = self.selected_profile
+        if str(path) not in profile.dbc_paths:
+            profile.dbc_paths.append(str(path))
+            profile.updated_at = datetime.now().astimezone().isoformat()
+            self._store.save(self._state)
+        self._refresh_signal_explorer()
+        self.status.showMessage(f"Loaded DBC: {path.name}")
+
+    def _refresh_signal_explorer(self) -> None:
+        names = self._catalog.signal_names()
+        saved = next(
+            (name for name in self.selected_profile.displayed_signals if name in names), None
+        )
+        self.signal_explorer.blockSignals(True)
+        self.signal_explorer.clear()
+        self.signal_explorer.addItems(names or ["No DBC loaded"])
+        if saved:
+            self._selected_signal_name = saved
+            self.signal_explorer.setCurrentRow(names.index(saved))
+        elif self._selected_signal_name in names:
+            self.signal_explorer.setCurrentRow(names.index(self._selected_signal_name))
+        elif names:
+            self._selected_signal_name = names[0]
+            self.signal_explorer.setCurrentRow(0)
+        else:
+            self._selected_signal_name = None
+        self.signal_explorer.blockSignals(False)
+
+    def _signal_selected(self, name: str) -> None:
+        if name and name != "No DBC loaded":
+            self._selected_signal_name = name
+            profile = self.selected_profile
+            profile.displayed_signals = [name]
+            profile.updated_at = datetime.now().astimezone().isoformat()
+            self._store.save(self._state)
+            self._plot_times.clear()
+            self._plot_samples.clear()
+            self._plot_origin = None
+            self.live_plot.setTitle(f"Live: {name}")
 
     def _start_acquisition(self) -> None:
         if self._worker and self._worker.isRunning():
@@ -204,10 +276,11 @@ class MainWindow(QMainWindow):
             ]
             for column, value in enumerate(cells):
                 self.trace_table.setItem(row, column, QTableWidgetItem(value))
-            if self._plot_origin is None:
-                self._plot_origin = frame.timestamp
-            self._plot_times.append(frame.timestamp - self._plot_origin)
-            self._plot_samples.append(frame.data[0] if frame.data else 0)
+            value = self._decoded_plot_value(frame)
+            if value is None and self._selected_signal_name is None:
+                value = frame.data[0] if frame.data else 0
+            if value is not None:
+                self._append_plot_value(frame.timestamp, value)
         overflow = self.trace_table.rowCount() - 5_000
         if overflow > 0:
             for _ in range(overflow):
@@ -219,6 +292,33 @@ class MainWindow(QMainWindow):
             self._plot_times,
             self._plot_samples,
         )
+
+    def _decoded_plot_value(self, frame: CanFrame) -> float | None:
+        if self._selected_signal_name is None:
+            return None
+        try:
+            decoded = self._catalog.decode(frame)
+        except AmbiguousMessageError as error:
+            self.status.showMessage(f"DBC conflict: {error}")
+            return None
+        for signal in decoded:
+            if f"{signal.message_name}.{signal.signal_name}" != self._selected_signal_name:
+                continue
+            if isinstance(signal.value, int | float):
+                self.inspector.setText(
+                    (
+                        f"{signal.message_name}.{signal.signal_name} = "
+                        f"{signal.value} {signal.unit or ''}"
+                    ).strip()
+                )
+                return float(signal.value)
+        return None
+
+    def _append_plot_value(self, timestamp: float, value: float | int) -> None:
+        if self._plot_origin is None:
+            self._plot_origin = timestamp
+        self._plot_times.append(timestamp - self._plot_origin)
+        self._plot_samples.append(value)
 
     def _stop_acquisition(self) -> None:
         if self._worker is not None:

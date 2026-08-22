@@ -41,6 +41,21 @@ class DbcCatalog:
     def definitions(self) -> tuple[DbcDefinition, ...]:
         return tuple(self._definitions)
 
+    def signal_names(self) -> tuple[str, ...]:
+        """Return stable display names suitable for a signal-selection UI."""
+        names = {
+            f"{message.name}.{signal.name}"
+            for definition in self._definitions
+            for message in definition.database.messages
+            for signal in message.signals
+        }
+        return tuple(sorted(names))
+
+    def clear(self) -> None:
+        """Forget transient DBC definitions when the operator changes profile."""
+        self._definitions.clear()
+        self._resolutions.clear()
+
     def load(self, path: Path) -> DbcDefinition:
         content = path.read_bytes()
         digest = sha256(content).hexdigest()
