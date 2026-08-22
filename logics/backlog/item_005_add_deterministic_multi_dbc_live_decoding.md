@@ -1,14 +1,14 @@
 ## item_005_add_deterministic_multi_dbc_live_decoding - Add deterministic multi-DBC live decoding
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: DBC decoding
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:50
+> Indicators reviewed: 2026-08-22 12:10:33
 
 # AI Context
 - Summary: Adds a content-addressed multi-DBC catalog, explicit arbitration-ID conflict resolution, and demand-driven live decoding without changing raw frames.

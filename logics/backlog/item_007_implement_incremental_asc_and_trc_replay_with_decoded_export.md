@@ -1,14 +1,14 @@
 ## item_007_implement_incremental_asc_and_trc_replay_with_decoded_export - Implement incremental ASC and TRC replay with decoded export
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: Offline analysis
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:50
+> Indicators reviewed: 2026-08-22 12:10:33
 
 # AI Context
 - Summary: Opens ASC and supported text TRC captures incrementally, preserves anomalies, supports bounded navigation, and streams decoded CSV/Parquet exports.
