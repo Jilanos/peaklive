@@ -16,13 +16,15 @@ decorative dashboard features.
 ### Live acquisition
 
 1. Start PeakLive and inspect detected CAN interfaces.
-2. Select one channel, controller mode, and a known bitrate or run the assisted
-   bitrate scan.
-3. Connect and see an explicit connection and bus-health state.
+2. Select or edit a named measurement profile containing the channel,
+   controller mode, bitrate, DBCs, favorites, plots, filters, and recording
+   policy.
+3. Select **Start Acquisition** and see an explicit connection, recording, and
+   bus-health state.
 4. Observe chronological raw frames and decoded messages.
 5. Filter what is displayed without changing what is recorded.
 6. Select decoded signals and plot them in real time.
-7. Start and stop an ASC recording without interrupting acquisition.
+7. Finalize the configured recording with **Stop Acquisition**.
 8. Recover cleanly from a dongle disconnect, bus error, or application restart.
 
 ### Offline analysis
@@ -37,15 +39,18 @@ decorative dashboard features.
 
 Included:
 
-- Windows 10/11 x64 desktop installation for three internal users;
+- Windows 10/11 x64 desktop installation for three internal users, with an
+  English-only MVP interface;
 - one active Classic CAN channel;
 - application-level receive-only operation;
 - normal receive and passive listen-only controller modes when supported;
-- manual common bitrates and an assisted, non-guaranteed bitrate scan;
+- manual 125/250/500/1000 kbit/s selection and an assisted, non-guaranteed
+  bitrate scan over the same initial set;
 - complete ASC recording with preserved error and connection events;
 - ASC and supported text TRC replay;
 - multi-DBC decoding, live trace, live plots, and decoded export;
 - local settings, recent sessions, and layout persistence;
+- named measurement profiles and restoration of the last selected profile;
 - a visual language aligned with the companion trace-analysis product.
 
 Excluded from the MVP:
@@ -56,6 +61,26 @@ Excluded from the MVP:
 - multi-channel synchronized capture;
 - CAN FD, LIN, and protocol-specific tooling;
 - automatic updates and code-signing infrastructure.
+- detachable/multi-monitor panels, while keeping UI ownership boundaries able
+  to support them later.
+
+## Measurement profiles and acquisition controls
+
+A named measurement profile stores the selected adapter/channel, bitrate,
+controller mode, ordered DBC set and conflict choices, favorites, displayed
+signals, graph layout, trace filters, capture directory, recording enablement,
+and filename template. The last selected profile is restored and displayed at
+startup, but the bus stays disconnected until the user acts.
+
+The MVP uses the unambiguous English labels **Start Acquisition** and **Stop
+Acquisition**. Starting acquisition applies the visible profile and, when that
+profile enables recording, opens the ASC session as part of the same operation.
+Stopping acquisition finalizes it. A monitor-only profile may disable recording.
+
+Recording templates support at least `{date}`, `{time}`, `{profile}`, and a
+zero-padded configurable `{iteration}` token. The iteration value is visible
+before starting and advances without overwriting an existing capture. The
+default template is `{date}_{time}_{profile}_{iteration:03d}.asc`.
 
 ## Controller-mode language
 
@@ -102,6 +127,7 @@ be detected and recovered.
 - recover a recording interrupted by process termination without silently
   presenting it as a cleanly closed capture.
 
-These are product acceptance targets; exact benchmark hardware and synthetic
-traffic fixtures will be recorded during the first implementation task.
-
+These are product acceptance targets. Available real ASC files seed realistic
+replay tests; deterministic fake-adapter generators provide saturated traffic,
+driver overruns, bus-state transitions, disconnects, malformed input, and other
+edge cases that are difficult to collect safely on the available bus.

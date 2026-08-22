@@ -43,8 +43,10 @@ flowchart LR
 
 ### Desktop shell
 
-The Qt shell owns application lifetime, windows, dock layouts, dialogs,
-keyboard commands, and persistent user preferences. It adopts the existing
+The Qt shell owns application lifetime, windows, panel layout, dialogs,
+keyboard commands, and persistent user preferences. Detachable/multi-monitor
+panels are deferred from the MVP, but presentation ownership must not prevent
+adding them later. The shell adopts the existing
 companion tool's visual vocabulary—dark instrument surface, signal explorer,
 trace table, stacked plots, inspector, and A/B measurement cursors—without
 embedding a browser or local web server.
@@ -129,9 +131,18 @@ must report that the recording is incomplete rather than claim losslessness.
 
 Application state is stored below `%LOCALAPPDATA%/PeakLive/`. Captures default
 to a user-selectable directory under Documents. Real captures and DBC files are
-never copied into the source repository. Settings include recent DBCs, display
-filters, plot selection, window layout, bitrate, controller mode, and capture
-directory, but never silently reconnect to a bus on application launch.
+never copied into the source repository. Named, schema-versioned measurement
+profiles include adapter/channel, bitrate, controller mode, ordered DBCs and
+conflict choices, favorites, display filters, plotted signals, panel layout,
+capture directory, recording enablement, filename template, and visible
+iteration. The last selected profile is restored at launch, but PeakLive never
+silently reconnects to a bus.
+
+The initial bitrate catalog is 125/250/500/1000 kbit/s. The English-only MVP
+uses **Start Acquisition** and **Stop Acquisition**; recording begins and ends
+with that lifecycle when enabled by the active profile. Filename expansion is
+collision-safe and supports date, time, profile, and zero-padded iteration
+tokens.
 
 ## Failure model
 
@@ -151,7 +162,8 @@ directory, but never silently reconnect to a bus on application launch.
 PeakLive has no listening network socket, cloud service, account, analytics, or
 automatic upload. Imported and recorded data stays on local disks selected by
 the user. Updates are manual in the MVP. Build provenance and dependency
-licenses are recorded; executable signing is a later delivery decision.
+licenses are recorded. The internal MVP installer may be unsigned; its checksum
+and build provenance remain part of the release evidence.
 
 ## Evolution seams
 
@@ -163,4 +175,3 @@ licenses are recorded; executable signing is a later delivery decision.
   not reuse or weaken the receive-only path;
 - protocol analyzers, dashboards, alarms, and scripting consume normalized
   events and decoded samples as optional modules.
-

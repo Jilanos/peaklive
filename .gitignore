@@ -19,6 +19,7 @@ dist/
 # Local application and capture artifacts
 .peaklive/
 captures/
+test-data-private/
 *.partial
 *.peaklive-events.jsonl
 

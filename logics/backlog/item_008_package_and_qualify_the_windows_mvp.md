@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Windows delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:49:07
+> Indicators reviewed: 2026-08-22 12:02:48
 
 # AI Context
 - Summary: Produces the self-contained Windows installer and repeatable clean-machine/hardware evidence required for the three-user MVP rollout.
@@ -21,7 +21,7 @@
 
 # Scope
 - In:
-  - Pinned production build, bundled Python/Qt runtime, Windows x64 installer, shortcuts, uninstall, and local-data retention policy.
+  - Pinned production build, bundled Python/Qt runtime, unsigned Windows 10/11 x64 installer, shortcuts, uninstall, and local-data retention policy.
   - Driver prerequisite detection and actionable launch diagnostics.
   - Clean-machine install smoke test, dependency notices, operator quick start, and repeatable hardware acceptance runbook.
   - Reference-load performance and reconnect qualification.
@@ -29,7 +29,7 @@
   - Automatic updates, mandatory executable signing, enterprise deployment tooling, and public support commitments.
 
 # Acceptance criteria
-- AC1: The installer deploys, launches, and uninstalls on a clean supported Windows x64 machine without a separate Python installation.
+- AC1: The unsigned installer deploys, launches, and uninstalls on clean supported Windows 10/11 x64 machines without a separate Python installation and documents the expected trust prompt.
 - AC2: Missing or incompatible hardware drivers produce an actionable diagnostic while offline replay remains usable.
 - AC3: Uninstall behaviour clearly offers or documents retention of captures, DBC references, and user settings.
 - AC4: The documented hardware runbook verifies connect, 60-minute load, display latency, record integrity, physical reconnect, replay, and export.

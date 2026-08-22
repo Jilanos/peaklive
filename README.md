@@ -11,9 +11,12 @@ listen-only mode.
 
 ## MVP capabilities
 
-- installable, self-contained Windows application;
+- installable, self-contained Windows 10/11 x64 application with an English UI;
 - one Classic USB CAN channel, with a vendor-neutral adapter boundary;
-- manual bitrate selection and an optional assisted bitrate scan;
+- manual 125/250/500/1000 kbit/s selection and an optional assisted bitrate scan;
+- named measurement profiles containing bus, DBC, favorites, plots, filters,
+  and recording settings, with the last profile selected at startup;
+- explicit **Start Acquisition** and **Stop Acquisition** controls;
 - robust connect, disconnect, error-state, and reconnect handling;
 - chronological live trace with display-only filtering;
 - complete recording of frames and acquisition events to ASC plus metadata;
@@ -32,4 +35,3 @@ listen-only mode.
 - [ADR 0003: Hardware adapter boundary](docs/adr/0003-hardware-adapter-boundary.md)
 
 The ready-to-develop workflow is tracked under `logics/`.
-

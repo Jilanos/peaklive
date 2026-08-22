@@ -27,19 +27,19 @@
     ],
     "acceptance_criteria": [
       "AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.",
-      "AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected common bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.",
+      "AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected 125/250/500/1000 kbit/s bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.",
       "AC3: An assisted bitrate scan can evaluate common rates without claiming certainty on a quiet or acknowledgement-dependent bus, and reports confidence and failure reasons.",
       "AC4: Physical disconnect, reconnect, bus warning/passive/off, driver overrun, and unsupported configuration states are visible, preserved as events, and do not require an application restart for recovery where the driver permits.",
-      "AC5: Active recording writes every frame delivered by the adapter regardless of display filters, records representable errors/events in ASC, preserves non-portable events in a JSONL sidecar, and marks any known loss or unclean close.",
+      "AC5: Start Acquisition applies the visible profile and opens recording when configured; Stop Acquisition finalizes it, while every adapter-delivered frame is recorded regardless of display filters, representable errors/events remain in ASC, non-portable events remain in a JSONL sidecar, and known loss or unclean close is marked.",
       "AC6: A 60-minute practical-maximum Classic CAN load test completes without recorder queue overflow on the documented reference machine, while the UI remains interactive and any upstream driver loss remains explicitly detectable.",
       "AC7: The live trace presents chronological raw frames and decoded messages with identifier, direction/type, DLC, payload, timestamp/delta, channel, and error/state information; filters affect presentation only.",
       "AC8: Users can load multiple DBC files, resolve non-equivalent arbitration-ID conflicts deterministically, inspect decoded values and enums, and retain undecodable frames unchanged.",
       "AC9: Users can select and render at least eight live decoded signals with a typical presentation latency below 250 ms, bounded memory, zoom/pan, and A/B measurement cursors under the reference load.",
       "AC10: PeakLive replays ASC and supported text TRC files incrementally, preserves malformed records as anomalies where recovery is safe, and supports large traces without loading the complete file into UI memory.",
       "AC11: Users can export selected decoded signals and time ranges to streamed CSV and Parquet outputs.",
-      "AC12: Settings, recent DBCs, filters, plots, layout, bitrate, controller mode, and capture path persist locally, but the application never silently reconnects to a live bus on startup.",
+      "AC12: Named measurement profiles persist channel, bitrate, controller mode, ordered DBCs/conflict choices, favorites, filters, plots, layout, recording policy, capture path, and collision-safe date/time/profile/iteration filename template; the last profile is displayed at startup without silently reconnecting.",
       "AC13: The application opens no listening network service, performs no upload or analytics, and stores captures, DBC references, caches, and settings only in documented local paths.",
-      "AC14: Automated tests exercise the domain core with fake/replay adapters, parsing and DBC fixtures, recorder recovery, display-only filtering, error preservation, and an install smoke test; hardware acceptance steps are documented and repeatable."
+      "AC14: Automated tests exercise the domain core with fake/replay adapters, synthetic saturated/error traffic, available anonymized real captures, parsing and DBC fixtures, recorder recovery, display-only filtering, error preservation, and an install smoke test; hardware acceptance steps are documented and repeatable."
     ]
   },
   "product": {
@@ -72,7 +72,7 @@
       ],
       "scope_in": [
         "Python and PySide6 package layout with domain, application, adapter, infrastructure, and UI boundaries.",
-        "Local path policy, settings schema, startup lifecycle, structured logging, fake adapter, and CI test baseline.",
+        "Local path policy, named measurement-profile schema, last-profile restoration without auto-connect, English UI, structured logging, fake adapter, and CI test baseline.",
         "Instrument-style shell matching the companion product's visual vocabulary."
       ],
       "scope_out": [
@@ -81,7 +81,7 @@
       "acceptance_criteria": [
         "AC1: A developer can create the pinned environment, run the desktop shell, and execute unit and Qt smoke tests from documented commands.",
         "AC2: Domain modules do not import Qt or a concrete vendor API, and a deterministic fake adapter can drive the shell.",
-        "AC3: Settings use documented local paths, persist schema-versioned non-sensitive state, and never auto-connect at startup.",
+        "AC3: Settings use documented local paths, persist schema-versioned named profiles, restore the last selected profile, and never auto-connect at startup.",
         "AC4: The shell establishes the trace, signal explorer, plots, and inspector workspace regions with keyboard-accessible navigation.",
         "AC5: CI enforces formatting, static checks, unit tests, and a headless UI launch test."
       ]
@@ -97,7 +97,7 @@
       ],
       "scope_in": [
         "Capability-driven adapter port and first Classic USB Windows implementation.",
-        "Channel discovery, manual common bitrates, normal receive and passive listen-only when supported.",
+        "Channel discovery, manual 125/250/500/1000 kbit/s rates, normal receive and passive listen-only when supported.",
         "Advisory bitrate scan, timestamps, bus/error events, disconnect, bounded retry, and reconnect.",
         "Fake and hardware-in-loop acceptance harnesses."
       ],
@@ -106,7 +106,7 @@
       ],
       "acceptance_criteria": [
         "AC1: The adapter enumerates supported channels and capability flags and rejects unsupported configurations explicitly.",
-        "AC2: Manual bitrate connection produces normalized frames and state events without touching Qt objects from the adapter worker.",
+        "AC2: Start Acquisition applies a visible saved profile and connects at 125/250/500/1000 kbit/s, while Stop Acquisition closes the session; both produce normalized state events without touching Qt objects from the adapter worker.",
         "AC3: Assisted scan evaluates configured common rates in passive mode when supported and returns evidence, confidence, and inconclusive reasons.",
         "AC4: Disconnect, reconnect, warning, passive, bus-off, and driver overrun scenarios produce deterministic domain events and actionable UI state.",
         "AC5: Receive-only and passive listen-only semantics are named and tested independently; no transmit API is reachable from the MVP UI."
@@ -124,6 +124,7 @@
       "scope_in": [
         "Dedicated bounded recorder queue and worker, interoperable ASC writer, JSONL event sidecar, flush policy, and metrics.",
         "Partial-session markers, atomic finalization, interrupted-session detection, and recovery workflow.",
+        "Profile-controlled recording lifecycle and collision-safe date/time/profile/configurable-iteration filename expansion.",
         "Disk-full, permission, driver-loss, and recorder-overflow behaviour.",
         "Reference-load benchmark and capture-integrity comparison harness."
       ],
@@ -131,11 +132,11 @@
         "Compressed proprietary formats and cloud-backed capture storage."
       ],
       "acceptance_criteria": [
-        "AC1: Recording receives normalized events before all UI filtering and writes every adapter-delivered frame to ASC.",
+        "AC1: When enabled by the visible profile, Start Acquisition opens recording before UI filtering and Stop Acquisition finalizes it; every adapter-delivered frame is written to ASC.",
         "AC2: Driver, connection, and recording events are represented in ASC comments where portable and in a same-basename JSONL sidecar.",
         "AC3: An overrun, queue overflow, disk error, or unclean close marks the session incomplete and is never reported as a clean capture.",
         "AC4: Restart detects partial sessions and offers non-destructive recovery/finalization while preserving original artifacts.",
-        "AC5: The documented 60-minute reference load demonstrates recorder integrity and records queue high-water and driver-loss evidence."
+        "AC5: Deterministic saturated/error traffic plus the available real capture baseline support a documented 60-minute load test that demonstrates recorder integrity and records queue high-water and driver-loss evidence."
       ]
     },
     {
@@ -252,7 +253,7 @@
         "Source execution is not an acceptable delivery path for the target engineering users."
       ],
       "scope_in": [
-        "Pinned production build, bundled Python/Qt runtime, Windows x64 installer, shortcuts, uninstall, and local-data retention policy.",
+        "Pinned production build, bundled Python/Qt runtime, unsigned Windows 10/11 x64 installer, shortcuts, uninstall, and local-data retention policy.",
         "Driver prerequisite detection and actionable launch diagnostics.",
         "Clean-machine install smoke test, dependency notices, operator quick start, and repeatable hardware acceptance runbook.",
         "Reference-load performance and reconnect qualification."
@@ -261,7 +262,7 @@
         "Automatic updates, mandatory executable signing, enterprise deployment tooling, and public support commitments."
       ],
       "acceptance_criteria": [
-        "AC1: The installer deploys, launches, and uninstalls on a clean supported Windows x64 machine without a separate Python installation.",
+        "AC1: The unsigned installer deploys, launches, and uninstalls on clean supported Windows 10/11 x64 machines without a separate Python installation and documents the expected trust prompt.",
         "AC2: Missing or incompatible hardware drivers produce an actionable diagnostic while offline replay remains usable.",
         "AC3: Uninstall behaviour clearly offers or documents retention of captures, DBC references, and user settings.",
         "AC4: The documented hardware runbook verifies connect, 60-minute load, display latency, record integrity, physical reconnect, replay, and export.",

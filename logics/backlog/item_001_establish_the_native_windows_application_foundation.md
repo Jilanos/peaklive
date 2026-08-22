@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Desktop foundation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:49
+> Indicators reviewed: 2026-08-22 12:02:48
 
 # AI Context
 - Summary: Creates the native Qt shell, clean domain boundaries, local settings contract, fake adapter, and continuous test baseline used by every later slice.
@@ -22,7 +22,7 @@
 # Scope
 - In:
   - Python and PySide6 package layout with domain, application, adapter, infrastructure, and UI boundaries.
-  - Local path policy, settings schema, startup lifecycle, structured logging, fake adapter, and CI test baseline.
+  - Local path policy, named measurement-profile schema, last-profile restoration without auto-connect, English UI, structured logging, fake adapter, and CI test baseline.
   - Instrument-style shell matching the companion product's visual vocabulary.
 - Out:
   - Physical CAN acquisition, complete feature panels, and production installer polish.
@@ -30,7 +30,7 @@
 # Acceptance criteria
 - AC1: A developer can create the pinned environment, run the desktop shell, and execute unit and Qt smoke tests from documented commands.
 - AC2: Domain modules do not import Qt or a concrete vendor API, and a deterministic fake adapter can drive the shell.
-- AC3: Settings use documented local paths, persist schema-versioned non-sensitive state, and never auto-connect at startup.
+- AC3: Settings use documented local paths, persist schema-versioned named profiles, restore the last selected profile, and never auto-connect at startup.
 - AC4: The shell establishes the trace, signal explorer, plots, and inspector workspace regions with keyboard-accessible navigation.
 - AC5: CI enforces formatting, static checks, unit tests, and a headless UI launch test.
 

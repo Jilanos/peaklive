@@ -6,7 +6,7 @@
 > Related task: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:49
+> Indicators reviewed: 2026-08-22 12:02:48
 
 # Overview
 A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis.
@@ -38,8 +38,8 @@ flowchart LR
 - Provide cloud accounts, remote collaboration, analytics, or automatic update services.
 
 # Scope and guardrails
-- In: one Classic CAN channel, explicit normal-receive/passive modes, assisted bitrate scan, robust reconnect, complete ASC recording plus event metadata, live trace, multi-DBC decode, bounded plots, ASC/TRC replay, CSV/Parquet export, local settings, and Windows x64 delivery.
-- Out: frame transmission, dashboards, alarms, scripting, cloud features, CAN FD, synchronized multi-channel capture, automatic updates, and mandatory executable signing for the MVP.
+- In: one Classic CAN channel, 125/250/500/1000 kbit/s configuration, explicit normal-receive/passive modes, assisted bitrate scan, robust reconnect, complete ASC recording plus event metadata, named measurement profiles, live trace, multi-DBC decode, bounded plots, ASC/TRC replay, CSV/Parquet export, English UI, and unsigned Windows 10/11 x64 delivery.
+- Out: frame transmission, dashboards, alarms, scripting, cloud features, CAN FD, synchronized multi-channel capture, detachable/multi-monitor panels, automatic updates, and executable signing for the MVP.
 - Guardrail: presentation filters and bounded UI buffers never define what enters a recording.
 - Guardrail: known driver loss, recorder overflow, or unclean termination must remain visible and must invalidate a clean-capture claim.
 - Guardrail: application-level receive-only and true passive listen-only are different controller behaviours and must be presented separately.
@@ -51,6 +51,9 @@ flowchart LR
 - Use ASC as the interoperable frame artifact and a same-basename JSONL sidecar for non-portable acquisition events and integrity metadata.
 - Decode visible, inspected, plotted, or exported data on demand; use chunked DuckDB/Arrow-backed processing for large offline traces.
 - Keep the product offline and local-only, and never reconnect to a live bus silently at startup.
+- Restore and display the last named measurement profile at startup while requiring an explicit Start Acquisition action.
+- Bind recording to Start Acquisition/Stop Acquisition when enabled by the profile, with collision-safe date/time/profile/iteration filename templates.
+- Use deterministic synthetic traffic/error generators to cover load and edge cases absent from the available real ASC samples.
 
 # Success signals
 - A documented 60-minute maximum-practical-load run completes without recorder queue overflow on the reference workstation.
@@ -60,10 +63,8 @@ flowchart LR
 - A clean Windows machine can install, launch, use offline replay, detect the adapter prerequisite, and uninstall the packaged application.
 
 # Open product decisions
-- Confirm the exact supported Windows editions and oldest build used by the three engineers.
-- Select the default common bitrate list and timeout/confidence policy for assisted scanning.
-- Select default capture directory, filename template, rotation thresholds, and free-space warning policy.
-- Decide whether the MVP installer is unsigned or whether code signing becomes a release gate.
+- Confirm whether Windows 10 support can be limited to 22H2 and record the exact Windows 11 builds used by the team.
+- Select capture rotation thresholds and the free-space warning policy.
 - Choose the public repository license before code distribution starts.
 
 # References

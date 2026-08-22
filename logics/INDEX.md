@@ -18,7 +18,7 @@ _None_
 
 | Doc | Title | Status | Owner | Progress | Path |
 |---|---|---|---|---|---|
-| [req_000_deliver_the_peaklive_windows_can_workstation_mvp](request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md) | Deliver the PeakLive Windows CAN workstation MVP | Draft |  |  | request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md |
+| [req_000_deliver_the_peaklive_windows_can_workstation_mvp](request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md) | Deliver the PeakLive Windows CAN workstation MVP | Ready |  |  | request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md |
 
 ## Backlog
 

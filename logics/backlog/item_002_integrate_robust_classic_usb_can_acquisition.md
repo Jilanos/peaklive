@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: CAN acquisition
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:49
+> Indicators reviewed: 2026-08-22 12:02:48
 
 # AI Context
 - Summary: Adds the first capability-driven Windows Classic USB CAN adapter with explicit controller modes, assisted bitrate scan, bus states, and reconnect behaviour.
@@ -22,7 +22,7 @@
 # Scope
 - In:
   - Capability-driven adapter port and first Classic USB Windows implementation.
-  - Channel discovery, manual common bitrates, normal receive and passive listen-only when supported.
+  - Channel discovery, manual 125/250/500/1000 kbit/s rates, normal receive and passive listen-only when supported.
   - Advisory bitrate scan, timestamps, bus/error events, disconnect, bounded retry, and reconnect.
   - Fake and hardware-in-loop acceptance harnesses.
 - Out:
@@ -30,7 +30,7 @@
 
 # Acceptance criteria
 - AC1: The adapter enumerates supported channels and capability flags and rejects unsupported configurations explicitly.
-- AC2: Manual bitrate connection produces normalized frames and state events without touching Qt objects from the adapter worker.
+- AC2: Start Acquisition applies a visible saved profile and connects at 125/250/500/1000 kbit/s, while Stop Acquisition closes the session; both produce normalized state events without touching Qt objects from the adapter worker.
 - AC3: Assisted scan evaluates configured common rates in passive mode when supported and returns evidence, confidence, and inconclusive reasons.
 - AC4: Disconnect, reconnect, warning, passive, bus-off, and driver overrun scenarios produce deterministic domain events and actionable UI state.
 - AC5: Receive-only and passive listen-only semantics are named and tested independently; no transmit API is reachable from the MVP UI.

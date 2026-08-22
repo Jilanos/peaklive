@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Windows CAN diagnostics
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 11:48:49
+> Indicators reviewed: 2026-08-22 12:02:47
 
 # AI Context
 - Summary: Defines the complete receive-only Windows MVP, from one live Classic CAN channel through trustworthy recording, DBC analysis, plots, replay, export, and installation.
@@ -31,19 +31,19 @@
 
 # Acceptance criteria
 - AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.
-- AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected common bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.
+- AC2: PeakLive discovers the supported Classic USB CAN channel, connects with a manually selected 125/250/500/1000 kbit/s bitrate, exposes normal receive versus passive listen-only when supported, and never exposes frame transmission in the MVP.
 - AC3: An assisted bitrate scan can evaluate common rates without claiming certainty on a quiet or acknowledgement-dependent bus, and reports confidence and failure reasons.
 - AC4: Physical disconnect, reconnect, bus warning/passive/off, driver overrun, and unsupported configuration states are visible, preserved as events, and do not require an application restart for recovery where the driver permits.
-- AC5: Active recording writes every frame delivered by the adapter regardless of display filters, records representable errors/events in ASC, preserves non-portable events in a JSONL sidecar, and marks any known loss or unclean close.
+- AC5: Start Acquisition applies the visible profile and opens recording when configured; Stop Acquisition finalizes it, while every adapter-delivered frame is recorded regardless of display filters, representable errors/events remain in ASC, non-portable events remain in a JSONL sidecar, and known loss or unclean close is marked.
 - AC6: A 60-minute practical-maximum Classic CAN load test completes without recorder queue overflow on the documented reference machine, while the UI remains interactive and any upstream driver loss remains explicitly detectable.
 - AC7: The live trace presents chronological raw frames and decoded messages with identifier, direction/type, DLC, payload, timestamp/delta, channel, and error/state information; filters affect presentation only.
 - AC8: Users can load multiple DBC files, resolve non-equivalent arbitration-ID conflicts deterministically, inspect decoded values and enums, and retain undecodable frames unchanged.
 - AC9: Users can select and render at least eight live decoded signals with a typical presentation latency below 250 ms, bounded memory, zoom/pan, and A/B measurement cursors under the reference load.
 - AC10: PeakLive replays ASC and supported text TRC files incrementally, preserves malformed records as anomalies where recovery is safe, and supports large traces without loading the complete file into UI memory.
 - AC11: Users can export selected decoded signals and time ranges to streamed CSV and Parquet outputs.
-- AC12: Settings, recent DBCs, filters, plots, layout, bitrate, controller mode, and capture path persist locally, but the application never silently reconnects to a live bus on startup.
+- AC12: Named measurement profiles persist channel, bitrate, controller mode, ordered DBCs/conflict choices, favorites, filters, plots, layout, recording policy, capture path, and collision-safe date/time/profile/iteration filename template; the last profile is displayed at startup without silently reconnecting.
 - AC13: The application opens no listening network service, performs no upload or analytics, and stores captures, DBC references, caches, and settings only in documented local paths.
-- AC14: Automated tests exercise the domain core with fake/replay adapters, parsing and DBC fixtures, recorder recovery, display-only filtering, error preservation, and an install smoke test; hardware acceptance steps are documented and repeatable.
+- AC14: Automated tests exercise the domain core with fake/replay adapters, synthetic saturated/error traffic, available anonymized real captures, parsing and DBC fixtures, recorder recovery, display-only filtering, error preservation, and an install smoke test; hardware acceptance steps are documented and repeatable.
 
 # Definition of Ready (DoR)
 - [x] Problem statement is explicit and user impact is clear.
