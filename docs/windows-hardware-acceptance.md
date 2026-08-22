@@ -22,3 +22,11 @@ installed and a known active Classic CAN bus.
 
 Record Windows version, adapter driver version, bus bitrate, profile name,
 capture paths, and any driver loss in the release evidence.
+
+## Recorded preflight evidence
+
+On 2026-08-22, the Windows runtime detected `PCAN_USBBUS1` as a Classic USB
+adapter without CAN FD support. Opening and closing a passive 500 kbit/s
+connection succeeded. A five-second passive receive probe observed zero frames,
+so a connected active bus at its known bitrate is still required for the
+load/reconnect and recording portions of this checklist.
