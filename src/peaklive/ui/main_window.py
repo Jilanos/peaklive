@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -20,10 +22,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from peaklive.adapters import FakeCanAdapter
-from peaklive.domain import MeasurementProfile
+from peaklive.adapters import CanAdapter, default_adapter
+from peaklive.domain import CanFrame, MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileState, ProfileStore
+from peaklive.services.worker import AcquisitionWorker
 
 APP_STYLE = """
 QMainWindow { background: #10151d; color: #e6edf7; }
@@ -40,13 +43,21 @@ QStatusBar { background: #0d1219; color: #94a3b8; }
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, profile_store: ProfileStore | None = None) -> None:
+    def __init__(
+        self,
+        profile_store: ProfileStore | None = None,
+        adapter_factory: Callable[[], CanAdapter] = default_adapter,
+    ) -> None:
         super().__init__()
         self.setWindowTitle(translate("app.title"))
         self.setMinimumSize(1024, 680)
         self._store = profile_store or ProfileStore()
         self._state: ProfileState = self._store.load()
-        self._adapter = FakeCanAdapter()
+        self._adapter_factory = adapter_factory
+        self._worker: AcquisitionWorker | None = None
+        self._plot_times: list[float] = []
+        self._plot_samples: list[int] = []
+        self._plot_origin: float | None = None
         self._build_ui()
         self._select_last_profile()
 
@@ -107,10 +118,10 @@ class MainWindow(QMainWindow):
 
     def _signal_panel(self) -> QFrame:
         panel, layout = self._panel(translate("workspace.signals"))
-        signals = QListWidget(objectName="signalExplorer")
-        signals.setAccessibleName("Signal explorer")
-        signals.addItems(["No DBC loaded", "Favorites appear here"])
-        layout.addWidget(signals)
+        self.signal_explorer = QListWidget(objectName="signalExplorer")
+        self.signal_explorer.setAccessibleName("Signal explorer")
+        self.signal_explorer.addItems(["No DBC loaded", "Favorites appear here"])
+        layout.addWidget(self.signal_explorer)
         return panel
 
     def _trace_panel(self) -> QFrame:
@@ -128,7 +139,7 @@ class MainWindow(QMainWindow):
         self.live_plot.showGrid(x=True, y=True, alpha=0.2)
         self.live_plot.setLabel("left", "Sample")
         self.live_plot.setLabel("bottom", "Time", units="s")
-        self.live_plot.setTitle("Live sample preview — select a DBC signal for engineering plots")
+        self.live_plot.setTitle("Live sample preview")
         self._plot_curve = self.live_plot.plot(pen=pg.mkPen("#38bdf8", width=2))
         self.live_plot.setMinimumHeight(180)
         layout.addWidget(self.live_plot)
@@ -164,12 +175,22 @@ class MainWindow(QMainWindow):
         self.mode_label.setText(f"{profile.bitrate // 1000} kbit/s · {mode} · {recording}")
 
     def _start_acquisition(self) -> None:
-        event = self._adapter.connect(self.selected_profile)
+        if self._worker and self._worker.isRunning():
+            return
+        self._plot_times.clear()
+        self._plot_samples.clear()
+        self._plot_origin = None
+        self._worker = AcquisitionWorker(self._adapter_factory(), self.selected_profile)
+        self._worker.frames_received.connect(self._render_frames)
+        self._worker.status_changed.connect(self.status.showMessage)
+        self._worker.acquisition_failed.connect(self._acquisition_failed)
+        self._worker.finished.connect(self._acquisition_finished)
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.status.showMessage(event.message)
-        frames = list(self._adapter.frames())
-        origin = frames[0].timestamp if frames else 0.0
+        self.status.showMessage("Opening CAN channel…")
+        self._worker.start()
+
+    def _render_frames(self, frames: list[CanFrame]) -> None:
         for frame in frames:
             row = self.trace_table.rowCount()
             self.trace_table.insertRow(row)
@@ -183,13 +204,37 @@ class MainWindow(QMainWindow):
             ]
             for column, value in enumerate(cells):
                 self.trace_table.setItem(row, column, QTableWidgetItem(value))
+            if self._plot_origin is None:
+                self._plot_origin = frame.timestamp
+            self._plot_times.append(frame.timestamp - self._plot_origin)
+            self._plot_samples.append(frame.data[0] if frame.data else 0)
+        overflow = self.trace_table.rowCount() - 5_000
+        if overflow > 0:
+            for _ in range(overflow):
+                self.trace_table.removeRow(0)
+        if len(self._plot_times) > 2_500:
+            self._plot_times = self._plot_times[-2_500:]
+            self._plot_samples = self._plot_samples[-2_500:]
         self._plot_curve.setData(
-            [frame.timestamp - origin for frame in frames],
-            [frame.data[0] if frame.data else 0 for frame in frames],
+            self._plot_times,
+            self._plot_samples,
         )
 
     def _stop_acquisition(self) -> None:
-        event = self._adapter.disconnect()
+        if self._worker is not None:
+            self._worker.request_stop()
+            self.status.showMessage("Stopping acquisition…")
+
+    def _acquisition_failed(self, message: str) -> None:
+        self.status.showMessage(f"Acquisition error: {message}")
+
+    def _acquisition_finished(self) -> None:
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
-        self.status.showMessage(event.message)
+        self._worker = None
+
+    def closeEvent(self, event) -> None:  # type: ignore[no-untyped-def]
+        if self._worker is not None and self._worker.isRunning():
+            self._worker.request_stop()
+            self._worker.wait(1_000)
+        super().closeEvent(event)

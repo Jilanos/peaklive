@@ -66,17 +66,25 @@ class PcanAdapter:
         if self._bus is None:
             return
         while self._bus is not None:
-            message = self._bus.recv(timeout=0.25)
-            if message is None:
-                continue
-            yield CanFrame(
-                timestamp=float(message.timestamp),
-                arbitration_id=int(message.arbitration_id),
-                data=bytes(message.data),
-                channel=self._profile.channel if self._profile else "channel-1",
-                is_extended_id=bool(message.is_extended_id),
-                is_remote_frame=bool(message.is_remote_frame),
-            )
+            frame = self.receive(timeout=0.25)
+            if frame is not None:
+                yield frame
+
+    def receive(self, timeout: float) -> CanFrame | None:
+        """Poll one normalized frame so a caller can manage its own lifecycle."""
+        if self._bus is None:
+            return None
+        message = self._bus.recv(timeout=timeout)
+        if message is None:
+            return None
+        return CanFrame(
+            timestamp=float(message.timestamp),
+            arbitration_id=int(message.arbitration_id),
+            data=bytes(message.data),
+            channel=self._profile.channel if self._profile else "channel-1",
+            is_extended_id=bool(message.is_extended_id),
+            is_remote_frame=bool(message.is_remote_frame),
+        )
 
     @staticmethod
     def _can_module() -> Any:

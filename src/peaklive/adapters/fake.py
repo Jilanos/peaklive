@@ -14,6 +14,7 @@ class FakeCanAdapter:
         self._connected = False
         self._profile: MeasurementProfile | None = None
         self._sequence = count()
+        self._remaining = 0
 
     @property
     def connected(self) -> bool:
@@ -22,6 +23,7 @@ class FakeCanAdapter:
     def connect(self, profile: MeasurementProfile) -> BusEvent:
         self._profile = profile
         self._connected = True
+        self._remaining = 32
         return BusEvent(
             monotonic(),
             "connected",
@@ -37,11 +39,20 @@ class FakeCanAdapter:
     def frames(self) -> Iterator[CanFrame]:
         if not self._connected:
             return
-        for _ in range(32):
-            sequence = next(self._sequence)
-            yield CanFrame(
-                timestamp=monotonic(),
-                arbitration_id=0x120 + sequence % 16,
-                data=sequence.to_bytes(8, "little"),
-                channel=self._profile.channel if self._profile else "channel-1",
-            )
+        while self._remaining:
+            frame = self.receive(timeout=0)
+            if frame is not None:
+                yield frame
+
+    def receive(self, timeout: float) -> CanFrame | None:
+        """Return a deterministic frame for the offline workspace preview."""
+        if not self._connected or self._remaining == 0:
+            return None
+        sequence = next(self._sequence)
+        self._remaining -= 1
+        return CanFrame(
+            timestamp=monotonic(),
+            arbitration_id=0x120 + sequence % 16,
+            data=sequence.to_bytes(8, "little"),
+            channel=self._profile.channel if self._profile else "channel-1",
+        )
