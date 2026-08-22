@@ -23,7 +23,8 @@
       "The desired visual language and analysis workflows come from the existing companion trace-analysis product.",
       "ASC is the primary interoperable recording format and supported text TRC files must remain readable.",
       "Display filters must never remove frames from active recordings, and driver or recording errors must be preserved.",
-      "The MVP excludes frame transmission, dashboards, and alarms but must retain clean architecture seams for those later capabilities."
+      "The MVP excludes frame transmission, dashboards, and alarms but must retain clean architecture seams for those later capabilities.",
+      "The public source repository is licensed under Apache-2.0."
     ],
     "acceptance_criteria": [
       "AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.",

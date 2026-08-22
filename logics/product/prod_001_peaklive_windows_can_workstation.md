@@ -6,7 +6,7 @@
 > Related task: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:04:33
+> Indicators reviewed: 2026-08-22 12:07:26
 
 # Overview
 A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis.
@@ -54,6 +54,7 @@ flowchart LR
 - Restore and display the last named measurement profile at startup while requiring an explicit Start Acquisition action.
 - Bind recording to Start Acquisition/Stop Acquisition when enabled by the profile, with collision-safe date/time/profile/iteration/segment filename templates, 2 GiB default rotation, a 10 GiB free-space warning, and a 2 GiB recording stop threshold.
 - Use deterministic synthetic traffic/error generators to cover load and edge cases absent from the available real ASC samples.
+- Publish source and documentation under Apache-2.0, including its explicit contributor patent grant.
 
 # Success signals
 - A documented 60-minute maximum-practical-load run completes without recorder queue overflow on the reference workstation.
@@ -64,7 +65,6 @@ flowchart LR
 
 # Open product decisions
 - Confirm whether Windows 10 support can be limited to 22H2 and record the exact Windows 11 builds used by the team.
-- Choose the public repository license before code distribution starts.
 
 # References
 - Product back-reference: `req_000_deliver_the_peaklive_windows_can_workstation_mvp`

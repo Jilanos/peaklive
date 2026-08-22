@@ -11,6 +11,8 @@ The initial audience is a team of three engineers. The product must favour
 predictable acquisition, transparent state, and recoverable recordings over
 decorative dashboard features.
 
+The public source repository is distributed under the Apache License 2.0.
+
 ## Primary workflows
 
 ### Live acquisition

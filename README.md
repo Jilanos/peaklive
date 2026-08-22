@@ -35,3 +35,7 @@ listen-only mode.
 - [ADR 0003: Hardware adapter boundary](docs/adr/0003-hardware-adapter-boundary.md)
 
 The ready-to-develop workflow is tracked under `logics/`.
+
+## License
+
+PeakLive is licensed under the [Apache License 2.0](LICENSE).

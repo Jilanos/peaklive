@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Windows CAN diagnostics
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:02:47
+> Indicators reviewed: 2026-08-22 12:07:26
 
 # AI Context
 - Summary: Defines the complete receive-only Windows MVP, from one live Classic CAN channel through trustworthy recording, DBC analysis, plots, replay, export, and installation.
@@ -28,6 +28,7 @@
 - ASC is the primary interoperable recording format and supported text TRC files must remain readable.
 - Display filters must never remove frames from active recordings, and driver or recording errors must be preserved.
 - The MVP excludes frame transmission, dashboards, and alarms but must retain clean architecture seams for those later capabilities.
+- The public source repository is licensed under Apache-2.0.
 
 # Acceptance criteria
 - AC1: A self-contained x64 installer deploys and launches PeakLive on supported Windows 10/11 machines without requiring a separately installed Python runtime.
