@@ -59,6 +59,13 @@ PeakLive persists profiles below the platform user-data directory. Set
 The application restores the last selected profile but never connects to a bus
 until **Start Acquisition** is selected.
 
+## Windows build and hardware acceptance
+
+On Windows, run `scripts/build-windows.ps1` from PowerShell. It creates a
+self-contained `dist/PeakLive.exe`; the adapter driver itself remains a machine
+prerequisite. Follow [Windows hardware acceptance](docs/windows-hardware-acceptance.md)
+before declaring a release ready.
+
 ## License
 
 PeakLive is licensed under the [Apache License 2.0](LICENSE).
