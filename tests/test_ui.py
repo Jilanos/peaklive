@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt
 
+from peaklive.adapters import FakeCanAdapter
 from peaklive.domain import CanFrame
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
@@ -14,7 +15,7 @@ BO_ 291 VehicleStatus: 8 ECU
 
 
 def test_main_window_has_accessible_workspace_and_explicit_lifecycle(qtbot, tmp_path):
-    window = MainWindow(ProfileStore(tmp_path))
+    window = MainWindow(ProfileStore(tmp_path), adapter_factory=FakeCanAdapter)
     qtbot.addWidget(window)
     window.show()
 
@@ -40,7 +41,7 @@ def test_main_window_has_accessible_workspace_and_explicit_lifecycle(qtbot, tmp_
 def test_main_window_loads_dbc_and_plots_selected_signal(qtbot, tmp_path):
     dbc_path = tmp_path / "vehicle.dbc"
     dbc_path.write_text(DBC, encoding="utf-8")
-    window = MainWindow(ProfileStore(tmp_path / "settings"))
+    window = MainWindow(ProfileStore(tmp_path / "settings"), adapter_factory=FakeCanAdapter)
     qtbot.addWidget(window)
 
     window._load_dbc_path(dbc_path)
