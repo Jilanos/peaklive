@@ -1,12 +1,13 @@
 ## req_001_bring_peaklive_ux_to_cantracediag_parity - Bring PeakLive UX to CanTraceDiag parity
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
 > Complexity: High
 > Theme: Desktop diagnostic UX parity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-08-24 14:43:18
 
 # AI Context
 - Summary: Defines the PeakLive desktop UX parity push that translates CanTraceDiag's proven multi-DBC, signal, plot, trace, inspector, and instrument-style workflows into Qt.

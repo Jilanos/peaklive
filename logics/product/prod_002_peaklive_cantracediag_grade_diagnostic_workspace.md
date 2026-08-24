@@ -1,11 +1,12 @@
 ## prod_002_peaklive_cantracediag_grade_diagnostic_workspace - PeakLive CanTraceDiag-grade diagnostic workspace
 > Date: 2026-08-24
-> Status: Proposed
+> Status: Settled
 > Related request: `req_001_bring_peaklive_ux_to_cantracediag_parity`
-> Related backlog: `item_009_analyze_the_cantracediag_to_peaklive_ux_delta`, `item_010_deliver_multi_dbc_library_and_conflict_management`, `item_011_upgrade_acquisition_setup_controls`, `item_012_bring_the_signal_explorer_to_cantracediag_parity`, `item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels`, `item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive`, `item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence`
+> Related backlog: `item_009_analyze_the_cantracediag_to_peaklive_ux_delta`
 > Related task: `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-08-24 14:43:19
 
 # Overview
 A refined PeakLive desktop workspace that brings the proven CanTraceDiag multi-DBC, signal, plotting, trace, inspector, and instrument-style UX into the live Windows CAN acquisition application.
@@ -51,5 +52,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_001_bring_peaklive_ux_to_cantracediag_parity`
+- Product back-reference: `item_009_analyze_the_cantracediag_to_peaklive_ux_delta`
 - Task back-reference: `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`

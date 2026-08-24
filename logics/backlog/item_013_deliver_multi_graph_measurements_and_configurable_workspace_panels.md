@@ -1,14 +1,14 @@
 ## item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels - Deliver multi-graph measurements and configurable workspace panels
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 70%
+> Progress: 100%
 > Complexity: High
 > Theme: Plots and workspace layout
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-24 14:35:25
+> Indicators reviewed: 2026-08-24 14:43:19
 
 # AI Context
 - Summary: Adds multiple simultaneous graph tracks, A/B cursors, measurement readouts, graph/trace workspace modes, and independently collapsible panels.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: Medium - graph and layout depth depends on the DBC and signal workflow.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`
+
+# Notes
+- Task `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta` was finished via `logics-manager flow finish task` on 2026-08-24.
