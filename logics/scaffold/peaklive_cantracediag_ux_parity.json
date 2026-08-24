@@ -1,0 +1,295 @@
+{
+  "title": "Bring PeakLive UX to CanTraceDiag parity",
+  "references": [
+    "README.md",
+    "docs/product-scope.md",
+    "docs/architecture.md",
+    "docs/windows-hardware-acceptance.md",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/analysis/dbc.py",
+    "src/peaklive/services/profiles.py",
+    "tests/test_ui.py",
+    "tests/test_dbc.py",
+    "tests/test_pcan_adapter.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Desktop diagnostic UX parity",
+    "needs": [
+      "Close the practical UX gap between PeakLive and the validated CanTraceDiag diagnostic workspace before the next hands-on evaluation.",
+      "Make multi-DBC loading, local DBC library management, DBC selection, removal, and conflict resolution usable from the desktop UI.",
+      "Expose acquisition options clearly, including bitrate, application receive-only operation, passive listen-only, and normal receive with controller acknowledgement.",
+      "Bring the signal explorer, graphing, trace, inspector, and layout controls to the dense instrument-style workflow operators already know from CanTraceDiag.",
+      "Keep validation practical: no live CAN bus test in this request may require more than 2 minutes of connected bus time."
+    ],
+    "context": [
+      "The operator tested PeakLive live with a connected PCAN-USB and reported that core acquisition works.",
+      "The operator supplied the sibling CanTraceDiag checkout as the UX and visual reference for DBC library, signal explorer, plots, trace, inspector, and instrument styling.",
+      "CanTraceDiag's reference UI uses an instrument-style dark theme, compact panel chrome, DBC-grouped signal navigation, favorites, displayed-only filtering, stacked plots, A/B cursors, and collapsible workspace regions.",
+      "PeakLive is a native PySide6 desktop application, not a browser PWA, so implementation should translate the interaction model into Qt widgets and existing domain services rather than copying web code.",
+      "The current PeakLive UI has a basic DBC file picker, flat signal list, one plot preview, one trace table, and an inspector label; this request should first capture a concrete delta map before changing behavior.",
+      "DBC files may be UTF-8, UTF-8 with BOM, CP-1252, or Latin-1 and may contain units such as the degree symbol.",
+      "The MVP remains application-level receive-only. Normal receive may acknowledge valid frames at controller level, while passive listen-only must never acknowledge traffic.",
+      "Live bus validation remains bounded: use fake/replay fixtures for broad coverage and at most 2 minutes of real PCAN bus time for hardware smoke evidence."
+    ],
+    "acceptance_criteria": [
+      "AC1: A checked-in delta analysis maps CanTraceDiag UX patterns to current PeakLive gaps, Qt implementation targets, and test evidence for DBC loading, acquisition setup, signal explorer, plots, trace, inspector, layout, and visual style.",
+      "AC2: PeakLive lets operators load multiple DBCs in one action, keeps a local in-memory DBC library for the session/profile, shows each DBC as selectable state, supports add/remove/disable flows, and provides deterministic conflict resolution for non-equivalent arbitration IDs.",
+      "AC3: Acquisition setup exposes supported bitrate choices, channel selection, application receive-only status, passive listen-only, and normal receive with controller acknowledgement semantics without exposing any transmit action.",
+      "AC4: The signal panel matches the CanTraceDiag workflow in desktop form: DBC-origin grouping, message-level grouping where useful, dropdown/search navigation for dense catalogs, favorites, shown/displayed filtering, and clickable signal rows that add or remove plots.",
+      "AC5: The workspace supports multiple simultaneous graphs, A/B cursors with delta readouts, graph/trace combo views, and user-selectable visible panels for graphs, trace, inspector, and signals.",
+      "AC6: The signal, inspector, graph, and trace panels are independently collapsible without losing selected signals, DBC state, acquisition state, or profile persistence.",
+      "AC7: PeakLive adopts a more finished CanTraceDiag-aligned instrument visual style using consistent tokens, dense data typography, compact controls, status semantics, and polished empty/error/loading states.",
+      "AC8: Automated coverage validates multi-DBC workflows, conflict handling, acquisition option state, signal filtering/grouping, multi-graph/cursor behavior, panel collapse/persistence, and style-critical UI smoke paths without requiring live hardware.",
+      "AC9: Any live CAN validation for this request is optional hardware smoke evidence and must be capped at 2 minutes or less; no acceptance gate may require a longer connected-bus run."
+    ]
+  },
+  "product": {
+    "title": "PeakLive CanTraceDiag-grade diagnostic workspace",
+    "overview": "A refined PeakLive desktop workspace that brings the proven CanTraceDiag multi-DBC, signal, plotting, trace, inspector, and instrument-style UX into the live Windows CAN acquisition application.",
+    "goals": [
+      "Make DBC and signal workflows efficient enough for real multi-DBC engineering sessions.",
+      "Translate CanTraceDiag's dense instrument UX into a native Qt desktop application while preserving PeakLive's live acquisition and recording boundaries.",
+      "Let operators configure acquisition modes safely and understand the distinction between application receive-only, passive listen-only, and controller acknowledgement.",
+      "Support several synchronized graphs and measurement cursors without hiding raw trace or inspector context.",
+      "Keep validation fast, repeatable, and mostly hardware-independent, with any live CAN smoke run capped at 2 minutes."
+    ],
+    "non_goals": [
+      "Copy CanTraceDiag's browser implementation directly or turn PeakLive into a PWA.",
+      "Add frame transmission, cyclic transmit, dashboards, alarms, diagnostic protocols, CAN FD, LIN, or multi-channel acquisition.",
+      "Require a 60-minute or otherwise long live CAN bus validation for this UX request.",
+      "Persist private DBC contents into the repository or upload any vehicle data.",
+      "Replace the existing PeakLive domain boundaries or recorder integrity model."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Analyze the CanTraceDiag to PeakLive UX delta",
+      "priority": "High - this is the control document for the UI parity implementation.",
+      "complexity": "Medium",
+      "theme": "UX delta analysis",
+      "request_acs": ["AC1", "AC7", "AC8", "AC9"],
+      "problem": [
+        "The desired UX is described by a working sibling product and operator expectations, but PeakLive needs a concrete Qt-specific delta map before implementation begins.",
+        "Without a checked-in map, later UI changes may copy superficial styling while missing workflow parity and validation limits."
+      ],
+      "scope_in": [
+        "Inspect CanTraceDiag's signal explorer, plot, trace, inspector, fullscreen/layout, and visual style behavior from the supplied sibling checkout.",
+        "Inspect PeakLive's current PySide6 UI, profile model, DBC catalog, acquisition worker, and tests.",
+        "Create a repo-local delta analysis document that maps reference behaviors to PeakLive gaps, target modules, acceptance evidence, and explicit non-goals.",
+        "Record the validation strategy, including fake/replay-first coverage and a strict 2-minute cap for any optional live CAN smoke test.",
+        "Identify any UX decisions that need product confirmation before coding."
+      ],
+      "scope_out": [
+        "Implementing the UI changes in the analysis slice.",
+        "Creating screenshots or mockups that embed real vehicle, company, supplier, or client data.",
+        "Changing the previously closed MVP request or reopening its task."
+      ],
+      "acceptance_criteria": [
+        "AC1: The delta document lists each relevant CanTraceDiag UX pattern and the corresponding current PeakLive gap.",
+        "AC2: The document names the PeakLive modules or tests expected to change for each gap.",
+        "AC3: The document separates required parity, deliberate desktop-specific adaptation, and out-of-scope browser-only behavior.",
+        "AC4: The test plan states that live CAN validation is optional, capped at 2 minutes, and never the only evidence for a backlog item."
+      ]
+    },
+    {
+      "title": "Deliver multi-DBC library and conflict management",
+      "priority": "High - DBC workflow is the first operator-facing blocker after live acquisition.",
+      "complexity": "High",
+      "theme": "DBC workflow",
+      "request_acs": ["AC2", "AC4", "AC8", "AC9"],
+      "problem": [
+        "PeakLive currently has a basic single-file load action and does not expose a full operator-facing DBC library workflow.",
+        "Real sessions need multiple loaded DBCs, visible origin, add/remove/disable state, and deterministic conflict handling."
+      ],
+      "scope_in": [
+        "Support selecting and loading multiple DBC files in one UI action.",
+        "Maintain a profile/session DBC library with ordered DBC entries, active/enabled state, parse status, content hash, source filename, and loaded signal counts.",
+        "Expose clickable DBC rows or headers so operators can enable, disable, remove, and inspect DBCs without losing selected plots unnecessarily.",
+        "Surface parse diagnostics, encoding fallback behavior, duplicate detection, and unsupported file errors as panel-local messages.",
+        "Provide a conflict resolution UI for non-equivalent arbitration-ID definitions, with deterministic saved choices in the profile.",
+        "Keep raw frames intact when decoding is ambiguous, disabled, or failed."
+      ],
+      "scope_out": [
+        "Editing DBC file contents.",
+        "Copying private DBC contents into the repository.",
+        "Network DBC libraries, cloud catalogs, or automatic online DBC lookup."
+      ],
+      "acceptance_criteria": [
+        "AC1: Operators can load at least three DBC files in one operation and see each DBC with filename, enabled state, signal count, parse state, and duplicate/conflict indicators.",
+        "AC2: Removing or disabling a DBC updates decode availability and signal navigation while preserving raw trace data and unaffected plotted signals.",
+        "AC3: Non-equivalent message conflicts block ambiguous decoding until the operator selects a DBC mapping; equivalent definitions do not create noisy conflicts.",
+        "AC4: Conflict choices persist in the selected profile and restore without auto-connecting to hardware.",
+        "AC5: Tests cover multi-select loading, CP-1252/Latin-1 DBC text, duplicate handling, enable/disable/remove behavior, and conflict resolution."
+      ]
+    },
+    {
+      "title": "Upgrade acquisition setup controls",
+      "priority": "High - operators must understand hardware mode before starting live capture.",
+      "complexity": "Medium",
+      "theme": "Acquisition configuration UX",
+      "request_acs": ["AC3", "AC6", "AC8", "AC9"],
+      "problem": [
+        "PeakLive exposes acquisition start/stop but not a complete configuration surface for bitrate and controller acknowledgement semantics.",
+        "Operators need a safe distinction between application receive-only, passive listen-only, and normal receive with ACK."
+      ],
+      "scope_in": [
+        "Add a compact acquisition setup panel with channel, bitrate, controller mode, recording enabled state, and profile summary.",
+        "Expose passive listen-only and normal receive with controller acknowledgement as explicit mutually exclusive controller modes.",
+        "Show application receive-only status as a non-toggleable MVP safety invariant and keep transmit controls absent.",
+        "Support bitrate selection from supported common rates and clear unsupported-configuration feedback.",
+        "Persist acquisition options in named profiles and restore them without initiating hardware connection.",
+        "Optionally run a live PCAN smoke test capped at 2 minutes for channel/mode feedback; fake-adapter tests remain the acceptance baseline."
+      ],
+      "scope_out": [
+        "Adding any transmit API, transmit button, cyclic transmit, or frame editor.",
+        "Requiring a long load test or bus-disruptive normal receive validation on an unsafe bus.",
+        "Adding CAN FD, LIN, or multiple active channels."
+      ],
+      "acceptance_criteria": [
+        "AC1: The setup panel presents channel, bitrate, passive listen-only, normal receive with ACK, recording, and application receive-only status before Start Acquisition.",
+        "AC2: Starting acquisition applies the visible options and emits clear connected/error status without mutating Qt widgets from adapter code.",
+        "AC3: Unsupported bitrate or unavailable controller mode produces an actionable, non-crashing UI message.",
+        "AC4: Profile persistence restores acquisition options and still never auto-connects on startup.",
+        "AC5: Tests cover option persistence, mode labelling, unsupported configuration, and absence of transmit affordances."
+      ]
+    },
+    {
+      "title": "Bring the signal explorer to CanTraceDiag parity",
+      "priority": "High - signal navigation drives DBC, plot, and inspector usefulness.",
+      "complexity": "High",
+      "theme": "Signal explorer UX",
+      "request_acs": ["AC4", "AC6", "AC7", "AC8", "AC9"],
+      "problem": [
+        "PeakLive's current signal list is flat and cannot efficiently navigate a dense multi-DBC catalog.",
+        "Operators expect CanTraceDiag-style DBC grouping, favorites, shown filters, and clickable signal rows."
+      ],
+      "scope_in": [
+        "Group signals under their original DBC, with message-level grouping where it improves dense navigation.",
+        "Provide dropdown or searchable navigation for large catalogs and keep active/relevant DBCs easy to reach.",
+        "Add favorites and shown/displayed filters that intersect with text search.",
+        "Make signal rows clickable to add/remove plotted signals and show channel/color assignment.",
+        "Keep selected signals visible under the shown filter even when their DBC group is collapsed.",
+        "Persist favorites, shown signals, expansion state, and selected plotted signals in the profile."
+      ],
+      "scope_out": [
+        "Changing the decoder's semantic interpretation of DBC signals.",
+        "Deleting a DBC from disk when removed from the UI library.",
+        "Creating a mobile-only UI separate from the desktop workspace."
+      ],
+      "acceptance_criteria": [
+        "AC1: Signals are grouped by original DBC and message, with accessible expand/collapse state.",
+        "AC2: Favorites, shown-only, and text filters combine predictably and produce a clear empty state.",
+        "AC3: Clicking a signal adds/removes it from plots without disrupting unrelated signals, favorites, or DBC state.",
+        "AC4: The explorer remains compact with at least six imported DBCs and no horizontal overflow at supported desktop sizes.",
+        "AC5: Tests cover grouping, dropdown/search navigation, favorites, shown filtering, signal add/remove, and persistence."
+      ]
+    },
+    {
+      "title": "Deliver multi-graph measurements and configurable workspace panels",
+      "priority": "Medium - graph and layout depth depends on the DBC and signal workflow.",
+      "complexity": "High",
+      "theme": "Plots and workspace layout",
+      "request_acs": ["AC5", "AC6", "AC7", "AC8", "AC9"],
+      "problem": [
+        "PeakLive currently offers a single preview plot and fixed panels, while operators need several simultaneous graphs, cursors, and configurable views.",
+        "Trace, graphs, inspector, and signal navigation compete for space during live analysis."
+      ],
+      "scope_in": [
+        "Support multiple simultaneous graph tracks or graph panels selected from plotted signals.",
+        "Add A/B cursors, delta time, and per-signal delta/value readouts.",
+        "Provide graph-only, trace-only, graph+trace combo, and full workspace configurations.",
+        "Make signals, inspector, graph area, and trace area independently collapsible with state restoration.",
+        "Keep bounded memory and rendering cadence for live updates and replay-derived plots.",
+        "Ensure cursor and graph interactions are testable without live hardware using fake/replay data."
+      ],
+      "scope_out": [
+        "Dashboard gauges, alarm rules, scripting, or arbitrary user-authored graph widgets.",
+        "3D rendering or browser-only fullscreen APIs.",
+        "Making a long live CAN run part of acceptance."
+      ],
+      "acceptance_criteria": [
+        "AC1: Operators can display multiple graph tracks at the same time and remove/reorder visible signals without losing DBC selection state.",
+        "AC2: A/B cursors can be placed and moved, and readouts show delta time plus values or deltas for plotted signals.",
+        "AC3: Workspace configurations toggle graph, trace, combo, inspector, and signal panels without corrupting acquisition, replay, or selected plots.",
+        "AC4: Collapsed panels restore from the profile and remain keyboard-operable.",
+        "AC5: Tests cover multi-graph rendering state, cursor readouts, view configuration, panel collapse/restore, and bounded buffer behavior."
+      ]
+    },
+    {
+      "title": "Apply the CanTraceDiag instrument visual system to PeakLive",
+      "priority": "Medium - visual polish should land after the main interaction surfaces are known.",
+      "complexity": "Medium",
+      "theme": "Visual design",
+      "request_acs": ["AC1", "AC7", "AC8"],
+      "problem": [
+        "PeakLive's current visual shell is functional but less finished than CanTraceDiag's validated instrument-style interface.",
+        "A superficial color update would not deliver the precision, density, and state semantics operators expect."
+      ],
+      "scope_in": [
+        "Translate the CanTraceDiag instrument visual language into Qt styling: dark scope surface, compact panels, hairline borders, small radii, data-mono typography, semantic status colors, and channel swatches.",
+        "Introduce reusable style tokens or constants instead of scattering hard-coded colors.",
+        "Polish loading, empty, warning, error, selected, disabled, and active states across DBC library, acquisition setup, signal explorer, trace, plots, and inspector.",
+        "Keep UI dense and operational, not marketing-like, and avoid decorative gradients or oversized hero-style composition.",
+        "Add focused UI smoke checks for text fit, panel visibility, accessible names, and key state classes/properties."
+      ],
+      "scope_out": [
+        "Changing the product brand, icon, installer artwork, or non-workspace marketing assets.",
+        "Adding a light theme.",
+        "Using web CSS directly instead of an appropriate Qt stylesheet/design token implementation."
+      ],
+      "acceptance_criteria": [
+        "AC1: The workspace uses a coherent instrument-style visual system aligned with the CanTraceDiag reference while remaining native to Qt.",
+        "AC2: Data-heavy elements use monospaced/tabular presentation where practical and semantic colors are not the only status signal.",
+        "AC3: Empty, loading, parse error, hardware error, conflict, selected, favorite, and shown states are visually distinct and accessible.",
+        "AC4: UI tests or screenshots verify no obvious overlap or text clipping in the primary desktop workspace states."
+      ]
+    },
+    {
+      "title": "Validate the UX parity delivery with bounded hardware evidence",
+      "priority": "Medium - validation must be complete without requiring long bus availability.",
+      "complexity": "Medium",
+      "theme": "Validation",
+      "request_acs": ["AC8", "AC9"],
+      "problem": [
+        "The UX parity request touches many UI states, but the operator cannot support long live CAN runs for this phase.",
+        "Validation must distinguish broad fake/replay coverage from optional short hardware smoke evidence."
+      ],
+      "scope_in": [
+        "Define and run a validation matrix covering DBC workflows, acquisition options, signal explorer, graphs, cursors, panel configurations, inspector, and visual smoke states.",
+        "Use fake adapters, replay traces, DBC fixtures, and Qt tests for mandatory evidence.",
+        "Keep any live PCAN smoke test optional and capped at 2 minutes, with no broader acceptance dependency on live hardware.",
+        "Record command outputs, fixture names, screenshots if generated, and hardware-smoke duration in closeout evidence.",
+        "Keep Logics closeout honest if the optional hardware smoke is skipped."
+      ],
+      "scope_out": [
+        "Running a 60-minute acceptance test.",
+        "Making release publication or installer signing part of this UX parity request.",
+        "Collecting or committing private vehicle captures or DBC contents."
+      ],
+      "acceptance_criteria": [
+        "AC1: The validation matrix maps each request acceptance criterion to at least one automated or bounded manual evidence source.",
+        "AC2: Mandatory validation runs without a connected CAN bus.",
+        "AC3: Optional live bus validation, when run, lasts no more than 2 minutes and is documented as smoke evidence only.",
+        "AC4: Closeout includes Logics lint/audit and the project's normal tests."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver the PeakLive CanTraceDiag UX parity delta",
+    "plan": [
+      "Capture the CanTraceDiag-to-PeakLive UX delta and convert it into a Qt-specific implementation and validation map.",
+      "Implement multi-DBC library, parsing diagnostics, DBC enable/remove state, and conflict resolution first because the signal explorer depends on it.",
+      "Add the acquisition setup panel with bitrate and controller-mode semantics while preserving the application receive-only MVP boundary.",
+      "Implement the DBC/message-grouped signal explorer with search, favorites, shown filtering, and clickable plot selection.",
+      "Add multi-graph rendering, A/B cursors, readouts, graph/trace combo configurations, and collapsible panels.",
+      "Apply the CanTraceDiag-aligned instrument visual system across the refined workspace.",
+      "Validate with fake/replay/fixture automation and, if useful, an optional PCAN smoke test capped at 2 minutes; then close out with Logics lint and audit."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_cantracediag_ux_parity.json",
+    "mode": "diff-first",
+    "profile": "deep"
+  }
+}
