@@ -1,0 +1,577 @@
+{
+  "budgets": {
+    "max_docs": 72,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [
+    "artifacts/hardware-acceptance/20260824-113926-pcan-passive-500k/2026-08-24_11-39-27_PCAN_passive_500k_hardware_acceptance_001_001.asc",
+    "artifacts/hardware-acceptance/20260824-121218-pcan-passive-500k-60min/2026-08-24_12-12-19_PCAN_passive_500k_60min_acceptance_001_001.asc",
+    "logics/backlog/item_009_analyze_the_cantracediag_to_peaklive_ux_delta.md",
+    "logics/backlog/item_010_deliver_multi_dbc_library_and_conflict_management.md",
+    "logics/backlog/item_011_upgrade_acquisition_setup_controls.md",
+    "logics/backlog/item_012_bring_the_signal_explorer_to_cantracediag_parity.md",
+    "logics/backlog/item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels.md",
+    "logics/backlog/item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive.md",
+    "logics/backlog/item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence.md",
+    "logics/product/prod_002_peaklive_cantracediag_grade_diagnostic_workspace.md",
+    "logics/request/req_001_bring_peaklive_ux_to_cantracediag_parity.md",
+    "logics/scaffold/peaklive_cantracediag_ux_parity.json",
+    "logics/tasks/task_002_deliver_the_peaklive_cantracediag_ux_parity_delta.md"
+  ],
+  "command": "logics-manager sync context-pack req_001_bring_peaklive_ux_to_cantracediag_parity item_009_analyze_the_cantracediag_to_peaklive_ux_delta item_010_deliver_multi_dbc_library_and_conflict_management item_011_upgrade_acquisition_setup_controls item_012_bring_the_signal_explorer_to_cantracediag_parity item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence task_002_deliver_the_peaklive_cantracediag_ux_parity_delta --mode diff-first --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+          "item_010_deliver_multi_dbc_library_and_conflict_management",
+          "item_011_upgrade_acquisition_setup_controls",
+          "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+          "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+          "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+          "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/product/prod_002_peaklive_cantracediag_grade_diagnostic_workspace.md",
+      "ref": "prod_002_peaklive_cantracediag_grade_diagnostic_workspace",
+      "sections": {
+        "Goals": [
+          "- Make DBC and signal workflows efficient enough for real multi-DBC engineering sessions.",
+          "- Translate CanTraceDiag's dense instrument UX into a native Qt desktop application while preserving PeakLive's live acquisition and recording boundaries.",
+          "- Let operators configure acquisition modes safely and understand the distinction between application receive-only, passive listen-only, and controller acknowledgement.",
+          "- Support several synchronized graphs and measurement cursors without hiding raw trace or inspector context.",
+          "- Keep validation fast, repeatable, and mostly hardware-independent, with any live CAN smoke run capped at 2 minutes."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A refined PeakLive desktop workspace that brings the proven CanTraceDiag multi-DBC, signal, plotting, trace, inspector, and instrument-style UX into the live Windows CAN acquisition application."
+        ],
+        "References": [
+          "- Product back-reference: `req_001_bring_peaklive_ux_to_cantracediag_parity`",
+          "- Task back-reference: `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive CanTraceDiag-grade diagnostic workspace"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "bring, peaklive, cantracediag, parity",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+          "item_010_deliver_multi_dbc_library_and_conflict_management",
+          "item_011_upgrade_acquisition_setup_controls",
+          "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+          "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+          "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+          "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ]
+      },
+      "path": "logics/request/req_001_bring_peaklive_ux_to_cantracediag_parity.md",
+      "ref": "req_001_bring_peaklive_ux_to_cantracediag_parity",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A checked-in delta analysis maps CanTraceDiag UX patterns to current PeakLive gaps, Qt implementation targets, and test evidence for DBC loading, acquisition setup, signal explorer, plots, trace, inspector, layout, and visual style.",
+          "- AC2: PeakLive lets operators load multiple DBCs in one action, keeps a local in-memory DBC library for the session/profile, shows each DBC as selectable state, supports add/remove/disable flows, and provides deterministic conflict resolution for non-equivalent arbitration IDs.",
+          "- AC3: Acquisition setup exposes supported bitrate choices, channel selection, application receive-only status, passive listen-only, and normal receive with controller acknowledgement semantics without exposing any transmit action.",
+          "- AC4: The signal panel matches the CanTraceDiag workflow in desktop form: DBC-origin grouping, message-level grouping where useful, dropdown/search navigation for dense catalogs, favorites, shown/displayed filtering, and clickable signal rows that add or remove plots.",
+          "- AC5: The workspace supports multiple simultaneous graphs, A/B cursors with delta readouts, graph/trace combo views, and user-selectable visible panels for graphs, trace, inspector, and signals.",
+          "- AC6: The signal, inspector, graph, and trace panels are independently collapsible without losing selected signals, DBC state, acquisition state, or profile persistence."
+        ],
+        "Needs": [
+          "- Close the practical UX gap between PeakLive and the validated CanTraceDiag diagnostic workspace before the next hands-on evaluation.",
+          "- Make multi-DBC loading, local DBC library management, DBC selection, removal, and conflict resolution usable from the desktop UI.",
+          "- Expose acquisition options clearly, including bitrate, application receive-only operation, passive listen-only, and normal receive with controller acknowledgement.",
+          "- Bring the signal explorer, graphing, trace, inspector, and layout controls to the dense instrument-style workflow operators already know from CanTraceDiag.",
+          "- Keep validation practical: no live CAN bus test in this request may require more than 2 minutes of connected bus time."
+        ]
+      },
+      "status": "Draft",
+      "title": "Bring PeakLive UX to CanTraceDiag parity"
+    },
+    {
+      "ai_context": {
+        "keywords": "analyze, cantracediag, peaklive, delta",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_009_analyze_the_cantracediag_to_peaklive_ux_delta"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_009_analyze_the_cantracediag_to_peaklive_ux_delta.md",
+      "ref": "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The delta document lists each relevant CanTraceDiag UX pattern and the corresponding current PeakLive gap.",
+          "- AC2: The document names the PeakLive modules or tests expected to change for each gap.",
+          "- AC3: The document separates required parity, deliberate desktop-specific adaptation, and out-of-scope browser-only behavior.",
+          "- AC4: The test plan states that live CAN validation is optional, capped at 2 minutes, and never the only evidence for a backlog item."
+        ],
+        "Problem": [
+          "- The desired UX is described by a working sibling product and operator expectations, but PeakLive needs a concrete Qt-specific delta map before implementation begins.",
+          "- Without a checked-in map, later UI changes may copy superficial styling while missing workflow parity and validation limits."
+        ]
+      },
+      "status": "Ready",
+      "title": "Analyze the CanTraceDiag to PeakLive UX delta"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, multi, dbc, library, conflict, management",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_010_deliver_multi_dbc_library_and_conflict_management"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_010_deliver_multi_dbc_library_and_conflict_management.md",
+      "ref": "item_010_deliver_multi_dbc_library_and_conflict_management",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Operators can load at least three DBC files in one operation and see each DBC with filename, enabled state, signal count, parse state, and duplicate/conflict indicators.",
+          "- AC2: Removing or disabling a DBC updates decode availability and signal navigation while preserving raw trace data and unaffected plotted signals.",
+          "- AC3: Non-equivalent message conflicts block ambiguous decoding until the operator selects a DBC mapping; equivalent definitions do not create noisy conflicts.",
+          "- AC4: Conflict choices persist in the selected profile and restore without auto-connecting to hardware.",
+          "- AC5: Tests cover multi-select loading, CP-1252/Latin-1 DBC text, duplicate handling, enable/disable/remove behavior, and conflict resolution."
+        ],
+        "Problem": [
+          "- PeakLive currently has a basic single-file load action and does not expose a full operator-facing DBC library workflow.",
+          "- Real sessions need multiple loaded DBCs, visible origin, add/remove/disable state, and deterministic conflict handling."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver multi-DBC library and conflict management"
+    },
+    {
+      "ai_context": {
+        "keywords": "upgrade, acquisition, setup, controls",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_011_upgrade_acquisition_setup_controls"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_011_upgrade_acquisition_setup_controls.md",
+      "ref": "item_011_upgrade_acquisition_setup_controls",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The setup panel presents channel, bitrate, passive listen-only, normal receive with ACK, recording, and application receive-only status before Start Acquisition.",
+          "- AC2: Starting acquisition applies the visible options and emits clear connected/error status without mutating Qt widgets from adapter code.",
+          "- AC3: Unsupported bitrate or unavailable controller mode produces an actionable, non-crashing UI message.",
+          "- AC4: Profile persistence restores acquisition options and still never auto-connects on startup.",
+          "- AC5: Tests cover option persistence, mode labelling, unsupported configuration, and absence of transmit affordances."
+        ],
+        "Problem": [
+          "- PeakLive exposes acquisition start/stop but not a complete configuration surface for bitrate and controller acknowledgement semantics.",
+          "- Operators need a safe distinction between application receive-only, passive listen-only, and normal receive with ACK."
+        ]
+      },
+      "status": "Ready",
+      "title": "Upgrade acquisition setup controls"
+    },
+    {
+      "ai_context": {
+        "keywords": "bring, signal, explorer, cantracediag, parity",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_012_bring_the_signal_explorer_to_cantracediag_parity"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_012_bring_the_signal_explorer_to_cantracediag_parity.md",
+      "ref": "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Signals are grouped by original DBC and message, with accessible expand/collapse state.",
+          "- AC2: Favorites, shown-only, and text filters combine predictably and produce a clear empty state.",
+          "- AC3: Clicking a signal adds/removes it from plots without disrupting unrelated signals, favorites, or DBC state.",
+          "- AC4: The explorer remains compact with at least six imported DBCs and no horizontal overflow at supported desktop sizes.",
+          "- AC5: Tests cover grouping, dropdown/search navigation, favorites, shown filtering, signal add/remove, and persistence."
+        ],
+        "Problem": [
+          "- PeakLive's current signal list is flat and cannot efficiently navigate a dense multi-DBC catalog.",
+          "- Operators expect CanTraceDiag-style DBC grouping, favorites, shown filters, and clickable signal rows."
+        ]
+      },
+      "status": "Ready",
+      "title": "Bring the signal explorer to CanTraceDiag parity"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, multi, graph, measurements, configurable, workspace, panels",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels.md",
+      "ref": "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Operators can display multiple graph tracks at the same time and remove/reorder visible signals without losing DBC selection state.",
+          "- AC2: A/B cursors can be placed and moved, and readouts show delta time plus values or deltas for plotted signals.",
+          "- AC3: Workspace configurations toggle graph, trace, combo, inspector, and signal panels without corrupting acquisition, replay, or selected plots.",
+          "- AC4: Collapsed panels restore from the profile and remain keyboard-operable.",
+          "- AC5: Tests cover multi-graph rendering state, cursor readouts, view configuration, panel collapse/restore, and bounded buffer behavior."
+        ],
+        "Problem": [
+          "- PeakLive currently offers a single preview plot and fixed panels, while operators need several simultaneous graphs, cursors, and configurable views.",
+          "- Trace, graphs, inspector, and signal navigation compete for space during live analysis."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver multi-graph measurements and configurable workspace panels"
+    },
+    {
+      "ai_context": {
+        "keywords": "apply, cantracediag, instrument, visual, system, peaklive",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive.md",
+      "ref": "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The workspace uses a coherent instrument-style visual system aligned with the CanTraceDiag reference while remaining native to Qt.",
+          "- AC2: Data-heavy elements use monospaced/tabular presentation where practical and semantic colors are not the only status signal.",
+          "- AC3: Empty, loading, parse error, hardware error, conflict, selected, favorite, and shown states are visually distinct and accessible.",
+          "- AC4: UI tests or screenshots verify no obvious overlap or text clipping in the primary desktop workspace states."
+        ],
+        "Problem": [
+          "- PeakLive's current visual shell is functional but less finished than CanTraceDiag's validated instrument-style interface.",
+          "- A superficial color update would not deliver the precision, density, and state semantics operators expect."
+        ]
+      },
+      "status": "Ready",
+      "title": "Apply the CanTraceDiag instrument visual system to PeakLive"
+    },
+    {
+      "ai_context": {
+        "keywords": "validate, parity, delivery, bounded, hardware, evidence",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/backlog/item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence.md",
+      "ref": "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The validation matrix maps each request acceptance criterion to at least one automated or bounded manual evidence source.",
+          "- AC2: Mandatory validation runs without a connected CAN bus.",
+          "- AC3: Optional live bus validation, when run, lasts no more than 2 minutes and is documented as smoke evidence only.",
+          "- AC4: Closeout includes Logics lint/audit and the project's normal tests."
+        ],
+        "Problem": [
+          "- The UX parity request touches many UI states, but the operator cannot support long live CAN runs for this phase.",
+          "- Validation must distinguish broad fake/replay coverage from optional short hardware smoke evidence."
+        ]
+      },
+      "status": "Ready",
+      "title": "Validate the UX parity delivery with bounded hardware evidence"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, peaklive, cantracediag, parity, delta",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+          "item_010_deliver_multi_dbc_library_and_conflict_management",
+          "item_011_upgrade_acquisition_setup_controls",
+          "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+          "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+          "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+          "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/tasks/task_002_deliver_the_peaklive_cantracediag_ux_parity_delta.md",
+      "ref": "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver the PeakLive CanTraceDiag UX parity delta"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+          "item_010_deliver_multi_dbc_library_and_conflict_management",
+          "item_011_upgrade_acquisition_setup_controls",
+          "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+          "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+          "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+          "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence"
+        ],
+        "prod": [
+          "prod_002_peaklive_cantracediag_grade_diagnostic_workspace"
+        ],
+        "req": [
+          "req_001_bring_peaklive_ux_to_cantracediag_parity"
+        ],
+        "task": [
+          "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+        ]
+      },
+      "path": "logics/product/prod_002_peaklive_cantracediag_grade_diagnostic_workspace.md",
+      "ref": "prod_002_peaklive_cantracediag_grade_diagnostic_workspace",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive CanTraceDiag-grade diagnostic workspace"
+    }
+  ],
+  "estimates": {
+    "char_count": 19881,
+    "companion_doc_count": 1,
+    "doc_count": 10
+  },
+  "generated_at": "2026-08-24T12:09:40Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_001_bring_peaklive_ux_to_cantracediag_parity",
+      "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+      "item_010_deliver_multi_dbc_library_and_conflict_management",
+      "item_011_upgrade_acquisition_setup_controls",
+      "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+      "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+      "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+      "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence",
+      "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 10
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "diff-first",
+  "profile": "deep",
+  "ref": "req_001_bring_peaklive_ux_to_cantracediag_parity,item_009_analyze_the_cantracediag_to_peaklive_ux_delta,item_010_deliver_multi_dbc_library_and_conflict_management,item_011_upgrade_acquisition_setup_controls,item_012_bring_the_signal_explorer_to_cantracediag_parity,item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels,item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive,item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence,task_002_deliver_the_peaklive_cantracediag_ux_parity_delta",
+  "refs": [
+    "req_001_bring_peaklive_ux_to_cantracediag_parity",
+    "item_009_analyze_the_cantracediag_to_peaklive_ux_delta",
+    "item_010_deliver_multi_dbc_library_and_conflict_management",
+    "item_011_upgrade_acquisition_setup_controls",
+    "item_012_bring_the_signal_explorer_to_cantracediag_parity",
+    "item_013_deliver_multi_graph_measurements_and_configurable_workspace_panels",
+    "item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive",
+    "item_015_validate_the_ux_parity_delivery_with_bounded_hardware_evidence",
+    "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_002_deliver_the_peaklive_cantracediag_ux_parity_delta.md",
+      "ref": "task_002_deliver_the_peaklive_cantracediag_ux_parity_delta"
+    }
+  ]
+}
