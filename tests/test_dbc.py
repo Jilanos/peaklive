@@ -33,6 +33,17 @@ def test_catalog_decodes_dbc_signals(tmp_path):
     ]
 
 
+def test_catalog_loads_cp1252_dbc_text(tmp_path):
+    path = tmp_path / "vehicle_cp1252.dbc"
+    path.write_bytes(DBC.replace("km/h", "°C").encode("cp1252"))
+    catalog = DbcCatalog()
+
+    catalog.load(path)
+    decoded = catalog.decode(CanFrame(1.0, 291, b"\xd2\x04" + b"\x00" * 6))
+
+    assert decoded[0].unit == "°C"
+
+
 def test_catalog_requires_explicit_resolution_for_non_equivalent_messages(tmp_path):
     first = tmp_path / "first.dbc"
     second = tmp_path / "second.dbc"

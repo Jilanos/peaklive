@@ -1,14 +1,14 @@
 ## item_008_package_and_qualify_the_windows_mvp - Package and qualify the Windows MVP
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: High
 > Theme: Windows delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:10:33
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # AI Context
 - Summary: Produces the self-contained Windows installer and repeatable clean-machine/hardware evidence required for the three-user MVP rollout.
@@ -59,3 +59,9 @@
 # Priority
 - Priority: Medium — distribution follows feature integration but is required for the three-user rollout.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
+
+# Notes
+- Task `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp` was finished via `logics-manager flow finish task` on 2026-08-24.

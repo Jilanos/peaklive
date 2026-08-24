@@ -30,3 +30,20 @@ adapter without CAN FD support. Opening and closing a passive 500 kbit/s
 connection succeeded. A five-second passive receive probe observed zero frames,
 so a connected active bus at its known bitrate is still required for the
 load/reconnect and recording portions of this checklist.
+
+On 2026-08-24, Windows 11 Pro 10.0.26200 detected `PCAN-USB`
+(`USB\VID_0C72&PID_000C\5&21802C3&0&3`) with driver `5.1.2.20099`.
+Passive probes on `PCAN_USBBUS1` showed error frames at 125, 250, and
+1000 kbit/s, and valid traffic at 500 kbit/s. A 60-second passive
+PeakLive acquisition at 500 kbit/s recorded 47,424 frames with clean
+connect/disconnect events and no error frames in the acceptance probe.
+Evidence is stored in
+`artifacts/hardware-acceptance/20260824-113926-pcan-passive-500k/`.
+
+Later on 2026-08-24, a corrected Windows hardware probe confirmed that wrong
+bitrate PCAN driver error frames are surfaced as `driver_overrun` or
+`error_frame` events instead of data frames. A follow-up 500 kbit/s passive
+recording run was stopped by operator decision after battery constraints; it
+had reached 708,245 received frames and no driver events at the last progress
+update. The full 60-minute acceptance run is deferred by operator decision and
+is not required for this task closeout.

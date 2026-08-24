@@ -1,14 +1,14 @@
 ## item_001_establish_the_native_windows_application_foundation - Establish the native Windows application foundation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Desktop foundation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:10:33
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # AI Context
 - Summary: Creates the native Qt shell, clean domain boundaries, local settings contract, fake adapter, and continuous test baseline used by every later slice.
@@ -53,3 +53,9 @@
 # Priority
 - Priority: High — every vertical feature depends on a deterministic desktop runtime and domain boundary.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
+
+# Notes
+- Task `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp` was finished via `logics-manager flow finish task` on 2026-08-24.

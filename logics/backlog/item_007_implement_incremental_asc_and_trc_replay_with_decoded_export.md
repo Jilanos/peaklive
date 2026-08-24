@@ -1,14 +1,14 @@
 ## item_007_implement_incremental_asc_and_trc_replay_with_decoded_export - Implement incremental ASC and TRC replay with decoded export
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: High
 > Theme: Offline analysis
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:10:33
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # AI Context
 - Summary: Opens ASC and supported text TRC captures incrementally, preserves anomalies, supports bounded navigation, and streams decoded CSV/Parquet exports.
@@ -55,3 +55,9 @@
 # Priority
 - Priority: Medium — installed offline analysis completes the product but can build on the live domain pipeline.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
+
+# Notes
+- Task `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp` was finished via `logics-manager flow finish task` on 2026-08-24.

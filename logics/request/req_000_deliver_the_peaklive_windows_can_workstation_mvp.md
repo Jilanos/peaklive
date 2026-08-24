@@ -1,13 +1,13 @@
 ## req_000_deliver_the_peaklive_windows_can_workstation_mvp - Deliver the PeakLive Windows CAN workstation MVP
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
 > Complexity: High
 > Theme: Windows CAN diagnostics
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:07:26
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # AI Context
 - Summary: Defines the complete receive-only Windows MVP, from one live Classic CAN channel through trustworthy recording, DBC analysis, plots, replay, export, and installation.

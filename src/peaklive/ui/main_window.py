@@ -288,6 +288,7 @@ class MainWindow(QMainWindow):
         self._worker = AcquisitionWorker(self._adapter_factory(), self.selected_profile)
         self._worker.frames_received.connect(self._render_frames)
         self._worker.status_changed.connect(self.status.showMessage)
+        self._worker.event_received.connect(self._render_acquisition_event)
         self._worker.acquisition_failed.connect(self._acquisition_failed)
         self._worker.finished.connect(self._acquisition_finished)
         self.start_button.setEnabled(False)
@@ -325,6 +326,21 @@ class MainWindow(QMainWindow):
             self._plot_times,
             self._plot_samples,
         )
+
+    def _render_acquisition_event(self, event: object) -> None:
+        if isinstance(event, BusEvent):
+            row = self.trace_table.rowCount()
+            self.trace_table.insertRow(row)
+            cells = [
+                f"{event.timestamp:.6f}",
+                event.kind,
+                "",
+                event.message,
+                event.channel,
+                "EVENT",
+            ]
+            for column, value in enumerate(cells):
+                self.trace_table.setItem(row, column, QTableWidgetItem(value))
 
     def _decoded_plot_value(self, frame: CanFrame) -> float | None:
         if self._selected_signal_name is None:

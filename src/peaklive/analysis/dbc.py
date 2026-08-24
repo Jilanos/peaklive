@@ -62,7 +62,7 @@ class DbcCatalog:
         existing = next((item for item in self._definitions if item.content_hash == digest), None)
         if existing is not None:
             return existing
-        database = cantools.database.load_string(content.decode("utf-8"))
+        database = cantools.database.load_string(self._decode_dbc_text(content))
         definition = DbcDefinition(digest, path, database)
         self._definitions.append(definition)
         return definition
@@ -102,6 +102,15 @@ class DbcCatalog:
         except KeyError:
             return False
         return True
+
+    @staticmethod
+    def _decode_dbc_text(content: bytes) -> str:
+        for encoding in ("utf-8-sig", "cp1252", "latin-1"):
+            try:
+                return content.decode(encoding)
+            except UnicodeDecodeError:
+                continue
+        raise UnicodeDecodeError("dbc", content, 0, 1, "unsupported DBC text encoding")
 
     def _select_candidate(self, arbitration_id: int, candidates: list[tuple[DbcDefinition, Any]]):
         if len(candidates) == 1:

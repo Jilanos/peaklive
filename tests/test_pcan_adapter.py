@@ -17,6 +17,7 @@ class StubBus:
                 data=bytearray(b"\x01\x02"),
                 is_extended_id=True,
                 is_remote_frame=False,
+                is_error_frame=False,
             )
         ]
         self.closed = False
@@ -57,3 +58,67 @@ def test_pcan_adapter_rejects_unconfigured_bitrates():
 
     with pytest.raises(ValueError, match="Unsupported initial bitrate"):
         adapter.connect(profile)
+
+
+def test_pcan_adapter_normalizes_driver_error_frames_to_events():
+    bus = StubBus()
+    bus.messages = [
+        SimpleNamespace(
+            timestamp=18.0,
+            arbitration_id=0x4,
+            data=bytearray(b"\x01\x08\x00\x00"),
+            is_extended_id=False,
+            is_remote_frame=False,
+            is_error_frame=True,
+        )
+    ]
+    adapter = PcanAdapter(bus_factory=lambda **kwargs: bus)
+    adapter.connect(MeasurementProfile(name="Wrong bitrate"))
+
+    event = adapter.receive(timeout=0)
+
+    assert event.kind == "error_frame"
+    assert event.message == "PCAN error frame 0x4 data=01 08 00 00"
+    assert event.channel == "channel-1"
+
+
+def test_pcan_adapter_frames_iterator_skips_driver_error_events():
+    bus = StubBus()
+    bus.messages = [
+        SimpleNamespace(
+            timestamp=18.0,
+            arbitration_id=0x4,
+            data=bytearray(b"\x01\x08\x00\x00"),
+            is_extended_id=False,
+            is_remote_frame=False,
+            is_error_frame=True,
+        ),
+        SimpleNamespace(
+            timestamp=19.0,
+            arbitration_id=0x123,
+            data=bytearray(b"\xAA"),
+            is_extended_id=False,
+            is_remote_frame=False,
+            is_error_frame=False,
+        ),
+    ]
+    adapter = PcanAdapter(bus_factory=lambda **kwargs: bus)
+    adapter.connect(MeasurementProfile(name="Mixed"))
+
+    frame = next(adapter.frames())
+
+    assert frame.arbitration_id == 0x123
+
+
+def test_pcan_adapter_normalizes_driver_overrun_exceptions():
+    class OverrunBus(StubBus):
+        def recv(self, timeout):
+            raise can.CanOperationError("The receive queue was read too late")
+
+    adapter = PcanAdapter(bus_factory=lambda **kwargs: OverrunBus())
+    adapter.connect(MeasurementProfile(name="Overrun"))
+
+    event = adapter.receive(timeout=0)
+
+    assert event.kind == "driver_overrun"
+    assert "receive queue was read too late" in event.message

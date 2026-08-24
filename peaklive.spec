@@ -12,7 +12,13 @@ a = Analysis(
     datas=datas,
     hiddenimports=["can.interfaces.pcan"],
     hookspath=[],
-    excludes=[],
+    excludes=[
+        "_pytest",
+        "pytest",
+        "pytestqt",
+        "setuptools",
+        "unittest",
+    ],
 )
 pyz = PYZ(a.pure)
 exe = EXE(

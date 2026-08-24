@@ -1,14 +1,14 @@
 ## item_002_integrate_robust_classic_usb_can_acquisition - Integrate robust Classic USB CAN acquisition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: High
 > Theme: CAN acquisition
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:10:33
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # AI Context
 - Summary: Adds the first capability-driven Windows Classic USB CAN adapter with explicit controller modes, assisted bitrate scan, bus states, and reconnect behaviour.
@@ -54,3 +54,9 @@
 # Priority
 - Priority: High — live hardware access and transparent bus state are the defining MVP capability.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
+
+# Notes
+- Task `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp` was finished via `logics-manager flow finish task` on 2026-08-24.

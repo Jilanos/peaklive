@@ -7,7 +7,7 @@ from threading import Event
 from PySide6.QtCore import QThread, Signal
 
 from peaklive.adapters.base import CanAdapter
-from peaklive.domain import CanFrame, MeasurementProfile
+from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
 from peaklive.recording import AscRecorder
 from peaklive.services.acquisition import AcquisitionSession
 
@@ -17,6 +17,7 @@ class AcquisitionWorker(QThread):
 
     frames_received = Signal(list)
     status_changed = Signal(str)
+    event_received = Signal(object)
     acquisition_failed = Signal(str)
 
     def __init__(self, adapter: CanAdapter, profile: MeasurementProfile) -> None:
@@ -37,13 +38,18 @@ class AcquisitionWorker(QThread):
             started = True
             self.status_changed.emit(event.message)
             while not self._stop_requested.is_set():
-                frame = self._adapter.receive(timeout=0.1)
-                if frame is None:
+                record = self._adapter.receive(timeout=0.1)
+                if record is None:
                     if batch:
                         self.frames_received.emit(session.ingest(batch))
                         batch = []
                     continue
-                batch.append(frame)
+                if isinstance(record, BusEvent):
+                    session.record_event(record)
+                    self.event_received.emit(record)
+                    self.status_changed.emit(record.message)
+                    continue
+                batch.append(record)
                 if len(batch) >= 64:
                     self.frames_received.emit(session.ingest(batch))
                     batch = []

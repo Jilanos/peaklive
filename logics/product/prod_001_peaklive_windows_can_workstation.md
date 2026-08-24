@@ -1,12 +1,12 @@
 ## prod_001_peaklive_windows_can_workstation - PeakLive Windows CAN Workstation
 > Date: 2026-08-22
-> Status: Proposed
+> Status: Settled
 > Related request: `req_000_deliver_the_peaklive_windows_can_workstation_mvp`
-> Related backlog: `item_001_establish_the_native_windows_application_foundation`, `item_002_integrate_robust_classic_usb_can_acquisition`, `item_003_build_the_complete_and_recoverable_recording_pipeline`, `item_004_deliver_the_live_trace_and_display_only_filtering_workspace`, `item_005_add_deterministic_multi_dbc_live_decoding`, `item_006_render_bounded_real_time_signal_plots_and_measurements`, `item_007_implement_incremental_asc_and_trc_replay_with_decoded_export`, `item_008_package_and_qualify_the_windows_mvp`
+> Related backlog: `item_001_establish_the_native_windows_application_foundation`
 > Related task: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-22 12:07:26
+> Indicators reviewed: 2026-08-24 12:28:10
 
 # Overview
 A local, installable Windows workstation for reliable live CAN capture and high-performance DBC-driven trace analysis.
@@ -67,5 +67,5 @@ flowchart LR
 - Confirm whether Windows 10 support can be limited to 22H2 and record the exact Windows 11 builds used by the team.
 
 # References
-- Product back-reference: `req_000_deliver_the_peaklive_windows_can_workstation_mvp`
+- Product back-reference: `item_001_establish_the_native_windows_application_foundation`
 - Task back-reference: `task_001_orchestrate_the_peaklive_windows_can_workstation_mvp`

@@ -30,6 +30,11 @@ class AcquisitionSession:
                 self._recorder.write_frame(frame)
         return captured
 
+    def record_event(self, event: BusEvent) -> BusEvent:
+        if self._recorder.active:
+            self._recorder.write_event(event)
+        return event
+
     def stop(self) -> BusEvent:
         event = self._adapter.disconnect()
         if self._recorder.active:

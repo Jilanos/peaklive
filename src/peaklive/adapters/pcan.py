@@ -66,22 +66,38 @@ class PcanAdapter:
         if self._bus is None:
             return
         while self._bus is not None:
-            frame = self.receive(timeout=0.25)
-            if frame is not None:
-                yield frame
+            record = self.receive(timeout=0.25)
+            if isinstance(record, CanFrame):
+                yield record
 
-    def receive(self, timeout: float) -> CanFrame | None:
+    def receive(self, timeout: float) -> CanFrame | BusEvent | None:
         """Poll one normalized frame so a caller can manage its own lifecycle."""
         if self._bus is None:
             return None
-        message = self._bus.recv(timeout=timeout)
+        try:
+            message = self._bus.recv(timeout=timeout)
+        except self._can_module().CanOperationError as error:
+            return BusEvent(
+                monotonic(),
+                self._driver_error_kind(error),
+                f"PCAN driver error: {error}",
+                self._profile.channel if self._profile else "channel-1",
+            )
         if message is None:
             return None
+        channel = self._profile.channel if self._profile else "channel-1"
+        if bool(getattr(message, "is_error_frame", False)):
+            return BusEvent(
+                float(message.timestamp),
+                "error_frame",
+                self._error_message(message),
+                channel,
+            )
         return CanFrame(
             timestamp=float(message.timestamp),
             arbitration_id=int(message.arbitration_id),
             data=bytes(message.data),
-            channel=self._profile.channel if self._profile else "channel-1",
+            channel=channel,
             is_extended_id=bool(message.is_extended_id),
             is_remote_frame=bool(message.is_remote_frame),
         )
@@ -97,3 +113,23 @@ class PcanAdapter:
     @staticmethod
     def _driver_channel(channel: str) -> str:
         return "PCAN_USBBUS1" if channel == "channel-1" else channel
+
+    @staticmethod
+    def _error_message(message: Any) -> str:
+        code = int(getattr(message, "arbitration_id", 0))
+        data = " ".join(f"{byte:02X}" for byte in bytes(getattr(message, "data", b"")))
+        suffix = f" data={data}" if data else ""
+        return f"PCAN error frame 0x{code:X}{suffix}"
+
+    @staticmethod
+    def _driver_error_kind(error: Exception) -> str:
+        message = str(error).lower()
+        if "queue was read too late" in message or "overrun" in message:
+            return "driver_overrun"
+        if "bus-off" in message or "bus off" in message:
+            return "bus_off"
+        if "passive" in message:
+            return "bus_passive"
+        if "warning" in message:
+            return "bus_warning"
+        return "driver_error"
