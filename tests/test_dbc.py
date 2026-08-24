@@ -59,3 +59,26 @@ def test_catalog_requires_explicit_resolution_for_non_equivalent_messages(tmp_pa
 
     catalog.resolve(291, first_definition.content_hash)
     assert catalog.decode(frame)[0].message_name == "VehicleStatus"
+
+
+def test_catalog_lists_signals_by_dbc_and_ignores_disabled_conflicts(tmp_path):
+    first = tmp_path / "first.dbc"
+    second = tmp_path / "second.dbc"
+    first.write_text(DBC, encoding="utf-8")
+    second.write_text(CONFLICTING_DBC, encoding="utf-8")
+    catalog = DbcCatalog()
+    first_definition = catalog.load(first)
+    second_definition = catalog.load(second)
+
+    assert [conflict.arbitration_id for conflict in catalog.conflicts()] == [291]
+    assert [reference.display_name for reference in catalog.signal_references()] == [
+        "VehicleStatus.Speed",
+        "OtherStatus.Temperature",
+    ]
+
+    catalog.set_enabled(second_definition.content_hash, False)
+
+    assert catalog.conflicts() == ()
+    assert catalog.is_enabled(first_definition.content_hash)
+    assert not catalog.is_enabled(second_definition.content_hash)
+    assert catalog.decode(CanFrame(1.0, 291, b"\xd2\x04" + b"\x00" * 6))[0].value == 123.4

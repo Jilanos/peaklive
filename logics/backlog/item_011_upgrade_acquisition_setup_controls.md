@@ -1,13 +1,14 @@
 ## item_011_upgrade_acquisition_setup_controls - Upgrade acquisition setup controls
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 0%
+> Progress: 70%
 > Complexity: Medium
 > Theme: Acquisition configuration UX
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-24 14:35:25
 
 # AI Context
 - Summary: Exposes bitrate, channel, passive listen-only, normal receive with ACK, recording, and receive-only safety state before live acquisition starts.
