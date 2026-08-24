@@ -1,14 +1,14 @@
 ## item_012_bring_the_signal_explorer_to_cantracediag_parity - Bring the signal explorer to CanTraceDiag parity
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 70%
+> Progress: 100%
 > Complexity: High
 > Theme: Signal explorer UX
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-24 14:35:25
+> Indicators reviewed: 2026-08-24 14:43:19
 
 # AI Context
 - Summary: Reworks the signal panel into a CanTraceDiag-style DBC/message-grouped explorer with search, favorites, shown filtering, and clickable plot selection.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - signal navigation drives DBC, plot, and inspector usefulness.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`
+
+# Notes
+- Task `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta` was finished via `logics-manager flow finish task` on 2026-08-24.

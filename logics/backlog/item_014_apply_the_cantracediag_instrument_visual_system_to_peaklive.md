@@ -1,14 +1,14 @@
 ## item_014_apply_the_cantracediag_instrument_visual_system_to_peaklive - Apply the CanTraceDiag instrument visual system to PeakLive
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 70%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Visual design
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-24 14:35:25
+> Indicators reviewed: 2026-08-24 14:43:19
 
 # AI Context
 - Summary: Applies the CanTraceDiag instrument visual system to PeakLive with Qt-appropriate tokens, dense data typography, compact controls, and polished states.
@@ -56,3 +56,9 @@
 # Priority
 - Priority: Medium - visual polish should land after the main interaction surfaces are known.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta`
+
+# Notes
+- Task `task_002_deliver_the_peaklive_cantracediag_ux_parity_delta` was finished via `logics-manager flow finish task` on 2026-08-24.
