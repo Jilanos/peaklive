@@ -1,14 +1,14 @@
 ## item_019_deliver_display_only_trace_filtering_with_active_filter_chips - Deliver display-only trace filtering with active filter chips
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: High
 > Theme: Trace view
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:43:05
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # AI Context
 - Summary: Implements the display-only trace filtering the product scope already promises but the UI never had: ID, message, signal, direction, event kind, decode status and time range, frames/events toggles, removable active-filter chips, and persistence in the measurement profile.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - the product scope already promises display-only trace filtering that does not exist.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
+
+# Notes
+- Task `task_003_deliver_the_peaklive_analyst_workspace_parity_wave` was finished via `logics-manager flow finish task` on 2026-08-25.

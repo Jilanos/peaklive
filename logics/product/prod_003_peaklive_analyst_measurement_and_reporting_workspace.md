@@ -1,12 +1,12 @@
 ## prod_003_peaklive_analyst_measurement_and_reporting_workspace - PeakLive analyst measurement and reporting workspace
 > Date: 2026-08-25
-> Status: Proposed
+> Status: Settled
 > Related request: `req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity`
-> Related backlog: `item_016_make_the_frame_inspector_selection_driven`, `item_017_stabilize_a_b_cursors_and_add_graph_time_navigation`, `item_018_deliver_the_range_measurement_table`, `item_019_deliver_display_only_trace_filtering_with_active_filter_chips`, `item_020_deliver_configurable_bounded_trace_columns_and_paging`, `item_021_expose_streamed_csv_and_parquet_export_from_the_workspace`, `item_022_deliver_the_session_diagnostic_report`, `item_023_deliver_bus_state_error_and_loading_feedback`, `item_024_deliver_keyboard_accessibility_menus_and_layout_persistence`, `item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage`
+> Related backlog: `item_016_make_the_frame_inspector_selection_driven`
 > Related task: `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:52
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # Overview
 The second half of the CanTraceDiag-grade PeakLive workspace: once DBC management, signal navigation, and stacked plots exist, this brief covers what an analyst actually does with them - inspect a chosen frame, hold a measurement, quantify a range, filter and shape the trace, export the result, report the session, and do all of it from the keyboard on a bench machine.
@@ -57,5 +57,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity`
+- Product back-reference: `item_016_make_the_frame_inspector_selection_driven`
 - Task back-reference: `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`

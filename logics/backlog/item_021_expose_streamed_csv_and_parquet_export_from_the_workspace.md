@@ -1,14 +1,14 @@
 ## item_021_expose_streamed_csv_and_parquet_export_from_the_workspace - Expose streamed CSV and Parquet export from the workspace
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Export
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:43:05
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # AI Context
 - Summary: Makes the existing peaklive.analysis.export writers reachable: an export dialog with signal selection, CSV or Parquet output, and A-B / visible-window / full-buffer scopes, streamed with bounded memory, reporting progress, and cancellable without leaving a partial file that looks complete.
@@ -59,3 +59,9 @@
 # Priority
 - Priority: High - the export engine already exists and is unreachable from the UI.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
+
+# Notes
+- Task `task_003_deliver_the_peaklive_analyst_workspace_parity_wave` was finished via `logics-manager flow finish task` on 2026-08-25.
