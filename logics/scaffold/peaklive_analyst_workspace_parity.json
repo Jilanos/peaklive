@@ -1,0 +1,438 @@
+{
+  "title": "Complete the PeakLive analyst workspace to CanTraceDiag parity",
+  "references": [
+    "README.md",
+    "docs/product-scope.md",
+    "docs/architecture.md",
+    "docs/cantracediag-ux-delta.md",
+    "docs/windows-hardware-acceptance.md",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/analysis/export.py",
+    "src/peaklive/analysis/dbc.py",
+    "src/peaklive/analysis/replay.py",
+    "src/peaklive/domain/models.py",
+    "src/peaklive/services/profiles.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/i18n.py",
+    "tests/test_ui.py",
+    "tests/test_export.py",
+    "tests/test_replay.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Desktop diagnostic analyst workspace",
+    "needs": [
+      "Close the analyst-facing gap that remains after the first CanTraceDiag parity wave, which delivered the DBC library, signal explorer, stacked graphs, and instrument styling but left measurement, trace inspection, export, and reporting behind.",
+      "Make the frame inspector usable: it must describe the frame the operator selected in the trace, not the last decoded signal that happened to stream past.",
+      "Let operators keep an A/B measurement in place during live acquisition and read real signal statistics from it, not only a time delta.",
+      "Give the trace view the display-only filtering and configurable columns the product scope already promises, with bounded memory and no quadratic row churn.",
+      "Make the already implemented CSV/Parquet export and a session diagnostic report reachable from the workspace instead of only from library code.",
+      "Make bus state, decode conflicts, recording warnings, and loading progress visible where the operator is looking, instead of in a transient status-bar message.",
+      "Make the workspace operable from the keyboard and stable across bench screen sizes, and split the monolithic main window so further UX work stops compounding in one file.",
+      "Keep validation practical: no live CAN bus test in this request may require more than 2 minutes of connected bus time."
+    ],
+    "context": [
+      "The first parity request (req_001) is closed and delivered the multi-DBC library with conflict resolution, the grouped signal explorer with search and favorites, stacked per-signal plots with A/B cursors, collapsible panels, and the darker instrument stylesheet. docs/cantracediag-ux-delta.md records that map.",
+      "A follow-up diagnostic against the sibling CanTraceDiag checkout found the remaining delta concentrated in measurement, trace inspection, export, reporting, feedback states, and accessibility.",
+      "src/peaklive/ui/main_window.py is a single 863-line module holding the top bar, DBC library, signal explorer, graph stack, trace table, inspector, and the inline stylesheet; every remaining gap lands in that one file.",
+      "The inspector is a QLabel written from inside the frame-render loop. There is no trace selection handler at all, so selecting a trace row does nothing.",
+      "The graph refresh path re-pins cursor A to the first sample and cursor B to the last sample on every incoming batch, so a placed measurement cannot survive live acquisition.",
+      "The cursor readout reports timestamps and a time delta only. No signal value, count, min, max, mean, standard deviation, RMS, or enum distribution is computed anywhere in the application.",
+      "The trace table has six hard-coded columns, no filter controls, and caps itself at 5000 rows by removing the first row repeatedly, which is quadratic under load. profile.trace_filters currently stores only the workspace mode and DBC state.",
+      "peaklive.analysis.export exposes export_csv and export_parquet with a batched Parquet writer, but no UI code path calls either function.",
+      "There is no session report, no bus-state indicator beyond the controller-mode pill, no progress or cancel affordance for DBC loading and replay, and no persisted splitter geometry.",
+      "The module contains no QShortcut, no QKeySequence, and no tooltip; recent controls carry English string literals rather than i18n keys, and i18n.py loads only en.json.",
+      "CanTraceDiag validates its layout at 1024x768, 1280x720, and 1600x900; PeakLive sets no minimum window size and has no layout verification.",
+      "PeakLive stays application-level receive-only. This request introduces no transmit path, no cyclic transmit, and no diagnostic protocol.",
+      "PeakLive is a native PySide6 application. CanTraceDiag behaviors must be translated into Qt widgets and existing domain services, never ported as web code.",
+      "Live bus validation remains bounded: fake adapters and replay fixtures carry broad coverage, and at most 2 minutes of real PCAN bus time may be used for hardware smoke evidence."
+    ],
+    "acceptance_criteria": [
+      "AC1: Selecting a row in the trace view drives the inspector, which shows the frame identity (timestamp, arbitration ID with extended flag, DLC, channel, direction), the raw payload in hexadecimal and per-byte form, the resolved message name with its source DBC, the decode status, and every decoded physical signal with raw value, physical value, and unit; the same behavior holds during live acquisition and replay.",
+      "AC2: A/B cursors keep the position the operator gave them across incoming data batches, profile reloads, and view switches, and the graph stack offers zoom, pan, fit-to-extent, and grid toggling on a shared time axis with a visible time window and zoom-factor readout.",
+      "AC3: A measurement table under the graph stack lists, per shown signal, the values at cursor A and cursor B, their delta, and the A-B range statistics (sample count, min, max, mean, standard deviation, RMS) for numeric signals, and a value distribution for enumerated or textual signals; the table states explicitly when both cursors are not yet placed.",
+      "AC4: The trace view offers display-only filtering by arbitration ID, message name, signal name, direction, event kind, decode status, and time range, plus frames-only and events-only toggles; active filters are shown as individually removable chips with a clear-all action, secondary filters are progressively disclosed, filtering never alters recorded data, and the filter set persists in the measurement profile.",
+      "AC5: Trace columns are configurable for visibility, order, width, and value format (time, hexadecimal, decimal, binary, status), the configuration persists per profile, and the trace view stays bounded in memory under sustained load without per-row quadratic pruning.",
+      "AC6: Operators can export selected decoded signals to CSV or Parquet from the workspace, choosing the range between cursors A and B, the visible time window, or the full retained buffer; the export streams with bounded memory, reports progress, can be cancelled, and reports written row counts and failures inline.",
+      "AC7: A session diagnostic report view summarizes the acquisition or replay: time range, frame and event volumes, frames per second, loaded DBCs with signal counts and enabled state, decode coverage, and anomalies grouped by type (unknown arbitration IDs, DBC conflicts, malformed records, bus errors, recording warnings); the report can be refreshed and exported to a local file.",
+      "AC8: A bus-state indicator shows connection state (idle, connecting, running, reconnecting, bus error, bus-off, stopped) with a text label next to it, and every failure or waiting condition has an explicit panel-local state: empty trace, filtered-to-empty trace, DBC parse or conflict error, plot without data, export failure, recording disk warning, and a progress indicator with cancellation for DBC loading and replay import.",
+      "AC9: The workspace is fully operable from the keyboard: shortcuts cover start and stop acquisition, view switching, panel collapse, cursor A and B placement, fit view, filter focus, and fullscreen; every actionable control carries a tooltip and an accessible name; tab order reaches the DBC library, signal explorer, filter fields, trace rows, measurement table, and every dialog.",
+      "AC10: The workspace exposes a menu bar (File, View, Help) covering the actions previously available only as top-bar buttons plus an About entry, a fullscreen mode, a resizable divider between the graph stack and the trace view, and splitter geometry and collapse state persisted per profile; the layout stays usable at 1024x768, 1280x720, and 1600x900 with a declared minimum window size.",
+      "AC11: src/peaklive/ui/main_window.py is decomposed into focused UI modules (at minimum acquisition bar, DBC library, signal explorer, graph stack, trace view, inspector, report, and stylesheet tokens) with the main window reduced to composition and wiring, no behavior regression against the delivered req_001 parity map, and every user-visible string routed through the i18n layer.",
+      "AC12: Automated coverage runs headless under QT_QPA_PLATFORM=offscreen and validates inspector selection, cursor persistence, range statistics, trace filtering and chips, column configuration and bounded pruning, export scopes and cancellation, report contents, bus-state and error states, keyboard shortcuts and tab order, and layout persistence; no acceptance gate depends on connected hardware, and any live PCAN smoke evidence is optional and capped at 2 minutes.",
+      "AC13: No transmit, cyclic transmit, or diagnostic-protocol capability is introduced, and passive listen-only still never acknowledges traffic."
+    ]
+  },
+  "product": {
+    "title": "PeakLive analyst measurement and reporting workspace",
+    "overview": "The second half of the CanTraceDiag-grade PeakLive workspace: once DBC management, signal navigation, and stacked plots exist, this brief covers what an analyst actually does with them - inspect a chosen frame, hold a measurement, quantify a range, filter and shape the trace, export the result, report the session, and do all of it from the keyboard on a bench machine.",
+    "goals": [
+      "Make frame-level inspection real by driving the inspector from the operator's trace selection.",
+      "Make measurement trustworthy: cursors that stay where they were placed, and range statistics computed over the retained buffer.",
+      "Make the trace view usable on a dense multi-DBC bus through display-only filtering, configurable columns, and bounded memory.",
+      "Make the session's output reachable: streamed CSV and Parquet export over a chosen range, and a diagnostic report of what was captured.",
+      "Make state legible: bus condition, decode conflicts, recording warnings, progress, and every empty or error case visible where the operator is looking.",
+      "Make the workspace keyboard-operable, size-stable on bench screens, and structured in modules so further UX work stops accumulating in one file."
+    ],
+    "non_goals": [
+      "Add frame transmission, cyclic transmit, diagnostic protocols, CAN FD, LIN, or multi-channel acquisition.",
+      "Port CanTraceDiag's browser implementation or introduce a web or PWA layer into PeakLive.",
+      "Move analysis off the local machine or introduce any cloud, network, or telemetry dependency.",
+      "Require a long connected-bus qualification run for a workspace change; any live PCAN evidence stays optional and capped at 2 minutes.",
+      "Replace the PeakLive domain models, adapter boundary, or lossless recorder contract."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Make the frame inspector selection-driven",
+      "priority": "High - the inspector is currently non-functional and blocks any real frame-level analysis.",
+      "complexity": "Medium",
+      "theme": "Trace inspection",
+      "request_acs": ["AC1", "AC8", "AC12"],
+      "problem": [
+        "The inspector is a QLabel overwritten from inside the frame-render loop with whichever decoded signal streamed past last.",
+        "There is no trace selection handler, so clicking a trace row produces no inspection at all and the operator cannot answer 'what was in that frame'."
+      ],
+      "scope_in": [
+        "Add a trace row selection handler that resolves the selected row back to its retained frame or bus event.",
+        "Render frame identity: timestamp, arbitration ID with extended flag, DLC, channel, and direction.",
+        "Render the raw payload as a hexadecimal string and as a per-byte breakdown.",
+        "Render the resolved message name with its source DBC, the decode status, and every decoded physical signal with raw value, physical value, and unit.",
+        "Render bus events with their kind and message when the selected row is an event rather than a frame.",
+        "Keep the inspector correct during live acquisition, during replay, and after the trace view prunes older rows.",
+        "Give the inspector an explicit empty state and an explicit undecodable state."
+      ],
+      "scope_out": [
+        "Editing or retransmitting the inspected frame.",
+        "Bit-level graphical payload layout rendering.",
+        "Cross-frame diffing or sequence analysis."
+      ],
+      "acceptance_criteria": [
+        "AC1: Selecting a trace row populates the inspector with that frame's identity, raw payload, resolved message, decode status, and decoded signals.",
+        "AC2: Selecting a bus event row shows the event kind and message instead of frame fields.",
+        "AC3: The inspector no longer changes as a side effect of incoming frames when a row is selected.",
+        "AC4: With no selection the inspector shows an explicit empty state, and an undecodable frame shows the raw payload with a stated reason.",
+        "AC5: Headless offscreen tests cover frame selection, event selection, undecodable frames, and selection surviving trace pruning."
+      ]
+    },
+    {
+      "title": "Stabilize A/B cursors and add graph time navigation",
+      "priority": "High - a measurement that resets on every data batch cannot be used live.",
+      "complexity": "Medium",
+      "theme": "Graph measurement",
+      "request_acs": ["AC2", "AC12"],
+      "problem": [
+        "The graph refresh path re-pins cursor A to the first sample and cursor B to the last sample on every incoming batch, so a placed measurement is destroyed during live acquisition.",
+        "The graph stack offers no explicit zoom, pan, fit, or grid control, no shared time axis across stacked plots, and no readout of the visible window or zoom factor."
+      ],
+      "scope_in": [
+        "Separate cursor initialization from cursor refresh so operator-placed cursors are never overwritten by incoming data.",
+        "Persist cursor positions per profile and restore them on reload and on view switching.",
+        "Link the time axis across the stacked plots so pan and zoom apply coherently to all shown signals.",
+        "Add explicit zoom in, zoom out, fit-to-extent, and grid toggle controls, plus a visible time window and zoom-factor readout.",
+        "Add a follow-live mode that tracks the newest samples and yields as soon as the operator pans or zooms.",
+        "Keep the bounded per-signal sample buffers and the raw-byte preview fallback behavior intact."
+      ],
+      "scope_out": [
+        "Y-axis autoscale policies beyond what is needed to keep placed cursors valid.",
+        "Multi-signal overlay on a single plot.",
+        "Annotation or bookmark persistence on the time axis."
+      ],
+      "acceptance_criteria": [
+        "AC1: A cursor moved by the operator keeps its position across at least ten subsequent data batches.",
+        "AC2: Cursor positions survive a profile reload and a workspace view switch.",
+        "AC3: Pan and zoom on one plot apply the same time window to every other shown plot.",
+        "AC4: Zoom in, zoom out, fit, and grid controls are present and change the rendered window or grid state.",
+        "AC5: The readout shows the visible time window and the zoom factor relative to the full extent.",
+        "AC6: Follow-live mode tracks new samples and disengages on operator pan or zoom.",
+        "AC7: Headless offscreen tests cover cursor persistence, axis linking, and the navigation controls."
+      ]
+    },
+    {
+      "title": "Deliver the range measurement table",
+      "priority": "High - range statistics are the primary reason an analyst places two cursors.",
+      "complexity": "Medium",
+      "theme": "Graph measurement",
+      "request_acs": ["AC3", "AC12"],
+      "problem": [
+        "The cursor readout reports timestamps and a time delta only, with no signal value at either cursor.",
+        "No count, min, max, mean, standard deviation, RMS, or enum distribution is computed anywhere in the application, so the operator must export data to answer basic questions."
+      ],
+      "scope_in": [
+        "Add a range statistics function in the analysis layer computing sample count, min, max, mean, standard deviation, and RMS over a bounded time range for one signal.",
+        "Add a value distribution computation for enumerated or textual signals over the same range.",
+        "Add a nearest-sample cursor value lookup per shown signal for cursors A and B.",
+        "Render a measurement table under the graph stack combining, per shown signal, the value at A, the value at B, the delta, and the range statistics.",
+        "State explicitly when both cursors are not yet placed and when a signal has no sample in the range.",
+        "Keep the computation bounded so it stays responsive with the full retained buffer."
+      ],
+      "scope_out": [
+        "Statistics over the recorded ASC file rather than the retained in-memory buffer.",
+        "Frequency-domain analysis, histograms as charts, or curve fitting.",
+        "Cross-signal correlation."
+      ],
+      "acceptance_criteria": [
+        "AC1: For a numeric signal with known samples, the table reports the correct count, min, max, mean, standard deviation, and RMS between the two cursors.",
+        "AC2: The table reports the value at cursor A, the value at cursor B, and their delta per shown signal.",
+        "AC3: An enumerated or textual signal shows a value distribution instead of numeric statistics.",
+        "AC4: With one or zero cursors placed, the table states that a range measurement needs both cursors.",
+        "AC5: A signal with no sample inside the range is reported as such rather than as zero.",
+        "AC6: Unit tests verify the statistics against fixture series, and headless offscreen tests verify the rendered table."
+      ]
+    },
+    {
+      "title": "Deliver display-only trace filtering with active filter chips",
+      "priority": "High - the product scope already promises display-only trace filtering that does not exist.",
+      "complexity": "High",
+      "theme": "Trace view",
+      "request_acs": ["AC4", "AC12"],
+      "problem": [
+        "The trace view has no filter control of any kind, although display-only filtering is a stated MVP capability.",
+        "Without filtering, a dense multi-DBC bus makes the trace view unusable for targeted inspection."
+      ],
+      "scope_in": [
+        "Add filter inputs for arbitration ID, message name, signal name, direction, event kind, decode status, and a time range.",
+        "Add frames-only and events-only toggles.",
+        "Show each active filter as an individually removable chip with a clear-all action.",
+        "Progressively disclose secondary filters so the default trace header stays compact.",
+        "Apply filtering to display only, never to the recorded ASC stream or the retained buffer used by graphs and export.",
+        "Persist the filter set in the measurement profile and restore it on reload.",
+        "Show an explicit filtered-to-empty state distinct from the no-data state."
+      ],
+      "scope_out": [
+        "Hardware or driver-level acceptance filtering.",
+        "Saved named filter presets shared between profiles.",
+        "Regular-expression filter syntax."
+      ],
+      "acceptance_criteria": [
+        "AC1: Each filter field narrows the displayed rows and leaves the retained buffer, graphs, and recording untouched.",
+        "AC2: Combining several filters intersects them, and each active filter appears as a removable chip.",
+        "AC3: Clear-all removes every filter and restores the full displayed trace.",
+        "AC4: Frames-only and events-only toggles behave independently of the field filters.",
+        "AC5: The filter set persists across an application restart on the same profile.",
+        "AC6: A filter matching nothing shows a filtered-to-empty state distinct from the empty-trace state.",
+        "AC7: Headless offscreen tests cover each filter dimension, chip removal, persistence, and the empty states."
+      ]
+    },
+    {
+      "title": "Deliver configurable, bounded trace columns and paging",
+      "priority": "Medium - column control and bounded pruning make repeated inspection sessions practical.",
+      "complexity": "Medium",
+      "theme": "Trace view",
+      "request_acs": ["AC5", "AC12"],
+      "problem": [
+        "The trace table has six hard-coded columns with no visibility, order, width, or format control.",
+        "The 5000-row cap is enforced by removing the first row repeatedly, which is quadratic and stalls the UI under sustained load."
+      ],
+      "scope_in": [
+        "Add a column configuration dialog covering visibility, order, width, and value format (time, hexadecimal, decimal, binary, status).",
+        "Persist the column configuration per measurement profile.",
+        "Replace the per-row pruning with a bounded ring-style model so the displayed window stays constant-time under load.",
+        "Add navigation across the retained buffer so the operator can move away from the live tail and back.",
+        "Keep the trace view responsive with a sustained high-rate fixture."
+      ],
+      "scope_out": [
+        "Server-side or file-backed keyset pagination over the recorded ASC file.",
+        "Column grouping, freezing, or pivoting.",
+        "Per-column sorting of a chronological trace."
+      ],
+      "acceptance_criteria": [
+        "AC1: Column visibility, order, width, and format can be changed and take effect immediately.",
+        "AC2: The column configuration persists across an application restart on the same profile.",
+        "AC3: Each supported format renders the same underlying value correctly, including hexadecimal, decimal, and binary payload views.",
+        "AC4: Sustained ingestion beyond the retained window keeps memory bounded without per-row removal, verified by a timing or operation-count assertion.",
+        "AC5: The operator can navigate away from the live tail and return to it.",
+        "AC6: Headless offscreen tests cover the dialog, persistence, formats, and bounded pruning."
+      ]
+    },
+    {
+      "title": "Expose streamed CSV and Parquet export from the workspace",
+      "priority": "High - the export engine already exists and is unreachable from the UI.",
+      "complexity": "Medium",
+      "theme": "Export",
+      "request_acs": ["AC6", "AC12"],
+      "problem": [
+        "peaklive.analysis.export provides export_csv and export_parquet, but no UI code path calls either, so the documented CSV/Parquet capability is unreachable.",
+        "An analyst who has placed cursors has no way to get that exact range out of the application."
+      ],
+      "scope_in": [
+        "Add an export dialog selecting the signals to export, the output format (CSV or Parquet), the destination path, and the range scope.",
+        "Support the range between cursors A and B, the visible time window, and the full retained buffer as scopes.",
+        "Stream rows into the existing batched writers so memory stays bounded for large ranges.",
+        "Report progress during export and allow cancellation, leaving no partial file presented as complete.",
+        "Report the written row count on success and the reason inline on failure, without echoing unexpected local paths into error text.",
+        "Default the signal selection to the currently shown signals."
+      ],
+      "scope_out": [
+        "Export of raw undecoded frames to a new trace format.",
+        "Scheduled, recurring, or automated export.",
+        "Cloud or network export destinations."
+      ],
+      "acceptance_criteria": [
+        "AC1: The export dialog is reachable from the workspace and defaults to the shown signals.",
+        "AC2: Each of the three scopes produces exactly the rows in that range, verified against a fixture series.",
+        "AC3: CSV and Parquet outputs are both produced and readable, with matching row counts.",
+        "AC4: A large export streams with bounded memory and reports progress.",
+        "AC5: Cancelling an export leaves no file that could be mistaken for a complete export, and the UI states the cancellation.",
+        "AC6: A failing export reports the reason inline and keeps the workspace usable.",
+        "AC7: Headless offscreen tests cover the dialog, all three scopes, both formats, cancellation, and failure."
+      ]
+    },
+    {
+      "title": "Deliver the session diagnostic report",
+      "priority": "Medium - the report turns a session into shareable evidence and closes the reference parity gap.",
+      "complexity": "Medium",
+      "theme": "Reporting",
+      "request_acs": ["AC7", "AC12"],
+      "problem": [
+        "PeakLive has no session synthesis at all, so an operator finishing an acquisition cannot state what was captured, which DBCs applied, or what went wrong.",
+        "Anomalies such as unknown arbitration IDs, DBC conflicts, malformed replay records, bus errors, and recording warnings are currently either transient or invisible."
+      ],
+      "scope_in": [
+        "Collect session facts during acquisition and replay: time range, frame and event volumes, frames per second, and per-arbitration-ID counts.",
+        "Collect the loaded DBCs with signal counts, enabled state, and conflict resolutions applied.",
+        "Collect decode coverage, that is the share of frames resolved to a DBC message.",
+        "Collect anomalies grouped by type: unknown arbitration IDs, DBC conflicts, malformed replay records, bus errors, and recording warnings.",
+        "Add a report view in the workspace view selector with a refresh action.",
+        "Export the report to a local file.",
+        "Keep the collection bounded so it does not grow without limit during a long session."
+      ],
+      "scope_out": [
+        "Report templates, branding, or customer-facing layouts.",
+        "Statistical anomaly detection or automated fault diagnosis.",
+        "Comparison of two sessions."
+      ],
+      "acceptance_criteria": [
+        "AC1: The report shows the session time range, frame and event volumes, frames per second, and per-arbitration-ID counts.",
+        "AC2: The report lists each loaded DBC with signal count, enabled state, and applied conflict resolutions.",
+        "AC3: The report states decode coverage and groups anomalies by type with counts.",
+        "AC4: The report is reachable from the workspace view selector and can be refreshed.",
+        "AC5: The report exports to a local file whose content matches the displayed report.",
+        "AC6: Report collection stays bounded during a sustained fixture session.",
+        "AC7: Headless offscreen tests cover the report contents against fixture sessions, including an anomaly-bearing replay fixture."
+      ]
+    },
+    {
+      "title": "Deliver bus-state, error, and loading feedback",
+      "priority": "High - a live acquisition tool must make its connection and failure states unmissable.",
+      "complexity": "Medium",
+      "theme": "Operator feedback",
+      "request_acs": ["AC8", "AC12"],
+      "problem": [
+        "The only status affordance is the controller-mode pill; bus events land in the trace table and DBC conflicts appear as a transient status-bar message the operator will miss.",
+        "There is no progress or cancel affordance for DBC loading or replay import, and no explicit empty, error, or loading state in any panel."
+      ],
+      "scope_in": [
+        "Add a bus-state indicator with a colored state marker and a text label covering idle, connecting, running, reconnecting, bus error, bus-off, and stopped.",
+        "Surface DBC parse and conflict errors as persistent panel-local messages in the DBC library instead of transient status-bar text.",
+        "Add explicit empty, error, and loading states for the trace view, the graph stack, the inspector, the report, and the export flow.",
+        "Add a progress indicator with cancellation for multi-DBC loading and for replay import.",
+        "Surface recording disk warnings and the stop threshold from RecordingSettings as visible operator warnings.",
+        "Keep every state string routed through the i18n layer."
+      ],
+      "scope_out": [
+        "Notification centre, toast history, or persisted alert log.",
+        "Changing the recorder's disk threshold policy itself.",
+        "Sound or system-tray alerts."
+      ],
+      "acceptance_criteria": [
+        "AC1: The bus-state indicator reflects each of the seven states and is driven by real acquisition and adapter events.",
+        "AC2: A DBC parse failure or unresolved conflict shows a persistent message in the DBC library panel that survives further frame traffic.",
+        "AC3: The trace view, graph stack, inspector, report, and export flow each show a distinct empty, error, and loading state.",
+        "AC4: Loading several DBC files and importing a replay file both show progress and can be cancelled.",
+        "AC5: A recording disk warning and a recording stop threshold both surface as visible operator warnings.",
+        "AC6: Every state string resolves through the i18n layer with no bare literal.",
+        "AC7: Headless offscreen tests cover each state transition using fake adapters and fixtures."
+      ]
+    },
+    {
+      "title": "Deliver keyboard accessibility, menus, and layout persistence",
+      "priority": "Medium - bench use is keyboard-driven and the current layout is neither persisted nor size-verified.",
+      "complexity": "Medium",
+      "theme": "Workspace ergonomics",
+      "request_acs": ["AC9", "AC10", "AC12"],
+      "problem": [
+        "The main window contains no shortcut and no tooltip, so every action requires a mouse and no control explains itself.",
+        "Splitter sizes are hard-coded and never persisted, there is no menu bar, no fullscreen mode, no resizable divider between graphs and trace, and no verified behavior at bench screen sizes."
+      ],
+      "scope_in": [
+        "Add shortcuts for start and stop acquisition, view switching, panel collapse, cursor A and B placement, fit view, filter focus, and fullscreen.",
+        "Add a tooltip and an accessible name to every actionable control.",
+        "Ensure tab order reaches the DBC library, signal explorer, filter fields, trace rows, measurement table, and every dialog, and that dialogs are fully keyboard-operable.",
+        "Add a menu bar with File, View, and Help covering the top-bar actions plus an About entry.",
+        "Add a fullscreen mode and a resizable divider between the graph stack and the trace view.",
+        "Persist splitter geometry, divider position, and collapse state per profile.",
+        "Declare a minimum window size and verify the layout at 1024x768, 1280x720, and 1600x900.",
+        "Publish the shortcut list in the repository documentation."
+      ],
+      "scope_out": [
+        "Fully user-remappable keybindings.",
+        "Screen-reader certification against a formal accessibility standard.",
+        "Touch or mobile layouts."
+      ],
+      "acceptance_criteria": [
+        "AC1: Every listed shortcut is bound and performs its action.",
+        "AC2: Every actionable control exposes a tooltip and an accessible name.",
+        "AC3: Tab order reaches each listed region and every dialog can be completed and dismissed from the keyboard.",
+        "AC4: The menu bar exposes the top-bar actions plus About, and fullscreen can be entered and left.",
+        "AC5: Splitter geometry, divider position, and collapse state persist across an application restart on the same profile.",
+        "AC6: The layout stays usable at 1024x768, 1280x720, and 1600x900, with no control clipped below the declared minimum size.",
+        "AC7: The shortcut list is documented in the repository.",
+        "AC8: Headless offscreen tests cover shortcuts, tab order, menu actions, persistence, and the three viewport sizes."
+      ]
+    },
+    {
+      "title": "Decompose the workspace UI into modules with parity regression coverage",
+      "priority": "High - the monolithic main window is the root cause that makes each parity gap compound.",
+      "complexity": "High",
+      "theme": "UI architecture",
+      "request_acs": ["AC11", "AC12", "AC13"],
+      "problem": [
+        "src/peaklive/ui/main_window.py holds the top bar, DBC library, signal explorer, graph stack, trace table, inspector, and the inline stylesheet in one 863-line module, and this request adds filtering, columns, measurement, export, report, and feedback on top of it.",
+        "Recent controls carry English string literals rather than i18n keys, so the i18n layer no longer reflects the real UI surface."
+      ],
+      "scope_in": [
+        "Split the main window into focused modules covering at minimum the acquisition bar, DBC library, signal explorer, graph stack, trace view, inspector, report, and stylesheet tokens.",
+        "Reduce the main window to composition, wiring, and profile persistence.",
+        "Extract the inline stylesheet into a token module shared by every panel.",
+        "Route every user-visible string through the i18n layer and extend en.json accordingly.",
+        "Keep the existing domain and service boundaries and the receive-only guarantee unchanged.",
+        "Add regression coverage that pins the delivered req_001 parity behaviors so the decomposition cannot silently drop them.",
+        "Update docs/architecture.md and docs/cantracediag-ux-delta.md to describe the resulting module map and the closed delta."
+      ],
+      "scope_out": [
+        "Introducing a UI framework, MVVM library, or dependency-injection container.",
+        "Changing the domain models, adapter boundary, or recorder contract.",
+        "Adding any transmit capability while restructuring."
+      ],
+      "acceptance_criteria": [
+        "AC1: No single UI module exceeds a stated line budget, and the main window contains composition and wiring only.",
+        "AC2: The stylesheet lives in a token module used by every panel, with no inline stylesheet left in the main window.",
+        "AC3: Every user-visible string resolves through the i18n layer, and en.json covers the full UI surface.",
+        "AC4: A regression suite pins the req_001 parity behaviors and passes before and after the decomposition.",
+        "AC5: The domain boundary test still passes and no transmit path exists anywhere in the UI layer.",
+        "AC6: docs/architecture.md and docs/cantracediag-ux-delta.md describe the module map and record the closed delta with test evidence."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver the PeakLive analyst workspace parity wave",
+    "plan": [
+      "Confirm the delta baseline against docs/cantracediag-ux-delta.md and the sibling CanTraceDiag checkout, then refresh the stale logics index.",
+      "Decompose src/peaklive/ui/main_window.py into focused modules first, behind a regression suite pinning the delivered req_001 parity behaviors, so every later slice lands in a small module instead of the monolith.",
+      "Fix the two functional defects next: make the inspector selection-driven, and stop the graph refresh from re-pinning operator-placed cursors.",
+      "Build the analysis primitives - nearest-sample cursor lookup, bounded range statistics, and enum distributions - and render the measurement table on top of them.",
+      "Deliver the trace view work as one slice: display-only filters with removable chips, then configurable columns with bounded constant-time pruning.",
+      "Expose the existing CSV and Parquet writers through an export dialog with the A-B, visible-window, and full-buffer scopes, streamed, progress-reporting, and cancellable.",
+      "Add session fact collection and the diagnostic report view, reusing the anomaly sources already produced by the DBC catalog, the replay reader, and the recorder.",
+      "Add the bus-state indicator and the explicit empty, error, and loading states across every panel, with progress and cancellation for DBC loading and replay import.",
+      "Close with ergonomics: shortcuts, tooltips, accessible names, tab order, menu bar, fullscreen, resizable divider, persisted geometry, and the three verified viewport sizes.",
+      "Validate headless under QT_QPA_PLATFORM=offscreen across the full suite, run ruff, update the architecture and delta documents, then optionally take a PCAN smoke run capped at 2 minutes and close out with Logics lint and audit."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_analyst_workspace_parity.json",
+    "mode": "diff-first",
+    "profile": "deep"
+  }
+}
