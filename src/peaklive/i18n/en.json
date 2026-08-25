@@ -21,7 +21,10 @@
     "ack_on": "controller ACK",
     "ack_off": "no ACK",
     "start_tooltip": "Open the CAN channel and start receiving",
-    "stop_tooltip": "Stop receiving and close the CAN channel"
+    "stop_tooltip": "Stop receiving and close the CAN channel",
+    "channel_accessible": "CAN channel",
+    "bitrate_accessible": "CAN bitrate",
+    "mode_accessible": "Controller acknowledge mode"
   },
   "bus": {
     "label": "Bus",
@@ -163,7 +166,9 @@
     "column_channel": "Channel",
     "column_direction": "Dir",
     "column_message": "Message",
-    "column_status": "Status"
+    "column_status": "Status",
+    "direction_rx": "RX",
+    "direction_event": "EVENT"
   },
   "columns": {
     "title": "Trace columns",
