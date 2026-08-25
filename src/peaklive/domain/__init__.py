@@ -1,11 +1,33 @@
 """Framework-free PeakLive domain types."""
 
-from .models import BusEvent, CanFrame, ControllerMode, MeasurementProfile, RecordingSettings
+from .models import (
+    TRACE_COLUMN_DEFAULTS,
+    TRACE_COLUMN_FORMATS,
+    TRACE_DECODE_ANY,
+    TRACE_DIRECTION_ANY,
+    BusEvent,
+    CanFrame,
+    ControllerMode,
+    MeasurementProfile,
+    RecordingSettings,
+    TraceColumn,
+    TraceFilterSettings,
+    WorkspaceLayout,
+    default_trace_columns,
+)
 
 __all__ = [
+    "TRACE_COLUMN_DEFAULTS",
+    "TRACE_COLUMN_FORMATS",
+    "TRACE_DECODE_ANY",
+    "TRACE_DIRECTION_ANY",
     "BusEvent",
     "CanFrame",
     "ControllerMode",
     "MeasurementProfile",
     "RecordingSettings",
+    "TraceColumn",
+    "TraceFilterSettings",
+    "WorkspaceLayout",
+    "default_trace_columns",
 ]
