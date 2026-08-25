@@ -1,14 +1,14 @@
 ## item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage - Decompose the workspace UI into modules with parity regression coverage
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: UI architecture
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Splits the 863-line src/peaklive/ui/main_window.py into focused panel modules with the main window reduced to composition and wiring, extracts the inline stylesheet into shared tokens, routes every user-visible string through i18n, and pins the delivered req_001 parity behaviors behind a regression suite so the split cannot silently drop them.

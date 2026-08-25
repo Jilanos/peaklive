@@ -1,14 +1,14 @@
 ## item_024_deliver_keyboard_accessibility_menus_and_layout_persistence - Deliver keyboard accessibility, menus, and layout persistence
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Workspace ergonomics
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Makes the workspace operable without a mouse and stable on bench screens: shortcuts for acquisition, views, cursors, fit and fullscreen; tooltips and accessible names on every control; complete tab order; a File/View/Help menu bar; a resizable graph/trace divider; persisted geometry; and verified layout at 1024x768, 1280x720 and 1600x900.

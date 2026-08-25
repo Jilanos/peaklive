@@ -1,14 +1,14 @@
 ## item_016_make_the_frame_inspector_selection_driven - Make the frame inspector selection-driven
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Trace inspection
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:52
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Replaces the inspector QLabel that is overwritten from inside the frame-render loop with a panel driven by the operator's trace-row selection, showing frame identity, raw payload, resolved message and source DBC, decode status, and every decoded physical signal.

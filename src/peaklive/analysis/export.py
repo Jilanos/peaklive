@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import csv
-from collections.abc import Iterable
+import heapq
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+
+from peaklive.analysis.series import SeriesStore
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,3 +71,42 @@ def export_parquet(path: Path, rows: Iterable[ExportRow], batch_size: int = 10_0
     finally:
         writer.close()
     return count
+
+
+def export_rows(
+    store: SeriesStore,
+    signal_names: Sequence[str],
+    start: float | None = None,
+    end: float | None = None,
+) -> Iterator[ExportRow]:
+    """Stream the retained samples of the selected signals over a time range.
+
+    Each signal is walked lazily and the per-signal streams are merged on
+    timestamp, so the output reads like the trace while only one sample per
+    signal is held at a time. Combined with the batched writers, a full-buffer
+    export never materializes the whole range.
+    """
+    streams = [
+        _signal_rows(store, name, start, end)
+        for name in signal_names
+        if store.series(name) is not None
+    ]
+    yield from heapq.merge(*streams, key=lambda row: (row.timestamp, row.message, row.signal))
+
+
+def _signal_rows(
+    store: SeriesStore,
+    name: str,
+    start: float | None,
+    end: float | None,
+) -> Iterator[ExportRow]:
+    series = store.series(name)
+    if series is None:
+        return
+    message, _, signal = name.partition(".")
+    if start is None or end is None:
+        times, values = series.times, series.values
+    else:
+        times, values = series.slice(start, end)
+    for timestamp, value in zip(times, values, strict=True):
+        yield ExportRow(timestamp, message or name, signal or name, value, series.unit)

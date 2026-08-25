@@ -61,8 +61,13 @@ def test_main_window_loads_dbc_and_plots_selected_signal(qtbot, tmp_path):
     assert current is not None
     assert current.text(0) == "Speed [km/h]"
     assert window._plot_curve.getData()[1].tolist() == [123.4]
-    assert "123.4 km/h" in window.inspector.text()
     assert str(dbc_path) in window.selected_profile.dbc_paths
+
+    # The inspector is selection-driven: it stays on its empty state until the
+    # operator picks a trace row, and never follows the incoming frames.
+    assert "Select a trace row" in window.inspector.text()
+    window.trace_table.setCurrentCell(0, 0)
+    assert "Speed = 123.4 km/h" in window.inspector.text()
 
 
 def _signal_item(window: MainWindow, key: str):

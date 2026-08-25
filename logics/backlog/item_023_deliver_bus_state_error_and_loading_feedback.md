@@ -1,14 +1,14 @@
 ## item_023_deliver_bus_state_error_and_loading_feedback - Deliver bus-state, error, and loading feedback
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Operator feedback
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Replaces transient status-bar messaging with visible state: a bus-state indicator covering idle through bus-off, persistent panel-local DBC parse and conflict errors, explicit empty/error/loading states in every panel, progress and cancellation for DBC loading and replay import, and visible recording disk warnings.
