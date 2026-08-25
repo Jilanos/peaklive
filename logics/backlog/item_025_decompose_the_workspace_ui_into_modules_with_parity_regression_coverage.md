@@ -1,14 +1,14 @@
 ## item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage - Decompose the workspace UI into modules with parity regression coverage
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: High
 > Theme: UI architecture
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:43:05
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # AI Context
 - Summary: Splits the 863-line src/peaklive/ui/main_window.py into focused panel modules with the main window reduced to composition and wiring, extracts the inline stylesheet into shared tokens, routes every user-visible string through i18n, and pins the delivered req_001 parity behaviors behind a regression suite so the split cannot silently drop them.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - the monolithic main window is the root cause that makes each parity gap compound.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
+
+# Notes
+- Task `task_003_deliver_the_peaklive_analyst_workspace_parity_wave` was finished via `logics-manager flow finish task` on 2026-08-25.

@@ -1,13 +1,13 @@
 ## req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity - Complete the PeakLive analyst workspace to CanTraceDiag parity
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Desktop diagnostic analyst workspace
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:35:46
+> Indicators reviewed: 2026-08-25 12:29:43
 
 # AI Context
 - Summary: Defines the second PeakLive parity wave, which turns the delivered DBC/signal/plot workspace into an analyst tool: selection-driven frame inspection, cursors that hold their position, range statistics, display-only trace filtering, configurable trace columns, reachable CSV/Parquet export, a session diagnostic report, explicit bus and error states, keyboard operation, and the decomposition of the monolithic main window.

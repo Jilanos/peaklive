@@ -1,14 +1,14 @@
 ## item_017_stabilize_a_b_cursors_and_add_graph_time_navigation - Stabilize A/B cursors and add graph time navigation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Graph measurement
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:43:05
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # AI Context
 - Summary: Fixes the graph refresh path that re-pins cursor A to the first sample and cursor B to the last sample on every incoming batch, then adds zoom, pan, fit-to-extent, grid, a shared time axis across stacked plots, and a follow-live mode that yields to operator navigation.
@@ -59,3 +59,9 @@
 # Priority
 - Priority: High - a measurement that resets on every data batch cannot be used live.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
+
+# Notes
+- Task `task_003_deliver_the_peaklive_analyst_workspace_parity_wave` was finished via `logics-manager flow finish task` on 2026-08-25.

@@ -1,14 +1,14 @@
 ## item_018_deliver_the_range_measurement_table - Deliver the range measurement table
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Graph measurement
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:43:05
+> Indicators reviewed: 2026-08-25 12:29:44
 
 # AI Context
 - Summary: Adds the analysis primitives PeakLive lacks entirely - nearest-sample cursor lookup, bounded range statistics (count, min, max, mean, standard deviation, RMS), and enum value distributions - and renders them as a measurement table under the graph stack.
@@ -58,3 +58,9 @@
 # Priority
 - Priority: High - range statistics are the primary reason an analyst places two cursors.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_003_deliver_the_peaklive_analyst_workspace_parity_wave`
+
+# Notes
+- Task `task_003_deliver_the_peaklive_analyst_workspace_parity_wave` was finished via `logics-manager flow finish task` on 2026-08-25.
