@@ -127,7 +127,11 @@ class DbcCatalog:
         existing = next((item for item in self._definitions if item.content_hash == digest), None)
         if existing is not None:
             return existing
-        database = cantools.database.load_string(self._decode_dbc_text(content))
+        try:
+            database = cantools.database.load_string(self._decode_dbc_text(content))
+        except cantools.database.UnsupportedDatabaseFormatError as error:
+            # Keep the boundary narrow: callers handle OSError and ValueError.
+            raise ValueError(f"Unsupported or malformed DBC file: {error}") from error
         definition = DbcDefinition(digest, path, database)
         self._definitions.append(definition)
         return definition

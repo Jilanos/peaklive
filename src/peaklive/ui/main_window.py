@@ -53,7 +53,7 @@ from peaklive.ui.panels import (
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.session_controller import WorkspaceSession
 from peaklive.ui.theme import APP_STYLE
-from peaklive.ui.widgets import CollapsiblePanel
+from peaklive.ui.widgets import CollapsiblePanel, StateNote
 
 __all__ = ["SIGNAL_KEY_ROLE", "MainWindow"]
 
@@ -122,6 +122,9 @@ class MainWindow(
         self.acquisition_bar.start_requested.connect(self._start_acquisition)
         self.acquisition_bar.stop_requested.connect(self._stop_acquisition)
         root_layout.addWidget(self.acquisition_bar)
+
+        self.session_note = StateNote()
+        root_layout.addWidget(self.session_note)
 
         self.workspace = QSplitter(Qt.Orientation.Horizontal, objectName="workspaceSplitter")
 
@@ -233,6 +236,8 @@ class MainWindow(
             for panel in (self.signals_panel, self.trace_graph_panel, self.inspector_panel):
                 panel.set_collapsed(panel.key in layout.collapsed_panels)
             self.graph_panel.restore_cursors(layout.cursor_a, layout.cursor_b)
+            if layout.fullscreen and not self.isFullScreen():
+                self.showFullScreen()
         finally:
             self._restoring = False
         self._apply_workspace_mode(profile.layout.workspace_mode)

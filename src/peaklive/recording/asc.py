@@ -46,6 +46,8 @@ class AscRecorder:
         self._asc: TextIO | None = None
         self._events: TextIO | None = None
         self._result = CaptureResult()
+        self._warnings: list[str] = []
+        self._warned_low_space = False
 
     @property
     def active(self) -> bool:
@@ -65,6 +67,8 @@ class AscRecorder:
         self._timestamp_origin = None
         self._segment_number = 0
         self._result = CaptureResult()
+        self._warnings.clear()
+        self._warned_low_space = False
         return self._open_next_segment()
 
     def write_frame(self, frame: CanFrame) -> None:
@@ -175,7 +179,22 @@ class AscRecorder:
         available = self._free_space(self._segment.partial_path.parent)
         if available <= self._settings.stop_free_bytes:
             self._close_segment(clean=False)
-            raise RecordingStopped("Recording stopped: free disk threshold reached")
+            raise RecordingStopped(
+                "Recording stopped: free disk space fell below "
+                f"{_bytes_text(self._settings.stop_free_bytes)}"
+            )
+        if available <= self._settings.warn_free_bytes and not self._warned_low_space:
+            # Warn once per recording so a low-space bench does not spam the log.
+            self._warned_low_space = True
+            self._warnings.append(
+                f"Recording disk space is low: {_bytes_text(available)} free"
+            )
+
+    def take_warnings(self) -> list[str]:
+        """Drain the recording warnings raised since the last call."""
+        drained = list(self._warnings)
+        self._warnings.clear()
+        return drained
 
     @staticmethod
     def _expanded_filename(
@@ -219,3 +238,11 @@ class AscRecorder:
     def _require_active(self) -> None:
         if not self.active:
             raise RuntimeError("No active recording")
+
+
+def _bytes_text(value: int) -> str:
+    for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
+        if abs(value) < 1024 or unit == "TiB":
+            return f"{value:.1f} {unit}" if unit != "B" else f"{value} B"
+        value /= 1024  # type: ignore[assignment]
+    return f"{value} B"
