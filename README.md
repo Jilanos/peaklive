@@ -26,6 +26,44 @@ listen-only mode.
 - CSV/Parquet export of selected decoded signals;
 - local-only data and settings, with no cloud dependency.
 
+## Analyst workspace
+
+- a frame inspector driven by the trace row you select: identity, raw payload,
+  resolved message, decode status, and every decoded physical signal;
+- stacked plots on a shared time axis with zoom, pan, fit, grid, follow-live,
+  and A/B cursors that stay where you put them during a live acquisition;
+- a measurement table combining the value at each cursor with the A-B range
+  statistics (count, min, max, mean, standard deviation, RMS), and a value
+  distribution for enumerated signals;
+- display-only trace filtering by ID, message, signal, direction, event kind,
+  decode status, and time range, with removable active-filter chips;
+- configurable trace columns - visibility, order, width, and value format
+  (seconds, hexadecimal, decimal, binary, status) - persisted per profile;
+- CSV and Parquet export over the A-B range, the visible window, or the full
+  retained buffer, streamed and cancellable;
+- a session diagnostic report: volumes, frames per second, decode coverage,
+  loaded DBCs, top arbitration IDs, and anomalies by type;
+- a bus-state indicator and explicit empty, error, and loading states in every
+  panel, including recording disk warnings.
+
+### Keyboard
+
+| Shortcut | Action |
+| --- | --- |
+| `F5` / `F6` | Start / stop acquisition |
+| `Ctrl+D` | Load DBC files |
+| `Ctrl+O` | Open an ASC or TRC trace |
+| `Ctrl+E` | Export selected signals |
+| `Ctrl+1` / `Ctrl+2` | Place cursor A / cursor B |
+| `Ctrl+0` | Fit the graphs to the full extent |
+| `Ctrl+F` | Focus the trace filter |
+| `Ctrl+B` | Collapse or expand the signals panel |
+| `F11` | Fullscreen |
+| `Ctrl+Q` | Quit |
+
+Every actionable control carries a tooltip and an accessible name, and the
+layout is verified at 1024x768, 1280x720, and 1600x900.
+
 ## Documentation
 
 - [Product scope](docs/product-scope.md)

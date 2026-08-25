@@ -51,6 +51,44 @@ companion tool's visual vocabulary—dark instrument surface, signal explorer,
 trace table, stacked plots, inspector, and A/B measurement cursors—without
 embedding a browser or local web server.
 
+#### UI module map
+
+`peaklive.ui.main_window.MainWindow` composes and wires; it builds no widget a
+panel owns. Behavior lives in focused modules, each held to a **400-line
+budget** enforced by `tests/test_ui_structure.py`:
+
+| Module | Responsibility |
+| --- | --- |
+| `ui/theme.py` | Instrument design tokens and the single application stylesheet |
+| `ui/widgets.py` | `CollapsiblePanel` and `StateNote` (empty/warning/error states) |
+| `ui/addressing.py` | Flat widget accessors the shell and tests address by name |
+| `ui/actions.py` | File/View/Help menus and the workspace shortcuts |
+| `ui/catalog_controller.py` | DBC lifecycle and shown/favorite signal selection |
+| `ui/session_controller.py` | Acquisition, replay, ingestion, and session reporting |
+| `ui/panels/acquisition_bar.py` | Profile, bus setup, bus-state LED, lifecycle |
+| `ui/panels/dbc_library.py` | Loaded DBCs, enable/remove, conflicts, load errors |
+| `ui/panels/signal_explorer.py` | DBC/message-grouped navigation, search, favorites |
+| `ui/panels/graph_stack.py` | Stacked plots, linked time axis, cursors, navigation |
+| `ui/panels/measurement.py` | Cursor values plus A–B range statistics |
+| `ui/panels/trace_filters.py` | Display-only filter fields and removable chips |
+| `ui/panels/trace_view.py` | Bounded trace table, columns, selection, tail follow |
+| `ui/panels/inspector.py` | The selected frame or event, in full |
+| `ui/panels/report.py` | Session diagnostic report |
+| `ui/dialogs/columns.py` | Column visibility, order, width, and value format |
+| `ui/dialogs/export.py` | Signal, format, and range-scope export with cancellation |
+
+Every user-visible string resolves through `peaklive.i18n`; the structural
+tests fail on a bare label literal.
+
+#### Measurement and buffers
+
+Cursor positions belong to `GraphStackPanel`, not to the plot items, and are
+persisted in the profile. Incoming data seeds an unplaced cursor once and never
+moves a placed one — that is what makes a live measurement usable. Samples live
+in `analysis/series.py` (`SeriesStore`, deque-bounded per signal) and trace rows
+in `analysis/trace.py` (`TraceBuffer`, a `deque` with `maxlen`), so retention is
+constant-time rather than a per-row removal.
+
 ### Domain core
 
 The domain package contains immutable events and services that do not import
@@ -144,7 +182,10 @@ with that lifecycle when enabled by the active profile. Filename expansion is
 collision-safe and supports date, time, profile, and zero-padded iteration
 and segment tokens. The default writer rotates at 2 GiB, warns at 10 GiB free,
 and stops recording at 2 GiB free; these values are profile-configurable and a
-forced low-space stop marks the session incomplete.
+forced low-space stop marks the session incomplete. Both thresholds surface as
+operator-visible notices: the warning once per recording, the stop as a
+`recording_warning` bus event that pauses recording without stopping the
+receive-only acquisition.
 
 ## Failure model
 
