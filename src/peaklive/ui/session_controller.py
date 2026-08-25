@@ -87,6 +87,7 @@ class WorkspaceSession:
         self._refresh_report()
 
     def _reset_session(self, source: str) -> None:
+        self.session_note.clear_message()
         self._series.clear()
         self._trace.clear()
         self._facts.reset(source)
@@ -107,14 +108,17 @@ class WorkspaceSession:
     def _render_frames(self, frames: list[CanFrame]) -> None:
         if frames:
             self.acquisition_bar.set_bus_state("running")
+        added = []
         for frame in frames:
             signals, status = self._decode(frame)
             message_name = signals[0].message_name if signals else ""
-            self._trace.add_frame(
-                frame,
-                message_name=message_name,
-                decode_status=status,
-                signals=signals,
+            added.append(
+                self._trace.add_frame(
+                    frame,
+                    message_name=message_name,
+                    decode_status=status,
+                    signals=signals,
+                )
             )
             self._facts.record_frame(frame, decoded=status == DECODE_DECODED)
             for signal in signals:
@@ -123,31 +127,34 @@ class WorkspaceSession:
                     self._series.append(key, frame.timestamp, signal.value, signal.unit)
             if not self._selected_signal_names and frame.data:
                 self._series.append(RAW_PREVIEW, frame.timestamp, float(frame.data[0]))
-        self.trace_panel.refresh()
+        self.trace_panel.append_records(added)
         self.graph_panel.refresh_data()
 
     def _render_acquisition_event(self, event: object) -> None:
         if not isinstance(event, BusEvent):
             return
-        self._trace.add_event(event)
+        record = self._trace.add_event(event)
         self._facts.record_event(event)
+        if event.kind == "recording_warning":
+            # A disk warning must outlive the next incoming frame.
+            self.session_note.show_message(event.message, "warning")
         if event.kind in {"error_frame", "bus_error"}:
             self.acquisition_bar.set_bus_state("bus_error")
         elif event.kind == "bus_off":
             self.acquisition_bar.set_bus_state("bus_off")
         elif event.kind == "reconnecting":
             self.acquisition_bar.set_bus_state("reconnecting")
-        self.trace_panel.refresh()
+        self.trace_panel.append_records([record])
 
     def _render_replay_event(self, event: object) -> None:
         if not isinstance(event, BusEvent):
             return
-        self._trace.add_event(event)
+        record = self._trace.add_event(event)
         self._facts.record_event(event)
         self.status.showMessage(
             translate("trace.replay_event").format(kind=event.kind, message=event.message)
         )
-        self.trace_panel.refresh()
+        self.trace_panel.append_records([record])
 
     def _decode(self, frame: CanFrame):
         try:

@@ -28,6 +28,9 @@ class CollapsiblePanel(QFrame):
         super().__init__(parent, objectName="instrument")
         self.key = key
         self._title = title
+        # Explicit state: a panel inside a window that was never shown is not
+        # collapsed, it is simply not on screen yet.
+        self._collapsed = False
         layout = QVBoxLayout(self)
         header = QHBoxLayout()
         self.heading = QLabel(title.upper(), objectName="panelHeading")
@@ -52,12 +55,13 @@ class CollapsiblePanel(QFrame):
 
     @property
     def is_collapsed(self) -> bool:
-        return not self.body.isVisible()
+        return self._collapsed
 
     def set_collapsed(self, collapsed: bool) -> None:
-        if collapsed == self.is_collapsed:
+        if collapsed == self._collapsed:
             self._sync_toggle()
             return
+        self._collapsed = collapsed
         self.body.setVisible(not collapsed)
         self._sync_toggle()
         self.collapsed_changed.emit(collapsed)

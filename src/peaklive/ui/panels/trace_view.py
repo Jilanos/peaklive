@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -17,7 +19,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from peaklive.analysis import DECODE_DECODED, DECODE_UNKNOWN, TraceBuffer, filter_records
+from peaklive.analysis import (
+    DECODE_DECODED,
+    DECODE_UNKNOWN,
+    TraceBuffer,
+    TraceRecord,
+    filter_records,
+    matches,
+)
 from peaklive.analysis.trace import DECODE_CONFLICT, cell_text
 from peaklive.domain import (
     TRACE_DECODE_ANY,
@@ -46,6 +55,8 @@ class TraceViewPanel(QWidget):
         super().__init__(parent)
         self.settings = TraceFilterSettings()
         self.columns: list[TraceColumn] = []
+        self.follow_tail = True
+        self._selected_record: int | None = None
         self._buffer: TraceBuffer | None = None
         self._updating = False
 
@@ -66,6 +77,7 @@ class TraceViewPanel(QWidget):
         )
         self.show_frames.setChecked(True)
         self.show_frames.setToolTip(translate("trace.show_frames"))
+        self.show_frames.setAccessibleName(translate("trace.show_frames"))
         self.show_frames.toggled.connect(self._read_filters)
         header.addWidget(self.show_frames)
         self.show_events = QCheckBox(
@@ -73,6 +85,7 @@ class TraceViewPanel(QWidget):
         )
         self.show_events.setChecked(True)
         self.show_events.setToolTip(translate("trace.show_events"))
+        self.show_events.setAccessibleName(translate("trace.show_events"))
         self.show_events.toggled.connect(self._read_filters)
         header.addWidget(self.show_events)
 
@@ -80,6 +93,7 @@ class TraceViewPanel(QWidget):
             translate("trace.more_filters"), objectName="moreFiltersButton"
         )
         self.more_filters_button.setToolTip(translate("trace.more_filters"))
+        self.more_filters_button.setAccessibleName(translate("trace.more_filters"))
         self.more_filters_button.clicked.connect(self._toggle_secondary)
         header.addWidget(self.more_filters_button)
 
@@ -87,13 +101,24 @@ class TraceViewPanel(QWidget):
             translate("trace.columns"), objectName="traceColumnsButton"
         )
         self.columns_button.setToolTip(translate("trace.columns_tooltip"))
+        self.columns_button.setAccessibleName(translate("trace.columns"))
         self.columns_button.clicked.connect(self.columns_requested)
         header.addWidget(self.columns_button)
+
+        self.follow_checkbox = QCheckBox(
+            translate("trace.follow_tail"), objectName="followTailCheckbox"
+        )
+        self.follow_checkbox.setChecked(True)
+        self.follow_checkbox.setToolTip(translate("trace.follow_tail"))
+        self.follow_checkbox.setAccessibleName(translate("trace.follow_tail"))
+        self.follow_checkbox.toggled.connect(self._follow_toggled)
+        header.addWidget(self.follow_checkbox)
 
         self.clear_filters_button = QPushButton(
             translate("trace.clear_filters"), objectName="clearFiltersButton"
         )
         self.clear_filters_button.setToolTip(translate("trace.clear_filters"))
+        self.clear_filters_button.setAccessibleName(translate("trace.clear_filters"))
         self.clear_filters_button.clicked.connect(self.clear_filters)
         header.addWidget(self.clear_filters_button)
         layout.addLayout(header)
@@ -104,6 +129,7 @@ class TraceViewPanel(QWidget):
         secondary_layout.addWidget(QLabel(translate("trace.filter_direction")), 0, 0)
         self.direction_filter = QComboBox(objectName="traceDirectionFilter")
         self.direction_filter.setAccessibleName(translate("trace.filter_direction"))
+        self.direction_filter.setToolTip(translate("trace.filter_direction"))
         self.direction_filter.addItem(translate("trace.any"), TRACE_DIRECTION_ANY)
         self.direction_filter.addItem("RX", "RX")
         self.direction_filter.addItem("EVENT", "EVENT")
@@ -112,6 +138,7 @@ class TraceViewPanel(QWidget):
         secondary_layout.addWidget(QLabel(translate("trace.filter_status")), 0, 2)
         self.status_filter = QComboBox(objectName="traceStatusFilter")
         self.status_filter.setAccessibleName(translate("trace.filter_status"))
+        self.status_filter.setToolTip(translate("trace.filter_status"))
         self.status_filter.addItem(translate("trace.any"), TRACE_DECODE_ANY)
         self.status_filter.addItem(DECODE_DECODED, DECODE_DECODED)
         self.status_filter.addItem(DECODE_UNKNOWN, DECODE_UNKNOWN)
@@ -142,8 +169,12 @@ class TraceViewPanel(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.table.currentCellChanged.connect(self._selection_changed)
+        self.table.verticalScrollBar().valueChanged.connect(self._scrolled)
         layout.addWidget(self.table, 1)
 
+        self.tail_note = StateNote(translate("trace.tail_paused"))
+        self.tail_note.setVisible(False)
+        layout.addWidget(self.tail_note)
         self.note = StateNote(translate("trace.empty"))
         layout.addWidget(self.note)
         self.summary = QLabel("", objectName="traceSummary")
@@ -267,23 +298,94 @@ class TraceViewPanel(QWidget):
         self._buffer = buffer
 
     def refresh(self) -> None:
-        """Re-render the filtered projection of the buffer."""
+        """Re-render the filtered projection from scratch.
+
+        Used when the filters, the columns, or the buffer itself change. Live
+        ingestion uses `append_records`, which touches only the new rows.
+        """
         buffer = self._buffer
         if buffer is None:
             return
-        selected = self.selected_index()
+        selected = self._selected_record
         filtered = filter_records(buffer, self.settings)
-        visible = [column for column in self.columns if column.visible]
         self.table.blockSignals(True)
         self.table.setRowCount(len(filtered.records))
         for row, record in enumerate(filtered.records):
-            for index, column in enumerate(visible):
-                item = QTableWidgetItem(cell_text(record, column.key, column.value_format))
-                item.setData(RECORD_INDEX_ROLE, record.index)
-                self.table.setItem(row, index, item)
+            self._write_row(row, record)
         self.table.blockSignals(False)
         self._restore_selection(selected)
         self._refresh_state(filtered.total, len(filtered.records), filtered.hidden, buffer.capacity)
+        self._scroll_to_tail()
+
+    def append_records(self, records: Sequence[TraceRecord]) -> None:
+        """Append the newly ingested records without re-rendering the table.
+
+        Only rows that pass the active filters are appended, and the displayed
+        window is trimmed from the front to the buffer capacity, so ingestion
+        cost stays proportional to the batch rather than to the whole trace.
+        """
+        buffer = self._buffer
+        if buffer is None:
+            return
+        matched = [record for record in records if matches(record, self.settings)]
+        self.table.blockSignals(True)
+        for record in matched:
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            self._write_row(row, record)
+        if self._selected_record is not None and buffer.record(self._selected_record) is None:
+            self._clear_selection()
+        overflow = self.table.rowCount() - buffer.capacity
+        if overflow > 0:
+            # Trim the aged-out head in one pass instead of one removal per row.
+            retained = [
+                [self.table.takeItem(row, column) for column in range(self.table.columnCount())]
+                for row in range(overflow, self.table.rowCount())
+            ]
+            self.table.setRowCount(len(retained))
+            for row, cells in enumerate(retained):
+                for column, item in enumerate(cells):
+                    if item is not None:
+                        self.table.setItem(row, column, item)
+        self.table.blockSignals(False)
+        filtered_total = len(buffer)
+        self._refresh_state(
+            filtered_total,
+            self.table.rowCount(),
+            max(0, filtered_total - self.table.rowCount()),
+            buffer.capacity,
+        )
+        self._scroll_to_tail()
+
+    def _write_row(self, row: int, record: TraceRecord) -> None:
+        for index, column in enumerate(
+            column for column in self.columns if column.visible
+        ):
+            item = QTableWidgetItem(cell_text(record, column.key, column.value_format))
+            item.setData(RECORD_INDEX_ROLE, record.index)
+            self.table.setItem(row, index, item)
+
+    def set_follow_tail(self, enabled: bool) -> None:
+        self.follow_tail = enabled
+        self.follow_checkbox.blockSignals(True)
+        self.follow_checkbox.setChecked(enabled)
+        self.follow_checkbox.blockSignals(False)
+        self.tail_note.setVisible(not enabled)
+        if enabled:
+            self._scroll_to_tail()
+
+    def _follow_toggled(self, enabled: bool) -> None:
+        self.set_follow_tail(enabled)
+
+    def _scroll_to_tail(self) -> None:
+        if self.follow_tail:
+            self.table.scrollToBottom()
+
+    def _scrolled(self, value: int) -> None:
+        """Leave follow-tail as soon as the operator moves off the newest row."""
+        bar = self.table.verticalScrollBar()
+        if self.follow_tail and value < bar.maximum():
+            self.set_follow_tail(False)
 
     def _refresh_state(self, total: int, shown: int, hidden: int, capacity: int) -> None:
         if total == 0:
@@ -313,6 +415,7 @@ class TraceViewPanel(QWidget):
             item = self.table.item(row, 0)
             if item is not None and item.data(RECORD_INDEX_ROLE) == record_index:
                 self.table.setCurrentCell(row, 0)
+                self._selected_record = record_index
                 return True
         return False
 
@@ -320,9 +423,16 @@ class TraceViewPanel(QWidget):
         if record_index is None:
             return
         if not self.select_record(record_index):
-            # The selected record aged out of the bounded buffer.
-            self.table.clearSelection()
-            self.record_selected.emit(-1)
+            # The selected record aged out of the buffer or the filters hid it.
+            self._clear_selection()
+
+    def _clear_selection(self) -> None:
+        self._selected_record = None
+        self.table.blockSignals(True)
+        self.table.clearSelection()
+        self.table.setCurrentCell(-1, -1)
+        self.table.blockSignals(False)
+        self.record_selected.emit(-1)
 
     def _selection_changed(self, row: int, column: int, previous_row: int, previous: int) -> None:
         del column, previous_row, previous
@@ -333,6 +443,7 @@ class TraceViewPanel(QWidget):
         if item is None:
             return
         value = item.data(RECORD_INDEX_ROLE)
+        self._selected_record = int(value) if value is not None else None
         self.record_selected.emit(int(value) if value is not None else -1)
 
 

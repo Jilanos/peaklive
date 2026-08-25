@@ -41,7 +41,7 @@ class AcquisitionWorker(QThread):
                 record = self._adapter.receive(timeout=0.1)
                 if record is None:
                     if batch:
-                        self.frames_received.emit(session.ingest(batch))
+                        self._flush(session, batch)
                         batch = []
                     continue
                 if isinstance(record, BusEvent):
@@ -51,13 +51,20 @@ class AcquisitionWorker(QThread):
                     continue
                 batch.append(record)
                 if len(batch) >= 64:
-                    self.frames_received.emit(session.ingest(batch))
+                    self._flush(session, batch)
                     batch = []
         except Exception as error:
             self.acquisition_failed.emit(str(error))
         finally:
             if batch:
-                self.frames_received.emit(session.ingest(batch))
+                self._flush(session, batch)
             if started:
                 event = session.stop()
                 self.status_changed.emit(event.message)
+
+    def _flush(self, session: AcquisitionSession, batch: list[CanFrame]) -> None:
+        """Emit one batch, then surface any recording notice it produced."""
+        self.frames_received.emit(session.ingest(batch))
+        for notice in session.take_notices():
+            self.event_received.emit(notice)
+            self.status_changed.emit(notice.message)

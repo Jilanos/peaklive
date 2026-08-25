@@ -44,12 +44,14 @@ class SignalExplorerPanel(QWidget):
         toggles = QHBoxLayout()
         self.shown_only = QCheckBox(translate("signals.shown_only"), objectName="shownOnlyCheckbox")
         self.shown_only.setToolTip(translate("signals.shown_only"))
+        self.shown_only.setAccessibleName(translate("signals.shown_only"))
         self.shown_only.toggled.connect(self.filters_changed)
         toggles.addWidget(self.shown_only)
         self.favorites_only = QCheckBox(
             translate("signals.favorites_only"), objectName="favoritesOnlyCheckbox"
         )
         self.favorites_only.setToolTip(translate("signals.favorites_only"))
+        self.favorites_only.setAccessibleName(translate("signals.favorites_only"))
         self.favorites_only.toggled.connect(self.filters_changed)
         toggles.addWidget(self.favorites_only)
         layout.addLayout(toggles)

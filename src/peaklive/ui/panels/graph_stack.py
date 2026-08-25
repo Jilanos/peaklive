@@ -64,12 +64,14 @@ class GraphStackPanel(QWidget):
 
         self.grid_checkbox = QCheckBox(translate("graph.grid"), objectName="gridCheckbox")
         self.grid_checkbox.setToolTip(translate("graph.grid"))
+        self.grid_checkbox.setAccessibleName(translate("graph.grid"))
         self.grid_checkbox.setChecked(True)
         self.grid_checkbox.toggled.connect(self.set_grid)
         nav.addWidget(self.grid_checkbox)
 
         self.follow_checkbox = QCheckBox(translate("graph.follow"), objectName="followCheckbox")
         self.follow_checkbox.setToolTip(translate("graph.follow"))
+        self.follow_checkbox.setAccessibleName(translate("graph.follow"))
         self.follow_checkbox.setChecked(True)
         self.follow_checkbox.toggled.connect(self._follow_toggled)
         nav.addWidget(self.follow_checkbox)
