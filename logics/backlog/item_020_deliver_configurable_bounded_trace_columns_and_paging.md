@@ -1,14 +1,14 @@
 ## item_020_deliver_configurable_bounded_trace_columns_and_paging - Deliver configurable, bounded trace columns and paging
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Trace view
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Replaces the six hard-coded trace columns with a configurable, per-profile column set (visibility, order, width, time/hex/dec/bin/status formats) and replaces the quadratic per-row 5000-row pruning with a constant-time bounded model plus navigation off the live tail.

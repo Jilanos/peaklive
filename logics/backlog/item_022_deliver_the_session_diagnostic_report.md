@@ -1,14 +1,14 @@
 ## item_022_deliver_the_session_diagnostic_report - Deliver the session diagnostic report
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Reporting
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Adds the session synthesis PeakLive has none of: time range, frame and event volumes, frames per second, per-arbitration-ID counts, loaded DBCs with signal counts and applied conflict resolutions, decode coverage, and anomalies grouped by type, refreshable and exportable to a local file.

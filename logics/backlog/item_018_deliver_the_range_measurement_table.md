@@ -1,14 +1,14 @@
 ## item_018_deliver_the_range_measurement_table - Deliver the range measurement table
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Graph measurement
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-25 11:36:53
+> Indicators reviewed: 2026-08-25 11:43:05
 
 # AI Context
 - Summary: Adds the analysis primitives PeakLive lacks entirely - nearest-sample cursor lookup, bounded range statistics (count, min, max, mean, standard deviation, RMS), and enum value distributions - and renders them as a measurement table under the graph stack.

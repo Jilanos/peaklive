@@ -1,7 +1,7 @@
 """Bounded decoding, measurement, and replay services independent from Qt."""
 
 from .dbc import AmbiguousMessageError, DbcCatalog, DecodedSignal
-from .export import ExportRow, export_csv, export_parquet
+from .export import ExportRow, export_csv, export_parquet, export_rows
 from .replay import iter_trace
 from .series import SeriesStore, SignalSeries
 from .session import DbcSummary, ReportRenderer, SessionFacts, SessionReport
@@ -40,6 +40,7 @@ __all__ = [
     "cursor_value",
     "export_csv",
     "export_parquet",
+    "export_rows",
     "filter_records",
     "iter_trace",
     "matches",
