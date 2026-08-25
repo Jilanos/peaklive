@@ -7,6 +7,7 @@ from .inspector import InspectorPanel
 from .measurement import MeasurementPanel
 from .report import ReportPanel
 from .signal_explorer import SignalExplorerPanel
+from .trace_filters import TraceFilterBar
 from .trace_view import TraceViewPanel
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "MeasurementPanel",
     "ReportPanel",
     "SignalExplorerPanel",
+    "TraceFilterBar",
     "TraceViewPanel",
 ]

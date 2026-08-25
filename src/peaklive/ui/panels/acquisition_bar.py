@@ -77,16 +77,16 @@ class AcquisitionBar(QFrame):
 
         layout.addWidget(QLabel(translate("acquisition.channel").upper()))
         self.channel_selector = QComboBox(objectName="channelSelector")
-        self.channel_selector.setAccessibleName("CAN channel")
-        self.channel_selector.setToolTip("CAN channel")
+        self.channel_selector.setAccessibleName(translate("acquisition.channel_accessible"))
+        self.channel_selector.setToolTip(translate("acquisition.channel_accessible"))
         self.channel_selector.addItems(list(CHANNELS))
         self.channel_selector.currentTextChanged.connect(self.options_changed)
         layout.addWidget(self.channel_selector)
 
         layout.addWidget(QLabel(translate("acquisition.bitrate").upper()))
         self.bitrate_selector = QComboBox(objectName="bitrateSelector")
-        self.bitrate_selector.setAccessibleName("CAN bitrate")
-        self.bitrate_selector.setToolTip("CAN bitrate")
+        self.bitrate_selector.setAccessibleName(translate("acquisition.bitrate_accessible"))
+        self.bitrate_selector.setToolTip(translate("acquisition.bitrate_accessible"))
         for bitrate in COMMON_BITRATES:
             self.bitrate_selector.addItem(
                 translate("acquisition.bitrate_value").format(kbit=bitrate // 1000), bitrate
@@ -95,8 +95,8 @@ class AcquisitionBar(QFrame):
         layout.addWidget(self.bitrate_selector)
 
         self.controller_mode_selector = QComboBox(objectName="controllerModeSelector")
-        self.controller_mode_selector.setAccessibleName("Controller acknowledge mode")
-        self.controller_mode_selector.setToolTip("Controller acknowledge mode")
+        self.controller_mode_selector.setAccessibleName(translate("acquisition.mode_accessible"))
+        self.controller_mode_selector.setToolTip(translate("acquisition.mode_accessible"))
         self.controller_mode_selector.addItem(
             translate("acquisition.mode_passive"), ControllerMode.PASSIVE_LISTEN_ONLY.value
         )
