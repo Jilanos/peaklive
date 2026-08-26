@@ -1,13 +1,13 @@
 ## req_005_make_the_peaklive_workspace_graph_centric_and_compact - Make the PeakLive workspace graph-centric and compact
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Graph-centric desktop workspace
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 18:32:55
+> Indicators reviewed: 2026-08-26 18:38:11
 
 # AI Context
 - Summary: Replace fragmented scrollable plot cards with a shared-time graph workspace, while making collapsed side-panel recovery controls fit their rails.

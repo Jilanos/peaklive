@@ -1,14 +1,14 @@
 ## item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails - Deliver a compact shared-axis graph workspace and robust collapsed rails
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: High
 > Theme: Graph-centric responsive workspace
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 18:32:57
+> Indicators reviewed: 2026-08-26 18:38:12
 
 # AI Context
 - Summary: Deliver one compact graph surface and reliable compact side-panel rails without changing data or measurement semantics.
@@ -63,3 +63,9 @@
 # Priority
 - Priority: High - live plotting is the primary analyst activity and the current structure wastes central space while hiding the collapsed-panel recovery affordance.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_005_implement_the_peaklive_graph_centric_compact_workspace`
+
+# Notes
+- Task `task_005_implement_the_peaklive_graph_centric_compact_workspace` was finished via `logics-manager flow finish task` on 2026-08-26.
