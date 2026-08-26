@@ -27,6 +27,26 @@ CURVE: Final = "#38bdf8"
 CURSOR_A: Final = "#f59e0b"
 CURSOR_B: Final = "#a78bfa"
 
+#: Control-state contract shared by every interactive Qt control (item_027).
+#: Each state pairs a foreground with a background so no control inherits an
+#: ambient colour, and focus adds a thicker outline so the state never depends
+#: on hue alone.
+CONTROL_SURFACE: Final = "#101a26"
+CONTROL_BORDER: Final = "#3a4c66"
+CONTROL_HOVER: Final = "#1c2a3b"
+POPUP_SURFACE: Final = "#16202d"
+SELECTION_BACKGROUND: Final = ACCENT
+SELECTION_TEXT: Final = "#ffffff"
+DISABLED_BACKGROUND: Final = "#1a2230"
+DISABLED_TEXT: Final = "#7c8ba1"
+FOCUS_RING: Final = "#7cb0ff"
+FOCUS_RING_WIDTH: Final = "2px"
+INDICATOR_SIZE: Final = "15px"
+INDICATOR_BACKGROUND: Final = "#0a121c"
+INDICATOR_BORDER: Final = "#7f92ad"
+INDICATOR_CHECKED: Final = "#38bdf8"
+INDICATOR_CHECKED_BORDER: Final = "#bae6fd"
+
 STATE_IDLE: Final = "#64748b"
 STATE_BUSY: Final = "#38bdf8"
 STATE_RUNNING: Final = "#22c55e"
@@ -44,7 +64,7 @@ BUS_STATE_COLORS: Final[dict[str, str]] = {
     "stopped": STATE_IDLE,
 }
 
-APP_STYLE: Final = f"""
+BASE_STYLE: Final = f"""
 QMainWindow {{ background: {BACKGROUND}; color: {TEXT}; }}
 QDialog {{ background: {BACKGROUND}; color: {TEXT}; }}
 QLabel {{ color: {TEXT_BODY}; }}
@@ -80,3 +100,92 @@ QMenuBar::item:selected {{ background: {ACCENT}; color: white; }}
 QMenu {{ background: {SURFACE}; border: 1px solid {BORDER}; color: {TEXT_BODY}; }}
 QMenu::item:selected {{ background: {ACCENT}; color: white; }}
 """
+
+#: Explicit foreground/background pairs for every interactive control state
+#: (item_027). Qt only styles what a rule names: a popup view, a menu item, or
+#: a checkbox indicator left unnamed falls back to the platform palette and
+#: renders dark-on-dark inside the instrument theme.
+CONTROL_STYLE: Final = f"""
+QComboBox {{ background: {CONTROL_SURFACE}; color: {TEXT}; }}
+QComboBox:hover {{ background: {CONTROL_HOVER}; border-color: {CONTROL_BORDER}; }}
+QComboBox:disabled {{ background: {DISABLED_BACKGROUND}; color: {DISABLED_TEXT}; }}
+QComboBox::drop-down {{ border: none; width: 18px; }}
+QComboBox::down-arrow {{
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid {TEXT_BODY}; height: 0; width: 0;
+}}
+QComboBox::down-arrow:disabled {{ border-top-color: {DISABLED_TEXT}; }}
+QComboBox QAbstractItemView {{
+    background: {POPUP_SURFACE}; border: 1px solid {CONTROL_BORDER}; color: {TEXT};
+    outline: none; selection-background-color: {SELECTION_BACKGROUND};
+    selection-color: {SELECTION_TEXT};
+}}
+QComboBox QAbstractItemView::item {{ background: {POPUP_SURFACE}; color: {TEXT};
+                                     min-height: 24px; padding: 2px 8px; }}
+QComboBox QAbstractItemView::item:hover {{ background: {CONTROL_HOVER}; color: {TEXT}; }}
+QComboBox QAbstractItemView::item:selected {{ background: {SELECTION_BACKGROUND};
+                                              color: {SELECTION_TEXT}; }}
+QComboBox QAbstractItemView::item:disabled {{ background: {POPUP_SURFACE};
+                                              color: {DISABLED_TEXT}; }}
+QAbstractItemView {{ background: {SURFACE_DEEP}; color: {TEXT}; outline: none;
+                     selection-background-color: {SELECTION_BACKGROUND};
+                     selection-color: {SELECTION_TEXT}; }}
+QAbstractItemView::item {{ color: {TEXT}; }}
+QAbstractItemView::item:hover {{ background: {CONTROL_HOVER}; color: {TEXT}; }}
+QAbstractItemView::item:selected {{ background: {SELECTION_BACKGROUND};
+                                    color: {SELECTION_TEXT}; }}
+QAbstractItemView::item:selected:!active {{ background: {SELECTION_BACKGROUND};
+                                            color: {SELECTION_TEXT}; }}
+QAbstractItemView::item:disabled {{ color: {DISABLED_TEXT}; }}
+QTreeView::branch {{ background: transparent; }}
+QMenu::item {{ background: transparent; color: {TEXT_BODY}; padding: 4px 20px; }}
+QMenu::item:selected {{ background: {SELECTION_BACKGROUND}; color: {SELECTION_TEXT}; }}
+QMenu::item:disabled {{ color: {DISABLED_TEXT}; }}
+QMenu::separator {{ background: {BORDER}; height: 1px; margin: 4px 8px; }}
+QMenuBar::item:disabled {{ color: {DISABLED_TEXT}; }}
+QCheckBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {{
+    background: {INDICATOR_BACKGROUND}; border: 1px solid {INDICATOR_BORDER};
+    border-radius: 3px; height: {INDICATOR_SIZE}; width: {INDICATOR_SIZE};
+}}
+QCheckBox::indicator:unchecked, QTreeView::indicator:unchecked,
+QListView::indicator:unchecked, QTableView::indicator:unchecked {{
+    background: {INDICATOR_BACKGROUND}; border: 1px solid {INDICATOR_BORDER};
+}}
+QCheckBox::indicator:checked, QTreeView::indicator:checked,
+QListView::indicator:checked, QTableView::indicator:checked {{
+    background: {INDICATOR_CHECKED}; border: 2px solid {INDICATOR_CHECKED_BORDER};
+}}
+QCheckBox::indicator:hover, QTreeView::indicator:hover,
+QListView::indicator:hover, QTableView::indicator:hover {{
+    border-color: {FOCUS_RING};
+}}
+QCheckBox::indicator:focus, QTreeView::indicator:focus {{
+    border: {FOCUS_RING_WIDTH} solid {FOCUS_RING};
+}}
+QCheckBox::indicator:disabled, QTreeView::indicator:disabled,
+QListView::indicator:disabled, QTableView::indicator:disabled {{
+    background: {DISABLED_BACKGROUND}; border: 1px dashed {DISABLED_TEXT};
+}}
+QCheckBox:disabled {{ color: {DISABLED_TEXT}; }}
+QComboBox:focus, QLineEdit:focus, QSpinBox:focus, QPlainTextEdit:focus,
+QTreeWidget:focus, QListWidget:focus, QTableWidget:focus, QAbstractItemView:focus {{
+    border: {FOCUS_RING_WIDTH} solid {FOCUS_RING};
+}}
+QPushButton:focus, QToolButton:focus {{ border: {FOCUS_RING_WIDTH} solid {FOCUS_RING}; }}
+QLineEdit:disabled, QSpinBox:disabled, QPlainTextEdit:disabled {{
+    background: {DISABLED_BACKGROUND}; color: {DISABLED_TEXT};
+}}
+QToolTip {{ background: {POPUP_SURFACE}; border: 1px solid {CONTROL_BORDER}; color: {TEXT};
+            padding: 3px 6px; }}
+QScrollBar:vertical {{ background: {SURFACE_DEEP}; width: 10px; margin: 0; }}
+QScrollBar:horizontal {{ background: {SURFACE_DEEP}; height: 10px; margin: 0; }}
+QScrollBar::handle {{ background: {CONTROL_BORDER}; border-radius: 4px; min-height: 24px; }}
+QScrollBar::handle:hover {{ background: {ACCENT_SOFT}; }}
+QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; }}
+QSplitter::handle {{ background: {BORDER}; }}
+QSplitter::handle:hover {{ background: {ACCENT}; }}
+"""
+
+#: The one stylesheet the workspace installs: base chrome plus the explicit
+#: control-state contract.
+APP_STYLE: Final = BASE_STYLE + CONTROL_STYLE
