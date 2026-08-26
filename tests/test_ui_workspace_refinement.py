@@ -30,7 +30,10 @@ from peaklive.ui.layout_reflow import (
     reflow_widths,
 )
 from peaklive.ui.main_window import SIGNAL_KEY_ROLE
-from peaklive.ui.panels.graph_controls import READOUT_PREFERRED_WIDTH
+from peaklive.ui.panels.graph_controls import (
+    READOUT_PREFERRED_WIDTH,
+    GraphControlsBar,
+)
 from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT
 from peaklive.ui.panels.signal_explorer import (
     ACCESSIBLE_ROLE,
@@ -711,3 +714,26 @@ def test_the_flow_layout_compresses_an_item_wider_than_its_line(qtbot):
     qtbot.waitExposed(container)
 
     assert wide.width() <= container.width()
+
+
+def test_a_narrow_bar_drops_the_captions_before_squeezing_a_control(qtbot):
+    """Windows metrics compressed a zoom button below its own minimum at 1024."""
+    bar = GraphControlsBar()
+    qtbot.addWidget(bar)
+    bar.setFixedWidth(1400)
+    bar.show()
+    qtbot.waitExposed(bar)
+    assert all(caption.isVisible() for caption in bar.captions)
+
+    # setFixedWidth, not resize: the bar has a minimum of its own, and the
+    # squeeze being reproduced is precisely a bar narrower than that.
+    bar.setFixedWidth(240)
+    qtbot.wait(20)
+
+    assert not any(caption.isVisible() for caption in bar.captions)
+    for control in _leaf_controls(bar):
+        assert control.width() >= control.minimumSizeHint().width()
+
+    bar.setFixedWidth(1400)
+    qtbot.wait(20)
+    assert all(caption.isVisible() for caption in bar.captions)
