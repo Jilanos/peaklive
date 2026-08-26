@@ -8,6 +8,8 @@ than a control.
 
 from __future__ import annotations
 
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -20,9 +22,46 @@ from PySide6.QtWidgets import (
 from peaklive.i18n import translate
 from peaklive.ui.flow_layout import FlowLayout
 
-#: Wide enough for the longest readout, narrow enough that a cluster carrying
-#: one still fits a 1024 px bench screen.
-READOUT_MINIMUM_WIDTH = 160
+#: What a readout asks for, and the least it will accept. A readout must never
+#: size its cluster to the longest string it might ever hold: font metrics
+#: differ per platform, and a cluster wider than the bar overflows rather than
+#: wraps.
+READOUT_PREFERRED_WIDTH = 210
+READOUT_MINIMUM_WIDTH = 90
+
+
+class ElidingLabel(QLabel):
+    """A readout that shortens its text to the width it was given.
+
+    `text()` keeps the full value - the shortening happens at paint time - so
+    callers and tests still read what the readout means, and the tooltip
+    carries the untruncated string.
+    """
+
+    def __init__(self, text: str, parent: QWidget | None = None) -> None:
+        super().__init__(text, parent)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.setToolTip(text)
+
+    def setText(self, text: str) -> None:  # noqa: N802 - Qt override
+        super().setText(text)
+        self.setToolTip(text)
+
+    def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        hint = super().sizeHint()
+        return QSize(min(hint.width(), READOUT_PREFERRED_WIDTH), hint.height())
+
+    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        return QSize(READOUT_MINIMUM_WIDTH, super().minimumSizeHint().height())
+
+    def paintEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        painter = QPainter(self)
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        elided = self.fontMetrics().elidedText(
+            self.text(), Qt.TextElideMode.ElideRight, self.width()
+        )
+        painter.drawText(self.rect(), int(self.alignment()), elided)
+        painter.end()
 
 
 class GraphControlsBar(QWidget):
@@ -79,10 +118,10 @@ class GraphControlsBar(QWidget):
         button.setToolTip(translate(key))
         return button
 
-    def _readout(self, object_name: str, key: str) -> QLabel:
+    def _readout(self, object_name: str, key: str) -> ElidingLabel:
         """A live value stays with the controls that change it."""
-        readout = QLabel(translate(key), objectName=object_name)
-        readout.setMinimumWidth(READOUT_MINIMUM_WIDTH)
+        readout = ElidingLabel(translate(key))
+        readout.setObjectName(object_name)
         return readout
 
     def _option(self, object_name: str, key: str) -> QCheckBox:
