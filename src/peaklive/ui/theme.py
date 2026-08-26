@@ -83,6 +83,7 @@ QFrame#busState {{ background: {SURFACE_DEEP}; border: 1px solid #334155; border
 QPushButton, QToolButton {{ background: {ACCENT}; border: none; border-radius: 5px; color: white;
                            font-weight: 700; min-height: 28px; padding: 0 10px; }}
 QToolButton#collapseButton {{ background: #202b3a; color: {TEXT_BODY}; min-width: 24px; }}
+QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18px; padding: 0; }}
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};
                                 min-width: 26px; padding: 0 4px; }}
 QPushButton#chipButton {{ background: #1d2a3b; border: 1px solid {BORDER}; color: {ACCENT_SOFT};

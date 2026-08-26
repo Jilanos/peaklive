@@ -1,0 +1,104 @@
+{
+  "title": "Make the PeakLive workspace graph-centric and compact",
+  "references": [
+    "docs/cantracediag-ux-delta.md",
+    "src/peaklive/ui/widgets.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/theme.py",
+    "tests/test_ui_workspace_refinement.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Graph-centric desktop workspace",
+    "needs": [
+      "Make collapsed Signals and Inspector rails robust: their compact expand affordance must stay unobstructed, smaller, centred, and easy to activate.",
+      "Replace the vertically scrolling stack of separately framed plots with a compact shared-time graph workspace that removes white gaps and repeated X axes.",
+      "Give live plots priority over supporting controls while keeping graph navigation, cursor placement, measurements, Trace, and Report discoverable and operable.",
+      "Make the graph workspace visually and spatially coherent at supported desktop resolutions without changing signal data, cursor, filtering, or acquisition semantics."
+    ],
+    "context": [
+      "PeakLive is a native PySide6 desktop CAN-analysis application. Its central workspace holds graph, trace, and report modes, while Signals and Inspector sit in collapsible splitter panels.",
+      "The current collapsed side-panel rail is 34 px wide and uses the same header toggle after its body and heading disappear. On Windows, the plus affordance is partly occluded in the compact rail.",
+      "GraphStackPanel currently creates one independent pyqtgraph PlotWidget per selected signal in a QScrollArea. Each plot owns an X axis and title, producing repeated axes, white inter-plot gaps, and vertical scrolling that competes with graph reading.",
+      "CanTraceDiag's measurement workspace demonstrates the intended hierarchy: a single dense plot surface, one shared time axis, compact navigation and cursor controls, and explicit workspace modes that keep plots central.",
+      "The earlier responsive Trace filter request remains separately tracked as req_004_make_trace_filtering_responsive_at_1024_px_workspace_width; this work must not duplicate or widen that scope.",
+      "The change must preserve profile layout persistence, shown-signal selection, A/B cursor semantics, follow-live behaviour, measurements, trace selection, keyboard access, and headless offscreen UI coverage."
+    ],
+    "acceptance_criteria": [
+      "AC1: When Signals or Inspector is collapsed, its rail has an unobstructed, centred, compact expand button with an accessible name and tooltip; it restores the panel without losing state.",
+      "AC2: Selected signals render in a compact graph workspace with a shared navigation domain and one visible time axis; there are no white inter-plot bands or per-plot vertical scrolling in the normal graph view.",
+      "AC3: Each selected signal remains individually identifiable and readable, and shared A/B cursor lines, grid, fit, zoom, and follow-live behaviour remain correct across every rendered signal.",
+      "AC4: The default workspace at 1024x768, 1280x720, and 1600x900 gives the graph surface priority while retaining compact, non-overlapping controls, reachable Trace and Report modes, and splitter persistence.",
+      "AC5: The implementation preserves display-only Trace filtering, acquisition, decoding, exports, profile persistence, and measurement semantics; req_004 remains the sole scope for Trace filter-header responsiveness.",
+      "AC6: Headless regression tests cover collapsed-rail geometry, graph geometry and shared-axis structure, interactive controls, cursor/navigation behaviour, and supported-resolution layout constraints."
+    ]
+  },
+  "product": {
+    "title": "PeakLive graph-centric diagnostic workspace",
+    "overview": "A focused redesign of the existing desktop measurement workspace. It turns selected signals into one compact graph surface with a shared time axis, fixes collapsed-side-panel affordances, and establishes a hierarchy that reserves most of the central window for live data.",
+    "goals": [
+      "Make live graphs the central, readable object in the workspace.",
+      "Remove visual fragmentation from stacked plot cards, repeated time axes, and scrolling between selected signals.",
+      "Make side-panel collapse controls compact, reliable, and discoverable.",
+      "Keep supporting controls compact without compromising keyboard or pointer operation."
+    ],
+    "non_goals": [
+      "Change CAN acquisition, decoding, filters, exports, cursor calculations, or measurement mathematics.",
+      "Implement the independently tracked Trace filter-header responsiveness work.",
+      "Add new graph-analysis modes, floating windows, docking, or a web UI migration.",
+      "Copy an external product's implementation or visual identity."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Deliver a compact shared-axis graph workspace and robust collapsed rails",
+      "priority": "High - live plotting is the primary analyst activity and the current structure wastes central space while hiding the collapsed-panel recovery affordance.",
+      "complexity": "High",
+      "theme": "Graph-centric responsive workspace",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6"],
+      "problem": [
+        "The plus control in a collapsed Signals or Inspector rail is too large for its constrained geometry and can be obscured, which makes restoring a panel unreliable.",
+        "Each plotted signal is an independent scrolling card with its own title and X axis. The resulting gaps and repeated labels fragment the measurement view and leave too little area for data.",
+        "Graph controls and supporting workspace modes need a more compact hierarchy so the graph area retains priority at bench-screen resolutions."
+      ],
+      "scope_in": [
+        "Introduce a compact collapsed-rail header or control geometry that guarantees an unobstructed, centred expand affordance for both side panels.",
+        "Recompose the selected-signal rendering into a compact shared-time graph surface or linked plot layout with only one visible X axis and no vertical graph scroll in the normal graph view.",
+        "Keep each signal identifiable through a compact label, lane, or legend and retain readable per-signal Y-scale information.",
+        "Preserve A/B cursors, grid, zoom, fit, follow-live, measurements, keyboard access, and profile persistence.",
+        "Compact the graph controls and workspace mode affordances so data keeps priority at 1024x768, 1280x720, and 1600x900.",
+        "Add offscreen regression tests for rail affordance geometry, shared-axis graph structure, and responsive workspace geometry."
+      ],
+      "scope_out": [
+        "Changing Trace filter-bar layout, which belongs to req_004.",
+        "Changing sampling, decoding, acquisition, trace filtering, or export behaviour.",
+        "Adding graph calculations, protocol features, multi-window docking, or a visual rebrand."
+      ],
+      "acceptance_criteria": [
+        "AC1: Both collapsed side panels expose a compact expand control fully inside their rails, centred without clipping or overlap, and restore their existing state.",
+        "AC2: With multiple selected signals, the normal graph workspace has no QScrollArea-driven vertical plot scrolling, no white bands between signal lanes, and one visible shared X axis.",
+        "AC3: Every selected signal has a readable identity and curve; all curve lanes share the same time view and show aligned A/B cursors.",
+        "AC4: Zoom, fit, grid, follow-live, cursor placement, and measurement readouts remain operational and compact without clipping at the supported resolutions.",
+        "AC5: The graph-first workspace retains direct access to Trace and Report and preserves saved splitter and collapsed-panel layout state.",
+        "AC6: Offscreen tests demonstrate the compact rail geometry, shared graph structure, preserved interactions, and no overflow at the supported resolutions."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement the PeakLive graph-centric compact workspace",
+    "plan": [
+      "Inspect the current collapsed-panel and graph rendering geometry, then add focused regression tests for the observed rail and multi-signal layout defects.",
+      "Implement the safe compact rail affordance and the shared-time graph composition while preserving existing graph interactions and persisted state.",
+      "Rebalance graph controls and workspace mode layout around the graph surface at the supported desktop resolutions.",
+      "Run offscreen UI and full-project validation, record the delivery evidence, close out the Logics task, then commit and push the complete delivery."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_graph_centric_workspace_refinement.json",
+    "mode": "full",
+    "profile": "normal"
+  }
+}

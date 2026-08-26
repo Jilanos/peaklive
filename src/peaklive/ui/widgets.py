@@ -70,7 +70,10 @@ class CollapsiblePanel(QFrame):
         # collapsed, it is simply not on screen yet.
         self._collapsed = False
         layout = QVBoxLayout(self)
+        self._layout = layout
+        self._expanded_margins = layout.contentsMargins()
         header = QHBoxLayout()
+        self._header = header
         self.heading = QLabel(title.upper(), objectName="panelHeading")
         header.addWidget(self.heading, 1)
         self.toggle = QToolButton(objectName="collapseButton")
@@ -110,6 +113,20 @@ class CollapsiblePanel(QFrame):
         self.body.setVisible(not collapsed)
         self.rail.setVisible(collapsed)
         self.heading.setVisible(not collapsed)
+        # A normal instrument header has comfortable margins. Keeping those
+        # margins in a 34 px rail leaves less room than the button itself, so
+        # Qt clips its plus glyph. The compact rail gets a centred 18 px
+        # control and only two-pixel side gutters.
+        if collapsed:
+            self._layout.setContentsMargins(2, 4, 2, 4)
+            self._header.setContentsMargins(0, 0, 0, 0)
+            self.toggle.setFixedSize(18, 18)
+            self._header.setAlignment(self.toggle, Qt.AlignmentFlag.AlignHCenter)
+        else:
+            self._layout.setContentsMargins(self._expanded_margins)
+            self.toggle.setMaximumSize(UNBOUNDED_WIDTH, UNBOUNDED_WIDTH)
+            self.toggle.setMinimumSize(0, 0)
+            self._header.setAlignment(self.toggle, Qt.AlignmentFlag.AlignRight)
         # Capping the width is what actually releases the column: a splitter
         # honours a child's maximum, so the space goes to the neighbours.
         self.setMaximumWidth(RAIL_WIDTH if collapsed else UNBOUNDED_WIDTH)
@@ -122,11 +139,14 @@ class CollapsiblePanel(QFrame):
 
     def _sync_toggle(self) -> None:
         collapsed = self.is_collapsed
+        self.toggle.setProperty("collapsed", collapsed)
         self.toggle.setText("+" if collapsed else "−")
         key = "panel.expand" if collapsed else "panel.collapse"
         label = translate(key).format(panel=self._title)
         self.toggle.setAccessibleName(label)
         self.toggle.setToolTip(label)
+        self.toggle.style().unpolish(self.toggle)
+        self.toggle.style().polish(self.toggle)
 
 
 class StateNote(QLabel):

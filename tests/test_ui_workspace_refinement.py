@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QWidget
+from PySide6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QScrollArea, QWidget
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.i18n import translate
@@ -478,6 +478,21 @@ def test_the_collapsed_rail_names_its_panel_and_offers_the_expand_control(qtbot,
     assert panel.toggle.toolTip() == expected
 
 
+@pytest.mark.parametrize("panel_name", ["signals_panel", "inspector_panel"])
+def test_the_collapsed_rail_centres_a_compact_unobstructed_expand_control(
+    qtbot, tmp_path, panel_name
+):
+    window = _window(qtbot, tmp_path)
+    panel = getattr(window, panel_name)
+    panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    button = panel.toggle
+    assert button.width() < RAIL_WIDTH
+    assert panel.rect().contains(button.geometry())
+    assert abs(button.geometry().center().x() - panel.rect().center().x()) <= 1
+
+
 def test_expanding_restores_the_remembered_width_and_the_content(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     window.workspace.setSizes([340, 700, 240])
@@ -694,6 +709,27 @@ def test_the_plot_area_keeps_its_own_minimum_height(qtbot, tmp_path):
 
     assert window.graph_panel.scroll.height() >= PLOT_AREA_MINIMUM_HEIGHT
     assert window.measure_table.height() <= window.graph_panel.scroll.height()
+
+
+def test_multiple_signals_share_one_compact_non_scrolling_time_surface(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path, size=(1280, 720))
+    window._selected_signal_names.update({"VehicleStatus.Speed", "VehicleStatus.Rpm"})
+    window._sync_graphs()
+    qtbot.wait(20)
+
+    panel = window.graph_panel
+    plots = list(panel.plots.values())
+    assert len(plots) == 2
+    assert panel.scroll.objectName() == "graphCanvas"
+    assert not isinstance(panel.scroll, QScrollArea)
+    assert panel.container_layout.spacing() == 0
+
+    for plot in plots[:-1]:
+        assert plot.getAxis("bottom").height() == 0
+    assert plots[-1].getAxis("bottom").height() > 0
+    assert all(
+        plot.getViewBox().linkedView(0) is panel.anchor_plot.getViewBox() for plot in plots[1:]
+    )
 
 
 def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot, tmp_path):

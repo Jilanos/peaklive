@@ -7,7 +7,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QLabel,
-    QScrollArea,
+    QSizePolicy,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -64,13 +64,16 @@ class GraphStackPanel(QWidget):
         self.cursor_b_button.clicked.connect(lambda: self.place_cursor("b"))
         layout.addWidget(self.controls)
 
-        self.scroll = QScrollArea(objectName="graphScroll")
-        self.scroll.setWidgetResizable(True)
+        # This is intentionally a single surface, not a scroll area full of
+        # plot cards. A graph list makes operators scroll *between* signals,
+        # repeats the time axis, and leaves light bands between the cards.
+        # Stacked linked plots resize together instead, just like a scope.
+        self.scroll = QWidget(objectName="graphCanvas")
         self.scroll.setMinimumHeight(PLOT_AREA_MINIMUM_HEIGHT)
-        self.container = QWidget()
+        self.container = self.scroll
         self.container_layout = QVBoxLayout(self.container)
         self.container_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll.setWidget(self.container)
+        self.container_layout.setSpacing(0)
         layout.addWidget(self.scroll, 1)
 
         self.note = StateNote(translate("graph.empty"))
@@ -148,9 +151,8 @@ class GraphStackPanel(QWidget):
             plot.setBackground(theme.PLOT_BACKGROUND)
             plot.showGrid(x=self._grid, y=self._grid, alpha=0.25)
             plot.setLabel("left", signal_name)
-            plot.setLabel("bottom", translate("graph.time_axis"), units="s")
-            plot.setTitle(signal_name)
-            plot.setMinimumHeight(170)
+            plot.setMinimumHeight(0)
+            plot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             curve = plot.plot(pen=pg.mkPen(theme.CURVE, width=2))
             line_a = pg.InfiniteLine(
                 pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_A)
@@ -170,11 +172,19 @@ class GraphStackPanel(QWidget):
             else:
                 plot.setXLink(anchor)
             plot.getViewBox().sigXRangeChanged.connect(self._x_range_changed)
-            self.container_layout.addWidget(plot)
+            self.container_layout.addWidget(plot, 1)
             self._plots[signal_name] = plot
             self._curves[signal_name] = curve
             self._cursor_lines[signal_name] = (line_a, line_b)
-        self.container_layout.addStretch(1)
+        # One time axis is enough when all lanes are X-linked. Hiding every
+        # other axis both removes repeated labels and gives curves more room.
+        for index, plot in enumerate(self._plots.values()):
+            axis = plot.getAxis("bottom")
+            is_bottom = index == len(self._plots) - 1
+            axis.setStyle(showValues=is_bottom)
+            axis.setHeight(None if is_bottom else 0)
+            if is_bottom:
+                plot.setLabel("bottom", translate("graph.time_axis"), units="s")
         self.anchor_plot = anchor
         self._apply_cursor_lines()
         self.refresh_data()
