@@ -1,11 +1,12 @@
 ## prod_005_peaklive_graph_centric_diagnostic_workspace - PeakLive graph-centric diagnostic workspace
 > Date: 2026-08-26
-> Status: Proposed
+> Status: Settled
 > Related request: `req_005_make_the_peaklive_workspace_graph_centric_and_compact`
 > Related backlog: `item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails`
 > Related task: `task_005_implement_the_peaklive_graph_centric_compact_workspace`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-08-26 18:38:12
 
 # Overview
 A focused redesign of the existing desktop measurement workspace. It turns selected signals into one compact graph surface with a shared time axis, fixes collapsed-side-panel affordances, and establishes a hierarchy that reserves most of the central window for live data.
@@ -43,5 +44,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_005_make_the_peaklive_workspace_graph_centric_and_compact`
+- Product back-reference: `item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails`
 - Task back-reference: `task_005_implement_the_peaklive_graph_centric_compact_workspace`
