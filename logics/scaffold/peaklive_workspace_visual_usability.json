@@ -1,0 +1,174 @@
+{
+  "title": "Improve PeakLive workspace visual usability and panel density",
+  "references": [
+    "README.md",
+    "docs/product-scope.md",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/theme.py",
+    "src/peaklive/ui/widgets.py",
+    "src/peaklive/ui/panels/signal_explorer.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/dbc_library.py",
+    "tests/test_ui.py",
+    "tests/test_ui_analyst.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Desktop workspace visual usability",
+    "needs": [
+      "Make the signal explorer prioritize the signal name and direct actions, rather than devoting a large share of each row to repeated shown and favorite labels.",
+      "Make every interactive control legible in the dark instrument theme, including unchecked checkboxes and expanded combo-box menus.",
+      "Make collapsing Signals and Inspector reclaim workspace area, with a discoverable compact state and restoration behavior.",
+      "Make graph controls and the graph/trace composition read as an intentional measurement workspace instead of a collection of poorly aligned options."
+    ],
+    "context": [
+      "PeakLive is a native PySide6 CAN-analysis desktop application with a three-column workspace: Signals, Graphs and Trace, and Inspector.",
+      "The Signals panel combines independently enabled DBCs with the signal explorer. DBC enablement is already available in the DBC library, so its control must remain visible and must not be duplicated in signal rows.",
+      "SignalExplorerPanel currently renders a three-column tree: signal name, shown, and fav. Each signal row repeats the literal labels shown and fav beside a checkbox, reducing the available width for the signal name.",
+      "The shared dark stylesheet styles closed QComboBox controls but has no explicit popup-view rules and no explicit unchecked-checkbox indicator rules, making some controls nearly unreadable on a dark background.",
+      "CollapsiblePanel hides its body but remains a child of a horizontal QSplitter with its previous allocation. A collapsed Signals or Inspector panel therefore leaves an empty reserved column.",
+      "GraphStackPanel exposes zoom, grid, follow-live, cursor, window, and cursor-summary controls in one horizontal row above a vertically stacked graph area. The workspace also uses a vertical splitter for graphs, trace, and report.",
+      "The redesign must preserve existing DBC conflict behavior, shown-signal plots, favorite persistence, keyboard access, profile layout persistence, and headless Qt testability."
+    ],
+    "acceptance_criteria": [
+      "AC1: The signal explorer presents each signal name as the dominant, readable row content, while shown and favorite actions remain direct, compact, independently operable, and accessible without repeated text labels in every row.",
+      "AC2: DBC activation remains a separate, discoverable control in the DBC library; this request neither duplicates it in signal rows nor changes enabled-DBC decode semantics.",
+      "AC3: In the dark theme, unchecked and checked checkboxes, combo-box field text, popup-menu text, popup selection, disabled items, and hover/focus states meet readable foreground/background contrast and remain usable with keyboard navigation.",
+      "AC4: Collapsing Signals or Inspector releases its meaningful horizontal workspace allocation. The compact state exposes the panel identity and an obvious expand action, and restoring it returns its content and a sensible remembered or default width.",
+      "AC5: Graph navigation and measurement controls are grouped, aligned, and responsive at 1024x768, 1280x720, and 1600x900; labels and state readouts do not overlap, clip, or force the graphs into an unusable area.",
+      "AC6: The graph, trace, and report arrangement gives the active graph workspace priority while retaining predictable splitter-based resizing and persisted layout behavior.",
+      "AC7: Existing behavior for shown signals, favorites, DBC enabling, profile persistence, graph navigation, A/B cursors, trace selection, and keyboard operation remains covered by headless offscreen regression tests.",
+      "AC8: All new or changed user-visible text is routed through the i18n layer, and no transmit, protocol, acquisition, or decoding behavior is introduced or changed."
+    ]
+  },
+  "product": {
+    "title": "PeakLive dense and legible diagnostic workspace",
+    "overview": "A focused visual and layout refinement of the existing analyst workspace. It makes signal selection compact and name-first, restores legibility to every dark-theme control, lets collapsed side panels genuinely yield working space, and arranges graph controls and workspace sections around the operator's measurement task.",
+    "goals": [
+      "Give signal names enough horizontal space to scan and select them quickly.",
+      "Make shown and favorite state unmistakable without wasting a full textual column per action.",
+      "Guarantee legible dark-theme menu, selector, and checkbox states.",
+      "Turn panel collapse into a real space-management action.",
+      "Improve visual hierarchy and responsive placement of graph options and graph workspace content."
+    ],
+    "non_goals": [
+      "Change DBC loading, enablement, conflict resolution, or decoding semantics.",
+      "Add new analysis functions, export formats, CAN protocols, transmit capabilities, or acquisition hardware support.",
+      "Replace the native PySide6 workspace with a web interface.",
+      "Undertake a wholesale visual rebrand unrelated to the identified usability defects."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Make signal selection compact, name-first, and state-legible",
+      "priority": "High - signal identification and selection are primary analyst actions, and the current row layout hides the most important information.",
+      "complexity": "Medium",
+      "theme": "Signal explorer",
+      "request_acs": ["AC1", "AC2", "AC3", "AC7", "AC8"],
+      "problem": [
+        "Signal rows give separate columns to shown and fav, then repeat those words next to each checkbox. This consumes disproportionate width while the signal name, the most important information, is truncated.",
+        "The unchecked checkbox affordance is hard to see against the dark surface, making state and action ambiguous.",
+        "DBC enablement is a distinct concern already available in the DBC library and must not be conflated with per-signal shown or favorite state."
+      ],
+      "scope_in": [
+        "Redesign the signal tree row and headers so the signal name receives the dominant flexible width.",
+        "Represent shown and favorite as compact, recognizable controls or icons with concise header-level labels, tooltips, accessible names, and keyboard-operable state.",
+        "Set practical minimum widths and resize behavior that protect signal-name readability before action columns consume width.",
+        "Provide clear checked, unchecked, hover, focus, and disabled visual states for shown and favorite controls in the shared dark theme.",
+        "Keep shown-only, favorites-only, search, grouped DBC/message navigation, single-click activation, and profile persistence working.",
+        "Retain DBC enabled/disabled control in the DBC library without duplicating it in the explorer."
+      ],
+      "scope_out": [
+        "Changing the DBC catalog, conflict precedence, or decode pipeline.",
+        "Adding per-signal recording filters or bulk edit workflows.",
+        "Replacing the tree navigation model with a separate database browser."
+      ],
+      "acceptance_criteria": [
+        "AC1: At the default Signals-panel width, a signal row allocates most horizontal width to the signal name and no longer repeats shown or fav text beside every checkbox.",
+        "AC2: Shown and favorite can each be toggled directly and independently using mouse and keyboard, with an accessible name and tooltip that state the action and state.",
+        "AC3: The unchecked, checked, hover, focus, and disabled states are visually distinguishable on the dark theme.",
+        "AC4: DBC enablement remains controlled from the DBC library and has no duplicated per-signal control.",
+        "AC5: Search, shown-only, favorites-only, grouping, and persisted shown/favorite selections retain their current behavior.",
+        "AC6: Headless tests assert column sizing or layout policy, state toggling, accessible names, and persistence."
+      ]
+    },
+    {
+      "title": "Restore full dark-theme control and menu legibility",
+      "priority": "High - unreadable selector and menu text blocks basic configuration and navigation throughout the application.",
+      "complexity": "Medium",
+      "theme": "Dark theme accessibility",
+      "request_acs": ["AC3", "AC7", "AC8"],
+      "problem": [
+        "With the dark workspace background, text in several expanded drop-down menus is rendered dark on dark and is nearly invisible.",
+        "The current stylesheet declares colors for closed selector controls but does not comprehensively style popup views, menu item states, or checkbox indicators."
+      ],
+      "scope_in": [
+        "Audit all Qt controls used by the workspace and dialogs for dark-surface foreground/background contrast.",
+        "Add explicit stylesheet rules for QComboBox popup views and items, QMenu items, QAbstractItemView selection and disabled states, checkbox indicators, focus states, and hover states.",
+        "Use shared theme tokens rather than panel-local color literals.",
+        "Verify keyboard focus and selected-item states visually and through widget properties in headless tests.",
+        "Keep the existing instrument palette and semantic error, warning, running, and disabled states coherent."
+      ],
+      "scope_out": [
+        "A new light theme or OS-specific theme switcher.",
+        "Changing business behavior of selectors, menus, dialogs, or acquisition settings.",
+        "Pixel-perfect matching to an external product."
+      ],
+      "acceptance_criteria": [
+        "AC1: Every expanded combo-box and menu used by the main workspace and its dialogs renders readable normal, selected, hover, focus, and disabled text on a contrasting background.",
+        "AC2: Unchecked and checked checkboxes are visibly distinct on every dark workspace surface.",
+        "AC3: Keyboard navigation makes the focused and selected item unambiguous without relying on color alone.",
+        "AC4: Theme colors are defined through shared tokens and do not introduce arbitrary panel-local palette values.",
+        "AC5: Offscreen UI tests instantiate representative menus, combo boxes, and checkboxes and assert the stylesheet/state hooks that guard the regression."
+      ]
+    },
+    {
+      "title": "Reclaim collapsed panel space and reorganize graph workspace controls",
+      "priority": "High - the current collapse controls do not create usable workspace area, and graph controls compete with the data they should support.",
+      "complexity": "High",
+      "theme": "Responsive workspace layout",
+      "request_acs": ["AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": [
+        "Signals and Inspector show a minus button, but collapsing hides only their bodies while the horizontal splitter continues reserving the same empty columns.",
+        "The graph option row is visually crowded and poorly grouped, while the graph/trace/report layout does not sufficiently prioritize the active graph workspace."
+      ],
+      "scope_in": [
+        "Define and implement a compact collapsed-side-panel state that releases splitter width, preserves panel identity, and provides an obvious plus-style expand action.",
+        "Choose one documented collapse interaction: a fully collapsed edge rail restored from its expand control, or a narrow vertical-title rail that can be expanded. The chosen interaction must be applied consistently to Signals and Inspector.",
+        "Remember usable expanded widths and restore them on expansion, while keeping the profile layout persistence contract valid.",
+        "Reorganize graph controls into visually coherent groups for view navigation, display options, cursor placement, and readouts.",
+        "Make the graph-control layout wrap, compact, or adapt intentionally rather than overlap or clip at supported bench resolutions.",
+        "Adjust graph, trace, and report splitter defaults and minimum sizes so the active workspace retains a useful graph area and all sections remain resizable.",
+        "Preserve existing collapse shortcuts, A/B cursor behavior, follow-live behavior, trace selection, report availability, and splitter persistence."
+      ],
+      "scope_out": [
+        "Detachable floating panels, multiple windows, or a docking-framework migration.",
+        "New graph analysis features or changes to cursor/statistics semantics.",
+        "Removing trace or report functionality from the workspace."
+      ],
+      "acceptance_criteria": [
+        "AC1: Collapsing Signals or Inspector visibly reduces its horizontal allocation and gives the center workspace the released area.",
+        "AC2: The collapsed state remains discoverable, exposes the panel identity plus a clear expand affordance, and restores the panel content without losing state.",
+        "AC3: Expanded width and collapsed state persist per profile; an invalid or unavailable stored size falls back to a safe usable default.",
+        "AC4: Graph controls are grouped and aligned by purpose, and their labels/readouts remain visible without overlap or clipping at 1024x768, 1280x720, and 1600x900.",
+        "AC5: The default graph/trace/report arrangement provides a usable graph area, supports splitter resizing, and preserves user adjustments across profile reload.",
+        "AC6: Keyboard panel-collapse and graph-navigation behavior remains functional after the layout change.",
+        "AC7: Headless UI tests cover space reclamation, expand/restore behavior, persistence, supported-resolution geometry constraints, and graph-control visibility."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver the PeakLive visual usability and responsive workspace refinement",
+    "plan": [
+      "Establish the shared contrast and control-state contract, then implement and test the name-first signal explorer without changing DBC semantics.",
+      "Implement the selected collapsed-panel interaction and migrate splitter persistence so collapsed panels reclaim space safely.",
+      "Recompose graph controls and graph/trace/report defaults around responsive geometry, preserving all existing measurement behaviors.",
+      "Run offscreen regression coverage, Logics validation, lint, and audit; record task-closeout evidence only when implementation is complete."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_workspace_visual_usability.json",
+    "mode": "full",
+    "profile": "normal"
+  }
+}
