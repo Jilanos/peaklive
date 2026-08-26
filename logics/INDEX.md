@@ -11,7 +11,8 @@ _None_
 | [prod_001_peaklive_windows_can_workstation](product/prod_001_peaklive_windows_can_workstation.md) | PeakLive Windows CAN Workstation | Settled |  |  | product/prod_001_peaklive_windows_can_workstation.md |
 | [prod_002_peaklive_cantracediag_grade_diagnostic_workspace](product/prod_002_peaklive_cantracediag_grade_diagnostic_workspace.md) | PeakLive CanTraceDiag-grade diagnostic workspace | Settled |  |  | product/prod_002_peaklive_cantracediag_grade_diagnostic_workspace.md |
 | [prod_003_peaklive_analyst_measurement_and_reporting_workspace](product/prod_003_peaklive_analyst_measurement_and_reporting_workspace.md) | PeakLive analyst measurement and reporting workspace | Settled |  |  | product/prod_003_peaklive_analyst_measurement_and_reporting_workspace.md |
-| [prod_004_peaklive_dense_and_legible_diagnostic_workspace](product/prod_004_peaklive_dense_and_legible_diagnostic_workspace.md) | PeakLive dense and legible diagnostic workspace | Proposed |  |  | product/prod_004_peaklive_dense_and_legible_diagnostic_workspace.md |
+| [prod_004_peaklive_dense_and_legible_diagnostic_workspace](product/prod_004_peaklive_dense_and_legible_diagnostic_workspace.md) | PeakLive dense and legible diagnostic workspace | Settled |  |  | product/prod_004_peaklive_dense_and_legible_diagnostic_workspace.md |
+| [prod_005_peaklive_graph_centric_diagnostic_workspace](product/prod_005_peaklive_graph_centric_diagnostic_workspace.md) | PeakLive graph-centric diagnostic workspace | Proposed |  |  | product/prod_005_peaklive_graph_centric_diagnostic_workspace.md |
 
 ## Roadmaps
 
@@ -24,7 +25,9 @@ _None_
 | [req_000_deliver_the_peaklive_windows_can_workstation_mvp](request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md) | Deliver the PeakLive Windows CAN workstation MVP | Done |  |  | request/req_000_deliver_the_peaklive_windows_can_workstation_mvp.md |
 | [req_001_bring_peaklive_ux_to_cantracediag_parity](request/req_001_bring_peaklive_ux_to_cantracediag_parity.md) | Bring PeakLive UX to CanTraceDiag parity | Done |  |  | request/req_001_bring_peaklive_ux_to_cantracediag_parity.md |
 | [req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity](request/req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity.md) | Complete the PeakLive analyst workspace to CanTraceDiag parity | Done |  |  | request/req_002_complete_the_peaklive_analyst_workspace_to_cantracediag_parity.md |
-| [req_003_improve_peaklive_workspace_visual_usability_and_panel_density](request/req_003_improve_peaklive_workspace_visual_usability_and_panel_density.md) | Improve PeakLive workspace visual usability and panel density | Draft |  |  | request/req_003_improve_peaklive_workspace_visual_usability_and_panel_density.md |
+| [req_003_improve_peaklive_workspace_visual_usability_and_panel_density](request/req_003_improve_peaklive_workspace_visual_usability_and_panel_density.md) | Improve PeakLive workspace visual usability and panel density | Done |  |  | request/req_003_improve_peaklive_workspace_visual_usability_and_panel_density.md |
+| [req_004_make_trace_filtering_responsive_at_1024_px_workspace_width](request/req_004_make_trace_filtering_responsive_at_1024_px_workspace_width.md) | Make trace filtering responsive at 1024 px workspace width | Draft |  |  | request/req_004_make_trace_filtering_responsive_at_1024_px_workspace_width.md |
+| [req_005_make_the_peaklive_workspace_graph_centric_and_compact](request/req_005_make_the_peaklive_workspace_graph_centric_and_compact.md) | Make the PeakLive workspace graph-centric and compact | Draft |  |  | request/req_005_make_the_peaklive_workspace_graph_centric_and_compact.md |
 
 ## Backlog
 
@@ -55,9 +58,10 @@ _None_
 | [item_023_deliver_bus_state_error_and_loading_feedback](backlog/item_023_deliver_bus_state_error_and_loading_feedback.md) | Deliver bus-state, error, and loading feedback | Done |  | 100% | backlog/item_023_deliver_bus_state_error_and_loading_feedback.md |
 | [item_024_deliver_keyboard_accessibility_menus_and_layout_persistence](backlog/item_024_deliver_keyboard_accessibility_menus_and_layout_persistence.md) | Deliver keyboard accessibility, menus, and layout persistence | Done |  | 100% | backlog/item_024_deliver_keyboard_accessibility_menus_and_layout_persistence.md |
 | [item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage](backlog/item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage.md) | Decompose the workspace UI into modules with parity regression coverage | Done |  | 100% | backlog/item_025_decompose_the_workspace_ui_into_modules_with_parity_regression_coverage.md |
-| [item_026_make_signal_selection_compact_name_first_and_state_legible](backlog/item_026_make_signal_selection_compact_name_first_and_state_legible.md) | Make signal selection compact, name-first, and state-legible | Ready |  | 0% | backlog/item_026_make_signal_selection_compact_name_first_and_state_legible.md |
-| [item_027_restore_full_dark_theme_control_and_menu_legibility](backlog/item_027_restore_full_dark_theme_control_and_menu_legibility.md) | Restore full dark-theme control and menu legibility | Ready |  | 0% | backlog/item_027_restore_full_dark_theme_control_and_menu_legibility.md |
-| [item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls](backlog/item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls.md) | Reclaim collapsed panel space and reorganize graph workspace controls | Ready |  | 0% | backlog/item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls.md |
+| [item_026_make_signal_selection_compact_name_first_and_state_legible](backlog/item_026_make_signal_selection_compact_name_first_and_state_legible.md) | Make signal selection compact, name-first, and state-legible | Done |  | 100% | backlog/item_026_make_signal_selection_compact_name_first_and_state_legible.md |
+| [item_027_restore_full_dark_theme_control_and_menu_legibility](backlog/item_027_restore_full_dark_theme_control_and_menu_legibility.md) | Restore full dark-theme control and menu legibility | Done |  | 100% | backlog/item_027_restore_full_dark_theme_control_and_menu_legibility.md |
+| [item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls](backlog/item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls.md) | Reclaim collapsed panel space and reorganize graph workspace controls | Done |  | 100% | backlog/item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls.md |
+| [item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails](backlog/item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails.md) | Deliver a compact shared-axis graph workspace and robust collapsed rails | Ready |  | 0% | backlog/item_029_deliver_a_compact_shared_axis_graph_workspace_and_robust_collapsed_rails.md |
 
 ## Tasks
 
@@ -66,7 +70,8 @@ _None_
 | [task_001_orchestrate_the_peaklive_windows_can_workstation_mvp](tasks/task_001_orchestrate_the_peaklive_windows_can_workstation_mvp.md) | Orchestrate the PeakLive Windows CAN workstation MVP | Done | Codex | 100% | tasks/task_001_orchestrate_the_peaklive_windows_can_workstation_mvp.md |
 | [task_002_deliver_the_peaklive_cantracediag_ux_parity_delta](tasks/task_002_deliver_the_peaklive_cantracediag_ux_parity_delta.md) | Deliver the PeakLive CanTraceDiag UX parity delta | Done | codex | 100% | tasks/task_002_deliver_the_peaklive_cantracediag_ux_parity_delta.md |
 | [task_003_deliver_the_peaklive_analyst_workspace_parity_wave](tasks/task_003_deliver_the_peaklive_analyst_workspace_parity_wave.md) | Deliver the PeakLive analyst workspace parity wave | Done | Claude | 100% | tasks/task_003_deliver_the_peaklive_analyst_workspace_parity_wave.md |
-| [task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement](tasks/task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement.md) | Deliver the PeakLive visual usability and responsive workspace refinement | Ready |  | 0% | tasks/task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement.md |
+| [task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement](tasks/task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement.md) | Deliver the PeakLive visual usability and responsive workspace refinement | Done | rose@circle-mobility.com | 100% | tasks/task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement.md |
+| [task_005_implement_the_peaklive_graph_centric_compact_workspace](tasks/task_005_implement_the_peaklive_graph_centric_compact_workspace.md) | Implement the PeakLive graph-centric compact workspace | Ready |  | 0% | tasks/task_005_implement_the_peaklive_graph_centric_compact_workspace.md |
 
 ## Runbooks
 
