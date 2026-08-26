@@ -67,3 +67,31 @@ The wave-2 suite runs headless under `QT_QPA_PLATFORM=offscreen` with fake
 adapters, DBC fixtures, and synthetic sessions. No acceptance gate depends on
 connected hardware; any live PCAN smoke check remains optional and capped at
 2 minutes.
+
+
+## Wave 3 - workspace visual usability (req_003, delivered)
+
+Operating the wave-2 workspace on a bench screen surfaced three usability
+defects that were about legibility and space rather than capability.
+
+| Area | Problem | Delivered | Evidence |
+| --- | --- | --- | --- |
+| Signal rows | Each row repeated the words `shown` and `fav` beside its checkbox, so two action columns took width the signal name needed. | Action columns are indicator-sized and fixed; the name column stretches. The action and its current state live in each cell's tooltip and accessible text instead of in the row. | `tests/test_ui_workspace_refinement.py::test_signal_rows_no_longer_repeat_the_action_words` |
+| Dark-theme controls | The stylesheet named closed selectors only, so expanded combo popups, menu items, and unchecked checkboxes fell back to the platform palette and rendered dark on dark. | `theme.CONTROL_STYLE` declares an explicit foreground/background pair for every interactive state - popup views, menu items, item-view selection and disabled rows, checkbox indicators, focus - built from shared tokens. | `tests/test_ui_workspace_refinement.py::test_an_expanded_combo_popup_paints_readable_text` |
+| Focus visibility | Focus was a colour change only. | Focus is a wider outline as well as a colour, so it survives a colour-blind or low-gamma screen. | `tests/test_ui_workspace_refinement.py::test_focus_is_marked_by_outline_width_not_only_by_colour` |
+| Collapsed panels | Collapsing Signals or Inspector hid the body but left the splitter column reserved and empty. | A collapsed panel becomes a 34 px rail carrying its rotated title and expand control; the released width goes to the centre. Expanded widths are remembered per profile and sanitised on load. | `tests/test_ui_workspace_refinement.py::test_collapsing_a_side_panel_releases_its_column` |
+| Graph controls | Zoom, grid, follow-live, cursors, and two readouts sat in one horizontal row that crowded or clipped at bench widths. | Three purpose clusters - navigate, display, cursors - each carrying the readout it drives, laid out by a wrapping `FlowLayout` that loses a line of height rather than a control. | `tests/test_ui_workspace_refinement.py::test_the_graph_controls_stay_readable_at_the_bench_viewports` |
+| Graph priority | The measurement table and the trace squeezed the plots into a strip. | The plot area has its own minimum height, the measurement table a maximum, and the centre divider gives the graph area the stretch. | `tests/test_ui_workspace_refinement.py::test_the_graph_area_keeps_a_usable_height_at_the_bench_viewports` |
+
+Nothing in this wave changes DBC enablement, decode semantics, acquisition, or
+transmit behavior: DBC activation stays in the DBC library and is still absent
+from the signal rows.
+
+### Validation boundary
+
+The wave-3 suite runs headless under `QT_QPA_PLATFORM=offscreen`. Its
+legibility assertions read rendered pixels - the contrast between what a
+control paints most and its most distinct ink - because a stylesheet rule Qt
+never applies is exactly the failure being guarded against. Geometry is
+asserted at 1024x768, 1280x720, and 1600x900. No acceptance gate depends on
+connected hardware.
