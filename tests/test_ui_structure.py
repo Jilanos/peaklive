@@ -45,8 +45,15 @@ def test_every_ui_module_stays_within_the_stated_line_budget():
     assert oversized == {}
 
 
+#: The shell is the main window plus the composition mixins it delegates to.
+#: The guard is about what this layer may build, not about which file holds it.
+SHELL_MODULES = ("main_window.py", "workspace_center.py")
+
+
 def test_the_main_window_composes_panels_rather_than_building_them():
-    source = (UI_ROOT / "main_window.py").read_text(encoding="utf-8")
+    source = "\n".join(
+        (UI_ROOT / name).read_text(encoding="utf-8") for name in SHELL_MODULES
+    )
 
     # The shell must not construct panel internals itself.
     for widget in ("QTreeWidget(", "QTableWidget(", "QLineEdit(", "pg.PlotWidget("):

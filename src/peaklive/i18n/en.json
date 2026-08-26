@@ -42,7 +42,8 @@
   },
   "panel": {
     "collapse": "Collapse {panel}",
-    "expand": "Expand {panel}"
+    "expand": "Expand {panel}",
+    "rail": "{panel} is collapsed. Use the expand control to restore it."
   },
   "workspace": {
     "trace": "Trace",
@@ -88,8 +89,8 @@
     "favorites_only": "Favorites only",
     "explorer": "Signal explorer",
     "column_signal": "Signal",
-    "column_shown": "Shown",
-    "column_favorite": "Favorite",
+    "column_shown": "Show",
+    "column_favorite": "Fav",
     "empty": "No matching DBC signal",
     "shown_tooltip": "Show this signal as its own plot",
     "favorite_tooltip": "Keep this signal in the favorites filter",
@@ -113,7 +114,10 @@
     "window_empty": "No sample yet",
     "cursor_summary": "A {cursor_a} · B {cursor_b} · Δ {delta}",
     "cursor_summary_empty": "Cursors: place A and B to measure a range.",
-    "empty": "No plot yet. Show a DBC signal, or start an acquisition for the raw preview."
+    "empty": "No plot yet. Show a DBC signal, or start an acquisition for the raw preview.",
+    "group_view": "Navigate",
+    "group_display": "Display",
+    "group_cursors": "Cursors"
   },
   "measure": {
     "title": "Measurement",

@@ -6,7 +6,6 @@ import pyqtgraph as pg
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
-    QHBoxLayout,
     QLabel,
     QScrollArea,
     QToolButton,
@@ -17,11 +16,15 @@ from PySide6.QtWidgets import (
 from peaklive.analysis import SeriesStore
 from peaklive.i18n import translate
 from peaklive.ui import theme
+from peaklive.ui.panels.graph_controls import GraphControlsBar
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 
 RAW_PREVIEW = "Raw byte 0"
 ZOOM_STEP = 1.6
+
+#: Below this a plot is a strip, not a trace to read against a cursor.
+PLOT_AREA_MINIMUM_HEIGHT = 180
 
 
 class GraphStackPanel(QWidget):
@@ -51,48 +54,19 @@ class GraphStackPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        nav = QHBoxLayout()
-        self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
+        self.controls = GraphControlsBar()
         self.zoom_in_button.clicked.connect(lambda: self.zoom(1 / ZOOM_STEP))
-        nav.addWidget(self.zoom_in_button)
-        self.zoom_out_button = self._nav("zoomOutButton", "graph.zoom_out", "−")
         self.zoom_out_button.clicked.connect(lambda: self.zoom(ZOOM_STEP))
-        nav.addWidget(self.zoom_out_button)
-        self.fit_button = self._nav("fitButton", "graph.fit", "⤢")
         self.fit_button.clicked.connect(self.fit)
-        nav.addWidget(self.fit_button)
-
-        self.grid_checkbox = QCheckBox(translate("graph.grid"), objectName="gridCheckbox")
-        self.grid_checkbox.setToolTip(translate("graph.grid"))
-        self.grid_checkbox.setAccessibleName(translate("graph.grid"))
-        self.grid_checkbox.setChecked(True)
         self.grid_checkbox.toggled.connect(self.set_grid)
-        nav.addWidget(self.grid_checkbox)
-
-        self.follow_checkbox = QCheckBox(translate("graph.follow"), objectName="followCheckbox")
-        self.follow_checkbox.setToolTip(translate("graph.follow"))
-        self.follow_checkbox.setAccessibleName(translate("graph.follow"))
-        self.follow_checkbox.setChecked(True)
         self.follow_checkbox.toggled.connect(self._follow_toggled)
-        nav.addWidget(self.follow_checkbox)
-
-        self.cursor_a_button = self._nav("cursorAButton", "graph.cursor_a", "A")
         self.cursor_a_button.clicked.connect(lambda: self.place_cursor("a"))
-        nav.addWidget(self.cursor_a_button)
-        self.cursor_b_button = self._nav("cursorBButton", "graph.cursor_b", "B")
         self.cursor_b_button.clicked.connect(lambda: self.place_cursor("b"))
-        nav.addWidget(self.cursor_b_button)
-
-        self.window_label = QLabel(translate("graph.window_empty"), objectName="windowReadout")
-        nav.addWidget(self.window_label)
-        self.cursor_summary = QLabel(
-            translate("graph.cursor_summary_empty"), objectName="cursorSummary"
-        )
-        nav.addWidget(self.cursor_summary, 1)
-        layout.addLayout(nav)
+        layout.addWidget(self.controls)
 
         self.scroll = QScrollArea(objectName="graphScroll")
         self.scroll.setWidgetResizable(True)
+        self.scroll.setMinimumHeight(PLOT_AREA_MINIMUM_HEIGHT)
         self.container = QWidget()
         self.container_layout = QVBoxLayout(self.container)
         self.container_layout.setContentsMargins(0, 0, 0, 0)
@@ -107,13 +81,41 @@ class GraphStackPanel(QWidget):
 
     # ---- construction -------------------------------------------------
 
-    def _nav(self, object_name: str, key: str, glyph: str) -> QToolButton:
-        button = QToolButton(objectName=object_name)
-        button.setProperty("navButton", True)
-        button.setText(glyph)
-        button.setAccessibleName(translate(key))
-        button.setToolTip(translate(key))
-        return button
+    @property
+    def zoom_in_button(self) -> QToolButton:
+        return self.controls.zoom_in_button
+
+    @property
+    def zoom_out_button(self) -> QToolButton:
+        return self.controls.zoom_out_button
+
+    @property
+    def fit_button(self) -> QToolButton:
+        return self.controls.fit_button
+
+    @property
+    def cursor_a_button(self) -> QToolButton:
+        return self.controls.cursor_a_button
+
+    @property
+    def cursor_b_button(self) -> QToolButton:
+        return self.controls.cursor_b_button
+
+    @property
+    def grid_checkbox(self) -> QCheckBox:
+        return self.controls.grid_checkbox
+
+    @property
+    def follow_checkbox(self) -> QCheckBox:
+        return self.controls.follow_checkbox
+
+    @property
+    def window_label(self) -> QLabel:
+        return self.controls.window_label
+
+    @property
+    def cursor_summary(self) -> QLabel:
+        return self.controls.cursor_summary
 
     @property
     def plots(self) -> dict[str, pg.PlotWidget]:

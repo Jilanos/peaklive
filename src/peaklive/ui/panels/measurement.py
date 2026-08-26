@@ -49,7 +49,8 @@ class MeasurementPanel(QWidget):
         self.table.setAccessibleName(translate("measure.accessible"))
         self.table.setHorizontalHeaderLabels([translate(key) for key in MEASURE_COLUMNS])
         self.table.setAlternatingRowColors(True)
-        self.table.setMaximumHeight(190)
+        # The plots are the workspace; the statistics read under them.
+        self.table.setMaximumHeight(140)
         layout.addWidget(self.table)
 
     def refresh(
