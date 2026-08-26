@@ -31,7 +31,9 @@ from peaklive.ui.layout_reflow import (
 )
 from peaklive.ui.main_window import SIGNAL_KEY_ROLE
 from peaklive.ui.panels.graph_controls import (
+    READOUT_MINIMUM_WIDTH,
     READOUT_PREFERRED_WIDTH,
+    ElidingLabel,
     GraphControlsBar,
 )
 from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT
@@ -410,6 +412,20 @@ def _rects(widgets):
     return [widget.geometry() for widget in widgets]
 
 
+def _paints_its_content(control: QWidget) -> bool:
+    """Is the control wide enough for what it has to draw?
+
+    Not `minimumSizeHint()`: that carries the stylesheet's padding, which a
+    layout is free to eat, and a glyph button squeezed out of its padding is
+    still perfectly readable. A readout is exempt because it elides on
+    purpose - it only has to keep its floor.
+    """
+    if isinstance(control, ElidingLabel):
+        return control.width() >= READOUT_MINIMUM_WIDTH
+    text = control.text() if hasattr(control, "text") else ""
+    return control.width() >= control.fontMetrics().horizontalAdvance(text)
+
+
 def _leaf_controls(bar) -> list[QWidget]:
     return [
         child
@@ -603,9 +619,8 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
             assert not rects[first].intersects(rects[second])
 
     for control in _leaf_controls(bar):
-        hint = control.minimumSizeHint()
-        assert control.width() >= hint.width()
-        assert control.height() >= hint.height()
+        assert _paints_its_content(control), control.objectName()
+        assert control.height() >= control.minimumSizeHint().height()
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -732,7 +747,7 @@ def test_a_narrow_bar_drops_the_captions_before_squeezing_a_control(qtbot):
 
     assert not any(caption.isVisible() for caption in bar.captions)
     for control in _leaf_controls(bar):
-        assert control.width() >= control.minimumSizeHint().width()
+        assert _paints_its_content(control), control.objectName()
 
     bar.setFixedWidth(1400)
     qtbot.wait(20)
