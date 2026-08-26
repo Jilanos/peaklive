@@ -1,14 +1,14 @@
 ## item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls - Reclaim collapsed panel space and reorganize graph workspace controls
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: Responsive workspace layout
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 16:07:29
+> Indicators reviewed: 2026-08-26 16:24:36
 
 # AI Context
 - Summary: Make side-panel collapse genuinely release splitter space and arrange graph controls around readable responsive measurement work.

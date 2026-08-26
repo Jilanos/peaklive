@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
+    QHeaderView,
     QLineEdit,
     QTreeWidget,
     QTreeWidgetItem,
@@ -19,6 +20,15 @@ from peaklive.analysis.dbc import DbcSignalReference
 from peaklive.i18n import translate
 
 SIGNAL_KEY_ROLE = Qt.ItemDataRole.UserRole
+ACCESSIBLE_ROLE = Qt.ItemDataRole.AccessibleTextRole
+
+#: Action columns are sized to their checkbox indicator, not to a word, so the
+#: signal name keeps the flexible width (item_026 AC1). The header still names
+#: what each column does.
+SHOWN_COLUMN = 1
+FAVORITE_COLUMN = 2
+ACTION_COLUMN_WIDTH = 34
+NAME_COLUMN_MINIMUM = 160
 
 
 class SignalExplorerPanel(QWidget):
@@ -65,6 +75,16 @@ class SignalExplorerPanel(QWidget):
                 translate("signals.column_favorite"),
             ]
         )
+        self.tree.setUniformRowHeights(True)
+        self.tree.setIndentation(14)
+        header = self.tree.header()
+        header.setStretchLastSection(False)
+        header.setMinimumSectionSize(ACTION_COLUMN_WIDTH)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for column in (SHOWN_COLUMN, FAVORITE_COLUMN):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
+            self.tree.setColumnWidth(column, ACTION_COLUMN_WIDTH)
+        self.tree.setColumnWidth(0, NAME_COLUMN_MINIMUM)
         self.tree.itemChanged.connect(self._item_changed)
         self.tree.itemActivated.connect(self._item_activated)
         layout.addWidget(self.tree, 1)
@@ -141,39 +161,70 @@ class SignalExplorerPanel(QWidget):
                 message_items[message_key] = message_item
             display_name = reference.display_name
             label = reference.signal_name + (f" [{reference.unit}]" if reference.unit else "")
-            signal_item = QTreeWidgetItem(message_item, [label, "shown", "fav"])
+            signal_item = QTreeWidgetItem(message_item, [label, "", ""])
             signal_item.setData(0, SIGNAL_KEY_ROLE, display_name)
-            signal_item.setToolTip(1, translate("signals.shown_tooltip"))
-            signal_item.setToolTip(2, translate("signals.favorite_tooltip"))
+            signal_item.setToolTip(0, display_name)
             signal_item.setCheckState(
-                1,
+                SHOWN_COLUMN,
                 Qt.CheckState.Checked
                 if display_name in shown
                 else Qt.CheckState.Unchecked,
             )
             signal_item.setCheckState(
-                2,
+                FAVORITE_COLUMN,
                 Qt.CheckState.Checked
                 if display_name in favorites
                 else Qt.CheckState.Unchecked,
             )
+            self._describe(signal_item)
             if first_signal is None:
                 first_signal = signal_item
         if first_signal is not None:
             self.tree.setCurrentItem(first_signal)
         self.tree.blockSignals(False)
 
+    def _describe(self, item: QTreeWidgetItem) -> None:
+        """Carry the action and its current state without printing it in the row.
+
+        A screen reader and a hovering operator both need to know what the
+        checkbox does and where it stands; only the row itself has to stay
+        free of the repeated words.
+        """
+        signal = str(item.data(0, SIGNAL_KEY_ROLE) or "")
+        # Writing the description back is itself an item change; without this
+        # the toggle signal would be emitted twice per click.
+        blocked = self.tree.blockSignals(True)
+        for column, key in ((SHOWN_COLUMN, "shown_state"), (FAVORITE_COLUMN, "favorite_state")):
+            state = (
+                "signals.state_on"
+                if item.checkState(column) == Qt.CheckState.Checked
+                else "signals.state_off"
+            )
+            label = translate(f"signals.{key}").format(
+                signal=signal, state=translate(state)
+            )
+            item.setToolTip(column, label)
+            item.setData(column, ACCESSIBLE_ROLE, label)
+        self.tree.blockSignals(blocked)
+
     def _item_activated(self, item: QTreeWidgetItem) -> None:
         if not item.data(0, SIGNAL_KEY_ROLE):
             return
-        checked = item.checkState(1) == Qt.CheckState.Checked
-        item.setCheckState(1, Qt.CheckState.Unchecked if checked else Qt.CheckState.Checked)
+        checked = item.checkState(SHOWN_COLUMN) == Qt.CheckState.Checked
+        item.setCheckState(
+            SHOWN_COLUMN, Qt.CheckState.Unchecked if checked else Qt.CheckState.Checked
+        )
 
     def _item_changed(self, item: QTreeWidgetItem, column: int) -> None:
         key = item.data(0, SIGNAL_KEY_ROLE)
         if not key:
             return
-        if column == 1:
-            self.shown_changed.emit(str(key), item.checkState(1) == Qt.CheckState.Checked)
-        elif column == 2:
-            self.favorite_changed.emit(str(key), item.checkState(2) == Qt.CheckState.Checked)
+        self._describe(item)
+        if column == SHOWN_COLUMN:
+            self.shown_changed.emit(
+                str(key), item.checkState(SHOWN_COLUMN) == Qt.CheckState.Checked
+            )
+        elif column == FAVORITE_COLUMN:
+            self.favorite_changed.emit(
+                str(key), item.checkState(FAVORITE_COLUMN) == Qt.CheckState.Checked
+            )

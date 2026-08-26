@@ -89,10 +89,14 @@
     "explorer": "Signal explorer",
     "column_signal": "Signal",
     "column_shown": "Shown",
-    "column_favorite": "Fav",
+    "column_favorite": "Favorite",
     "empty": "No matching DBC signal",
     "shown_tooltip": "Show this signal as its own plot",
-    "favorite_tooltip": "Keep this signal in the favorites filter"
+    "favorite_tooltip": "Keep this signal in the favorites filter",
+    "state_on": "on",
+    "state_off": "off",
+    "shown_state": "Show {signal} as its own plot — currently {state}",
+    "favorite_state": "Keep {signal} in the favorites filter — currently {state}"
   },
   "graph": {
     "plot_accessible": "Live signal plot",
