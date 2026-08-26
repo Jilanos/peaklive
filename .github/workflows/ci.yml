@@ -19,3 +19,14 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run ruff check .
       - run: uv run pytest
+      - name: Build Windows executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/build-windows.ps1
+      - name: Upload Windows executable
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PeakLive-windows-x64
+          path: dist/PeakLive.exe
+          if-no-files-found: error
