@@ -1,14 +1,14 @@
 ## item_026_make_signal_selection_compact_name_first_and_state_legible - Make signal selection compact, name-first, and state-legible
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Signal explorer
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 16:24:36
+> Indicators reviewed: 2026-08-26 16:59:32
 
 # AI Context
 - Summary: Rebalance the grouped signal tree around a readable signal name and compact independent shown/favorite actions.
@@ -62,3 +62,9 @@
 # Priority
 - Priority: High - signal identification and selection are primary analyst actions, and the current row layout hides the most important information.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement`
+
+# Notes
+- Task `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement` was finished via `logics-manager flow finish task` on 2026-08-26.

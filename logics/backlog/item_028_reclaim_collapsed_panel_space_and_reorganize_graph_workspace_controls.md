@@ -1,14 +1,14 @@
 ## item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls - Reclaim collapsed panel space and reorganize graph workspace controls
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: High
 > Theme: Responsive workspace layout
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 16:24:36
+> Indicators reviewed: 2026-08-26 16:59:32
 
 # AI Context
 - Summary: Make side-panel collapse genuinely release splitter space and arrange graph controls around readable responsive measurement work.
@@ -63,3 +63,9 @@
 # Priority
 - Priority: High - the current collapse controls do not create usable workspace area, and graph controls compete with the data they should support.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement`
+
+# Notes
+- Task `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement` was finished via `logics-manager flow finish task` on 2026-08-26.
