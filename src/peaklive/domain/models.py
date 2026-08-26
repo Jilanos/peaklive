@@ -244,6 +244,9 @@ class WorkspaceLayout:
     splitter_sizes: list[int] = field(default_factory=list)
     divider_sizes: list[int] = field(default_factory=list)
     collapsed_panels: list[str] = field(default_factory=list)
+    #: Remembered expanded width per side panel, so a collapsed panel comes
+    #: back to the width the operator gave it rather than to a guess.
+    panel_widths: dict[str, int] = field(default_factory=dict)
     cursor_a: float | None = None
     cursor_b: float | None = None
     fullscreen: bool = False
@@ -254,6 +257,7 @@ class WorkspaceLayout:
             "splitter_sizes": list(self.splitter_sizes),
             "divider_sizes": list(self.divider_sizes),
             "collapsed_panels": list(self.collapsed_panels),
+            "panel_widths": dict(self.panel_widths),
             "cursor_a": self.cursor_a,
             "cursor_b": self.cursor_b,
             "fullscreen": self.fullscreen,
@@ -270,6 +274,21 @@ class WorkspaceLayout:
             except (TypeError, ValueError):
                 return None
 
+        def widths(key: str) -> dict[str, int]:
+            """Drop any stored width that is missing, unusable, or not a size."""
+            raw_widths = raw.get(key, {})
+            if not isinstance(raw_widths, dict):
+                return {}
+            usable: dict[str, int] = {}
+            for name, value in raw_widths.items():
+                try:
+                    width = int(value)
+                except (TypeError, ValueError):
+                    continue
+                if width > 0:
+                    usable[str(name)] = width
+            return usable
+
         def sizes(key: str) -> list[int]:
             try:
                 return [int(item) for item in raw.get(key, [])]
@@ -281,6 +300,7 @@ class WorkspaceLayout:
             splitter_sizes=sizes("splitter_sizes"),
             divider_sizes=sizes("divider_sizes"),
             collapsed_panels=[str(name) for name in raw.get("collapsed_panels", [])],
+            panel_widths=widths("panel_widths"),
             cursor_a=optional_float("cursor_a"),
             cursor_b=optional_float("cursor_b"),
             fullscreen=bool(raw.get("fullscreen", False)),

@@ -21,13 +21,22 @@ from peaklive.adapters import FakeCanAdapter
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow, theme
+from peaklive.ui.layout_reflow import (
+    GRAPH_MINIMUM_HEIGHT,
+    MIN_CENTER_WIDTH,
+    MIN_SIDE_WIDTH,
+    SECTION_MINIMUM_HEIGHT,
+    reflow_widths,
+)
 from peaklive.ui.main_window import SIGNAL_KEY_ROLE
+from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT
 from peaklive.ui.panels.signal_explorer import (
     ACCESSIBLE_ROLE,
     ACTION_COLUMN_WIDTH,
     FAVORITE_COLUMN,
     SHOWN_COLUMN,
 )
+from peaklive.ui.widgets import RAIL_WIDTH
 
 UI_ROOT = Path(__file__).resolve().parents[1] / "src" / "peaklive" / "ui"
 
@@ -376,3 +385,292 @@ def test_checked_and_unchecked_boxes_are_visibly_distinct(qtbot, tmp_path):
         checked = box.grab().toImage()
         box.setChecked(was_checked)
         assert unchecked != checked, box.objectName()
+
+
+# --------------------------------------------------------------------------
+# item_028 - reclaimed panel space and a regrouped graph workspace
+# --------------------------------------------------------------------------
+
+
+def _about(actual: int, expected: int) -> bool:
+    """Splitter widths land near, not exactly on, what a caller asks for.
+
+    The centre column has a minimum of its own, so restoring a side panel
+    returns the remembered width less whatever the centre still needs.
+    """
+    return abs(actual - expected) <= max(8, expected // 20)
+
+
+def _rects(widgets):
+    return [widget.geometry() for widget in widgets]
+
+
+def _leaf_controls(bar) -> list[QWidget]:
+    return [
+        child
+        for group in bar.groups
+        for child in group.findChildren(QWidget)
+        if child.isVisible()
+    ]
+
+
+def test_collapsing_a_side_panel_releases_its_column(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    before = window.workspace.sizes()
+
+    window.signals_panel.set_collapsed(True)
+    qtbot.wait(10)
+    after = window.workspace.sizes()
+
+    assert after[0] == RAIL_WIDTH
+    assert window.signals_panel.width() == RAIL_WIDTH
+    assert after[1] > before[1]
+    assert sum(after) == sum(before)
+
+
+def test_both_side_panels_can_be_collapsed_at_once(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    window.signals_panel.set_collapsed(True)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    sizes = window.workspace.sizes()
+    assert sizes[0] == sizes[2] == RAIL_WIDTH
+    assert sizes[1] == sum(sizes) - 2 * RAIL_WIDTH
+
+
+def test_the_collapsed_rail_names_its_panel_and_offers_the_expand_control(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    panel = window.inspector_panel
+    assert panel.rail.isVisible()
+    assert panel.rail.text() == translate("workspace.inspector").upper()
+    assert not window.inspector_body.isVisible()
+    assert panel.toggle.isVisible()
+    assert panel.toggle.text() == "+"
+    expected = translate("panel.expand").format(panel=translate("workspace.inspector"))
+    assert panel.toggle.accessibleName() == expected
+    assert panel.toggle.toolTip() == expected
+
+
+def test_expanding_restores_the_remembered_width_and_the_content(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path)
+    window.workspace.setSizes([340, 700, 240])
+    window._persist_layout()
+    window.signal_filter.setText("speed")
+    qtbot.wait(10)
+    remembered = window.workspace.sizes()[0]
+
+    window.signals_panel.set_collapsed(True)
+    qtbot.wait(10)
+    window.signals_panel.set_collapsed(False)
+    qtbot.wait(10)
+
+    assert _about(window.workspace.sizes()[0], remembered)
+    assert window.signals_body.isVisible()
+    assert not window.signals_panel.rail.isVisible()
+    assert window.signal_filter.text() == "speed"
+
+
+def test_the_collapsed_state_and_remembered_width_persist_per_profile(qtbot, tmp_path):
+    store = ProfileStore(tmp_path / "settings")
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+    window.workspace.setSizes([340, 700, 240])
+    window._persist_layout()
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    stored = store.load().selected.layout
+    assert stored.collapsed_panels == ["inspector"]
+    assert stored.panel_widths["inspector"] > RAIL_WIDTH
+
+    restored = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(restored)
+    restored.resize(1280, 720)
+    restored.show()
+    qtbot.waitExposed(restored)
+
+    assert restored.inspector_panel.is_collapsed
+    assert restored.workspace.sizes()[2] == RAIL_WIDTH
+    restored.inspector_panel.set_collapsed(False)
+    qtbot.wait(10)
+    assert _about(restored.workspace.sizes()[2], stored.panel_widths["inspector"])
+
+
+def test_an_unusable_stored_width_falls_back_to_a_safe_default(qtbot, tmp_path):
+    store = ProfileStore(tmp_path / "settings")
+    state = store.load()
+    state.selected.layout.panel_widths = {"signals": -40, "inspector": 0}
+    state.selected.layout.collapsed_panels = ["signals"]
+    store.save(state)
+
+    assert store.load().selected.layout.panel_widths == {}
+
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+    window.signals_panel.set_collapsed(False)
+    qtbot.wait(10)
+
+    assert window.workspace.sizes()[0] >= MIN_SIDE_WIDTH
+
+
+@pytest.mark.parametrize(
+    ("collapsed", "remembered", "total", "expected"),
+    [
+        ([False, False, False], [300, 0, 300], 1200, [300, 600, 300]),
+        ([True, False, False], [300, 0, 300], 1200, [RAIL_WIDTH, 866, 300]),
+        ([True, False, True], [300, 0, 300], 1200, [RAIL_WIDTH, 1132, RAIL_WIDTH]),
+        ([False, True, False], [300, 0, 300], 1200, [583, RAIL_WIDTH, 583]),
+        ([False, False, False], [0, 0, 0], 1200, [300, 600, 300]),
+    ],
+)
+def test_the_width_split_is_arithmetic_not_guesswork(collapsed, remembered, total, expected):
+    assert reflow_widths(collapsed, remembered, total) == expected
+
+
+def test_the_centre_keeps_its_floor_when_the_window_is_narrow():
+    widths = reflow_widths([False, False, False], [500, 0, 500], 1000)
+
+    assert sum(widths) == 1000
+    assert widths[1] >= MIN_CENTER_WIDTH
+
+
+def test_the_keyboard_collapse_shortcut_reclaims_the_column(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    window._toggle_signals_panel()
+    qtbot.wait(10)
+    assert window.signals_panel.is_collapsed
+    assert window.workspace.sizes()[0] == RAIL_WIDTH
+
+    window._toggle_signals_panel()
+    qtbot.wait(10)
+    assert not window.signals_panel.is_collapsed
+    assert window.workspace.sizes()[0] >= MIN_SIDE_WIDTH
+
+
+def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    bar = window.graph_panel.controls
+
+    assert [group.objectName() for group in bar.groups] == [
+        "graphViewGroup",
+        "graphDisplayGroup",
+        "graphCursorGroup",
+    ]
+    assert bar.zoom_in_button.parent() is bar.view_group
+    assert bar.fit_button.parent() is bar.view_group
+    assert bar.grid_checkbox.parent() is bar.display_group
+    assert bar.follow_checkbox.parent() is bar.display_group
+    assert bar.cursor_a_button.parent() is bar.cursor_group
+    assert bar.cursor_b_button.parent() is bar.cursor_group
+    assert bar.window_label.parent() is bar.view_group
+    assert bar.cursor_summary.parent() is bar.cursor_group
+
+
+@pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
+def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path, size):
+    window = _with_dbc(qtbot, tmp_path, size=size)
+    qtbot.wait(20)
+    bar = window.graph_panel.controls
+
+    assert bar.isVisible()
+    for group in bar.groups:
+        assert group.isVisible()
+        assert group.x() >= 0
+        assert group.x() + group.width() <= bar.width() + 1
+        assert group.width() >= group.minimumSizeHint().width()
+
+    rects = _rects(bar.groups)
+    for first in range(len(rects)):
+        for second in range(first + 1, len(rects)):
+            assert not rects[first].intersects(rects[second])
+
+    for control in _leaf_controls(bar):
+        hint = control.minimumSizeHint()
+        assert control.width() >= hint.width()
+        assert control.height() >= hint.height()
+
+
+@pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
+def test_the_graph_area_keeps_a_usable_height_at_the_bench_viewports(qtbot, tmp_path, size):
+    window = _with_dbc(qtbot, tmp_path, size=size)
+    qtbot.wait(20)
+
+    assert window.graph_panel.height() >= GRAPH_MINIMUM_HEIGHT
+    assert window.graph_panel.scroll.height() > 0
+    assert window.graph_panel.height() > window.trace_panel.height()
+
+
+def test_the_default_arrangement_gives_the_graph_area_priority(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    sizes = window.center_divider.sizes()
+    assert sizes[0] > sizes[1]
+    assert sizes[2] == 0
+    assert window.graph_panel.minimumHeight() == GRAPH_MINIMUM_HEIGHT
+    assert window.trace_panel.minimumHeight() == SECTION_MINIMUM_HEIGHT
+
+
+def test_the_centre_sections_remain_resizable_and_persisted(qtbot, tmp_path):
+    store = ProfileStore(tmp_path / "settings")
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+
+    # The report is hidden in the default combo view, so the resizing that
+    # matters here is between the graph area and the trace.
+    before = window.center_divider.sizes()
+    window.center_divider.setSizes([before[0] - 120, before[1] + 120, 0])
+    window._persist_layout()
+    adjusted = window.center_divider.sizes()
+    assert adjusted != before
+    assert adjusted[1] > before[1]
+
+    restored = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(restored)
+    restored.resize(1280, 720)
+    restored.show()
+    qtbot.waitExposed(restored)
+
+    assert restored.center_divider.sizes() == adjusted
+
+
+def test_the_collapsed_rail_actually_paints_its_title(qtbot, tmp_path):
+    """A rotated label is easy to draw off its own widget; only pixels prove it."""
+    window = _window(qtbot, tmp_path)
+    window.signals_panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    rail = window.signals_panel.rail
+    image = rail.grab().toImage()
+    counts: Counter[str] = Counter()
+    for y in range(image.height()):
+        for x in range(image.width()):
+            counts[image.pixelColor(x, y).name()] += 1
+
+    assert counts[theme.HEADING] > 20
+    # The grab of a transparent label carries no panel background, so the
+    # legibility check belongs on the tokens the rail actually sits on.
+    assert _contrast(QColor(theme.HEADING), QColor(theme.SURFACE)) >= MINIMUM_CONTRAST
+
+
+def test_the_plot_area_keeps_its_own_minimum_height(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
+    qtbot.wait(20)
+
+    assert window.graph_panel.scroll.height() >= PLOT_AREA_MINIMUM_HEIGHT
+    assert window.measure_table.height() <= window.graph_panel.scroll.height()

@@ -2,17 +2,55 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QSizePolicy,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
 from peaklive.i18n import translate
+
+#: Width of a collapsed panel: the toggle plus the rotated title, nothing more.
+#: Everything beyond it goes back to the splitter.
+RAIL_WIDTH = 34
+
+#: Qt's own UNBOUNDED_WIDTH, which PySide6 does not export. Restoring it is how
+#: a widget says "no maximum" again.
+UNBOUNDED_WIDTH = 16_777_215
+
+
+class VerticalLabel(QLabel):
+    """A label painted bottom-to-top, so a collapsed rail still names itself."""
+
+    def __init__(self, text: str, parent: QWidget | None = None) -> None:
+        super().__init__(text, parent)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+
+    def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        hint = super().sizeHint()
+        return QSize(hint.height(), hint.width())
+
+    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        hint = super().minimumSizeHint()
+        return QSize(hint.height(), hint.width())
+
+    def paintEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        painter = QPainter(self)
+        # Rotate about the bottom-left corner, then draw into a rect whose
+        # width is the widget's height: the text reads bottom-to-top.
+        painter.translate(0, self.height())
+        painter.rotate(-90.0)
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        painter.drawText(
+            0, 0, self.height(), self.width(), int(Qt.AlignmentFlag.AlignCenter), self.text()
+        )
+        painter.end()
 
 
 class CollapsiblePanel(QFrame):
@@ -45,6 +83,13 @@ class CollapsiblePanel(QFrame):
         body_layout = QVBoxLayout(self.body)
         body_layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.body, 1)
+        # The rail is what a collapsed panel leaves on screen: its name and the
+        # control that brings it back. It is created once and simply hidden.
+        self.rail = VerticalLabel(title.upper())
+        self.rail.setObjectName("panelRail")
+        self.rail.setAccessibleName(translate("panel.rail").format(panel=title))
+        self.rail.setVisible(False)
+        layout.addWidget(self.rail, 1)
         self.toggle.clicked.connect(self._toggle)
 
     @property
@@ -63,6 +108,12 @@ class CollapsiblePanel(QFrame):
             return
         self._collapsed = collapsed
         self.body.setVisible(not collapsed)
+        self.rail.setVisible(collapsed)
+        self.heading.setVisible(not collapsed)
+        # Capping the width is what actually releases the column: a splitter
+        # honours a child's maximum, so the space goes to the neighbours.
+        self.setMaximumWidth(RAIL_WIDTH if collapsed else UNBOUNDED_WIDTH)
+        self.setMinimumWidth(RAIL_WIDTH if collapsed else 0)
         self._sync_toggle()
         self.collapsed_changed.emit(collapsed)
 

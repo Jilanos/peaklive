@@ -41,7 +41,7 @@ DISABLED_BACKGROUND: Final = "#1a2230"
 DISABLED_TEXT: Final = "#7c8ba1"
 FOCUS_RING: Final = "#7cb0ff"
 FOCUS_RING_WIDTH: Final = "2px"
-INDICATOR_SIZE: Final = "15px"
+INDICATOR_SIZE: Final = "12px"
 INDICATOR_BACKGROUND: Final = "#0a121c"
 INDICATOR_BORDER: Final = "#7f92ad"
 INDICATOR_CHECKED: Final = "#38bdf8"
@@ -71,6 +71,8 @@ QLabel {{ color: {TEXT_BODY}; }}
 QLabel#panelHeading {{ color: {HEADING}; font-weight: 800; letter-spacing: 0.08em; }}
 QLabel#statusPill {{ background: {SURFACE_DEEP}; border: 1px solid #334155; border-radius: 999px;
                     color: {ACCENT_SOFT}; padding: 5px 10px; }}
+QLabel#panelRail {{ color: {HEADING}; font-weight: 800; letter-spacing: 0.12em; }}
+QLabel#controlGroupLabel {{ color: {TEXT_MUTED}; font-weight: 700; letter-spacing: 0.08em; }}
 QLabel#stateNote {{ color: {TEXT_MUTED}; font-style: italic; }}
 QLabel#errorNote {{ background: #2a1214; border: 1px solid {STATE_ERROR}; border-radius: 5px;
                     color: #fecaca; padding: 5px 8px; }}
@@ -144,12 +146,12 @@ QMenu::item:disabled {{ color: {DISABLED_TEXT}; }}
 QMenu::separator {{ background: {BORDER}; height: 1px; margin: 4px 8px; }}
 QMenuBar::item:disabled {{ color: {DISABLED_TEXT}; }}
 QCheckBox::indicator, QTreeView::indicator, QListView::indicator, QTableView::indicator {{
-    background: {INDICATOR_BACKGROUND}; border: 1px solid {INDICATOR_BORDER};
+    background: {INDICATOR_BACKGROUND}; border: 2px solid {INDICATOR_BORDER};
     border-radius: 3px; height: {INDICATOR_SIZE}; width: {INDICATOR_SIZE};
 }}
 QCheckBox::indicator:unchecked, QTreeView::indicator:unchecked,
 QListView::indicator:unchecked, QTableView::indicator:unchecked {{
-    background: {INDICATOR_BACKGROUND}; border: 1px solid {INDICATOR_BORDER};
+    background: {INDICATOR_BACKGROUND}; border: 2px solid {INDICATOR_BORDER};
 }}
 QCheckBox::indicator:checked, QTreeView::indicator:checked,
 QListView::indicator:checked, QTableView::indicator:checked {{

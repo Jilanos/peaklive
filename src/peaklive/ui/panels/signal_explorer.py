@@ -27,7 +27,7 @@ ACCESSIBLE_ROLE = Qt.ItemDataRole.AccessibleTextRole
 #: what each column does.
 SHOWN_COLUMN = 1
 FAVORITE_COLUMN = 2
-ACTION_COLUMN_WIDTH = 34
+ACTION_COLUMN_WIDTH = 46
 NAME_COLUMN_MINIMUM = 160
 
 
@@ -85,6 +85,9 @@ class SignalExplorerPanel(QWidget):
             header.setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
             self.tree.setColumnWidth(column, ACTION_COLUMN_WIDTH)
         self.tree.setColumnWidth(0, NAME_COLUMN_MINIMUM)
+        header_item = self.tree.headerItem()
+        header_item.setToolTip(SHOWN_COLUMN, translate("signals.shown_tooltip"))
+        header_item.setToolTip(FAVORITE_COLUMN, translate("signals.favorite_tooltip"))
         self.tree.itemChanged.connect(self._item_changed)
         self.tree.itemActivated.connect(self._item_activated)
         layout.addWidget(self.tree, 1)
