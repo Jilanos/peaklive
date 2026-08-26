@@ -15,12 +15,13 @@ from pathlib import Path
 import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QWidget
+from PySide6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QWidget
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow, theme
+from peaklive.ui.flow_layout import FlowLayout
 from peaklive.ui.layout_reflow import (
     GRAPH_MINIMUM_HEIGHT,
     MIN_CENTER_WIDTH,
@@ -29,6 +30,7 @@ from peaklive.ui.layout_reflow import (
     reflow_widths,
 )
 from peaklive.ui.main_window import SIGNAL_KEY_ROLE
+from peaklive.ui.panels.graph_controls import READOUT_PREFERRED_WIDTH
 from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT
 from peaklive.ui.panels.signal_explorer import (
     ACCESSIBLE_ROLE,
@@ -674,3 +676,38 @@ def test_the_plot_area_keeps_its_own_minimum_height(qtbot, tmp_path):
 
     assert window.graph_panel.scroll.height() >= PLOT_AREA_MINIMUM_HEIGHT
     assert window.measure_table.height() <= window.graph_panel.scroll.height()
+
+
+def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot, tmp_path):
+    """Font metrics differ per platform; a readout must not size the cluster.
+
+    Windows fonts made the cursor cluster 731 px wide inside a 601 px bar,
+    which overflows rather than wraps. The readout now elides instead.
+    """
+    window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
+    bar = window.graph_panel.controls
+    long_text = "A 1234.567s · B 9876.543s · Δ 8641.976s " * 4
+
+    bar.cursor_summary.setText(long_text)
+    bar.window_label.setText(long_text)
+    qtbot.wait(20)
+
+    for group in bar.groups:
+        assert group.x() + group.width() <= bar.width() + 1
+    # The value itself is not lost: it stays readable through the tooltip.
+    assert bar.cursor_summary.text() == long_text
+    assert bar.cursor_summary.toolTip() == long_text
+    assert bar.cursor_summary.sizeHint().width() <= READOUT_PREFERRED_WIDTH
+
+
+def test_the_flow_layout_compresses_an_item_wider_than_its_line(qtbot):
+    container = QWidget()
+    qtbot.addWidget(container)
+    layout = FlowLayout(container, spacing=4)
+    wide = QLabel("x" * 400)
+    layout.addWidget(wide)
+    container.resize(200, 60)
+    container.show()
+    qtbot.waitExposed(container)
+
+    assert wide.width() <= container.width()

@@ -75,6 +75,9 @@ class FlowLayout(QLayout):
         line_height = 0
         for item in self._items:
             hint = item.sizeHint()
+            # An item wider than the line would overflow the container rather
+            # than wrap, so it is compressed to the width actually available.
+            hint = QSize(min(hint.width(), area.width()), hint.height())
             next_x = x + hint.width() + self.spacing()
             if line_height and next_x - self.spacing() > area.right() + 1:
                 x = area.x()
