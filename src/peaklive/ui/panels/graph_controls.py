@@ -29,6 +29,9 @@ from peaklive.ui.flow_layout import FlowLayout
 READOUT_PREFERRED_WIDTH = 210
 READOUT_MINIMUM_WIDTH = 90
 
+#: Matches the spacing the cluster row uses between its widgets.
+CAPTION_SPACING = 6
+
 
 class ElidingLabel(QLabel):
     """A readout that shortens its text to the width it was given.
@@ -71,6 +74,7 @@ class GraphControlsBar(QWidget):
         super().__init__(parent)
         self.setObjectName("graphControls")
         self.flow = FlowLayout(self, spacing=10)
+        self._captions: list[QLabel] = []
 
         self.view_group, view_row = self._group("graph.group_view", "graphViewGroup")
         self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
@@ -107,6 +111,7 @@ class GraphControlsBar(QWidget):
         caption = QLabel(translate(title_key).upper(), objectName="controlGroupLabel")
         caption.setAccessibleName(translate(title_key))
         row.addWidget(caption)
+        self._captions.append(caption)
         self.flow.addWidget(group)
         return group, row
 
@@ -134,3 +139,41 @@ class GraphControlsBar(QWidget):
     @property
     def groups(self) -> tuple[QWidget, ...]:
         return (self.view_group, self.display_group, self.cursor_group)
+
+    @property
+    def captions(self) -> tuple[QLabel, ...]:
+        return tuple(self._captions)
+
+    # ---- responsive behaviour ------------------------------------------
+
+    def resizeEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        super().resizeEvent(event)
+        self._adapt_to_width()
+
+    def _adapt_to_width(self) -> None:
+        """Drop the cluster captions before letting any control clip.
+
+        A narrow bar has to give something up. The caption is the cheapest
+        thing to lose: every control it labels still carries its own tooltip
+        and accessible name, whereas a squeezed button loses its glyph.
+        """
+        if self.width() <= 0:
+            return
+        widest = max(
+            self._uncompacted_minimum(group, caption)
+            for group, caption in zip(self.groups, self._captions, strict=True)
+        )
+        compact = widest > self.width()
+        for caption in self._captions:
+            caption.setVisible(not compact)
+
+    def _uncompacted_minimum(self, group: QWidget, caption: QLabel) -> int:
+        """The width the cluster needs with its caption shown.
+
+        Computed the same way whether or not the caption is currently
+        visible, so the decision cannot oscillate between the two states.
+        """
+        minimum = group.minimumSizeHint().width()
+        if not caption.isVisible():
+            minimum += caption.sizeHint().width() + CAPTION_SPACING
+        return minimum
