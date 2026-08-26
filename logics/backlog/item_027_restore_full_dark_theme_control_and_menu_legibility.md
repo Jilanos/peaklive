@@ -1,14 +1,14 @@
 ## item_027_restore_full_dark_theme_control_and_menu_legibility - Restore full dark-theme control and menu legibility
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Dark theme accessibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 16:24:36
+> Indicators reviewed: 2026-08-26 16:59:32
 
 # AI Context
 - Summary: Establish explicit dark-theme foreground, background, indicator, and focus states for all interactive Qt controls.
@@ -57,3 +57,9 @@
 # Priority
 - Priority: High - unreadable selector and menu text blocks basic configuration and navigation throughout the application.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement`
+
+# Notes
+- Task `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement` was finished via `logics-manager flow finish task` on 2026-08-26.

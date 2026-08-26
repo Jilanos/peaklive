@@ -1,12 +1,12 @@
 ## prod_004_peaklive_dense_and_legible_diagnostic_workspace - PeakLive dense and legible diagnostic workspace
 > Date: 2026-08-26
-> Status: Proposed
+> Status: Settled
 > Related request: `req_003_improve_peaklive_workspace_visual_usability_and_panel_density`
-> Related backlog: `item_026_make_signal_selection_compact_name_first_and_state_legible`, `item_027_restore_full_dark_theme_control_and_menu_legibility`, `item_028_reclaim_collapsed_panel_space_and_reorganize_graph_workspace_controls`
+> Related backlog: `item_026_make_signal_selection_compact_name_first_and_state_legible`
 > Related task: `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-26 16:07:30
+> Indicators reviewed: 2026-08-26 16:59:32
 
 # Overview
 A focused visual and layout refinement of the existing analyst workspace. It makes signal selection compact and name-first, restores legibility to every dark-theme control, lets collapsed side panels genuinely yield working space, and arranges graph controls and workspace sections around the operator's measurement task.
@@ -49,5 +49,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_003_improve_peaklive_workspace_visual_usability_and_panel_density`
+- Product back-reference: `item_026_make_signal_selection_compact_name_first_and_state_legible`
 - Task back-reference: `task_004_deliver_the_peaklive_visual_usability_and_responsive_workspace_refinement`
