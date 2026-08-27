@@ -73,16 +73,18 @@ def test_parity_multi_dbc_library_shows_state_and_supports_disable_and_remove(qt
     assert window.dbc_library.topLevelItemCount() == 2
     assert {str(vehicle), str(body)} == set(window.selected_profile.dbc_paths)
 
-    # The library rebuilds its rows on every state change, so re-fetch the row.
+    # Enable, disable, and remove are prepared off the UI thread and committed
+    # in one step, so each assertion waits for that commit rather than assuming
+    # the mutation happened inside the click.
     window.dbc_library.topLevelItem(0).setCheckState(0, Qt.CheckState.Unchecked)
-    assert window.selected_profile.trace_filters["disabled_dbc_hashes"]
+    qtbot.waitUntil(lambda: bool(window.selected_profile.trace_filters["disabled_dbc_hashes"]))
 
     window.dbc_library.topLevelItem(0).setCheckState(0, Qt.CheckState.Checked)
-    assert not window.selected_profile.trace_filters["disabled_dbc_hashes"]
+    qtbot.waitUntil(lambda: not window.selected_profile.trace_filters["disabled_dbc_hashes"])
 
     window.dbc_library.setCurrentItem(window.dbc_library.topLevelItem(0))
     window._remove_selected_dbc()
-    assert window.dbc_library.topLevelItemCount() == 1
+    qtbot.waitUntil(lambda: window.dbc_library.topLevelItemCount() == 1)
     assert len(window.selected_profile.dbc_paths) == 1
 
 
@@ -96,9 +98,11 @@ def test_parity_dbc_conflicts_are_explicit_and_resolution_persists(qtbot, tmp_pa
     assert window.conflict_selector.count() > 1
 
     window.conflict_selector.setCurrentIndex(1)
+    qtbot.waitUntil(
+        lambda: bool(store.load().selected.trace_filters["dbc_conflict_resolutions"])
+    )
     resolutions = store.load().selected.trace_filters["dbc_conflict_resolutions"]
 
-    assert resolutions
     assert "291" in resolutions
 
 

@@ -31,6 +31,7 @@ from peaklive.analysis import (
 )
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
+from peaklive.services.dbc_worker import CatalogOperation, DbcCatalogWorker
 from peaklive.services.lifecycle import AcquisitionLifecycle
 from peaklive.services.profiles import ProfileState, ProfileStore
 from peaklive.services.replay_worker import ReplayWorker
@@ -91,6 +92,9 @@ class MainWindow(
         self._shutdown_timer.setSingleShot(True)
         self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
         self._catalog = DbcCatalog()
+        self._catalog_worker: DbcCatalogWorker | None = None
+        self._catalog_queue: list[CatalogOperation] = []
+        self._catalog_generation = 0
         self._series = SeriesStore()
         self._trace = TraceBuffer()
         self._facts = SessionFacts()
@@ -252,9 +256,16 @@ class MainWindow(
         self.selected_profile.trace_filter = self.trace_panel.settings
         self._save()
 
-    def _persist_signal_state(self) -> None:
+    def _persist_signal_state(self, signal_names: tuple[str, ...] | None = None) -> None:
+        """Persist the selection, reusing already-computed names when given.
+
+        A catalog commit has just walked every message off-thread; recomputing
+        the same names here would put that work straight back on the UI thread.
+        """
         profile = self.selected_profile
-        available = set(self._catalog.signal_names())
+        available = set(
+            self._catalog.signal_names() if signal_names is None else signal_names
+        )
         profile.displayed_signals = sorted(
             name for name in self._selected_signal_names if not available or name in available
         )
@@ -356,9 +367,13 @@ class MainWindow(
             self._worker.request_stop()
             self._worker.wait(self._shutdown_timeout_ms)
         self._lifecycle.reset()
-        if self._worker is not None:
-            abandon_worker(self._worker)
+        abandon_worker(self._worker)
         self._worker = None
+        self._cancel_catalog_operation()
+        if self._catalog_worker is not None:
+            self._catalog_worker.wait(self._shutdown_timeout_ms)
+            abandon_worker(self._catalog_worker)
+            self._catalog_worker = None
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self._replay_worker.request_stop()
             self._replay_worker.wait(1_000)
