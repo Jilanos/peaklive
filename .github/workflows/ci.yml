@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      - name: Install Qt runtime libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --yes libegl1
       - run: uv python install 3.13
       - run: uv sync --all-extras --python 3.13
       - run: uv run ruff check .
