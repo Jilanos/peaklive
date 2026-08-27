@@ -24,7 +24,13 @@
     "stop_tooltip": "Stop receiving and close the CAN channel",
     "channel_accessible": "CAN channel",
     "bitrate_accessible": "CAN bitrate",
-    "mode_accessible": "Controller acknowledge mode"
+    "mode_accessible": "Controller acknowledge mode",
+    "starting": "Starting acquisition…",
+    "finalizing": "Finalizing recording…",
+    "stopped": "Acquisition stopped",
+    "shutdown_timeout": "Shutdown did not complete within {seconds}s. The CAN driver has not returned. The capture was kept as recoverable .partial files; close PeakLive to release the adapter.",
+    "shutdown_recovered": "Shutdown completed after the timeout; the capture was finalized.",
+    "start_blocked": "Acquisition cannot restart until the previous shutdown returns. Close PeakLive to release the adapter."
   },
   "bus": {
     "label": "Bus",
@@ -35,7 +41,9 @@
     "bus_error": "Bus error",
     "bus_off": "Bus off",
     "stopped": "Stopped",
-    "accessible": "Bus connection state"
+    "accessible": "Bus connection state",
+    "stopping": "Stopping",
+    "degraded": "Shutdown degraded"
   },
   "profile": {
     "label": "Measurement profile"

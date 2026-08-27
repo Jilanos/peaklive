@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog
@@ -15,9 +16,37 @@ from peaklive.analysis import (
 )
 from peaklive.domain import BusEvent, CanFrame
 from peaklive.i18n import translate
+from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
+
+#: How long the shell waits for a worker shutdown before declaring it degraded.
+SHUTDOWN_TIMEOUT_MS = 5_000
+
+#: Workers the shell has stopped listening to but that are still running.
+#:
+#: Qt aborts the process if a running QThread is destroyed, so an abandoned
+#: worker has to outlive the window that started it. Membership here is the only
+#: reference keeping it alive; each worker removes itself when it finally lands.
+_ABANDONED_WORKERS: set[AcquisitionWorker] = set()
+
+
+def abandon_worker(worker: AcquisitionWorker) -> None:
+    """Stop caring about a worker's result without destroying it mid-flight."""
+    if worker.isFinished():
+        return
+    _ABANDONED_WORKERS.add(worker)
+    worker.finished.connect(lambda: _ABANDONED_WORKERS.discard(worker))
+
+#: The status line for the phases that own one. Phases absent here are narrated
+#: by the worker's own status messages or by an inline session note instead.
+_PHASE_STATUS: dict[AcquisitionPhase, str] = {
+    AcquisitionPhase.STARTING: "acquisition.opening",
+    AcquisitionPhase.STOPPING: "acquisition.stopping",
+    AcquisitionPhase.FINALIZING: "acquisition.finalizing",
+    AcquisitionPhase.STOPPED: "acquisition.stopped",
+}
 
 
 class WorkspaceSession:
@@ -31,34 +60,84 @@ class WorkspaceSession:
     # ---- acquisition and replay ---------------------------------------
 
     def _start_acquisition(self) -> None:
-        if self._worker and self._worker.isRunning():
+        """Open a new acquisition generation, or explain why it is refused."""
+        if not self._lifecycle.can_start:
+            if self._lifecycle.phase is AcquisitionPhase.TIMED_OUT:
+                self.session_note.show_message(translate("acquisition.start_blocked"), "warning")
             return
+        generation = self._lifecycle.begin()
         self._reset_session("")
-        self._worker = AcquisitionWorker(self._adapter_factory(), self.selected_profile)
-        self._worker.frames_received.connect(self._render_frames)
-        self._worker.status_changed.connect(self.status.showMessage)
-        self._worker.event_received.connect(self._render_acquisition_event)
-        self._worker.acquisition_failed.connect(self._acquisition_failed)
-        self._worker.finished.connect(self._acquisition_finished)
-        self.acquisition_bar.set_running(True)
-        self.acquisition_bar.set_bus_state("connecting")
-        self.status.showMessage(translate("acquisition.opening"))
-        self._worker.start()
+        worker = AcquisitionWorker(self._adapter_factory(), self.selected_profile, generation)
+        worker.frames_received.connect(self._render_frames)
+        worker.status_changed.connect(self.status.showMessage)
+        worker.event_received.connect(self._render_acquisition_event)
+        worker.acquisition_failed.connect(self._acquisition_failed)
+        worker.phase_changed.connect(partial(self._worker_phase_changed, generation))
+        worker.finished.connect(partial(self._acquisition_finished, generation))
+        self._worker = worker
+        self._show_lifecycle_phase()
+        worker.start()
 
     def _stop_acquisition(self) -> None:
-        if self._worker is not None:
-            self._worker.request_stop()
-            self.status.showMessage(translate("acquisition.stopping"))
+        """Ask the worker to wind down and put a bound on how long that may take."""
+        if self._worker is None or not self._lifecycle.can_stop:
+            return
+        self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.STOPPING)
+        self._show_lifecycle_phase()
+        self._shutdown_timer.start(self._shutdown_timeout_ms)
+        self._worker.request_stop()
+
+    def _worker_phase_changed(self, generation: int, phase: str) -> None:
+        """Adopt a worker phase, ignoring one from an abandoned generation."""
+        if not self._lifecycle.advance(generation, AcquisitionPhase(phase)):
+            return
+        self._show_lifecycle_phase()
 
     def _acquisition_failed(self, message: str) -> None:
         self.acquisition_bar.set_bus_state("bus_error")
         self.status.showMessage(translate("acquisition.failed").format(message=message))
 
-    def _acquisition_finished(self) -> None:
-        self.acquisition_bar.set_running(False)
-        self.acquisition_bar.set_bus_state("stopped")
+    def _acquisition_finished(self, generation: int) -> None:
+        """Retire one generation's worker. A stale finish is dropped on the floor."""
+        if generation != self._lifecycle.generation:
+            return
+        recovered = self._lifecycle.phase is AcquisitionPhase.TIMED_OUT
+        self._shutdown_timer.stop()
         self._worker = None
         self._end_work()
+        if recovered:
+            # The worker was declared degraded and then landed anyway; settle it
+            # so Start becomes available again.
+            self._lifecycle.advance(generation, AcquisitionPhase.STOPPED)
+            self.session_note.show_message(translate("acquisition.shutdown_recovered"), "info")
+        self._show_lifecycle_phase()
+
+    def _shutdown_timed_out(self) -> None:
+        """Refuse to wait any longer for a driver that has not come back."""
+        if self._worker is None or self._lifecycle.settled:
+            return
+        if not self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.TIMED_OUT):
+            return
+        self._end_work()
+        self._show_lifecycle_phase()
+        self.session_note.show_message(
+            translate("acquisition.shutdown_timeout").format(
+                seconds=self._shutdown_timeout_ms // 1000
+            ),
+            "warning",
+        )
+
+    def _show_lifecycle_phase(self) -> None:
+        """Reflect the current phase in the bar, the status line, and progress."""
+        phase = self._lifecycle.phase
+        self.acquisition_bar.set_lifecycle_phase(phase)
+        message = _PHASE_STATUS.get(phase)
+        if message is not None:
+            self.status.showMessage(translate(message))
+        if phase in {AcquisitionPhase.STOPPING, AcquisitionPhase.FINALIZING}:
+            self.progress.setVisible(True)
+        elif phase is not AcquisitionPhase.RUNNING:
+            self._end_work()
 
     def _choose_trace(self) -> None:
         selected, _ = QFileDialog.getOpenFileName(

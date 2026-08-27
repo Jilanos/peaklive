@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import datetime
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
@@ -31,6 +31,7 @@ from peaklive.analysis import (
 )
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
+from peaklive.services.lifecycle import AcquisitionLifecycle
 from peaklive.services.profiles import ProfileState, ProfileStore
 from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
@@ -46,7 +47,11 @@ from peaklive.ui.panels import (
     SignalExplorerPanel,
 )
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
-from peaklive.ui.session_controller import WorkspaceSession
+from peaklive.ui.session_controller import (
+    SHUTDOWN_TIMEOUT_MS,
+    WorkspaceSession,
+    abandon_worker,
+)
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
 from peaklive.ui.workspace_center import WorkspaceCenter
@@ -80,6 +85,11 @@ class MainWindow(
         self._adapter_factory = adapter_factory
         self._worker: AcquisitionWorker | None = None
         self._replay_worker: ReplayWorker | None = None
+        self._lifecycle = AcquisitionLifecycle()
+        self._shutdown_timeout_ms = SHUTDOWN_TIMEOUT_MS
+        self._shutdown_timer = QTimer(self)
+        self._shutdown_timer.setSingleShot(True)
+        self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
         self._catalog = DbcCatalog()
         self._series = SeriesStore()
         self._trace = TraceBuffer()
@@ -333,9 +343,22 @@ class MainWindow(
     # ---- lifecycle -----------------------------------------------------
 
     def closeEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        """Close without ever waiting unbounded on a worker.
+
+        The wait is a courtesy so a healthy worker finalizes its capture before
+        the process ends. A worker that does not return within it is abandoned
+        rather than allowed to hold the close: its generation is retired, so any
+        signal it emits afterwards reaches nobody, and its recording stays on
+        disk as recoverable `.partial` segments.
+        """
+        self._shutdown_timer.stop()
         if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
-            self._worker.wait(1_000)
+            self._worker.wait(self._shutdown_timeout_ms)
+        self._lifecycle.reset()
+        if self._worker is not None:
+            abandon_worker(self._worker)
+        self._worker = None
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self._replay_worker.request_stop()
             self._replay_worker.wait(1_000)

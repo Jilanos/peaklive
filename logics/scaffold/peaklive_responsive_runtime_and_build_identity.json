@@ -1,0 +1,162 @@
+{
+  "title": "Keep PeakLive responsive during acquisition, DBC changes, and test-build verification",
+  "references": [
+    "src/peaklive/services/worker.py",
+    "src/peaklive/services/acquisition.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/catalog_controller.py",
+    "src/peaklive/ui/panels/dbc_library.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/__init__.py",
+    "src/peaklive/app.py",
+    "pyproject.toml",
+    "peaklive.spec",
+    "tests/test_worker.py",
+    "tests/test_ui.py",
+    "tests/test_pcan_adapter.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Responsive runtime reliability and build identity",
+    "needs": [
+      "Keep the desktop application interactive while an acquisition starts or stops, including when the CAN driver open or close operation is slow or does not return promptly.",
+      "Prevent DBC additions, removals, enablement changes, parsing, catalog refreshes, and dependent workspace updates from making the Windows application appear unresponsive.",
+      "Provide a discreet, trustworthy in-application version identifier so an operator can confirm which packaged executable is under test."
+    ],
+    "context": [
+      "PeakLive is a PySide6 Windows desktop CAN workstation. Acquisition runs in AcquisitionWorker, while the current worker finally block calls adapter disconnect and recording finalization before emitting its finished signal.",
+      "The UI currently asks a worker to stop without a bounded completion contract; window close waits briefly for active workers. A driver call that blocks indefinitely can therefore leave the application unable to reach a clean usable state.",
+      "DBC loading, parsing, catalog mutation, profile persistence, and panel/explorer/graph refresh currently execute synchronously from the UI path. Large, malformed, slow-network, or repeated DBC operations can starve event processing.",
+      "The canonical package version is currently declared in pyproject.toml and duplicated in peaklive.__version__; the PyInstaller executable is named PeakLive without an operator-facing build identity.",
+      "The product must preserve complete recording semantics, receive-only CAN behavior, deterministic DBC conflict handling, and profile persistence while introducing responsive lifecycle boundaries.",
+      "The delivery must be testable headlessly with fake or controllably blocking adapters and synthetic DBC fixtures, plus a documented Windows packaged-executable smoke check."
+    ],
+    "acceptance_criteria": [
+      "AC1: Starting acquisition immediately gives visible in-progress feedback and keeps the Qt event loop responsive; a slow, failed, or blocking adapter connect cannot freeze the window or require force-closing the application.",
+      "AC2: Stopping acquisition immediately gives visible stopping feedback and keeps the Qt event loop responsive while receive, driver disconnect, recorder flush, and finalization complete; the normal success path completes exactly once and restores usable controls.",
+      "AC3: If shutdown cannot complete within a documented bounded interval, the UI exposes an actionable degraded or timed-out state, preserves recoverable recording evidence, avoids an unbounded UI-thread wait, and permits a safe user-controlled next action or application exit.",
+      "AC4: Repeated Start/Stop activation, close-window during each lifecycle phase, connect failure, receive failure, disconnect failure, and recording finalization failure have deterministic state transitions with no orphan worker, duplicate finalization, crash, or permanently disabled controls.",
+      "AC5: Adding one or more DBC files, removing a DBC, enabling or disabling a DBC, resolving conflicts, and rebuilding affected signal/graph views do not block the UI event loop; progress, cancellation where work has not committed, and per-file errors are visible.",
+      "AC6: DBC operations preserve atomic observable state: an unsuccessful, cancelled, or stale asynchronous operation does not partially corrupt the catalog, persisted profile paths, selected signals, conflicts, or rendered workspace; deterministic ordering and existing decode behavior remain intact.",
+      "AC7: Focused automated tests reproduce deliberately slow and failing adapter/DBC operations, assert that UI events continue to be processed, and cover lifecycle timeout/recovery, repeated actions, cancellation, and catalog consistency.",
+      "AC8: The application displays a subtle but readable version/build identifier in a stable UI location and in About information; it is available without a network connection and does not obstruct normal diagnostic work.",
+      "AC9: The displayed identifier comes from one authoritative build-version source, is consistent with package metadata and the Windows packaged executable, and distinguishes rebuilds intended for operator testing according to the documented release/build convention.",
+      "AC10: Automated tests and a packaged Windows smoke procedure verify the visible version/build identifier and record which executable was tested."
+    ]
+  },
+  "product": {
+    "title": "PeakLive responsive runtime and identifiable builds",
+    "overview": "A reliability-focused enhancement that makes long-running CAN and DBC lifecycle work visibly asynchronous and bounded from the operator's perspective, while making every test executable easy to identify.",
+    "goals": [
+      "Protect the UI event loop from slow, blocked, or failing device and file operations.",
+      "Make acquisition lifecycle state explicit, recoverable, and safe under repeated user actions.",
+      "Make DBC catalog mutations responsive and transactionally consistent.",
+      "Let an operator identify the exact local build under test at a glance.",
+      "Create deterministic regression coverage for responsiveness and failure handling."
+    ],
+    "non_goals": [
+      "Add CAN transmission, new CAN hardware vendors, or new acquisition modes.",
+      "Change DBC semantics, edit DBC content, or duplicate the existing DBC conflict-resolution policy.",
+      "Add automatic updates, telemetry, network verification, or a remote build service.",
+      "Guarantee that an external driver process always terminates; instead surface bounded, actionable application behavior when it does not."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Make acquisition lifecycle operations responsive and bounded",
+      "priority": "High - a frozen acquisition start or stop prevents bench work and can make capture evidence difficult to recover.",
+      "complexity": "High",
+      "theme": "Acquisition lifecycle reliability",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC7"],
+      "problem": [
+        "Adapter connect, receive, disconnect, and recorder finalization can be slow or block. The UI needs a lifecycle contract that remains responsive without concealing incomplete shutdown or data-loss risk.",
+        "Current start/stop behavior has no explicit timeout escalation, generation guard, or deterministic recovery policy for a worker that does not finish."
+      ],
+      "scope_in": [
+        "Explicit acquisition lifecycle state machine, user-visible transitional/degraded states, action gating, and idempotent repeated-action handling.",
+        "A cancellable/bounded worker shutdown protocol that keeps Qt UI work on the UI thread and isolates potentially blocking driver or recording operations.",
+        "Timeout, failure, and window-close behavior with recoverable recording markers and a documented operator outcome.",
+        "Fake blocking/failing adapter and recorder tests, including event-loop responsiveness assertions and Windows hardware acceptance instructions."
+      ],
+      "scope_out": [
+        "Changing capture format semantics beyond accurately marking incomplete or unclean finalization.",
+        "Solving defects inside third-party CAN drivers or forcefully killing external driver resources.",
+        "New CAN protocol features or transmission controls."
+      ],
+      "acceptance_criteria": [
+        "AC1: Start and Stop have explicit, observable lifecycle states and keep the window interactive under controllably delayed connect, receive, disconnect, and finalization operations.",
+        "AC2: Each acquisition generation reaches one terminal result exactly once; stale signals, duplicate clicks, and close-window races cannot restart controls for a newer or abandoned generation.",
+        "AC3: A bounded shutdown timeout produces an actionable state without blocking the UI indefinitely, retains diagnostic detail, and leaves artifacts correctly finalized or marked incomplete.",
+        "AC4: Normal, connect-error, receive-error, disconnect-error, recorder-error, and timeout paths restore a deterministic usable UI state or present the documented safe exit path.",
+        "AC5: Offscreen tests use controllably blocking fakes to prove event processing, state transitions, duplicate-action safety, and artifact outcome; a hardware runbook covers the supported Windows adapter."
+      ]
+    },
+    {
+      "title": "Move DBC catalog mutations off the UI critical path",
+      "priority": "High - loading or changing DBCs is a routine analysis action and must not turn the workstation into a non-responding application.",
+      "complexity": "High",
+      "theme": "Responsive DBC catalog",
+      "request_acs": ["AC5", "AC6", "AC7"],
+      "problem": [
+        "DBC parse and catalog rebuild work runs synchronously from UI callbacks, then triggers multiple dependent view updates. Slow files or repeated mutations can block interaction and risk partial state updates."
+      ],
+      "scope_in": [
+        "Background preparation for DBC parsing and derived catalog data, with UI-thread-only widget updates.",
+        "Serialized or generation-aware add/remove/enable/conflict operations, visible progress, cancellation before commit, and actionable parse/I/O errors.",
+        "Atomic commit of catalog, profile persistence, selected signals, conflicts, explorer, graph, and library-panel changes.",
+        "Synthetic large/slow/malformed DBC regression tests plus responsive UI assertions."
+      ],
+      "scope_out": [
+        "Editing DBC source files, adding a DBC authoring workflow, or changing decode rules.",
+        "Loading DBCs from cloud services or network synchronization."
+      ],
+      "acceptance_criteria": [
+        "AC1: Add, remove, enable, disable, and conflict-resolution workflows retain event-loop responsiveness under delayed parsing and expensive derived-data preparation.",
+        "AC2: Progress and errors identify the operation and file; cancellation before commit leaves the prior catalog and persisted profile unchanged.",
+        "AC3: Successful mutations atomically update the catalog, profile, DBC panel, signal explorer, selected signals, and graphs without stale callbacks or invalid Qt item access.",
+        "AC4: Existing multi-DBC ordering, conflict behavior, raw-frame preservation, and profile restoration tests remain valid.",
+        "AC5: Automated tests cover slow, malformed, and rapid consecutive DBC operations, proving both UI responsiveness and consistent final state."
+      ]
+    },
+    {
+      "title": "Expose a trustworthy in-application build identifier",
+      "priority": "Medium - identifying the exact executable materially improves test feedback, after acquisition reliability is restored.",
+      "complexity": "Medium",
+      "theme": "Build traceability",
+      "request_acs": ["AC8", "AC9", "AC10"],
+      "problem": [
+        "Operators cannot currently verify which installed or copied PeakLive executable they are exercising, and the version declaration is duplicated across package files."
+      ],
+      "scope_in": [
+        "One authoritative runtime version/build metadata path used by package metadata, application UI, About dialog, and PyInstaller packaging.",
+        "A discreet always-visible identifier and richer About display that remain legible on supported Windows display scaling.",
+        "A documented version/build suffix convention for test rebuilds and a Windows packaged-executable smoke check.",
+        "Automated tests that assert metadata/UI consistency."
+      ],
+      "scope_out": [
+        "Automatic update delivery, online version checks, licensing, telemetry, or a release portal.",
+        "A prominent diagnostic banner that consumes workspace needed for CAN analysis."
+      ],
+      "acceptance_criteria": [
+        "AC1: A subtle version/build identifier is visible in the normal application chrome and available in About without covering operational controls.",
+        "AC2: Package metadata, runtime value, visible UI, About information, and PyInstaller build resolve to the same authoritative identifier.",
+        "AC3: The build convention can distinguish a test rebuild from a prior executable and is documented for the operator who supplies test feedback.",
+        "AC4: Unit/UI tests and a packaged Windows smoke procedure demonstrate that the shown identifier matches the executable under test."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver responsive PeakLive lifecycle, DBC operations, and build identity",
+    "plan": [
+      "Characterize current lifecycle and DBC UI blocking paths with controllable fakes, define observable state transitions and version metadata ownership, then add regression tests that fail for the reported freezes.",
+      "Implement the bounded responsive acquisition lifecycle, including normal completion, timeout/degraded handling, recording evidence outcome, close-window behavior, and focused offscreen/hardware validation.",
+      "Implement asynchronous, atomic DBC catalog mutation and dependent UI updates, with progress, cancellation, generation safety, and regression coverage for slow/repeated operations.",
+      "Expose the authoritative build identifier in the application and packaged executable workflow, run full validation and the Windows smoke procedure, record evidence, close out the Logics task, and leave the repository commit-ready."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_responsive_runtime_and_build_identity.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

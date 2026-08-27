@@ -61,6 +61,8 @@ BUS_STATE_COLORS: Final[dict[str, str]] = {
     "reconnecting": STATE_WARNING,
     "bus_error": STATE_ERROR,
     "bus_off": STATE_ERROR,
+    "stopping": STATE_BUSY,
+    "degraded": STATE_WARNING,
     "stopped": STATE_IDLE,
 }
 
