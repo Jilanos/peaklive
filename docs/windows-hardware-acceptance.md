@@ -23,6 +23,32 @@ installed and a known active Classic CAN bus.
 Record Windows version, adapter driver version, bus bitrate, profile name,
 capture paths, and any driver loss in the release evidence.
 
+## Lifecycle acceptance on real hardware
+
+The offscreen suite proves these paths against controllably blocking fakes.
+Repeat them once against the real driver, because only the driver can produce a
+genuinely unbounded call.
+
+10. Start acquisition and confirm the bus indicator moves Connecting → Running
+    while the window stays interactive throughout.
+11. Stop acquisition and confirm the indicator shows Stopping, the progress
+    strip appears, and the window remains interactive until it reaches Stopped.
+12. Activate Start several times in quick succession, then Stop several times.
+    Confirm exactly one acquisition runs and the controls never latch disabled.
+13. Unplug the USB adapter mid-acquisition, then press Stop. If the driver does
+    not return within the bounded interval (5 s by default), confirm the bus
+    indicator reads *Shutdown degraded*, an explanatory note appears, the window
+    still responds, and Start stays disabled.
+14. In that degraded state, confirm the capture directory holds `.asc.partial`
+    and `.peaklive-events.jsonl.partial` segments containing the frames received
+    before the block. Close PeakLive and confirm it exits without a force-quit.
+15. Close the window while an acquisition is running. Confirm the application
+    exits within the bounded interval and leaves either a finalized `.asc` or a
+    recoverable `.partial` pair.
+
+Record, for each step, the observed indicator text, whether the window stayed
+interactive, and the capture files left behind.
+
 ## Recorded preflight evidence
 
 On 2026-08-22, the Windows runtime detected `PCAN_USBBUS1` as a Classic USB

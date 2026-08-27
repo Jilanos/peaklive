@@ -1,0 +1,373 @@
+{
+  "budgets": {
+    "max_docs": 40,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification item_030_make_acquisition_lifecycle_operations_responsive_and_bounded item_031_move_dbc_catalog_mutations_off_the_ui_critical_path item_032_expose_a_trustworthy_in_application_build_identifier task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+          "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+          "item_032_expose_a_trustworthy_in_application_build_identifier"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/product/prod_006_peaklive_responsive_runtime_and_identifiable_builds.md",
+      "ref": "prod_006_peaklive_responsive_runtime_and_identifiable_builds",
+      "sections": {
+        "Goals": [
+          "- Protect the UI event loop from slow, blocked, or failing device and file operations.",
+          "- Make acquisition lifecycle state explicit, recoverable, and safe under repeated user actions.",
+          "- Make DBC catalog mutations responsive and transactionally consistent.",
+          "- Let an operator identify the exact local build under test at a glance.",
+          "- Create deterministic regression coverage for responsiveness and failure handling."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A reliability-focused enhancement that makes long-running CAN and DBC lifecycle work visibly asynchronous and bounded from the operator's perspective, while making every test executable easy to identify."
+        ],
+        "References": [
+          "- Product back-reference: `req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification`",
+          "- Task back-reference: `task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive responsive runtime and identifiable builds"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "peaklive, responsive, during, acquisition, dbc, changes, test, build, verification",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+          "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+          "item_032_expose_a_trustworthy_in_application_build_identifier"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ]
+      },
+      "path": "logics/request/req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification.md",
+      "ref": "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Starting acquisition immediately gives visible in-progress feedback and keeps the Qt event loop responsive; a slow, failed, or blocking adapter connect cannot freeze the window or require force-closing the application.",
+          "- AC2: Stopping acquisition immediately gives visible stopping feedback and keeps the Qt event loop responsive while receive, driver disconnect, recorder flush, and finalization complete; the normal success path completes exactly once and restores usable controls.",
+          "- AC3: If shutdown cannot complete within a documented bounded interval, the UI exposes an actionable degraded or timed-out state, preserves recoverable recording evidence, avoids an unbounded UI-thread wait, and permits a safe user-controlled next action or application exit.",
+          "- AC4: Repeated Start/Stop activation, close-window during each lifecycle phase, connect failure, receive failure, disconnect failure, and recording finalization failure have deterministic state transitions with no orphan worker, duplicate finalization, crash, or permanently disabled controls.",
+          "- AC5: Adding one or more DBC files, removing a DBC, enabling or disabling a DBC, resolving conflicts, and rebuilding affected signal/graph views do not block the UI event loop; progress, cancellation where work has not committed, and per-file errors are visible.",
+          "- AC6: DBC operations preserve atomic observable state: an unsuccessful, cancelled, or stale asynchronous operation does not partially corrupt the catalog, persisted profile paths, selected signals, conflicts, or rendered workspace; deterministic ordering and existing decode behavior remain intact."
+        ],
+        "Needs": [
+          "- Keep the desktop application interactive while an acquisition starts or stops, including when the CAN driver open or close operation is slow or does not return promptly.",
+          "- Prevent DBC additions, removals, enablement changes, parsing, catalog refreshes, and dependent workspace updates from making the Windows application appear unresponsive.",
+          "- Provide a discreet, trustworthy in-application version identifier so an operator can confirm which packaged executable is under test."
+        ]
+      },
+      "status": "Draft",
+      "title": "Keep PeakLive responsive during acquisition, DBC changes, and test-build verification"
+    },
+    {
+      "ai_context": {
+        "keywords": "acquisition, lifecycle, operations, responsive, bounded",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/backlog/item_030_make_acquisition_lifecycle_operations_responsive_and_bounded.md",
+      "ref": "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Start and Stop have explicit, observable lifecycle states and keep the window interactive under controllably delayed connect, receive, disconnect, and finalization operations.",
+          "- AC2: Each acquisition generation reaches one terminal result exactly once; stale signals, duplicate clicks, and close-window races cannot restart controls for a newer or abandoned generation.",
+          "- AC3: A bounded shutdown timeout produces an actionable state without blocking the UI indefinitely, retains diagnostic detail, and leaves artifacts correctly finalized or marked incomplete.",
+          "- AC4: Normal, connect-error, receive-error, disconnect-error, recorder-error, and timeout paths restore a deterministic usable UI state or present the documented safe exit path.",
+          "- AC5: Offscreen tests use controllably blocking fakes to prove event processing, state transitions, duplicate-action safety, and artifact outcome; a hardware runbook covers the supported Windows adapter."
+        ],
+        "Problem": [
+          "- Adapter connect, receive, disconnect, and recorder finalization can be slow or block. The UI needs a lifecycle contract that remains responsive without concealing incomplete shutdown or data-loss risk.",
+          "- Current start/stop behavior has no explicit timeout escalation, generation guard, or deterministic recovery policy for a worker that does not finish."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make acquisition lifecycle operations responsive and bounded"
+    },
+    {
+      "ai_context": {
+        "keywords": "move, dbc, catalog, mutations, off, critical, path",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/backlog/item_031_move_dbc_catalog_mutations_off_the_ui_critical_path.md",
+      "ref": "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Add, remove, enable, disable, and conflict-resolution workflows retain event-loop responsiveness under delayed parsing and expensive derived-data preparation.",
+          "- AC2: Progress and errors identify the operation and file; cancellation before commit leaves the prior catalog and persisted profile unchanged.",
+          "- AC3: Successful mutations atomically update the catalog, profile, DBC panel, signal explorer, selected signals, and graphs without stale callbacks or invalid Qt item access.",
+          "- AC4: Existing multi-DBC ordering, conflict behavior, raw-frame preservation, and profile restoration tests remain valid.",
+          "- AC5: Automated tests cover slow, malformed, and rapid consecutive DBC operations, proving both UI responsiveness and consistent final state."
+        ],
+        "Problem": [
+          "- DBC parse and catalog rebuild work runs synchronously from UI callbacks, then triggers multiple dependent view updates. Slow files or repeated mutations can block interaction and risk partial state updates."
+        ]
+      },
+      "status": "Ready",
+      "title": "Move DBC catalog mutations off the UI critical path"
+    },
+    {
+      "ai_context": {
+        "keywords": "expose, trustworthy, application, build, identifier",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_032_expose_a_trustworthy_in_application_build_identifier"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/backlog/item_032_expose_a_trustworthy_in_application_build_identifier.md",
+      "ref": "item_032_expose_a_trustworthy_in_application_build_identifier",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A subtle version/build identifier is visible in the normal application chrome and available in About without covering operational controls.",
+          "- AC2: Package metadata, runtime value, visible UI, About information, and PyInstaller build resolve to the same authoritative identifier.",
+          "- AC3: The build convention can distinguish a test rebuild from a prior executable and is documented for the operator who supplies test feedback.",
+          "- AC4: Unit/UI tests and a packaged Windows smoke procedure demonstrate that the shown identifier matches the executable under test."
+        ],
+        "Problem": [
+          "- Operators cannot currently verify which installed or copied PeakLive executable they are exercising, and the version declaration is duplicated across package files."
+        ]
+      },
+      "status": "Ready",
+      "title": "Expose a trustworthy in-application build identifier"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+          "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+          "item_032_expose_a_trustworthy_in_application_build_identifier"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/product/prod_006_peaklive_responsive_runtime_and_identifiable_builds.md",
+      "ref": "prod_006_peaklive_responsive_runtime_and_identifiable_builds",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive responsive runtime and identifiable builds"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, responsive, peaklive, lifecycle, dbc, operations, build, identity",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+          "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+          "item_032_expose_a_trustworthy_in_application_build_identifier"
+        ],
+        "prod": [
+          "prod_006_peaklive_responsive_runtime_and_identifiable_builds"
+        ],
+        "req": [
+          "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification"
+        ],
+        "task": [
+          "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+        ]
+      },
+      "path": "logics/tasks/task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity.md",
+      "ref": "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver responsive PeakLive lifecycle, DBC operations, and build identity"
+    }
+  ],
+  "estimates": {
+    "char_count": 13219,
+    "companion_doc_count": 1,
+    "doc_count": 6
+  },
+  "generated_at": "2026-08-27T11:34:45Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification",
+      "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+      "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+      "item_032_expose_a_trustworthy_in_application_build_identifier",
+      "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 247
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification,item_030_make_acquisition_lifecycle_operations_responsive_and_bounded,item_031_move_dbc_catalog_mutations_off_the_ui_critical_path,item_032_expose_a_trustworthy_in_application_build_identifier,task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity",
+  "refs": [
+    "req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification",
+    "item_030_make_acquisition_lifecycle_operations_responsive_and_bounded",
+    "item_031_move_dbc_catalog_mutations_off_the_ui_critical_path",
+    "item_032_expose_a_trustworthy_in_application_build_identifier",
+    "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity.md",
+      "ref": "task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity"
+    }
+  ]
+}

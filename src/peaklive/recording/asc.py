@@ -115,6 +115,18 @@ class AscRecorder:
             + "\n"
         )
 
+    def flush(self) -> None:
+        """Push buffered records to disk so a partial capture stays recoverable.
+
+        A driver that blocks during shutdown can leave the process holding the
+        last batch in a Python buffer. Flushing per batch bounds what an
+        unclean finalization can lose to the records not yet handed over.
+        """
+        if self._asc is not None:
+            self._asc.flush()
+        if self._events is not None:
+            self._events.flush()
+
     def stop(self, clean: bool = True) -> CaptureResult:
         if not self.active:
             return self._result

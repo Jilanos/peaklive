@@ -15,6 +15,11 @@ from PySide6.QtWidgets import (
 
 from peaklive.domain import ControllerMode, MeasurementProfile
 from peaklive.i18n import translate
+from peaklive.services.lifecycle import (
+    STARTABLE_PHASES,
+    STOPPABLE_PHASES,
+    AcquisitionPhase,
+)
 from peaklive.ui.theme import BUS_STATE_COLORS, STATE_IDLE
 
 COMMON_BITRATES = (125_000, 250_000, 500_000, 1_000_000)
@@ -27,8 +32,22 @@ BUS_STATES = (
     "reconnecting",
     "bus_error",
     "bus_off",
+    "stopping",
+    "degraded",
     "stopped",
 )
+
+#: How each lifecycle phase reads on the bus indicator.
+PHASE_BUS_STATES: dict[AcquisitionPhase, str] = {
+    AcquisitionPhase.IDLE: "idle",
+    AcquisitionPhase.STARTING: "connecting",
+    AcquisitionPhase.RUNNING: "running",
+    AcquisitionPhase.STOPPING: "stopping",
+    AcquisitionPhase.FINALIZING: "stopping",
+    AcquisitionPhase.STOPPED: "stopped",
+    AcquisitionPhase.FAILED: "bus_error",
+    AcquisitionPhase.TIMED_OUT: "degraded",
+}
 
 
 class BusStateLed(QWidget):
@@ -118,6 +137,7 @@ class AcquisitionBar(QFrame):
         self.bus_state_label.setAccessibleName(translate("bus.accessible"))
         bus_layout.addWidget(self.bus_state_label)
         layout.addWidget(bus_state)
+        self.lifecycle_phase = AcquisitionPhase.IDLE
         self.set_bus_state("idle")
 
         self.load_dbc_button = self._action(
@@ -172,9 +192,17 @@ class AcquisitionBar(QFrame):
         self.bus_state_label.setText(f"{translate('bus.label').upper()} {label}")
         self.bus_state_label.setToolTip(label)
 
-    def set_running(self, running: bool) -> None:
-        self.start_button.setEnabled(not running)
-        self.stop_button.setEnabled(running)
+    def set_lifecycle_phase(self, phase: AcquisitionPhase) -> None:
+        """Gate the lifecycle buttons and the bus indicator from one phase.
+
+        Start stays disabled after a timed-out shutdown: the previous worker
+        may still hold the driver, so reopening the channel is not a safe
+        action to offer.
+        """
+        self.lifecycle_phase = phase
+        self.start_button.setEnabled(phase in STARTABLE_PHASES)
+        self.stop_button.setEnabled(phase in STOPPABLE_PHASES)
+        self.set_bus_state(PHASE_BUS_STATES.get(phase, "idle"))
 
     def show_profile(self, profile: MeasurementProfile) -> None:
         """Reflect the profile without echoing option-changed signals back out."""

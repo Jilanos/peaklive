@@ -40,6 +40,7 @@ class AcquisitionSession:
                     self._note(captured[index].timestamp, "recording_warning", str(error))
                     break
             self._drain_recorder_warnings(captured)
+            self._recorder.flush()
         return captured
 
     def take_notices(self) -> list[BusEvent]:
@@ -61,9 +62,32 @@ class AcquisitionSession:
             self._recorder.write_event(event)
         return event
 
-    def stop(self) -> BusEvent:
-        event = self._adapter.disconnect()
-        if self._recorder.active:
-            self._recorder.write_event(event)
-            self._recorder.stop()
+    def stop(self, clean: bool = True) -> BusEvent:
+        """Close the driver and finalize the recording exactly once.
+
+        The recorder is finalized even when the driver disconnect raises, so a
+        failing adapter cannot also cost the operator the capture. A disconnect
+        failure marks the capture incomplete and is re-raised for the caller to
+        surface; the partial segments stay on disk as recoverable evidence.
+        """
+        try:
+            event = self._adapter.disconnect()
+        except Exception as error:
+            self._finalize(
+                BusEvent(0.0, "disconnect_failed", f"Disconnect failed: {error}"),
+                clean=False,
+            )
+            raise
+        self._finalize(event, clean=clean)
         return event
+
+    def _finalize(self, event: BusEvent, clean: bool) -> None:
+        if not self._recorder.active:
+            return
+        try:
+            self._recorder.write_event(event)
+        except RecordingStopped:
+            # The writer already closed itself on an integrity condition; the
+            # capture is finalized below either way.
+            pass
+        self._recorder.stop(clean=clean)
