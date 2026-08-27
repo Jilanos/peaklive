@@ -1,14 +1,14 @@
 ## item_030_make_acquisition_lifecycle_operations_responsive_and_bounded - Make acquisition lifecycle operations responsive and bounded
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 70%
+> Progress: 100%
 > Complexity: High
 > Theme: Acquisition lifecycle reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-27 13:45:19
+> Indicators reviewed: 2026-08-27 14:13:53
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -58,3 +58,9 @@
 # Priority
 - Priority: High - a frozen acquisition start or stop prevents bench work and can make capture evidence difficult to recover.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity`
+
+# Notes
+- Task `task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity` was finished via `logics-manager flow finish task` on 2026-08-27.

@@ -1,12 +1,13 @@
 ## req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification - Keep PeakLive responsive during acquisition, DBC changes, and test-build verification
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Responsive runtime reliability and build identity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-08-27 14:13:52
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
