@@ -18,7 +18,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --all-extras
       - run: uv run ruff check .
-      - run: uv run pytest
+      - run: uv run python -m pytest
       - name: Build Windows executable
         if: runner.os == 'Windows'
         shell: pwsh
