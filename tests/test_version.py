@@ -91,3 +91,13 @@ def test_the_build_script_bakes_the_tag_and_records_the_executable():
     # Evidence tying a reported observation back to one executable.
     assert "PeakLive.build.txt" in script
     assert "SHA256" in script
+
+
+def test_ci_publishes_the_build_evidence_beside_the_executable():
+    """The identifier and hash must travel with the artifact, not stay on the runner."""
+    workflow = (
+        Path(__file__).parents[1] / ".github" / "workflows" / "ci.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "dist/PeakLive.exe" in workflow
+    assert "dist/PeakLive.build.txt" in workflow
