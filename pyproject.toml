@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "peaklive"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Local Windows CAN workstation for capture, decoding, plotting, recording, and replay."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -35,6 +35,9 @@ dev = [
 
 [project.scripts]
 peaklive = "peaklive.app:main"
+
+[tool.hatch.version]
+path = "src/peaklive/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/peaklive"]

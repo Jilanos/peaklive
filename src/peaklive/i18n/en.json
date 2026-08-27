@@ -1,6 +1,9 @@
 {
   "app": {
-    "title": "PeakLive"
+    "title": "PeakLive",
+    "build_label": "v{identifier}",
+    "build_accessible": "Application build identifier",
+    "build_tooltip": "Build under test: {identifier}"
   },
   "acquisition": {
     "start": "Start Acquisition",
@@ -289,7 +292,11 @@
     "fit": "&Fit graphs",
     "focus_filter": "Focus trace &filter",
     "about": "&About PeakLive",
-    "about_text": "PeakLive is a local-only Windows CAN workstation. It receives, decodes, records, replays, and measures Classic CAN traffic. It never transmits."
+    "about_text": "PeakLive is a local-only Windows CAN workstation. It receives, decodes, records, replays, and measures Classic CAN traffic. It never transmits.",
+    "about_build": "Build: {identifier}",
+    "about_packaged": "Running from the packaged Windows executable.",
+    "about_source": "Running from source.",
+    "about_test_rebuild": "This is a tagged test rebuild ({tag})."
   },
   "progress": {
     "cancel": "Cancel",

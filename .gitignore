@@ -15,6 +15,8 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+# Written by scripts/build-windows.ps1 to bake the build tag into a package.
+src/peaklive/_build.py
 
 # Local application and capture artifacts
 .peaklive/
