@@ -14,7 +14,11 @@ def test_replay_worker_streams_frames_and_retains_anomalies(qtbot, tmp_path):
     worker.event_received.connect(events.append)
 
     worker.start()
-    qtbot.waitUntil(lambda: not worker.isRunning())
+    # `isRunning()` becomes false as the worker thread exits, but its queued
+    # cross-thread notifications may be delivered on the next GUI event-loop
+    # turn. Waiting for the observable contract avoids a Windows-only race.
+    qtbot.waitUntil(lambda: len(frames) == 1 and len(events) == 1)
+    worker.wait()
 
     assert len(frames) == 1
     assert events[0].kind == "replay_anomaly"
