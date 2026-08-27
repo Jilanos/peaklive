@@ -88,7 +88,12 @@
     "load_failed": "Cannot load {name}: {message}",
     "loaded": "Loaded DBC: {name}",
     "loading": "Loading {count} DBC file(s)…",
-    "empty": "No DBC loaded. Load one to decode messages and plot signals."
+    "empty": "No DBC loaded. Load one to decode messages and plot signals.",
+    "load_progress": "Loading DBC {done}/{total}: {name}…",
+    "cancelled": "DBC operation cancelled; the library is unchanged.",
+    "working_remove": "Removing DBC…",
+    "working_enable": "Updating DBC library…",
+    "working_resolve": "Resolving DBC conflict…"
   },
   "signals": {
     "search": "Search signals",

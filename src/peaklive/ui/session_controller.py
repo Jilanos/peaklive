@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 
+from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import (
@@ -24,17 +25,17 @@ from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 #: How long the shell waits for a worker shutdown before declaring it degraded.
 SHUTDOWN_TIMEOUT_MS = 5_000
 
-#: Workers the shell has stopped listening to but that are still running.
+#: Worker threads the shell has stopped listening to but that are still running.
 #:
 #: Qt aborts the process if a running QThread is destroyed, so an abandoned
 #: worker has to outlive the window that started it. Membership here is the only
 #: reference keeping it alive; each worker removes itself when it finally lands.
-_ABANDONED_WORKERS: set[AcquisitionWorker] = set()
+_ABANDONED_WORKERS: set[QThread] = set()
 
 
-def abandon_worker(worker: AcquisitionWorker) -> None:
+def abandon_worker(worker: QThread | None) -> None:
     """Stop caring about a worker's result without destroying it mid-flight."""
-    if worker.isFinished():
+    if worker is None or worker.isFinished():
         return
     _ABANDONED_WORKERS.add(worker)
     worker.finished.connect(lambda: _ABANDONED_WORKERS.discard(worker))

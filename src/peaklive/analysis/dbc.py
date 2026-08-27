@@ -56,6 +56,38 @@ class DbcConflict:
     candidates: tuple[DbcDefinition, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class CatalogView:
+    """Everything the workspace needs to redraw itself for one catalog state.
+
+    Deriving conflicts and signal references is the expensive part of any DBC
+    mutation, so it is computed once — off the UI thread where possible — and
+    handed to the panels as finished data. A view is immutable and describes
+    exactly one catalog, which is what makes a mutation commit atomically:
+    either every panel sees the new view or every panel still sees the old one.
+    """
+
+    catalog: DbcCatalog
+    definitions: tuple[DbcDefinition, ...]
+    references: tuple[DbcSignalReference, ...]
+    signal_names: tuple[str, ...]
+    conflicts: tuple[DbcConflict, ...]
+    signal_counts: dict[str, int]
+    enabled_hashes: frozenset[str]
+    resolutions: dict[int, str]
+
+    def is_enabled(self, content_hash: str) -> bool:
+        return content_hash in self.enabled_hashes
+
+    @property
+    def unresolved_conflicts(self) -> tuple[DbcConflict, ...]:
+        return tuple(
+            conflict
+            for conflict in self.conflicts
+            if conflict.arbitration_id not in self.resolutions
+        )
+
+
 class DbcCatalog:
     def __init__(self) -> None:
         self._definitions: list[DbcDefinition] = []
@@ -120,6 +152,40 @@ class DbcCatalog:
         self._definitions.clear()
         self._disabled_hashes.clear()
         self._resolutions.clear()
+
+    def copy(self) -> DbcCatalog:
+        """Return an independent catalog over the same immutable definitions.
+
+        A mutation is prepared on a copy so the live catalog keeps decoding
+        frames untouched until the new state is ready to commit.
+        """
+        duplicate = DbcCatalog()
+        duplicate._definitions = list(self._definitions)
+        duplicate._disabled_hashes = set(self._disabled_hashes)
+        duplicate._resolutions = dict(self._resolutions)
+        return duplicate
+
+    def view(self) -> CatalogView:
+        """Compute every derived projection the workspace panels need."""
+        return CatalogView(
+            catalog=self,
+            definitions=self.definitions,
+            references=self.signal_references(),
+            signal_names=self.signal_names(),
+            conflicts=self.conflicts(),
+            signal_counts={
+                definition.content_hash: sum(
+                    len(message.signals) for message in definition.database.messages
+                )
+                for definition in self._definitions
+            },
+            enabled_hashes=frozenset(
+                definition.content_hash
+                for definition in self._definitions
+                if definition.content_hash not in self._disabled_hashes
+            ),
+            resolutions=self.resolutions,
+        )
 
     def load(self, path: Path) -> DbcDefinition:
         content = path.read_bytes()

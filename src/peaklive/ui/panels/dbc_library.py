@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from peaklive.analysis import DbcCatalog
+from peaklive.analysis import CatalogView
 from peaklive.i18n import translate
 from peaklive.ui.widgets import StateNote
 
@@ -66,13 +66,18 @@ class DbcLibraryPanel(QWidget):
         actions.addWidget(self.conflict_selector, 1)
         layout.addLayout(actions)
 
-    def refresh(self, catalog: DbcCatalog) -> None:
-        """Rebuild the library rows from the catalog, outside any item signal."""
+    def refresh(self, view: CatalogView) -> None:
+        """Rebuild the library rows from a prepared view, outside any item signal.
+
+        The view already carries the conflicts and per-DBC signal counts, which
+        is the point: rebuilding this panel must never be the thing that walks
+        every message in every database on the UI thread.
+        """
         self.tree.blockSignals(True)
         self.tree.clear()
-        signal_counts = _signal_counts(catalog)
-        for definition in catalog.definitions:
-            enabled = catalog.is_enabled(definition.content_hash)
+        signal_counts = view.signal_counts
+        for definition in view.definitions:
+            enabled = view.is_enabled(definition.content_hash)
             item = QTreeWidgetItem(
                 [
                     f"{definition.path.name} · {definition.short_hash}",
@@ -87,8 +92,8 @@ class DbcLibraryPanel(QWidget):
             )
             self.tree.addTopLevelItem(item)
         self.tree.blockSignals(False)
-        self._refresh_conflicts(catalog)
-        self._refresh_note(catalog)
+        self._refresh_conflicts(view)
+        self._refresh_note(view)
 
     def set_row_state(self, content_hash: str, enabled: bool) -> None:
         """Update one row's state text in place, without touching the tree shape."""
@@ -101,16 +106,11 @@ class DbcLibraryPanel(QWidget):
     def show_error(self, message: str) -> None:
         self.note.show_message(message, "error")
 
-    def _refresh_note(self, catalog: DbcCatalog) -> None:
-        if not catalog.definitions:
+    def _refresh_note(self, view: CatalogView) -> None:
+        if not view.definitions:
             self.note.show_message(translate("dbc.empty"), "info")
             return
-        conflicts = catalog.conflicts()
-        unresolved = [
-            conflict
-            for conflict in conflicts
-            if conflict.arbitration_id not in catalog.resolutions
-        ]
+        unresolved = view.unresolved_conflicts
         if unresolved:
             self.note.show_message(
                 translate("dbc.conflict_pending").format(count=len(unresolved)), "warning"
@@ -118,11 +118,11 @@ class DbcLibraryPanel(QWidget):
         else:
             self.note.clear_message()
 
-    def _refresh_conflicts(self, catalog: DbcCatalog) -> None:
+    def _refresh_conflicts(self, view: CatalogView) -> None:
         self.conflict_selector.blockSignals(True)
         self.conflict_selector.clear()
         self.conflict_selector.addItem(translate("dbc.conflict_none"), None)
-        for conflict in catalog.conflicts():
+        for conflict in view.conflicts:
             for definition in conflict.candidates:
                 self.conflict_selector.addItem(
                     translate("dbc.conflict_entry").format(
@@ -156,12 +156,3 @@ class DbcLibraryPanel(QWidget):
             return
         arbitration_id, content_hash = data
         self.conflict_resolved.emit(int(arbitration_id), str(content_hash))
-
-
-def _signal_counts(catalog: DbcCatalog) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for definition in catalog.definitions:
-        counts[definition.content_hash] = sum(
-            len(message.signals) for message in definition.database.messages
-        )
-    return counts
