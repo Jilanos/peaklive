@@ -19,6 +19,7 @@ from peaklive.analysis import DECODE_DECODED, DECODE_UNKNOWN
 from peaklive.analysis.trace import DECODE_CONFLICT
 from peaklive.domain import TRACE_DECODE_ANY, TRACE_DIRECTION_ANY, TraceFilterSettings
 from peaklive.i18n import translate
+from peaklive.ui.flow_layout import FlowLayout
 
 
 class TraceFilterBar(QWidget):
@@ -38,7 +39,12 @@ class TraceFilterBar(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        header = QHBoxLayout()
+        # The filter bar has more controls than a narrow centre workspace can
+        # safely keep in one row.  A wrapping layout retains every control
+        # (and its normal keyboard order) instead of forcing the splitter to
+        # reserve the combined width of the entire header.
+        self.header = QWidget(objectName="traceFilterHeader")
+        header = FlowLayout(self.header, spacing=8)
         header.addWidget(QLabel(translate("trace.filters").upper()))
         self.id_filter = self._line("traceIdFilter", "trace.filter_id")
         header.addWidget(self.id_filter)
@@ -92,7 +98,7 @@ class TraceFilterBar(QWidget):
         self.clear_filters_button.setAccessibleName(translate("trace.clear_filters"))
         self.clear_filters_button.clicked.connect(self.clear_filters)
         header.addWidget(self.clear_filters_button)
-        layout.addLayout(header)
+        layout.addWidget(self.header)
 
         self.secondary = QWidget(objectName="secondaryFilters")
         secondary_layout = QGridLayout(self.secondary)

@@ -1,13 +1,13 @@
 ## req_004_make_trace_filtering_responsive_at_1024_px_workspace_width - Make trace filtering responsive at 1024 px workspace width
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: Windows integration testing exposed a trace filter header whose 1104 px minimum width leaves only about 402 px for the central workspace at a 1024 px viewport. The trace workspace must remain usable without changing trace-filter semantics or the existing graph-control work.
 > Confidence: 85%
 > Complexity: M
 > Theme: Workspace responsiveness
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-26 18:18:06
+> Indicators reviewed: 2026-08-27 18:55:33
 
 # AI Context
 - Summary: Keep the Trace workspace operable at the 1024 px desktop baseline by allowing its filter controls to adapt rather than imposing an oversized minimum width.
@@ -56,4 +56,4 @@ Medium — a verified 1024 px usability defect blocks a supported desktop baseli
 - `docs/windows-hardware-acceptance.md`
 
 # Backlog
-- none
+- `item_033_make_trace_filtering_responsive_at_1024_px_workspace_width`

@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, QRect, Qt
 from PySide6.QtWidgets import (
     QAbstractButton,
     QCheckBox,
@@ -918,3 +918,35 @@ def test_the_layout_stays_usable_at_the_bench_viewports(qtbot, tmp_path, size):
         assert widget.width() > 0
         assert widget.x() >= 0
         assert widget.x() + widget.width() <= window.width() + 1
+
+
+def test_trace_filters_wrap_inside_the_1024_px_workspace(qtbot, tmp_path):
+    """The Trace header must not reclaim the centre column at the desktop floor."""
+    window = _window(qtbot, tmp_path, show=True)
+    window.resize(1024, 768)
+    qtbot.waitExposed(window)
+    qtbot.wait(20)
+
+    trace = window.trace_panel
+    header = trace.filter_bar.header
+    controls = [
+        trace.id_filter,
+        trace.message_filter,
+        trace.signal_filter,
+        trace.show_frames,
+        trace.show_events,
+        trace.more_filters_button,
+        trace.columns_button,
+        trace.follow_checkbox,
+        trace.clear_filters_button,
+    ]
+    rects = [
+        QRect(control.mapTo(header, QPoint(0, 0)), control.size()) for control in controls
+    ]
+
+    assert trace.minimumSizeHint().width() <= window.workspace.sizes()[1]
+    for control, rect in zip(controls, rects, strict=True):
+        assert header.rect().contains(rect), control.objectName()
+        assert control.width() >= control.minimumSizeHint().width(), control.objectName()
+    for index, first in enumerate(rects):
+        assert all(not first.intersects(second) for second in rects[index + 1 :])
