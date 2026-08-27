@@ -1,14 +1,42 @@
 ## prod_006_peaklive_responsive_runtime_and_identifiable_builds - PeakLive responsive runtime and identifiable builds
 > Date: 2026-08-27
-> Status: Proposed
+> Status: Settled
 > Related request: `req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification`
-> Related backlog: `item_030_make_acquisition_lifecycle_operations_responsive_and_bounded`, `item_031_move_dbc_catalog_mutations_off_the_ui_critical_path`, `item_032_expose_a_trustworthy_in_application_build_identifier`
+> Related backlog: `item_030_make_acquisition_lifecycle_operations_responsive_and_bounded`
 > Related task: `task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-08-27 14:13:53
 
 # Overview
 A reliability-focused enhancement that makes long-running CAN and DBC lifecycle work visibly asynchronous and bounded from the operator's perspective, while making every test executable easy to identify.
+
+```mermaid
+flowchart TB
+    subgraph UI["UI thread - never blocks"]
+        OP["Operator action<br/>Start / Stop / DBC change"]
+        STATE["Lifecycle state machine<br/>generation-aware, settles once"]
+        COMMIT["Atomic commit<br/>catalog + profile + panels"]
+        ID["Build identifier<br/>status bar + About"]
+    end
+    subgraph BG["Worker threads - may block"]
+        ACQ["AcquisitionWorker<br/>connect / receive / disconnect"]
+        DBC["DbcCatalogWorker<br/>parse + derive on a copy"]
+    end
+    SRC["_version.py<br/>authoritative version"]
+    CAP["Capture on disk<br/>finalized or .partial"]
+
+    OP --> STATE
+    OP --> DBC
+    STATE -->|"request"| ACQ
+    ACQ -->|"phase + frames"| STATE
+    STATE -->|"bounded timeout"| DEG["Degraded state<br/>actionable, still interactive"]
+    ACQ --> CAP
+    DBC -->|"prepared view"| COMMIT
+    DBC -->|"cancelled / stale"| DROP["Dropped<br/>nothing committed"]
+    SRC --> ID
+    SRC --> PKG["PyInstaller build<br/>+ baked build tag"]
+```
 
 # Goals
 - Protect the UI event loop from slow, blocked, or failing device and file operations.
@@ -36,5 +64,5 @@ A reliability-focused enhancement that makes long-running CAN and DBC lifecycle 
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification`
+- Product back-reference: `item_030_make_acquisition_lifecycle_operations_responsive_and_bounded`
 - Task back-reference: `task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity`
