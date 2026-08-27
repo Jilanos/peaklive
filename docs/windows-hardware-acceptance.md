@@ -49,6 +49,12 @@ genuinely unbounded call.
 Record, for each step, the observed indicator text, whether the window stayed
 interactive, and the capture files left behind.
 
+## Build identity
+
+16. Run the packaged-executable smoke check in
+    [docs/build-identity.md](build-identity.md) and record the identifier and
+    SHA-256 of the executable every observation above was made against.
+
 ## Recorded preflight evidence
 
 On 2026-08-22, the Windows runtime detected `PCAN_USBBUS1` as a Classic USB

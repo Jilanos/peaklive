@@ -76,6 +76,9 @@ QLabel#statusPill {{ background: {SURFACE_DEEP}; border: 1px solid #334155; bord
 QLabel#panelRail {{ color: {HEADING}; font-weight: 800; letter-spacing: 0.12em; }}
 QLabel#controlGroupLabel {{ color: {TEXT_MUTED}; font-weight: 700; letter-spacing: 0.08em; }}
 QLabel#stateNote {{ color: {TEXT_MUTED}; font-style: italic; }}
+/* Readable, never prominent: it must not compete with CAN analysis. */
+QLabel#buildIdentifier {{ color: {TEXT_MUTED}; font-size: 11px;
+    letter-spacing: 0.04em; padding: 0 8px 0 4px; }}
 QLabel#errorNote {{ background: #2a1214; border: 1px solid {STATE_ERROR}; border-radius: 5px;
                     color: #fecaca; padding: 5px 8px; }}
 QLabel#warningNote {{ background: #2a2210; border: 1px solid {STATE_WARNING}; border-radius: 5px;

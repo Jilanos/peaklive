@@ -12,6 +12,7 @@ from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
+    QLabel,
     QMainWindow,
     QMessageBox,
     QProgressBar,
@@ -56,6 +57,7 @@ from peaklive.ui.session_controller import (
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
 from peaklive.ui.workspace_center import WorkspaceCenter
+from peaklive.version import build_info
 
 __all__ = ["SIGNAL_KEY_ROLE", "MainWindow"]
 
@@ -173,7 +175,13 @@ class MainWindow(
         self.progress.setAccessibleName(translate("progress.accessible"))
         self.progress.setRange(0, 0)
         self.progress.setVisible(False)
+        self.build = QLabel(objectName="buildIdentifier")
+        identifier = build_info().identifier
+        self.build.setText(translate("app.build_label").format(identifier=identifier))
+        self.build.setAccessibleName(translate("app.build_accessible"))
+        self.build.setToolTip(translate("app.build_tooltip").format(identifier=identifier))
         self.status = QStatusBar(self)
+        self.status.addPermanentWidget(self.build)
         self.status.addPermanentWidget(self.progress)
         self.status.showMessage(translate("acquisition.disconnected"))
         self.setStatusBar(self.status)
@@ -324,9 +332,20 @@ class MainWindow(
         self.trace_panel.id_filter.setFocus(Qt.FocusReason.ShortcutFocusReason)
 
     def _show_about(self) -> None:
-        QMessageBox.information(
-            self, translate("menu.about"), translate("menu.about_text")
-        )
+        QMessageBox.information(self, translate("menu.about"), self.about_text())
+
+    def about_text(self) -> str:
+        """Describe the product and, exactly, the build the operator is running."""
+        info = build_info()
+        lines = [
+            translate("menu.about_text"),
+            "",
+            translate("menu.about_build").format(identifier=info.identifier),
+            translate("menu.about_packaged" if info.packaged else "menu.about_source"),
+        ]
+        if info.is_test_rebuild:
+            lines.append(translate("menu.about_test_rebuild").format(tag=info.build_tag))
+        return "\n".join(lines)
 
     # ---- dialogs -------------------------------------------------------
 
