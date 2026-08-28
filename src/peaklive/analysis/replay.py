@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 
 from peaklive.domain import BusEvent, CanFrame
@@ -13,12 +14,28 @@ _TRC = re.compile(r"^\s*\d+\)\s*([+-]?\d+(?:\.\d+)?)\s+(.*)$")
 _HEX = re.compile(r"^[0-9A-Fa-f]+$")
 
 
-def iter_trace(path: Path) -> Iterator[CanFrame | BusEvent]:
+@dataclass(slots=True)
+class TraceCursor:
+    """How much of the source a streaming parse has consumed so far.
+
+    A text-mode iterator cannot be asked for its file offset, so the cursor
+    accumulates line lengths instead. Supported ASC and TRC captures are ASCII,
+    which makes that an exact byte count in practice and a close approximation
+    otherwise - close enough for a progress bar, and never a reason to read the
+    file twice.
+    """
+
+    consumed: int = 0
+
+
+def iter_trace(path: Path, cursor: TraceCursor | None = None) -> Iterator[CanFrame | BusEvent]:
     """Incrementally normalize supported `.asc` and text `.trc` captures."""
     parser = _parse_trc_line if path.suffix.lower() == ".trc" else None
     base = 16
     with path.open(encoding="utf-8", errors="replace") as handle:
         for line_number, raw in enumerate(handle, 1):
+            if cursor is not None:
+                cursor.consumed += len(raw)
             if parser is None:
                 header_base = _declared_base(raw)
                 if header_base is not None:

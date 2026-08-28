@@ -23,13 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.adapters import CanAdapter, default_adapter
-from peaklive.analysis import (
-    DbcCatalog,
-    SeriesStore,
-    SessionFacts,
-    TraceBuffer,
-    TraceRecord,
-)
+from peaklive.analysis import DbcCatalog, TraceRecord
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.dbc_worker import CatalogOperation, DbcCatalogWorker
@@ -41,6 +35,7 @@ from peaklive.ui.actions import WorkspaceActions
 from peaklive.ui.addressing import WorkspaceAddressing
 from peaklive.ui.catalog_controller import WorkspaceCatalog
 from peaklive.ui.dialogs import ColumnsDialog, ExportDialog
+from peaklive.ui.ingest_controller import WorkspaceIngest
 from peaklive.ui.layout_reflow import WorkspaceReflow
 from peaklive.ui.panels import (
     AcquisitionBar,
@@ -71,6 +66,7 @@ class MainWindow(
     WorkspaceAddressing,
     WorkspaceCatalog,
     WorkspaceCenter,
+    WorkspaceIngest,
     WorkspaceReflow,
     WorkspaceSession,
     QMainWindow,
@@ -94,13 +90,12 @@ class MainWindow(
         self._shutdown_timer.setSingleShot(True)
         self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
         self._init_presentation_queue()
+        self._init_graph_refresh()
         self._catalog = DbcCatalog()
         self._catalog_worker: DbcCatalogWorker | None = None
         self._catalog_queue: list[CatalogOperation] = []
         self._catalog_generation = 0
-        self._series = SeriesStore()
-        self._trace = TraceBuffer()
-        self._facts = SessionFacts()
+        self._init_session_state()
         self._selected_signal_names: set[str] = set(self.selected_profile.displayed_signals)
         self._favorite_signal_names: set[str] = set(self.selected_profile.favorite_signals)
         self._restoring = False

@@ -4,33 +4,20 @@ from __future__ import annotations
 
 from functools import partial
 from pathlib import Path
-from threading import Lock
 
-from PySide6.QtCore import QThread, QTimer
+from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QFileDialog
 
-from peaklive.analysis import (
-    DECODE_CONFLICT,
-    DECODE_DECODED,
-    DECODE_UNKNOWN,
-    AmbiguousMessageError,
-    DbcSummary,
-)
-from peaklive.domain import BusEvent, CanFrame
+from peaklive.analysis import DbcSummary
+from peaklive.analysis.profiling import PROFILER, STAGE_REPORT_REFRESH
+from peaklive.domain import CanFrame
 from peaklive.i18n import translate
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
-from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
 #: How long the shell waits for a worker shutdown before declaring it degraded.
 SHUTDOWN_TIMEOUT_MS = 5_000
-
-# A 64-frame worker batch is efficient for recording, but rendering all of it
-# at once can monopolize slower Windows UI threads.  The trace is a coalesced
-# visual projection, so keep the newest slice small enough for timers and Stop
-# to run between paints.
-MAX_PRESENTATION_FRAMES = 8
 
 #: Worker threads the shell has stopped listening to but that are still running.
 #:
@@ -66,12 +53,6 @@ class WorkspaceSession:
     """
 
     # ---- acquisition and replay ---------------------------------------
-
-    def _init_presentation_queue(self) -> None:
-        self._presentation_lock = Lock()
-        self._presentation_generation: int | None = None
-        self._pending_presentation_frames: list[CanFrame] = []
-        self._presentation_timer: QTimer | None = None
 
     def _start_acquisition(self) -> None:
         """Open a new acquisition generation, or explain why it is refused."""
@@ -177,13 +158,16 @@ class WorkspaceSession:
         self._reset_session(path.name)
         self._replay_worker = ReplayWorker(path)
         self._replay_worker.frames_received.connect(
-            partial(self._replay_frames_for_generation, generation)
+            partial(self._replay_frames_for_generation, generation, self._replay_worker)
         )
         self._replay_worker.event_received.connect(
             partial(self._replay_event_for_generation, generation)
         )
         self._replay_worker.replay_failed.connect(
             partial(self._replay_failed_for_generation, generation)
+        )
+        self._replay_worker.progressed.connect(
+            partial(self._replay_progressed, generation)
         )
         self._replay_worker.finished.connect(partial(self._replay_finished, generation))
         self._begin_work(translate("trace.opening").format(name=path.name))
@@ -193,9 +177,23 @@ class WorkspaceSession:
         if generation == getattr(self, "_replay_generation", 0):
             self._render_replay_event(event)
 
-    def _replay_frames_for_generation(self, generation: int, frames: list[CanFrame]) -> None:
-        if generation == getattr(self, "_replay_generation", 0):
-            self._render_frames(frames)
+    def _replay_frames_for_generation(
+        self, generation: int, worker: ReplayWorker, frames: list[CanFrame]
+    ) -> None:
+        if generation != getattr(self, "_replay_generation", 0):
+            return
+        self._ingest_frames(frames, coalesce=True)
+        self._mark_graphs_dirty()
+        # Acknowledging here, and only here, is what holds the parser to a few
+        # batches ahead of the display.
+        worker.batch_rendered()
+
+    def _replay_progressed(self, generation: int, done: int, total: int) -> None:
+        """Show determinate parse progress for the current replay only."""
+        if generation != getattr(self, "_replay_generation", 0):
+            return
+        self.progress.setRange(0, total)
+        self.progress.setValue(done)
 
     def _replay_failed_for_generation(self, generation: int, message: str) -> None:
         if generation == getattr(self, "_replay_generation", 0):
@@ -207,12 +205,14 @@ class WorkspaceSession:
         self.status.showMessage(translate("trace.replay_done"))
         self._replay_worker = None
         self._end_work()
+        self._settle_presentation()
         self._refresh_report()
 
     def _reset_session(self, source: str) -> None:
         self.session_note.clear_message()
         self._series.clear()
         self._trace.clear()
+        self._frames.clear()
         self._facts.reset(source)
         self.inspector.clear()
         self.trace_panel.refresh()
@@ -225,111 +225,7 @@ class WorkspaceSession:
 
     def _end_work(self) -> None:
         self.progress.setVisible(False)
-
-    # ---- ingestion -----------------------------------------------------
-
-    def _begin_presentation_generation(self, generation: int) -> None:
-        """Accept only the newest worker's coalesced visual projection."""
-        with self._presentation_lock:
-            self._presentation_generation = generation
-            self._pending_presentation_frames = []
-        if self._presentation_timer is None:
-            self._presentation_timer = QTimer(self)
-            self._presentation_timer.setInterval(16)
-            self._presentation_timer.timeout.connect(self._drain_presentation_frames)
-        self._presentation_timer.start()
-
-    def _invalidate_presentation_generation(self, generation: int) -> None:
-        """Discard stale rendering work so lifecycle signals are never queued behind it."""
-        with self._presentation_lock:
-            if self._presentation_generation != generation:
-                return
-            self._presentation_generation = None
-            self._pending_presentation_frames = []
-        if self._presentation_timer is not None:
-            self._presentation_timer.stop()
-
-    def _queue_acquisition_frames(self, generation: int, frames: list[CanFrame]) -> None:
-        """Replace pending visual work from the worker thread without posting Qt events."""
-        with self._presentation_lock:
-            if self._presentation_generation != generation:
-                return
-            # A partial final batch represents the whole finite capture (the
-            # offline adapter deliberately produces 32 frames), while a full
-            # 64-frame batch marks an ongoing saturated acquisition.
-            self._pending_presentation_frames = (
-                frames[-MAX_PRESENTATION_FRAMES:] if len(frames) == 64 else frames
-            )
-
-    def _drain_presentation_frames(self) -> None:
-        """Render at most one current batch per UI tick, keeping the event loop fair."""
-        with self._presentation_lock:
-            frames = self._pending_presentation_frames
-            self._pending_presentation_frames = []
-        if frames:
-            self._render_frames(frames)
-
-    def _render_frames(self, frames: list[CanFrame]) -> None:
-        if frames:
-            self.acquisition_bar.set_bus_state("running")
-        added = []
-        for frame in frames:
-            signals, status = self._decode(frame)
-            message_name = signals[0].message_name if signals else ""
-            added.append(
-                self._trace.add_frame(
-                    frame,
-                    message_name=message_name,
-                    decode_status=status,
-                    signals=signals,
-                )
-            )
-            self._facts.record_frame(frame, decoded=status == DECODE_DECODED)
-            for signal in signals:
-                key = f"{signal.message_name}.{signal.signal_name}"
-                if key in self._selected_signal_names:
-                    self._series.append(key, frame.timestamp, signal.value, signal.unit)
-            if not self._selected_signal_names and frame.data:
-                self._series.append(RAW_PREVIEW, frame.timestamp, float(frame.data[0]))
-        self.trace_panel.append_records(added)
-        self.graph_panel.refresh_data()
-
-    def _render_acquisition_event(self, event: object) -> None:
-        if not isinstance(event, BusEvent):
-            return
-        record = self._trace.add_event(event)
-        self._facts.record_event(event)
-        if event.kind == "recording_warning":
-            # A disk warning must outlive the next incoming frame.
-            self.session_note.show_message(event.message, "warning")
-        if event.kind in {"error_frame", "bus_error"}:
-            self.acquisition_bar.set_bus_state("bus_error")
-        elif event.kind == "bus_off":
-            self.acquisition_bar.set_bus_state("bus_off")
-        elif event.kind == "reconnecting":
-            self.acquisition_bar.set_bus_state("reconnecting")
-        self.trace_panel.append_records([record])
-
-    def _render_replay_event(self, event: object) -> None:
-        if not isinstance(event, BusEvent):
-            return
-        record = self._trace.add_event(event)
-        self._facts.record_event(event)
-        self.status.showMessage(
-            translate("trace.replay_event").format(kind=event.kind, message=event.message)
-        )
-        self.trace_panel.append_records([record])
-
-    def _decode(self, frame: CanFrame):
-        try:
-            signals = self._catalog.decode(frame)
-        except AmbiguousMessageError as error:
-            self._facts.record_anomaly("dbc_conflict")
-            self.dbc_panel.show_error(str(error))
-            return [], DECODE_CONFLICT
-        if not signals:
-            return [], DECODE_UNKNOWN
-        return signals, DECODE_DECODED
+        self.progress.setRange(0, 0)
 
     # ---- report --------------------------------------------------------
 
@@ -354,7 +250,8 @@ class WorkspaceSession:
         return tuple(summaries)
 
     def _refresh_report(self) -> None:
-        self.report_panel.show_report(self._facts.report(self._dbc_summaries()))
+        with PROFILER.stage(STAGE_REPORT_REFRESH):
+            self.report_panel.show_report(self._facts.report(self._dbc_summaries()))
 
     def _export_report(self) -> None:
         self._refresh_report()

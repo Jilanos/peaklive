@@ -129,7 +129,17 @@ class TraceBuffer:
         return record
 
     def record(self, index: int) -> TraceRecord | None:
-        return next((item for item in self._records if item.index == index), None)
+        """Return one retained record by its stable index, in constant time.
+
+        Indices are handed out in order and the buffer only ever drops from the
+        front, so the oldest retained index locates the record directly. A scan
+        would put the whole buffer on the UI thread once per ingested batch.
+        """
+        position = index - (self._next_index - len(self._records))
+        if position < 0 or position >= len(self._records):
+            return None
+        record = self._records[position]
+        return record if record.index == index else None
 
     def _take_index(self) -> int:
         index = self._next_index
