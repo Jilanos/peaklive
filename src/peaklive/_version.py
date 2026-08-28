@@ -6,4 +6,4 @@ package version, `peaklive.__version__` re-exports it, and
 it. Nothing else may declare a version of its own.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
