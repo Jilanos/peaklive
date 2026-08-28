@@ -1,12 +1,13 @@
 ## req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive - Diagnose and make PeakLive ASC/TRC trace loading reliable and responsive
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Reliable and responsive trace replay
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-08-28 11:00:54
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
