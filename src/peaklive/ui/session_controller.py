@@ -206,10 +206,19 @@ class WorkspaceSession:
         self._replay_worker = None
         self._end_work()
         self._settle_presentation()
+        # A finished capture is read as a whole, not as its last few seconds.
+        self.graph_panel.show_full_extent()
         self._refresh_report()
 
     def _reset_session(self, source: str) -> None:
+        """Clear every retained projection and adopt the new session's axis.
+
+        A named source is a capture, whose extent is whatever it turns out to
+        hold; an unnamed one is live acquisition, whose extent starts at zero
+        and grows with the session.
+        """
         self.session_note.clear_message()
+        self.graph_panel.begin_session(live=not source)
         self._cancel_signal_backfill()
         self._series.clear()
         self._trace.clear()
