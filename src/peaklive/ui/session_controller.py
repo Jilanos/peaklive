@@ -30,7 +30,7 @@ SHUTDOWN_TIMEOUT_MS = 5_000
 # at once can monopolize slower Windows UI threads.  The trace is a coalesced
 # visual projection, so keep the newest slice small enough for timers and Stop
 # to run between paints.
-MAX_PRESENTATION_FRAMES = 32
+MAX_PRESENTATION_FRAMES = 8
 
 #: Worker threads the shell has stopped listening to but that are still running.
 #:
@@ -231,10 +231,11 @@ class WorkspaceSession:
         with self._presentation_lock:
             if self._presentation_generation != generation:
                 return
+            # A partial final batch represents the whole finite capture (the
+            # offline adapter deliberately produces 32 frames), while a full
+            # 64-frame batch marks an ongoing saturated acquisition.
             self._pending_presentation_frames = (
-                frames[-MAX_PRESENTATION_FRAMES:]
-                if len(frames) > MAX_PRESENTATION_FRAMES
-                else frames
+                frames[-MAX_PRESENTATION_FRAMES:] if len(frames) == 64 else frames
             )
 
     def _drain_presentation_frames(self) -> None:
