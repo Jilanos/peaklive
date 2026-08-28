@@ -64,11 +64,13 @@ budget** enforced by `tests/test_ui_structure.py`:
 | `ui/addressing.py` | Flat widget accessors the shell and tests address by name |
 | `ui/actions.py` | File/View/Help menus and the workspace shortcuts |
 | `ui/catalog_controller.py` | DBC lifecycle and shown/favorite signal selection |
-| `ui/session_controller.py` | Acquisition, replay, ingestion, and session reporting |
+| `ui/session_controller.py` | Acquisition and replay lifecycle, and session reporting |
+| `ui/ingest_controller.py` | Frame ingestion, coalesced projection, on-demand signal decoding |
 | `ui/panels/acquisition_bar.py` | Profile, bus setup, bus-state LED, lifecycle |
 | `ui/panels/dbc_library.py` | Loaded DBCs, enable/remove, conflicts, load errors |
 | `ui/panels/signal_explorer.py` | DBC/message-grouped navigation, search, favorites |
-| `ui/panels/graph_stack.py` | Stacked plots, linked time axis, cursors, navigation |
+| `ui/panels/graph_stack.py` | Stacked plots, linked time axis, and cursors |
+| `ui/panels/graph_navigation.py` | Session extent, zoom, fit, and follow-tail |
 | `ui/panels/measurement.py` | Cursor values plus A–B range statistics |
 | `ui/panels/trace_filters.py` | Display-only filter fields and removable chips |
 | `ui/panels/trace_view.py` | Bounded trace table, columns, selection, tail follow |
@@ -87,7 +89,27 @@ persisted in the profile. Incoming data seeds an unplaced cursor once and never
 moves a placed one — that is what makes a live measurement usable. Samples live
 in `analysis/series.py` (`SeriesStore`, deque-bounded per signal) and trace rows
 in `analysis/trace.py` (`TraceBuffer`, a `deque` with `maxlen`), so retention is
-constant-time rather than a per-row removal.
+constant-time rather than a per-row removal. `analysis/frames.py` keeps a third
+bounded store, the raw frames a session ingested, so a signal selected after the
+load can be derived from the loaded session instead of a second pass over the
+file; it reports how much of the session the bound has already dropped.
+
+The time axis distinguishes three things an operator can mean by "where am I
+looking". The *extent* is everything there is to navigate — a completed
+capture's own span, or zero to now for a live session, expanding monotonically
+so a bounded series ageing out its oldest samples never shrinks the visible
+history. *Fit* shows that extent, and a finished replay lands there. *Follow
+tail* pins a window the operator explicitly zoomed into to the newest data.
+
+#### Ingest cost
+
+Presentation, not file IO, dominates a large load: see
+`docs/trace-performance-audit.md` for the stage-level measurement, the budgets
+`analysis/profiling.py` holds as code, and `scripts/audit_trace_performance.py`
+to reproduce them. Graph and trace-row projection are coalesced onto one timer,
+one flush draws a bounded number of rows, and the replay worker holds itself a
+bounded number of batches ahead of the display so cancellation and user actions
+stay inside the responsiveness budget.
 
 ### Domain core
 

@@ -40,13 +40,13 @@ time.
 
 | Stage | small (2k) | medium (20k) | large (200k) | Share (large) |
 | --- | --- | --- | --- | --- |
-| `parse` | 7.81 | 6.67 | 6.85 | 29.1% |
-| `dispatch` | 0.48 | 0.85 | 1.11 | 4.7% |
-| `decode` | 5.08 | 4.69 | 5.12 | 21.7% |
-| `trace_projection` | 24.74 | 12.90 | 7.70 | 32.7% |
-| `series_projection` | 0.51 | 0.50 | 0.62 | 2.6% |
-| `graph_refresh` | 0.98 | 0.77 | 2.12 | 9.0% |
-| `report_refresh` | 0.24 | 0.03 | 0.00 | 0.0% |
+| `parse` | 7.14 | 6.00 | 6.06 | 28.9% |
+| `dispatch` | 0.38 | 1.79 | 1.87 | 8.9% |
+| `decode` | 4.02 | 4.17 | 4.01 | 19.1% |
+| `trace_projection` | 20.80 | 10.32 | 7.10 | 33.9% |
+| `series_projection` | 0.42 | 0.64 | 0.48 | 2.3% |
+| `graph_refresh` | 0.85 | 0.94 | 1.45 | 6.9% |
+| `report_refresh` | 0.21 | 0.02 | 0.00 | 0.0% |
 
 **Dominant cost: `trace_projection`** at every volume, followed by `parse` and
 `decode`. File IO is not the bottleneck; presentation is.
@@ -60,7 +60,7 @@ time.
    - Trace rows are coalesced too, and one flush projects at most
      `MAX_ROWS_PER_FLUSH` rows. A row superseded before it can be drawn is not
      drawn; one bounded refresh when ingestion settles makes the window
-     authoritative again. `trace_projection` fell from 30.8 to 7.7 ms per
+     authoritative again. `trace_projection` fell from 30.8 to 7.1 ms per
      thousand frames.
 
 2. **The parser outran the display without limit.** Batches were emitted as
@@ -68,7 +68,7 @@ time.
    queued behind it — the slowest measured pass was **4172 ms**, and Stop sat
    behind all of it. The worker now holds itself to `MAX_PENDING_BATCHES`
    batches ahead of the UI, which acknowledges each batch as it lands. The
-   slowest pass is now **121 ms**, inside the 250 ms responsiveness budget, and
+   slowest pass is now **107 ms**, inside the 250 ms responsiveness budget, and
    cancellation is serviced within a bounded number of batches.
 
 3. **Progress was never truthful.** `ReplayWorker` reported completion from the
@@ -81,8 +81,8 @@ time.
    snapshots and invalidates them on append. `TraceBuffer.record()` was a linear
    scan run once per ingested batch; it is now constant time.
 
-Net effect on the 200k-frame capture: **8.9 s to 5.4 s wall clock**, and a
-worst-case event-loop pass **34× shorter**.
+Net effect on the 200k-frame capture: **8.9 s to 4.1 s wall clock**, and a
+worst-case event-loop pass **39× shorter**.
 
 ## Budgets
 
