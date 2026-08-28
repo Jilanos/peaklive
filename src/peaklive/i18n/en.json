@@ -113,7 +113,11 @@
     "state_on": "on",
     "state_off": "off",
     "shown_state": "Show {signal} as its own plot — currently {state}",
-    "favorite_state": "Keep {signal} in the favorites filter — currently {state}"
+    "favorite_state": "Keep {signal} in the favorites filter — currently {state}",
+    "deriving": "Deriving {signal} from the loaded session…",
+    "derived": "{signal}: {count} sample(s) derived from the loaded session",
+    "unavailable": "No retained sample for {signal} in the loaded session.",
+    "truncated": "{signal} starts at the oldest retained frame: {dropped} earlier frame(s) are no longer held."
   },
   "graph": {
     "plot_accessible": "Live signal plot",

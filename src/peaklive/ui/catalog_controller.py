@@ -298,13 +298,22 @@ class WorkspaceCatalog:
         )
 
     def _signal_shown_changed(self, signal_name: str, shown: bool) -> None:
+        """Show or hide one signal, deriving its history when it has none.
+
+        Selecting a signal the session never decoded used to leave an empty
+        plot until the trace was opened again. The retained frames are enough
+        to derive it, so selection asks for that instead.
+        """
         if shown:
             self._selected_signal_names.add(signal_name)
         else:
             self._selected_signal_names.discard(signal_name)
+            self._cancel_signal_backfill(signal_name)
             self._series.drop(signal_name)
         self._persist_signal_state()
         self._sync_graphs()
+        if shown:
+            self._request_signal_backfill(signal_name)
 
     def _signal_favorite_changed(self, signal_name: str, favorite: bool) -> None:
         if favorite:

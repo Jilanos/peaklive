@@ -210,6 +210,7 @@ class WorkspaceSession:
 
     def _reset_session(self, source: str) -> None:
         self.session_note.clear_message()
+        self._cancel_signal_backfill()
         self._series.clear()
         self._trace.clear()
         self._frames.clear()
