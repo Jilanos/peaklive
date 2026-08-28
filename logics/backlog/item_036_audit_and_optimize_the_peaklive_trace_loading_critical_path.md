@@ -1,14 +1,14 @@
 ## item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path - Audit and optimize the PeakLive trace loading critical path
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 65%
+> Progress: 100%
 > Complexity: High
 > Theme: Performance diagnosis and bounded replay presentation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-28 19:31:55
+> Indicators reviewed: 2026-08-28 20:14:24
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -56,3 +56,9 @@
 # Priority
 - Priority: High - trace opening is a core workflow and current load latency prevents reliable use of large captures.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace`
+
+# Notes
+- Task `task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace` was finished via `logics-manager flow finish task` on 2026-08-28.
