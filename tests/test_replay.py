@@ -30,3 +30,20 @@ def test_streams_supported_text_trc(tmp_path):
     assert isinstance(records[0], CanFrame)
     assert records[0].timestamp == 0.015
     assert records[0].is_extended_id is True
+
+
+def test_honours_declared_decimal_asc_base(tmp_path):
+    trace = tmp_path / "decimal.asc"
+    trace.write_text(
+        "date Tue Jul 15 10:00:00 2026\n"
+        "base dec  timestamps absolute\n"
+        "   0.000000 1  291             Rx   d 2 10 255\n",
+        encoding="utf-8",
+    )
+
+    records = list(iter_trace(trace))
+
+    assert len(records) == 1
+    assert isinstance(records[0], CanFrame)
+    assert records[0].arbitration_id == 291
+    assert records[0].data == b"\x0a\xff"
