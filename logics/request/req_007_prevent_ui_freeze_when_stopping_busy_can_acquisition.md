@@ -1,13 +1,13 @@
 ## req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition - Prevent the UI from freezing when stopping a busy CAN acquisition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Ready
 > Understanding: A controlled 20,000-frame burst showed unbounded queued UI frame updates delaying Stop from 0.5 s to 7.7 s and starving the UI timer for about 18 s.
 > Confidence: 95
 > Complexity: M
 > Theme: Acquisition responsiveness
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-27 19:14:04
+> Indicators reviewed: 2026-08-28 09:29:14
 
 # AI Context
 - Summary: Preserve lossless acquisition and recording while ensuring a busy bus cannot starve the GUI event loop or delay Stop.
@@ -68,4 +68,4 @@ Out of scope: changing CAN bitrate/controller mode, dropping acquired or recorde
 - `tests/test_ui_lifecycle.py`
 
 # Backlog
-- none
+- `item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition`
