@@ -1,14 +1,15 @@
 ## task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition - Prevent the UI from freezing when stopping a busy CAN acquisition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 60%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-08-28 09:28:54
+> Indicators reviewed: 2026-08-28 09:36:11
+> Owner: Codex
 
 # AI Context
 - Summary: Implement coalesced, generation-aware UI delivery so Stop stays

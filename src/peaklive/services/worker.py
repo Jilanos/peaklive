@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from threading import Event
 
 from PySide6.QtCore import QThread, Signal
@@ -33,11 +34,13 @@ class AcquisitionWorker(QThread):
         adapter: CanAdapter,
         profile: MeasurementProfile,
         generation: int = 0,
+        presentation_sink: Callable[[int, list[CanFrame]], None] | None = None,
     ) -> None:
         super().__init__()
         self._adapter = adapter
         self._profile = profile
         self._generation = generation
+        self._presentation_sink = presentation_sink
         self._stop_requested = Event()
 
     @property
@@ -120,7 +123,14 @@ class AcquisitionWorker(QThread):
 
     def _flush(self, session: AcquisitionSession, batch: list[CanFrame]) -> None:
         """Emit one batch, then surface any recording notice it produced."""
-        self.frames_received.emit(session.ingest(batch))
+        captured = session.ingest(batch)
+        if self._presentation_sink is None:
+            self.frames_received.emit(captured)
+        else:
+            # The sink is deliberately a lock-protected, non-Qt callback.  A
+            # queued Qt signal per batch can otherwise leave hundreds of
+            # render events ahead of Stop on a busy bus.
+            self._presentation_sink(self._generation, captured)
         for notice in session.take_notices():
             self.event_received.emit(notice)
             self.status_changed.emit(notice.message)
