@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime
-from threading import Lock
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
@@ -94,12 +93,7 @@ class MainWindow(
         self._shutdown_timer = QTimer(self)
         self._shutdown_timer.setSingleShot(True)
         self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
-        self._presentation_lock = Lock()
-        self._presentation_generation: int | None = None
-        self._pending_presentation_frames: list = []
-        self._presentation_timer = QTimer(self)
-        self._presentation_timer.setInterval(16)
-        self._presentation_timer.timeout.connect(self._drain_presentation_frames)
+        self._init_presentation_queue()
         self._catalog = DbcCatalog()
         self._catalog_worker: DbcCatalogWorker | None = None
         self._catalog_queue: list[CatalogOperation] = []
