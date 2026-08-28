@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QEvent, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -139,6 +139,23 @@ class TraceFilterBar(QWidget):
         self.chips_layout.setContentsMargins(0, 0, 0, 0)
         self.chips.setVisible(False)
         layout.addWidget(self.chips)
+
+    def event(self, event: QEvent) -> bool:
+        """Keep a wrapped header tall enough for every control.
+
+        On Windows, Qt may otherwise allocate the flow widget one line less
+        than its height-for-width result while shrinking the trace section.
+        The last row then paints below the header rather than being clipped or
+        moved into the splitter's minimum geometry.
+        """
+        handled = super().event(event)
+        if event.type() == QEvent.Type.Resize and self.header.width() > 0:
+            layout = self.header.layout()
+            assert layout is not None
+            required_height = layout.heightForWidth(self.header.width())
+            if self.header.minimumHeight() != required_height:
+                self.header.setMinimumHeight(required_height)
+        return handled
 
     # ---- construction -------------------------------------------------
 
