@@ -11,6 +11,7 @@ thousand times.
 
 from __future__ import annotations
 
+from functools import partial
 from threading import Lock
 
 from PySide6.QtCore import QTimer
@@ -35,6 +36,11 @@ from peaklive.analysis.profiling import (
 )
 from peaklive.domain import BusEvent, CanFrame
 from peaklive.i18n import translate
+from peaklive.services.signal_decode_worker import (
+    DecodedSeries,
+    SignalDecodeWorker,
+    decode_series,
+)
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
 # A 64-frame worker batch is efficient for recording, but rendering all of it
@@ -68,6 +74,119 @@ class WorkspaceIngest:
         self._trace = TraceBuffer()
         self._frames = FrameCache()
         self._facts = SessionFacts()
+        self._signal_decode_worker: SignalDecodeWorker | None = None
+        self._signal_decode_generation = 0
+        self._signal_decode_queue: list[str] = []
+
+    # ---- on-demand signal decoding -------------------------------------
+
+    def _request_signal_backfill(self, signal_name: str) -> None:
+        """Derive a newly selected signal from the session already loaded.
+
+        A signal that was selected during ingestion already has its samples, so
+        the common case costs one lookup. Everything else is queued: the
+        retained frames are the only source, and reopening the capture is
+        exactly what this exists to avoid.
+        """
+        if signal_name == RAW_PREVIEW:
+            return
+        series = self._series.series(signal_name)
+        if series is not None and len(series):
+            return
+        if not len(self._frames):
+            self._report_signal_unavailable(signal_name)
+            return
+        self._signal_decode_queue.append(signal_name)
+        self._pump_signal_backfill()
+
+    def _pump_signal_backfill(self) -> None:
+        """Start the next queued backfill, one at a time.
+
+        Serializing keeps the decodes off each other's backs and keeps the
+        answer deterministic: each one commits against the frames retained when
+        it started, not against a cache another decode is racing.
+        """
+        if self._signal_decode_worker is not None:
+            return
+        while self._signal_decode_queue:
+            signal_name = self._signal_decode_queue.pop(0)
+            if signal_name not in self._selected_signal_names:
+                continue
+            self._signal_decode_generation += 1
+            generation = self._signal_decode_generation
+            worker = SignalDecodeWorker(
+                self._catalog,
+                self._frames.snapshot(),
+                signal_name,
+                self._frames.ingested,
+                truncated=self._frames.truncated,
+                generation=generation,
+            )
+            worker.completed.connect(partial(self._signal_backfill_completed, generation))
+            worker.finished.connect(partial(self._signal_backfill_finished, generation))
+            self._signal_decode_worker = worker
+            self.status.showMessage(
+                translate("signals.deriving").format(signal=signal_name)
+            )
+            worker.start()
+            return
+
+    def _cancel_signal_backfill(self, signal_name: str | None = None) -> None:
+        """Abandon a backfill the operator has already moved on from."""
+        self._signal_decode_queue = [
+            queued for queued in self._signal_decode_queue if queued != signal_name
+        ]
+        worker = self._signal_decode_worker
+        if worker is None:
+            return
+        if signal_name is not None and worker.signal_name != signal_name:
+            return
+        worker.request_cancel()
+        # Bumping the generation retires a worker that races past its own
+        # cancel check and completes anyway.
+        self._signal_decode_generation += 1
+
+    def _signal_backfill_completed(self, generation: int, decoded: DecodedSeries) -> None:
+        if generation != self._signal_decode_generation:
+            return
+        if decoded.signal_name not in self._selected_signal_names:
+            return
+        # Frames that landed while the snapshot was decoding are decoded here,
+        # so the installed series is neither short of the newest samples nor
+        # holding any of them twice.
+        samples = decoded.samples + decode_series(
+            self._catalog, self._frames.frames_after(decoded.ingested), decoded.signal_name
+        )
+        if not samples:
+            self._report_signal_unavailable(decoded.signal_name)
+            return
+        self._series.replace(decoded.signal_name, samples, decoded.unit)
+        self._sync_graphs()
+        self.status.showMessage(
+            translate("signals.derived").format(
+                signal=decoded.signal_name, count=len(samples)
+            )
+        )
+        if decoded.truncated:
+            self.session_note.show_message(
+                translate("signals.truncated").format(
+                    signal=decoded.signal_name, dropped=self._frames.dropped
+                ),
+                "warning",
+            )
+
+    def _signal_backfill_finished(self, generation: int) -> None:
+        worker = self._signal_decode_worker
+        if worker is None or worker.generation != generation:
+            return
+        self._signal_decode_worker = None
+        self._pump_signal_backfill()
+
+    def _report_signal_unavailable(self, signal_name: str) -> None:
+        """Say plainly that the loaded session holds nothing for this signal."""
+        self.session_note.show_message(
+            translate("signals.unavailable").format(signal=signal_name), "info"
+        )
 
     # ---- coalesced graph refresh ---------------------------------------
 

@@ -389,6 +389,11 @@ class MainWindow(
             self._catalog_worker.wait(self._shutdown_timeout_ms)
             abandon_worker(self._catalog_worker)
             self._catalog_worker = None
+        self._cancel_signal_backfill()
+        if self._signal_decode_worker is not None:
+            self._signal_decode_worker.wait(self._shutdown_timeout_ms)
+            abandon_worker(self._signal_decode_worker)
+            self._signal_decode_worker = None
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self._replay_worker.request_stop()
             self._replay_worker.wait(1_000)
