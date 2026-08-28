@@ -1,13 +1,14 @@
 ## item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch - Diagnose and correct ASC/TRC normalization and responsive replay dispatch
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Trace parser and replay reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-28 11:00:55
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -62,3 +63,9 @@
 # Priority
 - Priority: High - trace opening is a core analysis workflow and currently fails to provide reliable results or responsive interaction for representative captures.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading`
+
+# Notes
+- Task `task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading` was finished via `logics-manager flow finish task` on 2026-08-28.

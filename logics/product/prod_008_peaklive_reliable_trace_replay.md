@@ -1,14 +1,24 @@
 ## prod_008_peaklive_reliable_trace_replay - PeakLive reliable trace replay
 > Date: 2026-08-28
-> Status: Proposed
+> Status: Settled
 > Related request: `req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive`
 > Related backlog: `item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch`
 > Related task: `task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-08-28 11:00:55
 
 # Overview
 A replay reliability enhancement that correctly normalizes supported ASC and TRC capture variants while keeping trace loading interactive, bounded, cancellable, and diagnostically transparent.
+
+```mermaid
+%% logics-kind: product
+%% logics-signature: product|peaklive_reliable_trace_replay|generated
+flowchart TD
+    Need[Reliable trace replay] --> Scope[Scope and guardrails]
+    Scope --> Decisions[Key product decisions]
+    Decisions --> Signals[Success signals]
+```
 
 # Goals
 - Correctly interpret supported capture formats according to their declared encoding and record semantics.
@@ -34,5 +44,5 @@ A replay reliability enhancement that correctly normalizes supported ASC and TRC
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive`
+- Product back-reference: `item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch`
 - Task back-reference: `task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading`
