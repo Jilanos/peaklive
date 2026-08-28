@@ -175,15 +175,21 @@ def test_a_stopped_replay_stops_within_a_bounded_number_of_batches(qtbot, tmp_pa
 
 def test_the_event_loop_is_serviced_within_the_responsiveness_budget(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
-    window._open_trace(_capture(tmp_path, CaptureProfile("responsive", 40_000)))
-    slowest = 0.0
-    tick = QElapsedTimer()
+    capture = _capture(tmp_path, CaptureProfile("responsive", 40_000))
+    # Settle one-time widget realization first: what is under test is how long
+    # a user action waits behind ingestion, not how long the shell takes to
+    # come up.
+    QCoreApplication.processEvents()
 
+    window._open_trace(capture)
+    passes: list[float] = []
+    tick = QElapsedTimer()
     while window._replay_worker is not None:
         tick.restart()
         QCoreApplication.processEvents()
-        slowest = max(slowest, tick.nsecsElapsed() / 1e9)
+        passes.append(tick.nsecsElapsed() / 1e9)
 
+    slowest = max(passes)
     assert slowest < RESPONSIVENESS_BUDGET_S, f"slowest pass {slowest * 1000:.0f} ms"
 
 
