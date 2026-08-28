@@ -1,14 +1,14 @@
 ## item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition - Prevent the UI from freezing when stopping a busy CAN acquisition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 90%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-28 09:36:11
+> Indicators reviewed: 2026-08-28 09:46:31
 
 # AI Context
 - Summary: Bound GUI presentation work so a busy acquisition cannot defer Stop
@@ -74,6 +74,7 @@ Prevent obsolete queued visual updates from delaying the terminal lifecycle stat
 - Hybrid rationale: Derived from request `req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition.md`.
 - Generated locally by logics-manager.
+- Task `task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition` was finished via `logics-manager flow finish task` on 2026-08-28.
 
 # Tasks
 - `task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition`
