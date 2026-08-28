@@ -15,17 +15,24 @@ _HEX = re.compile(r"^[0-9A-Fa-f]+$")
 
 def iter_trace(path: Path) -> Iterator[CanFrame | BusEvent]:
     """Incrementally normalize supported `.asc` and text `.trc` captures."""
-    parser = _parse_trc_line if path.suffix.lower() == ".trc" else _parse_asc_line
+    parser = _parse_trc_line if path.suffix.lower() == ".trc" else None
+    base = 16
     with path.open(encoding="utf-8", errors="replace") as handle:
         for line_number, raw in enumerate(handle, 1):
-            record = parser(raw)
+            if parser is None:
+                header_base = _declared_base(raw)
+                if header_base is not None:
+                    base = header_base
+                record = _parse_asc_line(raw, base=base)
+            else:
+                record = parser(raw)
             if record is not None:
                 yield record
             elif raw.strip() and not _is_header(raw):
                 yield BusEvent(0.0, "replay_anomaly", f"Line {line_number}: unsupported record")
 
 
-def _parse_asc_line(raw: str) -> CanFrame | BusEvent | None:
+def _parse_asc_line(raw: str, *, base: int = 16) -> CanFrame | BusEvent | None:
     match = _TIMESTAMP.match(raw)
     if not match:
         return None
@@ -38,7 +45,7 @@ def _parse_asc_line(raw: str) -> CanFrame | BusEvent | None:
     if len(tokens) < 5 or tokens[2] not in {"Rx", "Tx"}:
         return BusEvent(timestamp, "replay_anomaly", "Unsupported ASC record")
     channel, identifier, _, kind, dlc_text, *payload = tokens
-    return _frame(timestamp, channel, identifier, kind, dlc_text, payload)
+    return _frame(timestamp, channel, identifier, kind, dlc_text, payload, base=base)
 
 
 def _parse_trc_line(raw: str) -> CanFrame | BusEvent | None:
@@ -55,6 +62,9 @@ def _parse_trc_line(raw: str) -> CanFrame | BusEvent | None:
         return BusEvent(timestamp, "trc_event", match.group(2))
     if len(tokens) < 3 or tokens[0].lower() not in {"rx", "tx"}:
         return BusEvent(timestamp, "replay_anomaly", "Unsupported TRC record")
+    # PCAN-View exports either ``Rx ID DLC data`` or ``Rx ID d DLC data``.
+    if len(tokens) >= 4 and tokens[2].lower() in {"d", "r"}:
+        return _frame(timestamp, "1", tokens[1], tokens[2], tokens[3], tokens[4:])
     return _frame(timestamp, "1", tokens[1], "d", tokens[2], tokens[3:])
 
 
@@ -65,10 +75,19 @@ def _frame(
     kind: str,
     dlc_text: str,
     payload: list[str],
+    *,
+    base: int = 16,
 ) -> CanFrame | BusEvent:
     extended = identifier.endswith(("x", "X"))
     identifier = identifier[:-1] if extended else identifier
-    if not _HEX.fullmatch(identifier):
+    if base == 16 and identifier.lower().startswith("0x"):
+        identifier = identifier[2:]
+    invalid_identifier = (
+        not identifier
+        or (base == 16 and not _HEX.fullmatch(identifier))
+        or (base == 10 and not identifier.isdecimal())
+    )
+    if invalid_identifier:
         return BusEvent(timestamp, "replay_anomaly", "Invalid arbitration ID", channel)
     try:
         dlc = int(dlc_text)
@@ -76,12 +95,16 @@ def _frame(
         return BusEvent(timestamp, "replay_anomaly", "Invalid DLC", channel)
     if not 0 <= dlc <= 8 or (kind.lower() != "r" and len(payload) != dlc):
         return BusEvent(timestamp, "replay_anomaly", "Invalid classic CAN payload", channel)
-    if any(not _HEX.fullmatch(byte) or len(byte) > 2 for byte in payload):
+    def valid_byte(value: str) -> bool:
+        if base == 16:
+            return bool(_HEX.fullmatch(value)) and len(value) <= 2
+        return value.isdecimal() and int(value) <= 255
+    if any(not valid_byte(byte) for byte in payload):
         return BusEvent(timestamp, "replay_anomaly", "Invalid payload byte", channel)
     return CanFrame(
         timestamp,
-        int(identifier, 16),
-        b"" if kind.lower() == "r" else bytes(int(byte, 16) for byte in payload),
+        int(identifier, base),
+        b"" if kind.lower() == "r" else bytes(int(byte, base) for byte in payload),
         channel,
         extended,
         kind.lower() == "r",
@@ -92,3 +115,10 @@ def _is_header(raw: str) -> bool:
     lowered = raw.strip().lower()
     prefixes = ("//", ";", "date", "base", "internal", "begin", "end")
     return not lowered or lowered.startswith(prefixes)
+
+
+def _declared_base(raw: str) -> int | None:
+    match = re.match(r"^\s*base\s+(hex|dec(?:imal)?)\b", raw, re.IGNORECASE)
+    if not match:
+        return None
+    return 16 if match.group(1).lower() == "hex" else 10

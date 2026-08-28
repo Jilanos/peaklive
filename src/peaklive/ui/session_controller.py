@@ -168,19 +168,42 @@ class WorkspaceSession:
             self._open_trace(Path(selected))
 
     def _open_trace(self, path: Path) -> None:
-        if self._replay_worker is not None and self._replay_worker.isRunning():
-            self._replay_worker.request_stop()
-            self._replay_worker.wait(1_000)
+        previous = self._replay_worker
+        if previous is not None and previous.isRunning():
+            previous.request_stop()
+            abandon_worker(previous)
+        generation = getattr(self, "_replay_generation", 0) + 1
+        self._replay_generation = generation
         self._reset_session(path.name)
         self._replay_worker = ReplayWorker(path)
-        self._replay_worker.frames_received.connect(self._render_frames)
-        self._replay_worker.event_received.connect(self._render_replay_event)
-        self._replay_worker.replay_failed.connect(self._acquisition_failed)
-        self._replay_worker.finished.connect(self._replay_finished)
+        self._replay_worker.frames_received.connect(
+            partial(self._replay_frames_for_generation, generation)
+        )
+        self._replay_worker.event_received.connect(
+            partial(self._replay_event_for_generation, generation)
+        )
+        self._replay_worker.replay_failed.connect(
+            partial(self._replay_failed_for_generation, generation)
+        )
+        self._replay_worker.finished.connect(partial(self._replay_finished, generation))
         self._begin_work(translate("trace.opening").format(name=path.name))
         self._replay_worker.start()
 
-    def _replay_finished(self) -> None:
+    def _replay_event_for_generation(self, generation: int, event: object) -> None:
+        if generation == getattr(self, "_replay_generation", 0):
+            self._render_replay_event(event)
+
+    def _replay_frames_for_generation(self, generation: int, frames: list[CanFrame]) -> None:
+        if generation == getattr(self, "_replay_generation", 0):
+            self._render_frames(frames)
+
+    def _replay_failed_for_generation(self, generation: int, message: str) -> None:
+        if generation == getattr(self, "_replay_generation", 0):
+            self._acquisition_failed(message)
+
+    def _replay_finished(self, generation: int) -> None:
+        if generation != getattr(self, "_replay_generation", 0):
+            return
         self.status.showMessage(translate("trace.replay_done"))
         self._replay_worker = None
         self._end_work()
