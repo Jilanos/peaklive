@@ -82,6 +82,11 @@ class AcquisitionWorker(QThread):
                 if len(batch) >= 64:
                     self._flush(session, batch)
                     batch = []
+                    # A saturated adapter can otherwise retain Python's GIL
+                    # across an unbroken series of batches.  Give the GUI a
+                    # scheduling opportunity after each durable write and
+                    # visual hand-off so Stop and timers remain responsive.
+                    self.msleep(1)
         except Exception as error:
             failure = str(error)
             self.acquisition_failed.emit(failure)
