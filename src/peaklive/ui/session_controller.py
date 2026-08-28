@@ -26,6 +26,12 @@ from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 #: How long the shell waits for a worker shutdown before declaring it degraded.
 SHUTDOWN_TIMEOUT_MS = 5_000
 
+# A 64-frame worker batch is efficient for recording, but rendering all of it
+# at once can monopolize slower Windows UI threads.  The trace is a coalesced
+# visual projection, so keep the newest slice small enough for timers and Stop
+# to run between paints.
+MAX_PRESENTATION_FRAMES = 32
+
 #: Worker threads the shell has stopped listening to but that are still running.
 #:
 #: Qt aborts the process if a running QThread is destroyed, so an abandoned
@@ -225,7 +231,11 @@ class WorkspaceSession:
         with self._presentation_lock:
             if self._presentation_generation != generation:
                 return
-            self._pending_presentation_frames = frames
+            self._pending_presentation_frames = (
+                frames[-MAX_PRESENTATION_FRAMES:]
+                if len(frames) > MAX_PRESENTATION_FRAMES
+                else frames
+            )
 
     def _drain_presentation_frames(self) -> None:
         """Render at most one current batch per UI tick, keeping the event loop fair."""

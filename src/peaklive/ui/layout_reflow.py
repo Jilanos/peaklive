@@ -100,6 +100,13 @@ class WorkspaceReflow:
             self.workspace.setSizes(widths)
 
     def _panel_collapse_changed(self) -> None:
+        # Restoring a saved profile emits the same signal as an operator
+        # collapsing a panel.  Its splitter has not reached the saved geometry
+        # yet, so remembering at that point would replace the saved width with
+        # Qt's temporary minimum.  `_show_profile` performs one reflow after
+        # all restored state is installed.
+        if self._restoring:
+            return
         self._remember_panel_widths()
         self._reflow_workspace()
         self._persist_layout()
