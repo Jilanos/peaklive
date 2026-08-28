@@ -1,0 +1,282 @@
+{
+  "budgets": {
+    "max_docs": 24,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch"
+        ],
+        "prod": [
+          "prod_008_peaklive_reliable_trace_replay"
+        ],
+        "req": [
+          "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive"
+        ],
+        "task": [
+          "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+        ]
+      },
+      "path": "logics/product/prod_008_peaklive_reliable_trace_replay.md",
+      "ref": "prod_008_peaklive_reliable_trace_replay",
+      "sections": {
+        "Goals": [
+          "- Correctly interpret supported capture formats according to their declared encoding and record semantics.",
+          "- Keep the desktop UI responsive throughout parsing, replay projection, cancellation, and replacement.",
+          "- Bound replay memory, queued UI work, and malformed-record diagnostics.",
+          "- Provide evidence-backed feedback when a capture contains unsupported records or cannot be fully interpreted."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A replay reliability enhancement that correctly normalizes supported ASC and TRC capture variants while keeping trace loading interactive, bounded, cancellable, and diagnostically transparent."
+        ],
+        "References": [
+          "- Product back-reference: `req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive`",
+          "- Task back-reference: `task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive reliable trace replay"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "diagnose, peaklive, asc, trc, trace, loading, reliable, responsive",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch"
+        ],
+        "prod": [
+          "prod_008_peaklive_reliable_trace_replay"
+        ],
+        "req": [
+          "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive"
+        ]
+      },
+      "path": "logics/request/req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive.md",
+      "ref": "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A documented diagnosis identifies, with focused automated evidence, whether each supported ASC/TRC variant fails during parsing, worker dispatch, UI projection, cancellation, or more than one stage; the final user-visible outcome is deterministic.",
+          "- AC2: Supported Vector-style ASC captures in both declared hexadecimal and decimal bases, including Rx/Tx data frames, ErrorFrame records, and status records, normalize to correct CAN frames/events without silently treating decimal bytes or identifiers as hexadecimal.",
+          "- AC3: Supported PCAN-View text TRC captures normalize frame timestamps, identifiers, payloads, directions, and malformed-record diagnostics correctly, without regressing existing classic CAN or extended-ID support.",
+          "- AC4: Opening a supported trace keeps the Qt event loop responsive, gives visible loading progress, and does not allow accumulated frame or anomaly notifications to starve Cancel, Open Trace, window-close, or ordinary UI interaction.",
+          "- AC5: Replay memory and UI work remain bounded for captures larger than the trace-table capacity; a full replay does not require loading the file or all decoded records into memory, and display projection is coalesced or otherwise rate-limited without corrupting the retained session facts contract.",
+          "- AC6: Replacing or cancelling an active replay is generation-safe: stale frames/events cannot alter the newly selected trace, controls settle predictably, and no worker is destroyed while still running."
+        ],
+        "Needs": [
+          "- An operator must be able to open supported ASC and PCAN-View text TRC captures and obtain a correct, responsive replay regardless of capture size.",
+          "- When a capture contains unsupported or malformed records, the application must explain the outcome without flooding the UI or making the trace unusable.",
+          "- Trace loading must preserve the existing bounded-memory workspace and must be safely cancellable or replaceable by another trace selection."
+        ]
+      },
+      "status": "Draft",
+      "title": "Diagnose and make PeakLive ASC/TRC trace loading reliable and responsive"
+    },
+    {
+      "ai_context": {
+        "keywords": "diagnose, correct, asc, trc, normalization, responsive, replay, dispatch",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch"
+        ],
+        "prod": [
+          "prod_008_peaklive_reliable_trace_replay"
+        ],
+        "req": [
+          "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive"
+        ],
+        "task": [
+          "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch.md",
+      "ref": "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Tests demonstrate correct frame values for sanitized decimal-base and hexadecimal-base ASC fixtures, plus PCAN-View text TRC fixtures, including event and malformed-line handling.",
+          "- AC2: The replay worker exposes bounded, monotonic loading/progress and diagnostic information without a queued callback per source anomaly or an unbounded number of unrendered frame batches.",
+          "- AC3: During a synthetic sustained replay, a scheduled UI action executes within a documented bound and can cancel or replace replay; stale callbacks cannot mutate the replacement session.",
+          "- AC4: A replay larger than trace-table capacity remains bounded in retained records and UI work while preserving the documented session/report semantics and a truthful unsupported-record summary.",
+          "- AC5: Existing ASC/TRC unit tests, normal trace-open UI behavior, filters, graphs, reports, and cancellation/close lifecycle tests continue to pass on Linux and Windows CI."
+        ],
+        "Problem": [
+          "- The line parser assumes hexadecimal identifiers and bytes even when ASC metadata declares decimal base, producing replay anomalies instead of frames for representative decimal captures.",
+          "- The replay worker delivers high-frequency frame batches and anomaly/status events directly across Qt queued connections. UI rendering can therefore be overwhelmed even though file reading itself is incremental.",
+          "- The active replay replacement path waits synchronously for a worker and does not protect a newly opened trace from stale callbacks."
+        ]
+      },
+      "status": "Ready",
+      "title": "Diagnose and correct ASC/TRC normalization and responsive replay dispatch"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch"
+        ],
+        "prod": [
+          "prod_008_peaklive_reliable_trace_replay"
+        ],
+        "req": [
+          "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive"
+        ],
+        "task": [
+          "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+        ]
+      },
+      "path": "logics/product/prod_008_peaklive_reliable_trace_replay.md",
+      "ref": "prod_008_peaklive_reliable_trace_replay",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive reliable trace replay"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, reliable, bounded, responsive, peaklive, asc, trc, trace, loading",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch"
+        ],
+        "prod": [
+          "prod_008_peaklive_reliable_trace_replay"
+        ],
+        "req": [
+          "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive"
+        ],
+        "task": [
+          "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+        ]
+      },
+      "path": "logics/tasks/task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading.md",
+      "ref": "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver reliable, bounded, and responsive PeakLive ASC/TRC trace loading"
+    }
+  ],
+  "estimates": {
+    "char_count": 8771,
+    "companion_doc_count": 1,
+    "doc_count": 4
+  },
+  "generated_at": "2026-08-28T08:50:20Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive",
+      "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch",
+      "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 267
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive,item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch,task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading",
+  "refs": [
+    "req_008_diagnose_and_make_peaklive_asc_trc_trace_loading_reliable_and_responsive",
+    "item_035_diagnose_and_correct_asc_trc_normalization_and_responsive_replay_dispatch",
+    "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading.md",
+      "ref": "task_009_deliver_reliable_bounded_and_responsive_peaklive_asc_trc_trace_loading"
+    }
+  ]
+}

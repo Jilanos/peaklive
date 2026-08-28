@@ -1,0 +1,102 @@
+{
+  "title": "Diagnose and make PeakLive ASC/TRC trace loading reliable and responsive",
+  "references": [
+    "src/peaklive/analysis/replay.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/panels/trace_view.py",
+    "src/peaklive/analysis/trace.py",
+    "tests/test_replay.py",
+    "tests/test_replay_worker.py",
+    "tests/test_ui_analyst.py",
+    "tests/test_ui_lifecycle.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Reliable and responsive trace replay",
+    "needs": [
+      "An operator must be able to open supported ASC and PCAN-View text TRC captures and obtain a correct, responsive replay regardless of capture size.",
+      "When a capture contains unsupported or malformed records, the application must explain the outcome without flooding the UI or making the trace unusable.",
+      "Trace loading must preserve the existing bounded-memory workspace and must be safely cancellable or replaceable by another trace selection."
+    ],
+    "context": [
+      "ReplayWorker incrementally iterates a selected ASC or TRC file, but emits every 512-frame batch and every event through queued Qt signals directly to UI rendering. Unlike live acquisition, replay has no presentation coalescing or generation guard.",
+      "The UI path renders each replay batch into the bounded trace, graph, report, and decoded-series projections. A large number of queued batches or status/anomaly events can therefore defer user input and make even small captures appear to hang.",
+      "Representative local captures include PCAN-View text TRC and Vector-style ASC variants using both `base hex` and `base dec`, with status and ErrorFrame records. Parsing a 10,000-record slice of one decimal ASC yielded 9,842 replay anomalies, 157 status events, and one error event, with no parsed data frames; this indicates that decimal payload interpretation is not currently supported correctly.",
+      "The supported PCAN-View TRC sample parses predominantly as frames, so the investigation must distinguish parser-format defects from replay dispatch and UI-projection responsiveness defects.",
+      "The current trace table is bounded, but replay correctness and responsiveness must be validated using sanitized, repository-owned fixtures rather than the externally supplied captures."
+    ],
+    "acceptance_criteria": [
+      "AC1: A documented diagnosis identifies, with focused automated evidence, whether each supported ASC/TRC variant fails during parsing, worker dispatch, UI projection, cancellation, or more than one stage; the final user-visible outcome is deterministic.",
+      "AC2: Supported Vector-style ASC captures in both declared hexadecimal and decimal bases, including Rx/Tx data frames, ErrorFrame records, and status records, normalize to correct CAN frames/events without silently treating decimal bytes or identifiers as hexadecimal.",
+      "AC3: Supported PCAN-View text TRC captures normalize frame timestamps, identifiers, payloads, directions, and malformed-record diagnostics correctly, without regressing existing classic CAN or extended-ID support.",
+      "AC4: Opening a supported trace keeps the Qt event loop responsive, gives visible loading progress, and does not allow accumulated frame or anomaly notifications to starve Cancel, Open Trace, window-close, or ordinary UI interaction.",
+      "AC5: Replay memory and UI work remain bounded for captures larger than the trace-table capacity; a full replay does not require loading the file or all decoded records into memory, and display projection is coalesced or otherwise rate-limited without corrupting the retained session facts contract.",
+      "AC6: Replacing or cancelling an active replay is generation-safe: stale frames/events cannot alter the newly selected trace, controls settle predictably, and no worker is destroyed while still running.",
+      "AC7: Unsupported lines remain observable through a bounded, actionable diagnostic summary that includes count and representative location/reason, rather than generating an unbounded row/event stream or concealing data loss.",
+      "AC8: Automated parser, worker, and offscreen UI tests use compact sanitized ASC/TRC fixtures plus synthetic high-volume streams to cover base selection, malformed records, progress, cancellation/replacement, event-loop responsiveness, bounded memory, and regression of existing replay behavior."
+    ]
+  },
+  "product": {
+    "title": "PeakLive reliable trace replay",
+    "overview": "A replay reliability enhancement that correctly normalizes supported ASC and TRC capture variants while keeping trace loading interactive, bounded, cancellable, and diagnostically transparent.",
+    "goals": [
+      "Correctly interpret supported capture formats according to their declared encoding and record semantics.",
+      "Keep the desktop UI responsive throughout parsing, replay projection, cancellation, and replacement.",
+      "Bound replay memory, queued UI work, and malformed-record diagnostics.",
+      "Provide evidence-backed feedback when a capture contains unsupported records or cannot be fully interpreted."
+    ],
+    "non_goals": [
+      "Add support for proprietary binary trace formats, CAN FD payloads, CAN transmission, or cloud trace storage.",
+      "Change acquisition recording semantics or retroactively repair malformed source captures.",
+      "Guarantee playback timing that reproduces the original bus timing; this scope concerns correct, responsive analysis replay."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Diagnose and correct ASC/TRC normalization and responsive replay dispatch",
+      "priority": "High - trace opening is a core analysis workflow and currently fails to provide reliable results or responsive interaction for representative captures.",
+      "complexity": "High",
+      "theme": "Trace parser and replay reliability",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": [
+        "The line parser assumes hexadecimal identifiers and bytes even when ASC metadata declares decimal base, producing replay anomalies instead of frames for representative decimal captures.",
+        "The replay worker delivers high-frequency frame batches and anomaly/status events directly across Qt queued connections. UI rendering can therefore be overwhelmed even though file reading itself is incremental.",
+        "The active replay replacement path waits synchronously for a worker and does not protect a newly opened trace from stale callbacks."
+      ],
+      "scope_in": [
+        "Characterize representative ASC and TRC grammar variants with sanitized fixtures and an explicit support matrix.",
+        "Parse declared ASC base and normalize valid identifiers/payload bytes with correct decimal or hexadecimal semantics, while retaining valid status, error, direction, remote-frame, and extended-ID behavior.",
+        "Introduce bounded replay progress, presentation dispatch, anomaly aggregation, cancellation, and generation-safe replacement appropriate to the existing PySide6 architecture.",
+        "Preserve bounded trace/series/session projections and make user-visible loading, cancellation, completion, and partial/unsupported outcomes explicit.",
+        "Add parser, worker, and offscreen UI regression coverage including high-volume synthetic replay and event-loop responsiveness assertions."
+      ],
+      "scope_out": [
+        "Binary capture formats, CAN FD, J1939 semantic decoding changes, trace editing, or hardware acquisition changes.",
+        "Loading all replay records into memory solely to calculate progress or diagnostics.",
+        "Suppressing malformed-record evidence merely to improve apparent performance."
+      ],
+      "acceptance_criteria": [
+        "AC1: Tests demonstrate correct frame values for sanitized decimal-base and hexadecimal-base ASC fixtures, plus PCAN-View text TRC fixtures, including event and malformed-line handling.",
+        "AC2: The replay worker exposes bounded, monotonic loading/progress and diagnostic information without a queued callback per source anomaly or an unbounded number of unrendered frame batches.",
+        "AC3: During a synthetic sustained replay, a scheduled UI action executes within a documented bound and can cancel or replace replay; stale callbacks cannot mutate the replacement session.",
+        "AC4: A replay larger than trace-table capacity remains bounded in retained records and UI work while preserving the documented session/report semantics and a truthful unsupported-record summary.",
+        "AC5: Existing ASC/TRC unit tests, normal trace-open UI behavior, filters, graphs, reports, and cancellation/close lifecycle tests continue to pass on Linux and Windows CI."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver reliable, bounded, and responsive PeakLive ASC/TRC trace loading",
+    "plan": [
+      "Create sanitized fixtures and diagnostic tests that reproduce the observed decimal ASC parsing failure, PCAN-View TRC behavior, malformed-record handling, high-volume replay dispatch, and replacement/cancellation races.",
+      "Define and implement the supported ASC/TRC normalization contract, including declared base handling and bounded actionable diagnostics for unsupported records.",
+      "Implement replay lifecycle and presentation backpressure so loading progress, cancellation, replacement, and UI responsiveness remain reliable without unbounded memory or stale worker callbacks.",
+      "Run parser, worker, UI, and full cross-platform validation; record representative evidence, close out the Logics task, and leave the repository commit-ready."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_reliable_asc_trc_trace_loading.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
