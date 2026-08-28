@@ -7,11 +7,12 @@ lands in a deterministic, usable state afterwards.
 """
 
 from threading import Event
+from time import monotonic
 
 from PySide6.QtCore import QTimer
 
 from peaklive.adapters import FakeCanAdapter
-from peaklive.domain import BusEvent, MeasurementProfile
+from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
@@ -59,6 +60,24 @@ class ControlledAdapter(FakeCanAdapter):
         if self.disconnect_error is not None:
             raise RuntimeError(self.disconnect_error)
         return super().disconnect()
+
+
+class BurstAdapter(FakeCanAdapter):
+    """A high-rate bus substitute; no physical CAN adapter is required."""
+
+    def connect(self, profile: MeasurementProfile) -> BusEvent:
+        return super().connect(profile)
+
+    def receive(self, timeout: float) -> CanFrame | None:
+        if not self.connected:
+            return None
+        sequence = next(self._sequence)
+        return CanFrame(
+            timestamp=monotonic(),
+            arbitration_id=0x120 + sequence % 16,
+            data=sequence.to_bytes(8, "little"),
+            channel=self._profile.channel if self._profile else "channel-1",
+        )
 
 
 class EventLoopProbe:
@@ -308,3 +327,31 @@ def test_a_failed_generation_can_be_started_again(qtbot, tmp_path):
 
     window._stop_acquisition()
     qtbot.waitUntil(lambda: window.start_button.isEnabled())
+
+
+# --------------------------------------------------------------------------
+# AC5 - a busy bus cannot starve Stop or the Qt event loop
+# --------------------------------------------------------------------------
+
+
+def test_busy_burst_coalesces_visual_work_so_stop_stays_responsive(qtbot, tmp_path):
+    window, _ = _window(qtbot, tmp_path, BurstAdapter())
+    probe = EventLoopProbe()
+    stop_requested_at: list[float] = []
+
+    window._start_acquisition()
+    qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.RUNNING)
+
+    def request_stop() -> None:
+        stop_requested_at.append(monotonic())
+        window._stop_acquisition()
+
+    # This callback used to sit behind roughly 300 queued frame-render slots.
+    scheduled_at = monotonic() + 0.5
+    QTimer.singleShot(500, request_stop)
+    qtbot.waitUntil(lambda: bool(stop_requested_at), timeout=1_000)
+
+    assert stop_requested_at[0] - scheduled_at < 0.5
+    assert probe.ticks >= 20
+    qtbot.waitUntil(lambda: window.start_button.isEnabled(), timeout=3_000)
+    probe.stop()

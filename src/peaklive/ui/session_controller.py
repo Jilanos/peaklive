@@ -68,8 +68,13 @@ class WorkspaceSession:
             return
         generation = self._lifecycle.begin()
         self._reset_session("")
-        worker = AcquisitionWorker(self._adapter_factory(), self.selected_profile, generation)
-        worker.frames_received.connect(self._render_frames)
+        self._begin_presentation_generation(generation)
+        worker = AcquisitionWorker(
+            self._adapter_factory(),
+            self.selected_profile,
+            generation,
+            self._queue_acquisition_frames,
+        )
         worker.status_changed.connect(self.status.showMessage)
         worker.event_received.connect(self._render_acquisition_event)
         worker.acquisition_failed.connect(self._acquisition_failed)
@@ -84,6 +89,7 @@ class WorkspaceSession:
         if self._worker is None or not self._lifecycle.can_stop:
             return
         self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.STOPPING)
+        self._invalidate_presentation_generation(self._lifecycle.generation)
         self._show_lifecycle_phase()
         self._shutdown_timer.start(self._shutdown_timeout_ms)
         self._worker.request_stop()
@@ -104,6 +110,7 @@ class WorkspaceSession:
             return
         recovered = self._lifecycle.phase is AcquisitionPhase.TIMED_OUT
         self._shutdown_timer.stop()
+        self._invalidate_presentation_generation(generation)
         self._worker = None
         self._end_work()
         if recovered:
@@ -184,6 +191,37 @@ class WorkspaceSession:
         self.progress.setVisible(False)
 
     # ---- ingestion -----------------------------------------------------
+
+    def _begin_presentation_generation(self, generation: int) -> None:
+        """Accept only the newest worker's coalesced visual projection."""
+        with self._presentation_lock:
+            self._presentation_generation = generation
+            self._pending_presentation_frames = []
+        self._presentation_timer.start()
+
+    def _invalidate_presentation_generation(self, generation: int) -> None:
+        """Discard stale rendering work so lifecycle signals are never queued behind it."""
+        with self._presentation_lock:
+            if self._presentation_generation != generation:
+                return
+            self._presentation_generation = None
+            self._pending_presentation_frames = []
+        self._presentation_timer.stop()
+
+    def _queue_acquisition_frames(self, generation: int, frames: list[CanFrame]) -> None:
+        """Replace pending visual work from the worker thread without posting Qt events."""
+        with self._presentation_lock:
+            if self._presentation_generation != generation:
+                return
+            self._pending_presentation_frames = frames
+
+    def _drain_presentation_frames(self) -> None:
+        """Render at most one current batch per UI tick, keeping the event loop fair."""
+        with self._presentation_lock:
+            frames = self._pending_presentation_frames
+            self._pending_presentation_frames = []
+        if frames:
+            self._render_frames(frames)
 
     def _render_frames(self, frames: list[CanFrame]) -> None:
         if frames:
