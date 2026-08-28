@@ -17,17 +17,17 @@ from peaklive.analysis import SeriesStore
 from peaklive.i18n import translate
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
+from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, ZOOM_STEP, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 
 RAW_PREVIEW = "Raw byte 0"
-ZOOM_STEP = 1.6
 
 #: Below this a plot is a strip, not a trace to read against a cursor.
 PLOT_AREA_MINIMUM_HEIGHT = 180
 
 
-class GraphStackPanel(QWidget):
+class GraphStackPanel(GraphNavigation, QWidget):
     """One plot per shown signal on a shared time axis, plus the A/B measurement.
 
     Cursor positions live here, not in the plots: they are placed by the
@@ -44,6 +44,9 @@ class GraphStackPanel(QWidget):
         self.cursor_a: float | None = None
         self.cursor_b: float | None = None
         self.follow_live = True
+        self._axis_mode = AXIS_CAPTURE
+        self._live_extent_end = 0.0
+        self._window_chosen = False
         self._grid = True
         self._plots: dict[str, pg.PlotWidget] = {}
         self._curves: dict[str, pg.PlotDataItem] = {}
@@ -207,8 +210,9 @@ class GraphStackPanel(QWidget):
         bounds = store.bounds()
         if bounds is not None:
             self._seed_cursors(bounds)
-            if self.follow_live:
-                self._apply_follow(bounds)
+        extent = self.global_extent()
+        if extent is not None and self.follow_live:
+            self._apply_follow(extent)
         self.note.setVisible(not has_sample)
         if not has_sample:
             self.note.show_message(translate("graph.empty"), "info")
@@ -227,88 +231,12 @@ class GraphStackPanel(QWidget):
         if changed:
             self._apply_cursor_lines()
 
-    def _apply_follow(self, bounds: tuple[float, float]) -> None:
-        anchor = getattr(self, "anchor_plot", None)
-        if anchor is None:
-            return
-        view = anchor.getViewBox()
-        current = view.viewRange()[0]
-        span = current[1] - current[0]
-        full = bounds[1] - bounds[0]
-        if span <= 0 or span >= full:
-            view.setXRange(bounds[0], bounds[1], padding=0.02)
-            return
-        view.setXRange(bounds[1] - span, bounds[1], padding=0)
-
     # ---- navigation ---------------------------------------------------
 
     def set_grid(self, enabled: bool) -> None:
         self._grid = enabled
         for plot in self._plots.values():
             plot.showGrid(x=enabled, y=enabled, alpha=0.25)
-
-    def zoom(self, factor: float) -> None:
-        anchor = getattr(self, "anchor_plot", None)
-        if anchor is None:
-            return
-        self.set_follow_live(False)
-        view = anchor.getViewBox()
-        low, high = view.viewRange()[0]
-        center = (low + high) / 2
-        span = max((high - low) * factor, 1e-6)
-        view.setXRange(center - span / 2, center + span / 2, padding=0)
-
-    def fit(self) -> None:
-        anchor = getattr(self, "anchor_plot", None)
-        store = self._store
-        if anchor is None or store is None:
-            return
-        bounds = store.bounds()
-        if bounds is None:
-            return
-        anchor.getViewBox().setXRange(bounds[0], bounds[1], padding=0.02)
-        self._refresh_window_label()
-
-    def set_follow_live(self, enabled: bool) -> None:
-        if self.follow_live == enabled:
-            return
-        self.follow_live = enabled
-        self.follow_checkbox.blockSignals(True)
-        self.follow_checkbox.setChecked(enabled)
-        self.follow_checkbox.blockSignals(False)
-
-    def _follow_toggled(self, enabled: bool) -> None:
-        self.follow_live = enabled
-        if enabled:
-            self.refresh_data()
-
-    def visible_window(self) -> tuple[float, float] | None:
-        anchor = getattr(self, "anchor_plot", None)
-        if anchor is None:
-            return None
-        low, high = anchor.getViewBox().viewRange()[0]
-        return float(low), float(high)
-
-    def _x_range_changed(self) -> None:
-        self._refresh_window_label()
-        self.view_changed.emit()
-
-    def _refresh_window_label(self) -> None:
-        store = self._store
-        window = self.visible_window()
-        if store is None or window is None or store.bounds() is None:
-            self.window_label.setText(translate("graph.window_empty"))
-            return
-        low, high = window
-        full_low, full_high = store.bounds()  # type: ignore[misc]
-        full_span = full_high - full_low
-        span = high - low
-        zoom = full_span / span if span > 0 and full_span > 0 else 1.0
-        self.window_label.setText(
-            translate("graph.window").format(
-                start=f"{low:.3f}s", end=f"{high:.3f}s", zoom=f"{zoom:.1f}"
-            )
-        )
 
     # ---- cursors ------------------------------------------------------
 
