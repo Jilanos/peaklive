@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from functools import partial
 from pathlib import Path
+from threading import Lock
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QTimer
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import (
@@ -59,6 +60,12 @@ class WorkspaceSession:
     """
 
     # ---- acquisition and replay ---------------------------------------
+
+    def _init_presentation_queue(self) -> None:
+        self._presentation_lock = Lock()
+        self._presentation_generation: int | None = None
+        self._pending_presentation_frames: list[CanFrame] = []
+        self._presentation_timer: QTimer | None = None
 
     def _start_acquisition(self) -> None:
         """Open a new acquisition generation, or explain why it is refused."""
@@ -197,6 +204,10 @@ class WorkspaceSession:
         with self._presentation_lock:
             self._presentation_generation = generation
             self._pending_presentation_frames = []
+        if self._presentation_timer is None:
+            self._presentation_timer = QTimer(self)
+            self._presentation_timer.setInterval(16)
+            self._presentation_timer.timeout.connect(self._drain_presentation_frames)
         self._presentation_timer.start()
 
     def _invalidate_presentation_generation(self, generation: int) -> None:
@@ -206,7 +217,8 @@ class WorkspaceSession:
                 return
             self._presentation_generation = None
             self._pending_presentation_frames = []
-        self._presentation_timer.stop()
+        if self._presentation_timer is not None:
+            self._presentation_timer.stop()
 
     def _queue_acquisition_frames(self, generation: int, frames: list[CanFrame]) -> None:
         """Replace pending visual work from the worker thread without posting Qt events."""

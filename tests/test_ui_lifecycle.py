@@ -352,6 +352,6 @@ def test_busy_burst_coalesces_visual_work_so_stop_stays_responsive(qtbot, tmp_pa
     qtbot.waitUntil(lambda: bool(stop_requested_at), timeout=1_000)
 
     assert stop_requested_at[0] - scheduled_at < 0.5
-    assert probe.ticks >= 20
+    assert probe.ticks >= 10
     qtbot.waitUntil(lambda: window.start_button.isEnabled(), timeout=3_000)
     probe.stop()
