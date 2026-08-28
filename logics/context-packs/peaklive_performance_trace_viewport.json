@@ -1,0 +1,376 @@
+{
+  "budgets": {
+    "max_docs": 40,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path item_037_support_bounded_on_demand_signal_decoding_after_trace_load item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+          "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+          "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/product/prod_009_peaklive_fast_explorable_and_globally_navigable_traces.md",
+      "ref": "prod_009_peaklive_fast_explorable_and_globally_navigable_traces",
+      "sections": {
+        "Goals": [
+          "- Measure and remove the dominant costs in trace loading and presentation while preserving bounded behavior.",
+          "- Make all supported decoded signals available on demand from one loaded session.",
+          "- Show the complete replay time extent by default and maintain a zero-based expanding global axis during acquisition.",
+          "- Keep cancellation, replacement, filtering, reporting, and bounded retention explicit and reliable."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A performance and analysis-navigation improvement that makes large trace loading measurable and responsive, allows signal exploration after load without reparsing, and gives analysts a truthful full-capture time view for replay and acquisition."
+        ],
+        "References": [
+          "- Product back-reference: `req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete`",
+          "- Task back-reference: `task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive fast, explorable, and globally navigable traces"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "audit, peaklive, performance, trace, signal, exploration, time, navigation, complete",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+          "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+          "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ]
+      },
+      "path": "logics/request/req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete.md",
+      "ref": "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A reproducible performance audit measures representative small, medium, and high-volume ASC/TRC loads across parsing, worker dispatch, decoding, trace projection, series projection, graph refresh, and report refresh, with documented budgets and an identified dominant-cost breakdown.",
+          "- AC2: Opening a large supported trace remains responsive under the documented budget: progress is visible, user actions and cancellation are serviced within the responsiveness bound, and no stage performs an accidental eager full-file or unbounded UI projection.",
+          "- AC3: A loaded trace retains sufficient bounded source/session information to add a previously unselected signal without reopening the file; selecting or deselecting signals updates graphs and measurements without resetting the session or duplicating samples.",
+          "- AC4: Signal-on-demand decoding is bounded and deterministic: it reuses parsed/retained data or an explicit indexed cache, reports unavailable/unsupported decode facts clearly, and does not silently require a second trace load.",
+          "- AC5: A completed trace defaults to a view spanning the full available capture extent (from the trace origin to its final timestamp), with an explicit follow-tail control for analysts who want tail behavior.",
+          "- AC6: During acquisition, the X-axis starts at zero and expands monotonically with elapsed session time so the operator can see the global signal history; optional follow-tail navigation remains available without changing the global extent semantics."
+        ],
+        "Needs": [
+          "- An analyst must be able to open large ASC/TRC captures without an unexpectedly long or UI-blocking load phase.",
+          "- After a trace is loaded, selecting a signal that was not initially selected must populate its graph from the loaded trace without reopening or reparsing the file.",
+          "- Trace graphs must offer a complete-capture view instead of defaulting to only the last few seconds, while live acquisition must keep a global X-axis beginning at zero and expand it as data arrives.",
+          "- The project needs an evidence-based performance audit covering parser, worker dispatch, projection, graph refresh, bounded storage, and lifecycle cancellation before optimization changes are accepted."
+        ]
+      },
+      "status": "Draft",
+      "title": "Audit PeakLive performance and make trace signal exploration and time navigation complete"
+    },
+    {
+      "ai_context": {
+        "keywords": "audit, optimize, peaklive, trace, loading, critical, path",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path.md",
+      "ref": "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The audit report identifies stage-level timings and a dominant-cost conclusion for representative trace sizes.",
+          "- AC2: Large-trace opening meets documented latency, responsiveness, progress, cancellation, and bounded-work budgets.",
+          "- AC7: Existing replay, filters, reports, cancellation, replacement, and bounded stores remain regression-free.",
+          "- AC8: Benchmark and UI tests are deterministic and run in CI without external captures."
+        ],
+        "Problem": [
+          "- The application has no stage-level evidence showing whether parse, decode, projection, or graph/report refresh dominates large-trace latency.",
+          "- Replay batches can cause repeated UI projection work even though retained trace and series stores are bounded.",
+          "- A performance change without budgets and responsiveness assertions risks moving the bottleneck or regressing cancellation and replacement."
+        ]
+      },
+      "status": "Ready",
+      "title": "Audit and optimize the PeakLive trace loading critical path"
+    },
+    {
+      "ai_context": {
+        "keywords": "support, bounded, demand, signal, decoding, after, trace, load",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_037_support_bounded_on_demand_signal_decoding_after_trace_load"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_037_support_bounded_on_demand_signal_decoding_after_trace_load.md",
+      "ref": "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC3: A signal selected after load appears from the existing session without reopening or reparsing the trace, and repeated toggles do not duplicate samples.",
+          "- AC4: On-demand decoding is bounded, deterministic, cancellable, and explicit when data is unavailable.",
+          "- AC7: Existing graph, filter, report, replay replacement, and bounded-store behavior remains correct.",
+          "- AC8: Tests prove lazy selection behavior at high volume and across replacement/cancellation races."
+        ],
+        "Problem": [
+          "- SeriesStore currently receives decoded samples only for signals selected during ingestion, leaving later selections without historical data.",
+          "- The UI selection path can rebuild graph definitions but has no bounded source/index contract for deriving a newly selected signal from the loaded session.",
+          "- Reopening the trace would repeat parsing and decoding, reset user state, and amplify the performance problem."
+        ]
+      },
+      "status": "Ready",
+      "title": "Support bounded on-demand signal decoding after trace load"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, full, capture, replay, zero, based, live, time, navigation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation.md",
+      "ref": "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC5: Completed replay opens with the entire retained capture extent visible, with an explicit control to follow the tail.",
+          "- AC6: Acquisition starts at X=0 and expands its global extent monotonically while preserving optional tail-follow navigation.",
+          "- AC7: Existing graph controls, cursors, filters, reports, and acquisition lifecycle behavior remain correct.",
+          "- AC8: Offscreen tests assert full-extent and live-axis semantics for representative and synthetic traces."
+        ],
+        "Problem": [
+          "- Completed trace graphs follow the newest data and commonly show only the last few seconds instead of the full capture extent.",
+          "- Live acquisition does not consistently expose a stable X-axis origin at zero while the session grows.",
+          "- Tail-follow, fit-to-data, and global extent are not expressed as distinct operator choices, making navigation behavior surprising."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver full-capture replay and zero-based live time navigation"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+          "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+          "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/product/prod_009_peaklive_fast_explorable_and_globally_navigable_traces.md",
+      "ref": "prod_009_peaklive_fast_explorable_and_globally_navigable_traces",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive fast, explorable, and globally navigable traces"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, measured, lazy, globally, navigable, peaklive, trace, workspace",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+          "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+          "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation"
+        ],
+        "prod": [
+          "prod_009_peaklive_fast_explorable_and_globally_navigable_traces"
+        ],
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete"
+        ],
+        "task": [
+          "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+        ]
+      },
+      "path": "logics/tasks/task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace.md",
+      "ref": "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver a measured, lazy, and globally navigable PeakLive trace workspace"
+    }
+  ],
+  "estimates": {
+    "char_count": 13167,
+    "companion_doc_count": 1,
+    "doc_count": 6
+  },
+  "generated_at": "2026-08-28T17:26:44Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete",
+      "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+      "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+      "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation",
+      "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 267
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete,item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path,item_037_support_bounded_on_demand_signal_decoding_after_trace_load,item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation,task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace",
+  "refs": [
+    "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete",
+    "item_036_audit_and_optimize_the_peaklive_trace_loading_critical_path",
+    "item_037_support_bounded_on_demand_signal_decoding_after_trace_load",
+    "item_038_deliver_full_capture_replay_and_zero_based_live_time_navigation",
+    "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace.md",
+      "ref": "task_010_deliver_a_measured_lazy_and_globally_navigable_peaklive_trace_workspace"
+    }
+  ]
+}
