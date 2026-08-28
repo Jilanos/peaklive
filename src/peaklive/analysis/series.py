@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from bisect import bisect_left, bisect_right
 from collections import deque
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from typing import Any
 
 DEFAULT_CAPACITY = 20_000
@@ -18,7 +18,15 @@ class SignalSeries:
     value distribution instead of meaningless arithmetic.
     """
 
-    __slots__ = ("_capacity", "_times", "_unit", "_values")
+    __slots__ = (
+        "_capacity",
+        "_numeric_snapshot",
+        "_time_snapshot",
+        "_times",
+        "_unit",
+        "_value_snapshot",
+        "_values",
+    )
 
     def __init__(self, capacity: int = DEFAULT_CAPACITY, unit: str | None = None) -> None:
         if capacity < 1:
@@ -27,6 +35,13 @@ class SignalSeries:
         self._times: deque[float] = deque(maxlen=capacity)
         self._values: deque[Any] = deque(maxlen=capacity)
         self._unit = unit
+        # A deque is the right shape for bounded appends but the wrong shape
+        # for the plots, which want indexable lists. Every refresh used to copy
+        # the whole deque twice per curve; the snapshots make that cost
+        # proportional to change instead of to refresh count.
+        self._time_snapshot: list[float] | None = None
+        self._value_snapshot: list[Any] | None = None
+        self._numeric_snapshot: list[float] | None = None
 
     @property
     def capacity(self) -> int:
@@ -39,26 +54,48 @@ class SignalSeries:
     def append(self, timestamp: float, value: Any) -> None:
         self._times.append(float(timestamp))
         self._values.append(value)
+        self._invalidate()
+
+    def extend(self, samples: Iterable[tuple[float, Any]]) -> None:
+        """Append many samples, invalidating the snapshots exactly once."""
+        for timestamp, value in samples:
+            self._times.append(float(timestamp))
+            self._values.append(value)
+        self._invalidate()
 
     def clear(self) -> None:
         self._times.clear()
         self._values.clear()
+        self._invalidate()
+
+    def _invalidate(self) -> None:
+        self._time_snapshot = None
+        self._value_snapshot = None
+        self._numeric_snapshot = None
 
     def __len__(self) -> int:
         return len(self._times)
 
     @property
     def times(self) -> list[float]:
-        return list(self._times)
+        if self._time_snapshot is None:
+            self._time_snapshot = list(self._times)
+        return self._time_snapshot
 
     @property
     def values(self) -> list[Any]:
-        return list(self._values)
+        if self._value_snapshot is None:
+            self._value_snapshot = list(self._values)
+        return self._value_snapshot
 
     @property
     def numeric_values(self) -> list[float]:
         """Return plottable values, substituting 0.0 for non-numeric samples."""
-        return [float(value) if _is_numeric(value) else 0.0 for value in self._values]
+        if self._numeric_snapshot is None:
+            self._numeric_snapshot = [
+                float(value) if _is_numeric(value) else 0.0 for value in self._values
+            ]
+        return self._numeric_snapshot
 
     @property
     def is_numeric(self) -> bool:
@@ -133,6 +170,28 @@ class SeriesStore:
         relative = float(timestamp) - self._origin
         self.ensure(name, unit).append(relative, value)
         return relative
+
+    def replace(
+        self, name: str, samples: Iterable[tuple[float, Any]], unit: str | None = None
+    ) -> int:
+        """Rebuild one series from absolute-timestamped samples.
+
+        Rebuilding rather than appending is what makes a backfill idempotent:
+        selecting the same signal twice produces the same series instead of a
+        doubled one. The store's origin is preserved so a backfilled signal
+        shares the time base of the ones ingested live.
+        """
+        series = SignalSeries(self._capacity, unit)
+        origin = self._origin
+        count = 0
+        for timestamp, value in samples:
+            if origin is None:
+                origin = float(timestamp)
+            series.append(float(timestamp) - origin, value)
+            count += 1
+        self._origin = origin
+        self._series[name] = series
+        return count
 
     def drop(self, name: str) -> None:
         self._series.pop(name, None)

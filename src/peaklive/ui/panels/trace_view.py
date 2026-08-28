@@ -216,16 +216,11 @@ class TraceViewPanel(QWidget):
             self._clear_selection()
         overflow = self.table.rowCount() - buffer.capacity
         if overflow > 0:
-            # Trim the aged-out head in one pass instead of one removal per row.
-            retained = [
-                [self.table.takeItem(row, column) for column in range(self.table.columnCount())]
-                for row in range(overflow, self.table.rowCount())
-            ]
-            self.table.setRowCount(len(retained))
-            for row, cells in enumerate(retained):
-                for column, item in enumerate(cells):
-                    if item is not None:
-                        self.table.setItem(row, column, item)
+            # Drop the aged-out head through the model in one operation. Moving
+            # the surviving cells up by hand instead costs one take/set pair per
+            # retained cell on every ingested batch, which is the whole visible
+            # window rewritten hundreds of times during a large replay.
+            self.table.model().removeRows(0, overflow)
         self.table.blockSignals(False)
         filtered_total = len(buffer)
         self._refresh_state(

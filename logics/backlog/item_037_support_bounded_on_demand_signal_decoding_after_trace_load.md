@@ -1,13 +1,14 @@
 ## item_037_support_bounded_on_demand_signal_decoding_after_trace_load - Support bounded on-demand signal decoding after trace load
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: Lazy signal exploration and session reuse
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-28 19:31:55
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
