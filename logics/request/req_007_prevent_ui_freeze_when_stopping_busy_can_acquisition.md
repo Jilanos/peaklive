@@ -1,13 +1,13 @@
 ## req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition - Prevent the UI from freezing when stopping a busy CAN acquisition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: A controlled 20,000-frame burst showed unbounded queued UI frame updates delaying Stop from 0.5 s to 7.7 s and starving the UI timer for about 18 s.
 > Confidence: 95
 > Complexity: M
 > Theme: Acquisition responsiveness
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-28 09:29:14
+> Indicators reviewed: 2026-08-28 09:46:31
 
 # AI Context
 - Summary: Preserve lossless acquisition and recording while ensuring a busy bus cannot starve the GUI event loop or delay Stop.

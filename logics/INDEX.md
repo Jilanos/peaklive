@@ -31,7 +31,7 @@ _None_
 | [req_004_make_trace_filtering_responsive_at_1024_px_workspace_width](request/req_004_make_trace_filtering_responsive_at_1024_px_workspace_width.md) | Make trace filtering responsive at 1024 px workspace width | Done |  |  | request/req_004_make_trace_filtering_responsive_at_1024_px_workspace_width.md |
 | [req_005_make_the_peaklive_workspace_graph_centric_and_compact](request/req_005_make_the_peaklive_workspace_graph_centric_and_compact.md) | Make the PeakLive workspace graph-centric and compact | Done |  |  | request/req_005_make_the_peaklive_workspace_graph_centric_and_compact.md |
 | [req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification](request/req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification.md) | Keep PeakLive responsive during acquisition, DBC changes, and test-build verification | Done |  |  | request/req_006_keep_peaklive_responsive_during_acquisition_dbc_changes_and_test_build_verification.md |
-| [req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition](request/req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Draft |  |  | request/req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition.md |
+| [req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition](request/req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Done |  |  | request/req_007_prevent_ui_freeze_when_stopping_busy_can_acquisition.md |
 
 ## Backlog
 
@@ -70,7 +70,7 @@ _None_
 | [item_031_move_dbc_catalog_mutations_off_the_ui_critical_path](backlog/item_031_move_dbc_catalog_mutations_off_the_ui_critical_path.md) | Move DBC catalog mutations off the UI critical path | Done |  | 100% | backlog/item_031_move_dbc_catalog_mutations_off_the_ui_critical_path.md |
 | [item_032_expose_a_trustworthy_in_application_build_identifier](backlog/item_032_expose_a_trustworthy_in_application_build_identifier.md) | Expose a trustworthy in-application build identifier | Done |  | 100% | backlog/item_032_expose_a_trustworthy_in_application_build_identifier.md |
 | [item_033_make_trace_filtering_responsive_at_1024_px_workspace_width](backlog/item_033_make_trace_filtering_responsive_at_1024_px_workspace_width.md) | Make trace filtering responsive at 1024 px workspace width | Done |  | 100% | backlog/item_033_make_trace_filtering_responsive_at_1024_px_workspace_width.md |
-| [item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition](backlog/item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Ready |  | 0% | backlog/item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md |
+| [item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition](backlog/item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Done |  | 100% | backlog/item_034_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md |
 
 ## Tasks
 
@@ -83,7 +83,7 @@ _None_
 | [task_005_implement_the_peaklive_graph_centric_compact_workspace](tasks/task_005_implement_the_peaklive_graph_centric_compact_workspace.md) | Implement the PeakLive graph-centric compact workspace | Done | Codex | 100% | tasks/task_005_implement_the_peaklive_graph_centric_compact_workspace.md |
 | [task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity](tasks/task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity.md) | Deliver responsive PeakLive lifecycle, DBC operations, and build identity | Done | rose@circle-mobility.com | 100% | tasks/task_006_deliver_responsive_peaklive_lifecycle_dbc_operations_and_build_identity.md |
 | [task_007_make_trace_filtering_responsive_at_1024_px_workspace_width](tasks/task_007_make_trace_filtering_responsive_at_1024_px_workspace_width.md) | Make trace filtering responsive at 1024 px workspace width | Done | codex | 100% | tasks/task_007_make_trace_filtering_responsive_at_1024_px_workspace_width.md |
-| [task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition](tasks/task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Ready |  | 0% | tasks/task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md |
+| [task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition](tasks/task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md) | Prevent the UI from freezing when stopping a busy CAN acquisition | Done | Codex | 100% | tasks/task_008_prevent_the_ui_from_freezing_when_stopping_a_busy_can_acquisition.md |
 
 ## Runbooks
 
