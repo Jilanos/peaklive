@@ -131,6 +131,10 @@ def test_the_graphs_repaint_once_per_tick_rather_than_once_per_batch(qtbot, tmp_
 
     assert repaints == []
     window._flush_presentation()
+    # Trace projection owns the first tick; a dirty graph refresh is deferred
+    # to the following one so a single event-loop turn stays interactive.
+    assert repaints == []
+    window._flush_presentation()
     assert len(repaints) == 1
 
 
