@@ -1,0 +1,284 @@
+{
+  "budgets": {
+    "max_docs": 24,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface task_011_implement_the_compact_aligned_peaklive_graph_presentation --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface"
+        ],
+        "prod": [
+          "prod_010_peaklive_compact_aligned_measurement_graphs"
+        ],
+        "req": [
+          "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour"
+        ],
+        "task": [
+          "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+        ]
+      },
+      "path": "logics/product/prod_010_peaklive_compact_aligned_measurement_graphs.md",
+      "ref": "prod_010_peaklive_compact_aligned_measurement_graphs",
+      "sections": {
+        "Goals": [
+          "- Make the full graph command set immediately available in a compact single-row header.",
+          "- Make stacked signal lanes share a visibly exact time geometry.",
+          "- Eliminate scrolling and whitespace artefacts that interrupt trace comparison.",
+          "- Preserve current measurement and navigation behaviour while improving presentation quality."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A precision refinement of the native graph workspace that turns its controls and stacked signal lanes into one compact, aligned measurement surface. It retains the existing graph-centric interaction model while making visual hierarchy, axis geometry, and scrolling behaviour predictable."
+        ],
+        "References": [
+          "- Product back-reference: `req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour`",
+          "- Task back-reference: `task_011_implement_the_compact_aligned_peaklive_graph_presentation`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive compact aligned measurement graphs"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "refine, peaklive, graph, header, axis, alignment, scrolling, behaviour",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface"
+        ],
+        "prod": [
+          "prod_010_peaklive_compact_aligned_measurement_graphs"
+        ],
+        "req": [
+          "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour"
+        ]
+      },
+      "path": "logics/request/req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour.md",
+      "ref": "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: At 1024x768, 1280x720, and 1600x900, the normal graph view exposes its view navigation, grid/follow options, cursor actions, live window/readout, and relevant graph actions in one compact header row with no overlap, clipping, or hidden command; compact icons may replace redundant text only when each action retains an accessible name and tooltip.",
+          "- AC2: With two or more shown signals, every lane's drawable plot rectangle starts at the same X coordinate and ends at the same X coordinate; left-axis columns, time-grid lines, A/B cursor lines, and the visible X range are visually aligned across the full graph stack.",
+          "- AC3: Each signal remains individually identifiable and its Y-scale remains readable without allowing a long signal name or Y-axis label to shift a neighbouring lane's plot origin.",
+          "- AC4: The normal graph surface has no nested or lane-by-lane vertical scrolling, no clipped lanes, and no unintended blank bands; it allocates the available graph height deterministically across visible lanes while the shared time range is navigated through the graph controls and pointer gestures.",
+          "- AC5: Fit, zoom, pointer pan, grid toggle, follow-live, A/B cursor placement and dragging, cursor measurements, Trace/Report access, and saved layout state retain their current semantics after the presentation refinement.",
+          "- AC6: Offscreen regression coverage proves header geometry and accessibility, aligned multi-lane axes and view ranges, absence of graph-scroll regressions, supported-resolution layout constraints, and the preserved interactions."
+        ],
+        "Needs": [
+          "- Present every graph command and live readout in one compact graph header, instead of splitting the toolbar into visually disconnected rows.",
+          "- Align the vertical axes, plot boundaries, and time-grid origin of every visible signal lane so stacked signals read as one coordinated instrument.",
+          "- Remove awkward graph-lane scrolling and clipping, giving the operator one stable time surface with predictable zoom, pan, and cursor interaction.",
+          "- Use the supplied target screenshot as a behavioural visual reference for density and hierarchy, without copying its external product identity or implementation."
+        ]
+      },
+      "status": "Draft",
+      "title": "Refine the PeakLive graph header, axis alignment, and scrolling behaviour"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, compact, aligned, non, scrolling, peaklive, graph, surface",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface"
+        ],
+        "prod": [
+          "prod_010_peaklive_compact_aligned_measurement_graphs"
+        ],
+        "req": [
+          "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour"
+        ],
+        "task": [
+          "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+        ]
+      },
+      "path": "logics/backlog/item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface.md",
+      "ref": "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: All graph commands and state readouts are wholly contained in one compact header row with no overlap, clipping, or wrapping at 1024x768, 1280x720, and 1600x900; each icon-only control remains keyboard reachable, named, and tooltip-backed.",
+          "- AC2: A multi-signal graph has equal left and right drawable bounds for every lane; the time grid and A/B cursor lines line up across lane boundaries to within the device-pixel tolerance defined by the UI tests.",
+          "- AC3: Signal identity and per-lane Y values remain distinguishable, and pathological label/tick widths cannot move one lane's time origin independently of the others.",
+          "- AC4: The graph canvas remains a single non-scrolling surface with one visible time axis. Adding shown signals follows the documented lane-height policy and never introduces nested, per-lane, or accidental vertical scrolling.",
+          "- AC5: Existing fit, zoom, pan, grid, follow-live, cursor, measurement, Trace/Report, persistence, acquisition, decoding, and export tests still pass unchanged unless a presentation-only expectation is intentionally updated.",
+          "- AC6: New offscreen tests cover the three benchmark viewports, full header containment, aligned ViewBox and axis geometry, scroll-bar absence, label stress cases, and retained graph interactions."
+        ],
+        "Problem": [
+          "- Graph commands are split between a workspace header and wrapping control clusters, so the full command set takes disproportionate height and does not read as one tool surface.",
+          "- Independently sized pyqtgraph left axes can shift each lane's drawable rectangle, leaving grid lines and vertical cursor positions visually uncoordinated between signals.",
+          "- The remaining graph composition does not specify a deterministic lane-height and overflow policy, leaving scrolling, clipping, or blank-space regressions possible as shown-signal count changes."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver a compact, aligned, non-scrolling PeakLive graph surface"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface"
+        ],
+        "prod": [
+          "prod_010_peaklive_compact_aligned_measurement_graphs"
+        ],
+        "req": [
+          "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour"
+        ],
+        "task": [
+          "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+        ]
+      },
+      "path": "logics/product/prod_010_peaklive_compact_aligned_measurement_graphs.md",
+      "ref": "prod_010_peaklive_compact_aligned_measurement_graphs",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive compact aligned measurement graphs"
+    },
+    {
+      "ai_context": {
+        "keywords": "implement, compact, aligned, peaklive, graph, presentation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface"
+        ],
+        "prod": [
+          "prod_010_peaklive_compact_aligned_measurement_graphs"
+        ],
+        "req": [
+          "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour"
+        ],
+        "task": [
+          "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+        ]
+      },
+      "path": "logics/tasks/task_011_implement_the_compact_aligned_peaklive_graph_presentation.md",
+      "ref": "task_011_implement_the_compact_aligned_peaklive_graph_presentation",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Implement the compact aligned PeakLive graph presentation"
+    }
+  ],
+  "estimates": {
+    "char_count": 9315,
+    "companion_doc_count": 1,
+    "doc_count": 4
+  },
+  "generated_at": "2026-08-31T13:50:12Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour",
+      "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface",
+      "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 271
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour,item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface,task_011_implement_the_compact_aligned_peaklive_graph_presentation",
+  "refs": [
+    "req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour",
+    "item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface",
+    "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_011_implement_the_compact_aligned_peaklive_graph_presentation.md",
+      "ref": "task_011_implement_the_compact_aligned_peaklive_graph_presentation"
+    }
+  ]
+}
