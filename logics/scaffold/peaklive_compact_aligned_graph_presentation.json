@@ -1,0 +1,105 @@
+{
+  "title": "Refine the PeakLive graph header, axis alignment, and scrolling behaviour",
+  "references": [
+    "logics/external/Capture d'écran 2026-08-31 152034.png",
+    "logics/external/Capture d'écran 2026-08-31 154323.png",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/theme.py",
+    "tests/test_ui_workspace_refinement.py",
+    "tests/test_graph_navigation.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Compact aligned graph presentation",
+    "needs": [
+      "Present every graph command and live readout in one compact graph header, instead of splitting the toolbar into visually disconnected rows.",
+      "Align the vertical axes, plot boundaries, and time-grid origin of every visible signal lane so stacked signals read as one coordinated instrument.",
+      "Remove awkward graph-lane scrolling and clipping, giving the operator one stable time surface with predictable zoom, pan, and cursor interaction.",
+      "Use the supplied target screenshot as a behavioural visual reference for density and hierarchy, without copying its external product identity or implementation."
+    ],
+    "context": [
+      "PeakLive is a native PySide6 CAN-analysis application. The current GraphStackPanel renders X-linked pyqtgraph PlotWidgets in a zero-spacing layout, but each lane sizes its own left axis and the graph commands are grouped in a wrapping FlowLayout above the canvas.",
+      "The observed PeakLive screenshot shows a title/header row separate from navigation, display, and cursor groups. This consumes vertical space and creates an uneven toolbar hierarchy.",
+      "The supplied target screenshot shows the desired direction: a single dense command header, vertically aligned signal lanes, a shared time-reading surface, and measurement content below it.",
+      "Existing graph-centric work removed QScrollArea-driven plot cards and repeated visible X axes. This refinement must preserve that result while correcting remaining geometry and interaction roughness rather than reintroducing scrollable cards.",
+      "PeakLive must retain shown-signal selection, individual Y-axis readability, shared A/B cursors, grid, fit, zoom, follow-live, range measurements, keyboard operation, profile persistence, trace mode, report mode, acquisition, decoding, and exports.",
+      "The current repository has unrelated replay changes and user-supplied external artefacts; delivery must limit implementation edits to the graph presentation scope."
+    ],
+    "acceptance_criteria": [
+      "AC1: At 1024x768, 1280x720, and 1600x900, the normal graph view exposes its view navigation, grid/follow options, cursor actions, live window/readout, and relevant graph actions in one compact header row with no overlap, clipping, or hidden command; compact icons may replace redundant text only when each action retains an accessible name and tooltip.",
+      "AC2: With two or more shown signals, every lane's drawable plot rectangle starts at the same X coordinate and ends at the same X coordinate; left-axis columns, time-grid lines, A/B cursor lines, and the visible X range are visually aligned across the full graph stack.",
+      "AC3: Each signal remains individually identifiable and its Y-scale remains readable without allowing a long signal name or Y-axis label to shift a neighbouring lane's plot origin.",
+      "AC4: The normal graph surface has no nested or lane-by-lane vertical scrolling, no clipped lanes, and no unintended blank bands; it allocates the available graph height deterministically across visible lanes while the shared time range is navigated through the graph controls and pointer gestures.",
+      "AC5: Fit, zoom, pointer pan, grid toggle, follow-live, A/B cursor placement and dragging, cursor measurements, Trace/Report access, and saved layout state retain their current semantics after the presentation refinement.",
+      "AC6: Offscreen regression coverage proves header geometry and accessibility, aligned multi-lane axes and view ranges, absence of graph-scroll regressions, supported-resolution layout constraints, and the preserved interactions."
+    ]
+  },
+  "product": {
+    "title": "PeakLive compact aligned measurement graphs",
+    "overview": "A precision refinement of the native graph workspace that turns its controls and stacked signal lanes into one compact, aligned measurement surface. It retains the existing graph-centric interaction model while making visual hierarchy, axis geometry, and scrolling behaviour predictable.",
+    "goals": [
+      "Make the full graph command set immediately available in a compact single-row header.",
+      "Make stacked signal lanes share a visibly exact time geometry.",
+      "Eliminate scrolling and whitespace artefacts that interrupt trace comparison.",
+      "Preserve current measurement and navigation behaviour while improving presentation quality."
+    ],
+    "non_goals": [
+      "Copy an external application's branding, source code, or complete visual identity.",
+      "Change CAN acquisition, decoding, filtering, exports, signal values, or measurement calculations.",
+      "Add new graph analysis modes, multi-window docking, or a web user interface.",
+      "Redesign Trace filtering or unrelated side-panel workflows."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Deliver a compact, aligned, non-scrolling PeakLive graph surface",
+      "priority": "High - graph comparison is a core analyst workflow, and the current header density, lane geometry, and scrolling make it harder to read and operate.",
+      "complexity": "High",
+      "theme": "Graph presentation geometry",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6"],
+      "problem": [
+        "Graph commands are split between a workspace header and wrapping control clusters, so the full command set takes disproportionate height and does not read as one tool surface.",
+        "Independently sized pyqtgraph left axes can shift each lane's drawable rectangle, leaving grid lines and vertical cursor positions visually uncoordinated between signals.",
+        "The remaining graph composition does not specify a deterministic lane-height and overflow policy, leaving scrolling, clipping, or blank-space regressions possible as shown-signal count changes."
+      ],
+      "scope_in": [
+        "Recompose the graph header and GraphControlsBar into one compact, single-row command surface that keeps all existing graph actions and state readouts available at the supported resolutions.",
+        "Define a shared left-axis/gutter width and apply it after plot labels, tick widths, and signal identity are known, so all PlotWidgets expose identical drawable X bounds and linked time geometry.",
+        "Give lanes a deliberate constrained-height policy that fills the graph viewport without QScrollArea or per-lane scrollbars, repeated X axes, clipped active lanes, or arbitrary inter-lane gaps.",
+        "Retain a single visible time axis and keep signal labels and per-lane Y-scale information legible through bounded elision, tooltips, and accessible names where necessary.",
+        "Preserve and test existing navigation, cursor, grid, follow-live, measurement, mode-switching, keyboard, and persisted-layout behaviours.",
+        "Add stable offscreen structural and geometry tests, plus targeted visual-regression assertions where deterministic pixels are appropriate."
+      ],
+      "scope_out": [
+        "Changing graph data retention, resampling, CAN acquisition, decoding, filtering, export, or measurement mathematics.",
+        "Replicating the target application's branding, exact palette, proprietary controls, or implementation.",
+        "New analysis tools, floating/docked graph panels, or unrelated Trace filter changes."
+      ],
+      "acceptance_criteria": [
+        "AC1: All graph commands and state readouts are wholly contained in one compact header row with no overlap, clipping, or wrapping at 1024x768, 1280x720, and 1600x900; each icon-only control remains keyboard reachable, named, and tooltip-backed.",
+        "AC2: A multi-signal graph has equal left and right drawable bounds for every lane; the time grid and A/B cursor lines line up across lane boundaries to within the device-pixel tolerance defined by the UI tests.",
+        "AC3: Signal identity and per-lane Y values remain distinguishable, and pathological label/tick widths cannot move one lane's time origin independently of the others.",
+        "AC4: The graph canvas remains a single non-scrolling surface with one visible time axis. Adding shown signals follows the documented lane-height policy and never introduces nested, per-lane, or accidental vertical scrolling.",
+        "AC5: Existing fit, zoom, pan, grid, follow-live, cursor, measurement, Trace/Report, persistence, acquisition, decoding, and export tests still pass unchanged unless a presentation-only expectation is intentionally updated.",
+        "AC6: New offscreen tests cover the three benchmark viewports, full header containment, aligned ViewBox and axis geometry, scroll-bar absence, label stress cases, and retained graph interactions."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement the compact aligned PeakLive graph presentation",
+    "plan": [
+      "Capture the current graph-header, PlotWidget, ViewBox, axis, and scrollbar geometry in focused offscreen regression tests at the benchmark resolutions.",
+      "Implement the single-row compact header, preserving direct access, keyboard operation, labels, tooltips, and dynamic readouts.",
+      "Implement a shared axis-gutter and deterministic lane-layout policy, then verify visual alignment and non-scrolling behaviour with multiple signals and stress labels.",
+      "Run targeted and full UI validation, i18n validation for changed copy, and Logics validation; record implementation evidence and close out only after the delivery is complete."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_compact_aligned_graph_presentation.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
