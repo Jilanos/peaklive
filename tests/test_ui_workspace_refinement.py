@@ -36,7 +36,7 @@ from peaklive.ui.panels.graph_controls import (
     ElidingLabel,
     GraphControlsBar,
 )
-from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT
+from peaklive.ui.panels.graph_stack import PLOT_AREA_MINIMUM_HEIGHT, SHARED_LEFT_AXIS_WIDTH
 from peaklive.ui.panels.signal_explorer import (
     ACCESSIBLE_ROLE,
     ACTION_COLUMN_WIDTH,
@@ -622,6 +622,9 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
     bar = window.graph_panel.controls
 
     assert bar.isVisible()
+    assert bar.mode_selector.isVisible()
+    assert bar.mode_selector.x() >= 0
+    assert bar.mode_selector.x() + bar.mode_selector.width() <= bar.width() + 1
     for group in bar.groups:
         assert group.isVisible()
         assert group.x() >= 0
@@ -636,6 +639,9 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
     for control in _leaf_controls(bar):
         assert _paints_its_content(control), control.objectName()
         assert control.height() >= control.minimumSizeHint().height()
+        left = control.mapTo(bar, control.rect().topLeft()).x()
+        right = control.mapTo(bar, control.rect().topRight()).x()
+        assert 0 <= left <= right < bar.width(), control.objectName()
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -767,24 +773,27 @@ def test_the_flow_layout_compresses_an_item_wider_than_its_line(qtbot):
     assert wide.width() <= container.width()
 
 
-def test_a_narrow_bar_drops_the_captions_before_squeezing_a_control(qtbot):
-    """Windows metrics compressed a zoom button below its own minimum at 1024."""
+def test_graph_commands_stay_in_one_compact_toolbar_row(qtbot):
+    """The command surface stays one row instead of turning into two headers."""
     bar = GraphControlsBar()
     qtbot.addWidget(bar)
-    bar.setFixedWidth(1400)
+    bar.setFixedWidth(560)
     bar.show()
     qtbot.waitExposed(bar)
-    assert all(caption.isVisible() for caption in bar.captions)
 
-    # setFixedWidth, not resize: the bar has a minimum of its own, and the
-    # squeeze being reproduced is precisely a bar narrower than that.
-    bar.setFixedWidth(240)
-    qtbot.wait(20)
-
-    assert not any(caption.isVisible() for caption in bar.captions)
+    assert bar.layout().count() == 4
     for control in _leaf_controls(bar):
+        assert control.parentWidget().mapTo(bar, control.pos()).y() == 0
         assert _paints_its_content(control), control.objectName()
 
-    bar.setFixedWidth(1400)
+
+def test_multi_signal_lanes_reserve_an_identical_left_axis_gutter(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path, size=(1280, 720))
+    window._selected_signal_names.update({"VehicleStatus.Speed", "VehicleStatus.Rpm"})
+    window._sync_graphs()
     qtbot.wait(20)
-    assert all(caption.isVisible() for caption in bar.captions)
+
+    plots = list(window.graph_panel.plots.values())
+    assert len(plots) == 2
+    assert {plot.getAxis("left").width() for plot in plots} == {SHARED_LEFT_AXIS_WIDTH}
+    assert len({plot.getViewBox().sceneBoundingRect().left() for plot in plots}) == 1
