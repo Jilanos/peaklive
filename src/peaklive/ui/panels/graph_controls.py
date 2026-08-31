@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.i18n import translate
+
 #: What a readout asks for, and the least it will accept. A readout must never
 #: size its cluster to the longest string it might ever hold: font metrics
 #: differ per platform, and a cluster wider than the bar overflows rather than
