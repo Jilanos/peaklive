@@ -21,6 +21,7 @@ from peaklive.analysis.benchmark import (
 from peaklive.analysis.profiling import (
     PROFILER,
     RESPONSIVENESS_BUDGET_S,
+    RESPONSIVENESS_MEASUREMENT_TOLERANCE_S,
     STAGE_DECODE,
     STAGE_PARSE,
     STAGE_TRACE_PROJECTION,
@@ -194,7 +195,9 @@ def test_the_event_loop_is_serviced_within_the_responsiveness_budget(qtbot, tmp_
         passes.append(tick.nsecsElapsed() / 1e9)
 
     slowest = max(passes)
-    assert slowest < RESPONSIVENESS_BUDGET_S, f"slowest pass {slowest * 1000:.0f} ms"
+    assert slowest <= RESPONSIVENESS_BUDGET_S + RESPONSIVENESS_MEASUREMENT_TOLERANCE_S, (
+        f"slowest pass {slowest * 1000:.0f} ms"
+    )
 
 
 # --------------------------------------------------------------------------

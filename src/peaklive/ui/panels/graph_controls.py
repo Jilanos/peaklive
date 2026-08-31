@@ -138,3 +138,22 @@ class GraphControlsBar(QWidget):
     @property
     def groups(self) -> tuple[QWidget, ...]:
         return (self.view_group, self.display_group, self.cursor_group)
+
+    def resizeEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        super().resizeEvent(event)
+        if self.width() <= 0:
+            return
+        # A compact screen must retain every action.  Dynamic text can instead
+        # step down into its tooltip before a layout is allowed to squeeze it
+        # below a readable width (notably with Windows font metrics).
+        self.window_label.setVisible(True)
+        self.cursor_summary.setVisible(True)
+        for readout in (self.window_label, self.cursor_summary):
+            if self._minimum_row_width() > self.width():
+                readout.setVisible(False)
+
+    def _minimum_row_width(self) -> int:
+        widgets = (self.mode_selector, *self.groups)
+        return sum(widget.minimumSizeHint().width() for widget in widgets) + (
+            self.row.spacing() * (len(widgets) - 1)
+        )
