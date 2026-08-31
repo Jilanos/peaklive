@@ -19,8 +19,8 @@ from peaklive.i18n import translate
 #: size its cluster to the longest string it might ever hold: font metrics
 #: differ per platform, and a cluster wider than the bar overflows rather than
 #: wraps.
-READOUT_PREFERRED_WIDTH = 150
-READOUT_MINIMUM_WIDTH = 64
+READOUT_PREFERRED_WIDTH = 96
+READOUT_MINIMUM_WIDTH = 40
 
 
 class ElidingLabel(QLabel):
@@ -76,7 +76,8 @@ class GraphControlsBar(QWidget):
         self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
         self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
         self.mode_selector.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        self.mode_selector.setMinimumContentsLength(8)
+        self.mode_selector.setMinimumContentsLength(5)
+        self.mode_selector.setFixedWidth(76)
         self.row.addWidget(self.mode_selector)
 
         self.view_group, view_row = self._group("graphViewGroup")

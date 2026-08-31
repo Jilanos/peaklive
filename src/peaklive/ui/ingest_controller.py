@@ -215,6 +215,12 @@ class WorkspaceIngest:
             self._trace_resampled = self._trace_resampled or len(pending) > MAX_ROWS_PER_FLUSH
             with PROFILER.stage(STAGE_TRACE_PROJECTION):
                 self.trace_panel.append_records(pending[-MAX_ROWS_PER_FLUSH:])
+            # A table projection and a full curve refresh can independently be
+            # bounded, but combining them in one event-loop turn exceeds the
+            # interaction budget on Windows runners.  Leave the already-dirty
+            # graph for the next timer tick so Stop and pointer input get a
+            # chance to run between the two presentation operations.
+            return
         self._flush_graph_refresh()
 
     def _flush_graph_refresh(self) -> None:
@@ -382,4 +388,3 @@ class WorkspaceIngest:
         if not signals:
             return [], DECODE_UNKNOWN
         return signals, DECODE_DECODED
-
