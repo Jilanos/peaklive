@@ -1,12 +1,12 @@
 ## prod_010_peaklive_compact_aligned_measurement_graphs - PeakLive compact aligned measurement graphs
 > Date: 2026-08-31
-> Status: Proposed
+> Status: Settled
 > Related request: `req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour`
 > Related backlog: `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`
 > Related task: `task_011_implement_the_compact_aligned_peaklive_graph_presentation`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-31 15:50:43
+> Indicators reviewed: 2026-08-31 16:11:37
 
 # Overview
 A precision refinement of the native graph workspace that turns its controls and stacked signal lanes into one compact, aligned measurement surface. It retains the existing graph-centric interaction model while making visual hierarchy, axis geometry, and scrolling behaviour predictable.
@@ -44,5 +44,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour`
+- Product back-reference: `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`
 - Task back-reference: `task_011_implement_the_compact_aligned_peaklive_graph_presentation`

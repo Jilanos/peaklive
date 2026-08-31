@@ -1,13 +1,13 @@
 ## req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour - Refine the PeakLive graph header, axis alignment, and scrolling behaviour
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Compact aligned graph presentation
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-08-31 15:50:42
+> Indicators reviewed: 2026-08-31 16:11:36
 
 # AI Context
 - Summary: Define the compact graph toolbar and shared lane geometry that make simultaneous signals read as a single time-aligned measurement surface.

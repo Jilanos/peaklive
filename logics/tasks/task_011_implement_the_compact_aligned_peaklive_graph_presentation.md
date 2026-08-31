@@ -1,14 +1,14 @@
 ## task_011_implement_the_compact_aligned_peaklive_graph_presentation - Implement the compact aligned PeakLive graph presentation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 90%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-08-31 16:02:46
+> Indicators reviewed: 2026-08-31 16:11:36
 > Owner: Codex
 
 # AI Context
@@ -21,36 +21,42 @@
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
 # Plan
-- [ ] 1. Capture the current graph-header, PlotWidget, ViewBox, axis, and scrollbar geometry in focused offscreen regression tests at the benchmark resolutions.
-- [ ] 2. Implement the single-row compact header, preserving direct access, keyboard operation, labels, tooltips, and dynamic readouts.
-- [ ] 3. Implement a shared axis-gutter and deterministic lane-layout policy, then verify visual alignment and non-scrolling behaviour with multiple signals and stress labels.
-- [ ] 4. Run targeted and full UI validation, i18n validation for changed copy, and Logics validation; record implementation evidence and close out only after the delivery is complete.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
-- [ ] Keep commit creation under operator control; do not force one commit per micro-step.
-- [ ] GATE: do not close until lint, audit, and scaffold validation pass.
+- [x] 1. Capture the current graph-header, PlotWidget, ViewBox, axis, and scrollbar geometry in focused offscreen regression tests at the benchmark resolutions.
+- [x] 2. Implement the single-row compact header, preserving direct access, keyboard operation, labels, tooltips, and dynamic readouts.
+- [x] 3. Implement a shared axis-gutter and deterministic lane-layout policy, then verify visual alignment and non-scrolling behaviour with multiple signals and stress labels.
+- [x] 4. Run targeted and full UI validation, i18n validation for changed copy, and Logics validation; record implementation evidence and close out only after the delivery is complete.
+- [x] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
+- [x] Keep commit creation under operator control; do not force one commit per micro-step.
+- [x] GATE: do not close until lint, audit, and scaffold validation pass.
 
 # Backlog
 - `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`
 
 # Definition of Done (DoD)
-- [ ] Generated request, product, backlog, and task docs are present.
-- [ ] Context-pack handoff is available when requested.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] Generated request, product, backlog, and task docs are present.
+- [x] Context-pack handoff is available when requested.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # AC Traceability
-- request-AC1 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
-- request-AC2 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
-- request-AC3 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
-- request-AC4 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
-- request-AC5 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
-- request-AC6 -> `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`. Proof deferred to slice closeout.
+- request-AC1 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
+- request-AC2 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
+- request-AC3 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
+- request-AC4 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
+- request-AC5 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
+- request-AC6 -> This task. Proof: Implemented in 8c7a946; validated with uv run python -m pytest -q and uv run ruff check .. Source: `8c7a946`
 
 # Validation
 - (no validation recorded yet)
+- command: `uv run python -m pytest -q && uv run ruff check . && logics-manager i18n validate` | result: passed | date: 2026-08-31
+- Finish workflow executed on 2026-08-31.
+- Linked backlog/request close verification passed.
 
 # Report
 - Not started.
+- Finished on 2026-08-31.
+- Linked backlog item(s): `item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface`
+- Related request(s): `req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour`
 
 # Links
 - Request: `req_010_refine_the_peaklive_graph_header_axis_alignment_and_scrolling_behaviour`

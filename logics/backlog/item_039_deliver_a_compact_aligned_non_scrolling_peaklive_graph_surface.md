@@ -1,14 +1,14 @@
 ## item_039_deliver_a_compact_aligned_non_scrolling_peaklive_graph_surface - Deliver a compact, aligned, non-scrolling PeakLive graph surface
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 90%
+> Progress: 100%
 > Complexity: High
 > Theme: Graph presentation geometry
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-31 16:02:46
+> Indicators reviewed: 2026-08-31 16:11:37
 
 # AI Context
 - Summary: Deliver one dense command header and one time-aligned lane stack, using a shared axis gutter and an explicit no-scroll height policy.
@@ -63,3 +63,9 @@
 # Priority
 - Priority: High - graph comparison is a core analyst workflow, and the current header density, lane geometry, and scrolling make it harder to read and operate.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_011_implement_the_compact_aligned_peaklive_graph_presentation`
+
+# Notes
+- Task `task_011_implement_the_compact_aligned_peaklive_graph_presentation` was finished via `logics-manager flow finish task` on 2026-08-31.
