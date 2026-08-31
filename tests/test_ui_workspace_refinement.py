@@ -642,6 +642,9 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
         right = control.mapTo(bar, control.rect().topRight()).x()
         assert 0 <= left <= right < bar.width(), control.objectName()
 
+    assert bar.window_label.isVisible() or bar.window_label.toolTip()
+    assert bar.cursor_summary.isVisible() or bar.cursor_summary.toolTip()
+
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
 def test_the_graph_area_keeps_a_usable_height_at_the_bench_viewports(qtbot, tmp_path, size):
