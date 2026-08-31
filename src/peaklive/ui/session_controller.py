@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QTimer
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import DbcSummary
@@ -18,6 +18,11 @@ from peaklive.services.worker import AcquisitionWorker
 
 #: How long the shell waits for a worker shutdown before declaring it degraded.
 SHUTDOWN_TIMEOUT_MS = 5_000
+
+# A replay batch is deliberately handled on its own event-loop turn.  Qt can
+# otherwise dispatch several queued cross-thread signals in one processEvents
+# call, making the UI ingest four 512-frame batches before pointer/Stop input.
+REPLAY_PRESENTATION_INTERVAL_MS = 1
 
 #: Worker threads the shell has stopped listening to but that are still running.
 #:
@@ -153,10 +158,17 @@ class WorkspaceSession:
         if previous is not None and previous.isRunning():
             previous.request_stop()
             abandon_worker(previous)
+        self._clear_pending_replay_batches()
+        self._pending_replay_finish_generation: int | None = None
         generation = getattr(self, "_replay_generation", 0) + 1
         self._replay_generation = generation
         self._reset_session(path.name)
         self._replay_worker = ReplayWorker(path)
+        self._pending_replay_batches: list[tuple[int, ReplayWorker, list[CanFrame]]] = []
+        self._replay_presentation_timer = QTimer(self)
+        self._replay_presentation_timer.setSingleShot(True)
+        self._replay_presentation_timer.setInterval(REPLAY_PRESENTATION_INTERVAL_MS)
+        self._replay_presentation_timer.timeout.connect(self._drain_replay_batch)
         self._replay_worker.frames_received.connect(
             partial(self._replay_frames_for_generation, generation, self._replay_worker)
         )
@@ -182,11 +194,32 @@ class WorkspaceSession:
     ) -> None:
         if generation != getattr(self, "_replay_generation", 0):
             return
-        self._ingest_frames(frames, coalesce=True)
-        self._mark_graphs_dirty()
-        # Acknowledging here, and only here, is what holds the parser to a few
-        # batches ahead of the display.
+        self._pending_replay_batches.append((generation, worker, frames))
+        if not self._replay_presentation_timer.isActive():
+            self._replay_presentation_timer.start()
+
+    def _drain_replay_batch(self) -> None:
+        """Ingest one worker batch, then yield before accepting the next one."""
+        if not self._pending_replay_batches:
+            return
+        generation, worker, frames = self._pending_replay_batches.pop(0)
+        if generation == getattr(self, "_replay_generation", 0):
+            self._ingest_frames(frames, coalesce=True)
+            self._mark_graphs_dirty()
+        # Acknowledge only after this batch was processed: this keeps at most
+        # MAX_PENDING_BATCHES in the worker/UI hand-off path.
         worker.batch_rendered()
+        if self._pending_replay_batches:
+            self._replay_presentation_timer.start()
+        elif getattr(self, "_pending_replay_finish_generation", None) == generation:
+            self._pending_replay_finish_generation = None
+            self._complete_replay(generation)
+
+    def _clear_pending_replay_batches(self) -> None:
+        timer = getattr(self, "_replay_presentation_timer", None)
+        if timer is not None:
+            timer.stop()
+        self._pending_replay_batches = []
 
     def _replay_progressed(self, generation: int, done: int, total: int) -> None:
         """Show determinate parse progress for the current replay only."""
@@ -202,7 +235,17 @@ class WorkspaceSession:
     def _replay_finished(self, generation: int) -> None:
         if generation != getattr(self, "_replay_generation", 0):
             return
+        if self._pending_replay_batches or self._replay_presentation_timer.isActive():
+            self._pending_replay_finish_generation = generation
+            return
+        self._complete_replay(generation)
+
+    def _complete_replay(self, generation: int) -> None:
+        """Finalize only after the queued UI projection has consumed every batch."""
+        if generation != getattr(self, "_replay_generation", 0):
+            return
         self.status.showMessage(translate("trace.replay_done"))
+        self._clear_pending_replay_batches()
         self._replay_worker = None
         self._end_work()
         self._settle_presentation()
