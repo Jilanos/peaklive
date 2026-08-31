@@ -1,17 +1,11 @@
-"""The grouped, wrapping control bar above the stacked graphs.
-
-Navigation, display options, and cursor placement are three separate concerns,
-each carrying the readout it drives. Keeping them in labelled clusters that
-wrap as units means a 1024-wide bench screen loses a line of height rather
-than a control.
-"""
+"""The compact, single-row command bar above the stacked graphs."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
-    QCheckBox,
+    QComboBox,
     QHBoxLayout,
     QLabel,
     QSizePolicy,
@@ -20,17 +14,12 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.i18n import translate
-from peaklive.ui.flow_layout import FlowLayout
-
 #: What a readout asks for, and the least it will accept. A readout must never
 #: size its cluster to the longest string it might ever hold: font metrics
 #: differ per platform, and a cluster wider than the bar overflows rather than
 #: wraps.
-READOUT_PREFERRED_WIDTH = 210
-READOUT_MINIMUM_WIDTH = 90
-
-#: Matches the spacing the cluster row uses between its widgets.
-CAPTION_SPACING = 6
+READOUT_PREFERRED_WIDTH = 150
+READOUT_MINIMUM_WIDTH = 64
 
 
 class ElidingLabel(QLabel):
@@ -68,15 +57,28 @@ class ElidingLabel(QLabel):
 
 
 class GraphControlsBar(QWidget):
-    """Zoom, grid, follow-live, cursor, and readout controls in four clusters."""
+    """One dense toolbar for graph navigation, display, cursor, and view mode.
+
+    It deliberately never wraps: wrapping turns a measurement workspace into
+    two unrelated headers. Textual state elides in place, while each compact
+    action retains an accessible name and tooltip.
+    """
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("graphControls")
-        self.flow = FlowLayout(self, spacing=10)
-        self._captions: list[QLabel] = []
+        self.row = QHBoxLayout(self)
+        self.row.setContentsMargins(0, 0, 0, 0)
+        self.row.setSpacing(4)
 
-        self.view_group, view_row = self._group("graph.group_view", "graphViewGroup")
+        self.mode_selector = QComboBox(objectName="workspaceModeSelector")
+        self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
+        self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
+        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+        self.mode_selector.setMinimumContentsLength(8)
+        self.row.addWidget(self.mode_selector)
+
+        self.view_group, view_row = self._group("graphViewGroup")
         self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
         self.zoom_out_button = self._nav("zoomOutButton", "graph.zoom_out", "−")
         self.fit_button = self._nav("fitButton", "graph.fit", "⤢")
@@ -85,13 +87,13 @@ class GraphControlsBar(QWidget):
         self.window_label = self._readout("windowReadout", "graph.window_empty")
         view_row.addWidget(self.window_label)
 
-        self.display_group, display_row = self._group("graph.group_display", "graphDisplayGroup")
-        self.grid_checkbox = self._option("gridCheckbox", "graph.grid")
-        self.follow_checkbox = self._option("followCheckbox", "graph.follow")
+        self.display_group, display_row = self._group("graphDisplayGroup")
+        self.grid_checkbox = self._toggle("gridCheckbox", "graph.grid", "▦")
+        self.follow_checkbox = self._toggle("followCheckbox", "graph.follow", "▶")
         display_row.addWidget(self.grid_checkbox)
         display_row.addWidget(self.follow_checkbox)
 
-        self.cursor_group, cursor_row = self._group("graph.group_cursors", "graphCursorGroup")
+        self.cursor_group, cursor_row = self._group("graphCursorGroup")
         self.cursor_a_button = self._nav("cursorAButton", "graph.cursor_a", "A")
         self.cursor_b_button = self._nav("cursorBButton", "graph.cursor_b", "B")
         cursor_row.addWidget(self.cursor_a_button)
@@ -101,18 +103,14 @@ class GraphControlsBar(QWidget):
 
     # ---- construction -------------------------------------------------
 
-    def _group(self, title_key: str, object_name: str) -> tuple[QWidget, QHBoxLayout]:
-        """One labelled cluster that the flow layout moves as a single item."""
+    def _group(self, object_name: str) -> tuple[QWidget, QHBoxLayout]:
+        """One compact cluster in the fixed single-row toolbar."""
         group = QWidget(self, objectName=object_name)
-        group.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        group.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
         row = QHBoxLayout(group)
         row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(6)
-        caption = QLabel(translate(title_key).upper(), objectName="controlGroupLabel")
-        caption.setAccessibleName(translate(title_key))
-        row.addWidget(caption)
-        self._captions.append(caption)
-        self.flow.addWidget(group)
+        row.setSpacing(3)
+        self.row.addWidget(group)
         return group, row
 
     def _nav(self, object_name: str, key: str, glyph: str) -> QToolButton:
@@ -129,51 +127,12 @@ class GraphControlsBar(QWidget):
         readout.setObjectName(object_name)
         return readout
 
-    def _option(self, object_name: str, key: str) -> QCheckBox:
-        box = QCheckBox(translate(key), objectName=object_name)
-        box.setToolTip(translate(key))
-        box.setAccessibleName(translate(key))
-        box.setChecked(True)
-        return box
+    def _toggle(self, object_name: str, key: str, glyph: str) -> QToolButton:
+        button = self._nav(object_name, key, glyph)
+        button.setCheckable(True)
+        button.setChecked(True)
+        return button
 
     @property
     def groups(self) -> tuple[QWidget, ...]:
         return (self.view_group, self.display_group, self.cursor_group)
-
-    @property
-    def captions(self) -> tuple[QLabel, ...]:
-        return tuple(self._captions)
-
-    # ---- responsive behaviour ------------------------------------------
-
-    def resizeEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
-        super().resizeEvent(event)
-        self._adapt_to_width()
-
-    def _adapt_to_width(self) -> None:
-        """Drop the cluster captions before letting any control clip.
-
-        A narrow bar has to give something up. The caption is the cheapest
-        thing to lose: every control it labels still carries its own tooltip
-        and accessible name, whereas a squeezed button loses its glyph.
-        """
-        if self.width() <= 0:
-            return
-        widest = max(
-            self._uncompacted_minimum(group, caption)
-            for group, caption in zip(self.groups, self._captions, strict=True)
-        )
-        compact = widest > self.width()
-        for caption in self._captions:
-            caption.setVisible(not compact)
-
-    def _uncompacted_minimum(self, group: QWidget, caption: QLabel) -> int:
-        """The width the cluster needs with its caption shown.
-
-        Computed the same way whether or not the caption is currently
-        visible, so the decision cannot oscillate between the two states.
-        """
-        minimum = group.minimumSizeHint().width()
-        if not caption.isVisible():
-            minimum += caption.sizeHint().width() + CAPTION_SPACING
-        return minimum

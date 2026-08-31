@@ -5,7 +5,6 @@ from __future__ import annotations
 import pyqtgraph as pg
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QCheckBox,
     QLabel,
     QSizePolicy,
     QToolButton,
@@ -25,6 +24,10 @@ RAW_PREVIEW = "Raw byte 0"
 
 #: Below this a plot is a strip, not a trace to read against a cursor.
 PLOT_AREA_MINIMUM_HEIGHT = 180
+
+#: Every lane reserves the same left geometry. Without it pyqtgraph sizes
+#: AxisItems from their own ticks and labels, shifting time grids and cursors.
+SHARED_LEFT_AXIS_WIDTH = 88
 
 
 class GraphStackPanel(GraphNavigation, QWidget):
@@ -108,11 +111,11 @@ class GraphStackPanel(GraphNavigation, QWidget):
         return self.controls.cursor_b_button
 
     @property
-    def grid_checkbox(self) -> QCheckBox:
+    def grid_checkbox(self) -> QToolButton:
         return self.controls.grid_checkbox
 
     @property
-    def follow_checkbox(self) -> QCheckBox:
+    def follow_checkbox(self) -> QToolButton:
         return self.controls.follow_checkbox
 
     @property
@@ -154,6 +157,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
             plot.setBackground(theme.PLOT_BACKGROUND)
             plot.showGrid(x=self._grid, y=self._grid, alpha=0.25)
             plot.setLabel("left", signal_name)
+            plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
             plot.setMinimumHeight(0)
             plot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             curve = plot.plot(pen=pg.mkPen(theme.CURVE, width=2))

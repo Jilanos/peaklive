@@ -8,7 +8,7 @@ say the graphs are the workspace and the other two sections resize around them.
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QSplitter
+from PySide6.QtWidgets import QSplitter
 
 from peaklive.i18n import translate
 from peaklive.ui.layout_reflow import (
@@ -31,20 +31,13 @@ class WorkspaceCenter:
 
     def _build_center_panel(self) -> None:
         layout = self.trace_graph_panel.body_layout
-        mode_row = QHBoxLayout()
-        mode_row.addWidget(QLabel(translate("workspace.view").upper()))
-        self.workspace_mode_selector = QComboBox(objectName="workspaceModeSelector")
-        self.workspace_mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
-        self.workspace_mode_selector.setToolTip(translate("workspace.mode_accessible"))
+        self.graph_panel = GraphStackPanel()
+        self.workspace_mode_selector = self.graph_panel.controls.mode_selector
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
-        mode_row.addWidget(self.workspace_mode_selector)
-        mode_row.addStretch(1)
-        layout.addLayout(mode_row)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")
-        self.graph_panel = GraphStackPanel()
         self.graph_panel.cursors_changed.connect(self._persist_layout)
         self.trace_panel = TraceViewPanel()
         self.trace_panel.set_buffer(self._trace)
