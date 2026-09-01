@@ -1,0 +1,469 @@
+{
+  "budgets": {
+    "max_docs": 64,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour item_041_remove_the_unbounded_and_serialized_ui_thread_waits item_042_give_the_acquisition_timeout_an_exit item_043_make_the_replay_and_ingestion_bounds_hold_in_practice item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input item_045_make_export_and_recording_thread_safe_and_bounded task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime --mode full --profile deep",
+  "companion_docs": [],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "eliminate, remaining, peaklive, freezes, dead, ends, silent, failures, found, thread, audit",
+        "skip when": "Adding CAN transmission, adapter vendors, decode or DBC conflict rules, capture formats, retention capacities, or any remote diagnostics; those stay as they are.",
+        "summary": "Corrects the twelve interruption causes found by the UI-thread and threading audit at commit d6605ef: unbounded UI-thread waits, lifecycle states with no exit, absent diagnostics, lost replay backpressure, per-input-event disk and statistics work, and two cross-thread data paths.",
+        "use when": "Working on anything that can stop the Qt event loop, on the acquisition or close lifecycle, on replay backpressure, on input-rate coalescing, or on the export and recording thread boundaries."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+          "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+          "item_042_give_the_acquisition_timeout_an_exit",
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+          "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+          "item_045_make_export_and_recording_thread_safe_and_bounded"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ]
+      },
+      "path": "logics/request/req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit.md",
+      "ref": "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: No UI-thread code path waits on a worker thread without a bounded timeout. Loading a DBC, switching profiles, or starting up while a catalog operation is in flight keeps the Qt event loop processing events, proven by UI-thread tick counting, whatever the parse duration.",
+          "- AC2: A catalog operation in flight can be superseded or cancelled without the UI thread blocking, and whichever operation commits last leaves the catalog, the profile, the DBC panel, the signal explorer, the selection, and the graphs mutually consistent.",
+          "- AC3: Closing the window returns control to the operator within one documented bounded total interval, expressed as a single global budget rather than a sum of per-worker waits, and finalizes or explicitly marks recording evidence.",
+          "- AC4: The process never outlives its last window silently: a worker still running at exit is named in the diagnostic log with its identity and last known phase, and the exit path is documented for the case where an external driver never returns.",
+          "- AC5: A timed-out acquisition shutdown offers an explicit documented operator action that returns the application to a startable state without restarting the process, and states in the UI what remains uncertain about the driver handle.",
+          "- AC6: A slow, absent, or failing adapter connect resolves into a bounded, restartable failure state rather than a phase with no exit, and the Stop request issued during the starting phase is honoured or explained."
+        ],
+        "Needs": [
+          "- Remove every remaining code path where the UI thread stops processing events without a bound, so the operator is never left with a non-responding window that has to be force-closed.",
+          "- Remove the states the application can enter and never leave, so a slow or absent CAN driver never turns a live application into one whose only remaining action is to close it.",
+          "- Give the application a voice: a local diagnostic log and process-wide exception hooks, so a freeze or a half-applied state can be diagnosed after the fact instead of only reproduced.",
+          "- Restore the bounds the responsive-ingestion design already intends but does not hold in practice during a long replay, and keep continuous pointer and keyboard input off the disk and off the statistics path."
+        ]
+      },
+      "status": "Draft",
+      "title": "Eliminate the remaining PeakLive freezes, dead ends, and silent failures found by the UI-thread audit"
+    },
+    {
+      "ai_context": {
+        "keywords": "application, diagnostic, voice, before, changing, behaviour",
+        "skip when": "Adding remote crash reporting, telemetry, an in-application log viewer, or changing the default windowed packaging.",
+        "summary": "Adds the local rotating log, the process-wide and per-thread exception hooks, the guarded profile write, and the console build target, so a freeze or a half-applied state leaves evidence on the operator's machine.",
+        "use when": "Diagnosing why the application wedged with no message, or before landing any other correction in this request, since each one needs evidence."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour.md",
+      "ref": "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The application writes a rotating diagnostic log to a documented local path, records the build identifier and session start, and creates no network dependency.",
+          "- AC2: Process-wide and per-thread exception hooks are installed before the first window is shown; a deliberately raising slot produces a log entry with a traceback and a visible operator note rather than a silent half-applied state.",
+          "- AC3: A deliberately failing profile write surfaces a visible non-fatal note, reaches the log, keeps the in-memory state, and does not terminate the application.",
+          "- AC4: A worker still running at application exit is named in the log with its identity and last known phase.",
+          "- AC5: The runbook documents the log path, the console build target, and the live-attach procedure for capturing a freeze in progress."
+        ],
+        "Problem": [
+          "- There is no logging in src/, no sys.excepthook and no threading.excepthook, and the packaged build has no console, so an unhandled exception in a Qt slot is swallowed into a stderr that does not exist. Verified on PySide6 6.11.2: a slot exception is printed and swallowed, leaving state half-applied, while a virtual-override exception terminates the process.",
+          "- The observable consequence is indistinguishable from a deliberate dead end: an exception swallowed in _acquisition_finished or _worker_phase_changed leaves the lifecycle unsettled, so Start stays disabled with no message and nothing to diagnose from.",
+          "- _save() writes profiles.json with no try/except and is reached from pointer-drag slots, where a scanner lock or a full disk raises OSError on a path the operator will never see."
+        ]
+      },
+      "status": "Ready",
+      "title": "Give the application a diagnostic voice before changing its behaviour"
+    },
+    {
+      "ai_context": {
+        "keywords": "remove, unbounded, serialized, thread, waits",
+        "skip when": "Trying to interrupt a cantools parse mid-file, replace the DBC parser, or forcefully terminate an external driver's thread.",
+        "summary": "Removes the only two operator-reachable paths where the Qt event loop stops: the untimed catalog wait reached from a profile switch or a DBC load, and the four chained waits in closeEvent totalling up to 16 s.",
+        "use when": "Touching catalog_controller's synchronous preparation paths, the close path, or anything that calls QThread.wait() from the UI thread."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_041_remove_the_unbounded_and_serialized_ui_thread_waits"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_041_remove_the_unbounded_and_serialized_ui_thread_waits.md",
+      "ref": "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: No operator-reachable UI-thread path waits on a worker without a bounded timeout; a deliberately slow catalog operation cannot stop event processing during startup, a profile switch, or a DBC load.",
+          "- AC2: A superseded or cancelled catalog operation leaves the catalog, profile, panels, selection, and graphs consistent, and the last commit wins deterministically under rapid consecutive operations.",
+          "- AC3: Closing the window returns control within one documented global budget rather than a sum of per-worker waits, and recording evidence is finalized or explicitly marked incomplete.",
+          "- AC4: Any worker alive at exit is reported in the diagnostic log, and the documented exit path leaves no windowless process unexplained.",
+          "- AC5: Offscreen tests prove sustained event processing during profile switch, DBC load, and close, using controllably slow preparation."
+        ],
+        "Problem": [
+          "- ui/catalog_controller.py:82 waits on the catalog worker with no timeout, reached from _load_profile_dbcs and _load_dbc_path. The preceding cancel cannot interrupt an in-progress cantools parse, because the cancel flag is only tested between files, so the wait lasts as long as the parse: measured at 129 ms per 1000 messages, meaning seconds for a real vehicle DBC.",
+          "- ui/main_window.py:371-400 chains four bounded waits totalling up to 16 s on the UI thread, which an operator reads as a hung application and answers by force-closing it.",
+          "- Workers that do not return within their wait are abandoned to outlive the window, but nothing observes them before interpreter exit, so a worker blocked in the driver leaves a windowless process holding the CAN channel."
+        ]
+      },
+      "status": "Ready",
+      "title": "Remove the unbounded and serialized UI-thread waits"
+    },
+    {
+      "ai_context": {
+        "keywords": "acquisition, timeout, exit",
+        "skip when": "Claiming the driver handle was released, reclaiming an OS resource held by a blocked driver call, or adding acquisition modes.",
+        "summary": "Makes the TIMED_OUT phase recoverable in-process and gives a slow or absent adapter connect a bounded, restartable failure instead of a phase with no exit.",
+        "use when": "Working on AcquisitionLifecycle phase policy, the shutdown timeout, the connect path, or the wording the UI uses about a driver that has not returned."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_042_give_the_acquisition_timeout_an_exit"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_042_give_the_acquisition_timeout_an_exit.md",
+      "ref": "item_042_give_the_acquisition_timeout_an_exit",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: From TIMED_OUT, a documented operator action returns the application to a startable state in the same process, and a subsequent acquisition runs on a fresh adapter and a new generation.",
+          "- AC2: The UI states plainly what is uncertain after that recovery, without claiming the previous driver handle was released.",
+          "- AC3: A connect that is slow, absent, or failing resolves into a bounded restartable failure state, and a Stop issued during the starting phase is either honoured or explained to the operator.",
+          "- AC4: Lifecycle tests cover recovery from timeout, stop during starting, connect that never returns, and repeated start attempts after each, with no orphan worker and no duplicate terminal result.",
+          "- AC5: A late signal from an abandoned worker after recovery cannot alter the state of the newer generation."
+        ],
+        "Problem": [
+          "- services/lifecycle.py:36-41 excludes TIMED_OUT from both STARTABLE_PHASES and STOPPABLE_PHASES, so an overrun shutdown disables Start permanently and refuses Stop, with closing the application as the documented remedy.",
+          "- The usual entry is upstream and not the timeout's fault: session.start() calls can.Bus(), which is not interruptible, so a stop requested while starting has no effect until the driver returns, and the timeout is unavoidable.",
+          "- The generation model already makes a late signal from an abandoned worker harmless, so the dead end is a policy choice rather than a safety requirement."
+        ]
+      },
+      "status": "Ready",
+      "title": "Give the acquisition timeout an exit"
+    },
+    {
+      "ai_context": {
+        "keywords": "replay, ingestion, bounds, hold, practice",
+        "skip when": "Allowing a frame to skip the trace buffer, series store, frame cache or session facts, or changing the retention capacities and coalescing intervals that already hold.",
+        "summary": "Fixes the replay semaphore permit accounting that silently disables MAX_PENDING_BATCHES, bounds decode cost per event-loop turn, and reuses one replay presentation timer instead of one per opened trace.",
+        "use when": "Working on replay dispatch, backpressure, the ingest path's per-turn cost, or the timers and threads a replay session owns."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_043_make_the_replay_and_ingestion_bounds_hold_in_practice.md",
+      "ref": "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: With the UI deliberately slowed below the parse rate for a whole replay, the number of dispatched but unrendered batches never exceeds the documented bound, asserted directly rather than inferred from wall time.",
+          "- AC2: The permit accounting is exact: after a completed replay and after a stopped replay, the semaphore holds exactly its initial count.",
+          "- AC3: One event-loop turn of ingestion stays inside the documented responsiveness budget for both replay and acquisition, and the existing per-stage budgets in analysis/profiling.py remain met.",
+          "- AC4: Every frame still reaches the trace buffer, the series store, the frame cache, and the session facts; existing replay, anomaly, and report coverage remains valid.",
+          "- AC5: Repeated trace opens leave a stable count of timers, threads, and connections."
+        ],
+        "Problem": [
+          "- services/replay_worker.py:107 ignores the result of acquire(timeout=0.25) and dispatches anyway, while the UI releases a permit for that batch through batch_rendered(), so the semaphore gains a permit permanently on every timeout and MAX_PENDING_BATCHES stops bounding anything. request_stop() releases a further MAX_PENDING_BATCHES permits with no accounting.",
+          "- ui/ingest_controller.py:303-343 runs decode, trace projection, series projection and session facts entirely on the UI thread, one whole batch per tick, so a tick is not preemptible and the floor on click latency is the cost of a batch: measured at about 15 ms per 512-frame replay batch before real DBC decode.",
+          "- ui/session_controller.py:168 creates a new QTimer per opened trace and never destroys the previous one, so a component whose every other retention is bounded grows for the session."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make the replay and ingestion bounds hold in practice"
+    },
+    {
+      "ai_context": {
+        "keywords": "coalesce, work, driven, continuous, pointer, keyboard, input",
+        "skip when": "Migrating the trace table to QTableView, or changing filter semantics, the persisted profile schema, or the statistics definitions.",
+        "summary": "Introduces one shared coalescing window for the filtered-table projection, the profile write, and the A-B statistics, so typing in the filter and dragging a cursor or splitter no longer pay per input event.",
+        "use when": "Touching anything connected to textChanged, splitterMoved, cursors_changed or sigPositionChanged, or anything that calls _save() from a slot."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input.md",
+      "ref": "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A burst of synthetic filter keystrokes produces at most one filtered-table projection per documented coalescing window, and the filter text stays responsive throughout.",
+          "- AC2: A burst of synthetic cursor and splitter drag events produces at most one profile write per window and no write per event, while the cursor summary still tracks the gesture.",
+          "- AC3: The A-B statistics and the measurement table are recalculated at most once per window during a drag, and their values after the gesture are identical to those the per-event path produced.",
+          "- AC4: Close and profile switch flush any pending write, so no setting is lost to coalescing.",
+          "- AC5: Tests assert the projection and write counts by count, not by elapsed time."
+        ],
+        "Problem": [
+          "- trace_filters.py:169 connects textChanged, and trace_view.py:95 rebuilds the whole filtered table synchronously, one QTableWidgetItem per cell, with no debounce: measured at 104 ms on a full buffer with no DBC loaded, and markedly worse on Windows with a loaded DBC.",
+          "- _save() serializes every profile, writes a temporary file and does an atomic replace, and is connected to splitterMoved and to cursors_changed, which graph_stack.py:278 raises on every sigPositionChanged: a disk write per pointer event, at 2-20 ms each on a scanned NTFS volume.",
+          "- graph_stack.py:271-280 additionally rebuilds the measurement table and re-slices every plotted series through three Python passes on those same pointer events."
+        ]
+      },
+      "status": "Ready",
+      "title": "Coalesce the work driven by continuous pointer and keyboard input"
+    },
+    {
+      "ai_context": {
+        "keywords": "export, recording, thread, safe, bounded",
+        "skip when": "Changing export formats or the row schema, the capture format and rotation policy, the disk thresholds themselves, or making SeriesStore a generally lock-protected structure.",
+        "summary": "Replaces the lazy cross-thread read of the series store with a stable snapshot, gives the export worker an owner that closeEvent knows about, and moves the recording free-space probe onto a documented interval.",
+        "use when": "Working on the export hand-off, export worker ownership, the SignalSeries snapshot caches, or the recorder's per-frame space guard."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_045_make_export_and_recording_thread_safe_and_bounded"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_045_make_export_and_recording_thread_safe_and_bounded.md",
+      "ref": "item_045_make_export_and_recording_thread_safe_and_bounded",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: An export started during a live acquisition produces an internally consistent file, and no series state is written from two threads.",
+          "- AC2: Closing the window during an export neither aborts the process nor leaves a partial file that looks complete; the export worker is stopped and abandoned like the others.",
+          "- AC3: The recording space guard runs on a documented bounded interval, and sustained capture throughput against a deliberately slow free-space probe stays above the documented floor.",
+          "- AC4: The guard's protective semantics are unchanged: warn once, stop below the floor, and keep the acquisition running receive-only with an operator notice.",
+          "- AC5: Existing export, recorder, and capture-integrity coverage remains valid."
+        ],
+        "Problem": [
+          "- dialogs/export.py:173-174 hands a lazy generator to the export thread, whose body reads series.times, values and slice(), which write the snapshot caches in series.py:79-134 while the UI thread appends and invalidates during a live acquisition. Two threads mutate shared state with no lock, so zip(..., strict=True) can raise and an export can interleave two snapshots - an inconsistent export being worse than a failed one.",
+          "- ExportWorker is parented to a non-modal dialog and closeEvent does not know about it, so destroying a running QThread makes Qt abandon the process: closing the application during an export is a clean crash.",
+          "- recording/asc.py:74-76 calls shutil.disk_usage() per frame written. The cost belongs to the recording target, so on a removable, network or scanned path the acquisition thread blocks in storage, the driver RX queue overruns, and frames are lost under the driver_overrun condition the adapter already names."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make export and recording thread-safe and bounded"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+          "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+          "item_042_give_the_acquisition_timeout_an_exit",
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+          "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+          "item_045_make_export_and_recording_thread_safe_and_bounded"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/product/prod_011_peaklive_freeze_free_and_self_diagnosing_workstation.md",
+      "ref": "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive freeze-free and self-diagnosing workstation"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, freeze, free, self, diagnosing, peaklive, runtime",
+        "skip when": "Picking up a single unrelated defect; the phases are ordered because each makes the next verifiable.",
+        "summary": "Orchestrates the seven-phase delivery of req_011: reproduce each audit finding as a failing test, then land observability, the bounded UI thread, the recoverable timeout, enforced replay bounds, input coalescing, and the thread-safe export and recording paths.",
+        "use when": "Implementing or sequencing any part of the freeze-free runtime work, or checking what the next phase is and what evidence the previous one owed."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+          "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+          "item_042_give_the_acquisition_timeout_an_exit",
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+          "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+          "item_045_make_export_and_recording_thread_safe_and_bounded"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/tasks/task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime.md",
+      "ref": "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver a freeze-free, self-diagnosing PeakLive runtime"
+    }
+  ],
+  "estimates": {
+    "char_count": 24476,
+    "companion_doc_count": 0,
+    "doc_count": 9
+  },
+  "generated_at": "2026-09-01T09:37:11Z",
+  "handoff": {
+    "companion_doc_count": 0,
+    "enabled": false,
+    "source_refs": [
+      "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit",
+      "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+      "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+      "item_042_give_the_acquisition_timeout_an_exit",
+      "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+      "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+      "item_045_make_export_and_recording_thread_safe_and_bounded",
+      "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+    ],
+    "validation_summary_count": 0
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 271
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit,item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour,item_041_remove_the_unbounded_and_serialized_ui_thread_waits,item_042_give_the_acquisition_timeout_an_exit,item_043_make_the_replay_and_ingestion_bounds_hold_in_practice,item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input,item_045_make_export_and_recording_thread_safe_and_bounded,task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime",
+  "refs": [
+    "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit",
+    "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour",
+    "item_041_remove_the_unbounded_and_serialized_ui_thread_waits",
+    "item_042_give_the_acquisition_timeout_an_exit",
+    "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+    "item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input",
+    "item_045_make_export_and_recording_thread_safe_and_bounded",
+    "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": []
+}
