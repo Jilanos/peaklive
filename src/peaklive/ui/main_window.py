@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime
+from time import monotonic
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
 
 from peaklive.adapters import CanAdapter, default_adapter
 from peaklive.analysis import DbcCatalog, TraceRecord
+from peaklive.diagnostics import logger, set_operator_notifier
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.dbc_worker import CatalogOperation, DbcCatalogWorker
@@ -96,11 +98,22 @@ class MainWindow(
         self._catalog_queue: list[CatalogOperation] = []
         self._catalog_generation = 0
         self._init_session_state()
+        # A replay owns one presentation timer for the lifetime of the window.
+        # Creating one for every opened trace left inactive QObject timers
+        # accumulating in long-running bench sessions.
+        self._pending_replay_batches = []
+        self._pending_replay_finish_generation: int | None = None
+        self._replay_generation = 0
+        self._replay_presentation_timer = QTimer(self)
+        self._replay_presentation_timer.setSingleShot(True)
+        self._replay_presentation_timer.setInterval(1)
+        self._replay_presentation_timer.timeout.connect(self._drain_replay_batch)
         self._selected_signal_names: set[str] = set(self.selected_profile.displayed_signals)
         self._favorite_signal_names: set[str] = set(self.selected_profile.favorite_signals)
         self._restoring = False
         self._expanded_widths: dict[str, int] = dict(self.selected_profile.layout.panel_widths)
         self._build_ui()
+        set_operator_notifier(lambda message: self.session_note.show_message(message, "error"))
         self._install_shortcuts()
         self._select_last_profile()
         self._load_profile_dbcs()
@@ -130,6 +143,7 @@ class MainWindow(
         self.acquisition_bar.export_requested.connect(self._open_export_dialog)
         self.acquisition_bar.start_requested.connect(self._start_acquisition)
         self.acquisition_bar.stop_requested.connect(self._stop_acquisition)
+        self.acquisition_bar.recover_requested.connect(self._recover_timed_out_acquisition)
         root_layout.addWidget(self.acquisition_bar)
 
         self.session_note = StateNote()
@@ -236,7 +250,13 @@ class MainWindow(
 
     def _save(self) -> None:
         self.selected_profile.updated_at = datetime.now().astimezone().isoformat()
-        self._store.save(self._state)
+        try:
+            self._store.save(self._state)
+        except OSError as error:
+            # Persistence is useful, but must never make an input slot take
+            # down the interactive session or discard its in-memory state.
+            self.session_note.show_message(str(error), "warning")
+            logger().exception("Could not save measurement profiles")
 
     def _persist_layout(self) -> None:
         if self._restoring:
@@ -378,23 +398,42 @@ class MainWindow(
         disk as recoverable `.partial` segments.
         """
         self._shutdown_timer.stop()
+        deadline = monotonic() + self._shutdown_timeout_ms / 1000
+
+        def settle(worker) -> None:  # type: ignore[no-untyped-def]
+            if worker is None or not worker.isRunning():
+                return
+            remaining_ms = max(0, int((deadline - monotonic()) * 1000))
+            worker.wait(remaining_ms)
+            if worker.isRunning():
+                logger().warning("worker still alive at exit: %s", type(worker).__name__)
+            abandon_worker(worker)
+
+        # Export dialogs are window children, but their QThreads must outlive
+        # neither a closing QApplication nor their dialog parent.  Requesting
+        # cancellation first means a partial export is removed by its worker.
+        export_workers = []
+        for dialog in self.findChildren(ExportDialog):
+            dialog.cancel_export()
+            if dialog._worker is not None:
+                export_workers.append(dialog._worker)
         if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
-            self._worker.wait(self._shutdown_timeout_ms)
+            settle(self._worker)
         self._lifecycle.reset()
         abandon_worker(self._worker)
         self._worker = None
         self._cancel_catalog_operation()
         if self._catalog_worker is not None:
-            self._catalog_worker.wait(self._shutdown_timeout_ms)
-            abandon_worker(self._catalog_worker)
+            settle(self._catalog_worker)
             self._catalog_worker = None
         self._cancel_signal_backfill()
         if self._signal_decode_worker is not None:
-            self._signal_decode_worker.wait(self._shutdown_timeout_ms)
-            abandon_worker(self._signal_decode_worker)
+            settle(self._signal_decode_worker)
             self._signal_decode_worker = None
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self._replay_worker.request_stop()
-            self._replay_worker.wait(1_000)
+            settle(self._replay_worker)
+        for worker in export_workers:
+            settle(worker)
         super().closeEvent(event)

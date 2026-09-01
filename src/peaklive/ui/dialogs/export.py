@@ -170,7 +170,10 @@ class ExportDialog(QDialog):
         except ValueError as error:
             self.note.show_message(str(error), "error")
             return -1
-        rows = export_rows(self._store, names, start, end)
+        # Series caches are maintained by the UI thread.  Materialise the
+        # selected range before crossing the thread boundary so the worker can
+        # never observe an invalidated cache half-way through an acquisition.
+        rows = tuple(export_rows(self._store, names, start, end))
         worker = ExportWorker(self.destination, rows, self.value_format, self)
         self._worker = worker
         worker.progress.connect(self._show_progress)

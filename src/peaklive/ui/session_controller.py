@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import QThread, QTimer
+from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import DbcSummary
@@ -22,8 +22,6 @@ SHUTDOWN_TIMEOUT_MS = 5_000
 # A replay batch is deliberately handled on its own event-loop turn.  Qt can
 # otherwise dispatch several queued cross-thread signals in one processEvents
 # call, making the UI ingest four 512-frame batches before pointer/Stop input.
-REPLAY_PRESENTATION_INTERVAL_MS = 1
-
 #: Worker threads the shell has stopped listening to but that are still running.
 #:
 #: Qt aborts the process if a running QThread is destroyed, so an abandoned
@@ -82,6 +80,20 @@ class WorkspaceSession:
         self._worker = worker
         self._show_lifecycle_phase()
         worker.start()
+
+    def _recover_timed_out_acquisition(self) -> None:
+        """Abandon a stuck generation and start with a fresh adapter instance."""
+        if self._lifecycle.phase is not AcquisitionPhase.TIMED_OUT:
+            return
+        previous = self._worker
+        if previous is not None:
+            previous.request_stop()
+            abandon_worker(previous)
+        self._worker = None
+        self._lifecycle.recover_timed_out()
+        self.session_note.show_message(translate("acquisition.recovering_driver"), "warning")
+        self._show_lifecycle_phase()
+        self._start_acquisition()
 
     def _stop_acquisition(self) -> None:
         """Ask the worker to wind down and put a bound on how long that may take."""
@@ -159,16 +171,12 @@ class WorkspaceSession:
             previous.request_stop()
             abandon_worker(previous)
         self._clear_pending_replay_batches()
-        self._pending_replay_finish_generation: int | None = None
-        generation = getattr(self, "_replay_generation", 0) + 1
+        self._pending_replay_finish_generation = None
+        generation = self._replay_generation + 1
         self._replay_generation = generation
         self._reset_session(path.name)
         self._replay_worker = ReplayWorker(path)
-        self._pending_replay_batches: list[tuple[int, ReplayWorker, list[CanFrame]]] = []
-        self._replay_presentation_timer = QTimer(self)
-        self._replay_presentation_timer.setSingleShot(True)
-        self._replay_presentation_timer.setInterval(REPLAY_PRESENTATION_INTERVAL_MS)
-        self._replay_presentation_timer.timeout.connect(self._drain_replay_batch)
+        self._pending_replay_batches = []
         self._replay_worker.frames_received.connect(
             partial(self._replay_frames_for_generation, generation, self._replay_worker)
         )

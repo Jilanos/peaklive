@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from threading import Event, Semaphore
+from threading import Event, Lock, Semaphore
 from time import perf_counter
 
 from PySide6.QtCore import QThread, Signal
@@ -53,18 +53,27 @@ class ReplayWorker(QThread):
         self._stop_requested = Event()
         self._cursor = TraceCursor()
         self._pending_batches = Semaphore(MAX_PENDING_BATCHES)
+        self._permit_lock = Lock()
+        self._held_permits = 0
         self._last_progress = 0
         self._last_progress_at = 0.0
 
     def request_stop(self) -> None:
         self._stop_requested.set()
-        # Wake a parser that is waiting on a UI acknowledgement it will never
-        # get, so Stop lands within one batch rather than one timeout.
-        self._pending_batches.release(MAX_PENDING_BATCHES)
 
     def batch_rendered(self) -> None:
         """Report from the UI thread that one dispatched batch has landed."""
+        with self._permit_lock:
+            if not self._held_permits:
+                return
+            self._held_permits -= 1
         self._pending_batches.release()
+
+    @property
+    def pending_batch_count(self) -> int:
+        """Return the exact number of dispatched, unrendered batches."""
+        with self._permit_lock:
+            return self._held_permits
 
     def run(self) -> None:
         batch: list[CanFrame] = []
@@ -85,7 +94,8 @@ class ReplayWorker(QThread):
                     continue
                 batch.append(record)
                 if len(batch) >= BATCH_SIZE:
-                    self._dispatch(batch)
+                    if not self._dispatch(batch):
+                        break
                     batch = []
                 self._emit_progress(total)
             if batch:
@@ -97,17 +107,23 @@ class ReplayWorker(QThread):
         except OSError as error:
             self.replay_failed.emit(str(error))
 
-    def _dispatch(self, batch: list[CanFrame]) -> None:
+    def _dispatch(self, batch: list[CanFrame]) -> bool:
         """Hand one batch to the UI, waiting if it is already several behind.
 
         The wait is deliberately outside the measured stage: time spent held
         back by the display is the display's cost, and attributing it to
         dispatch would hide the stage that actually caused it.
         """
-        self._pending_batches.acquire(timeout=ACKNOWLEDGEMENT_TIMEOUT_S)
+        if not self._pending_batches.acquire(timeout=ACKNOWLEDGEMENT_TIMEOUT_S):
+            # Never emit a batch without a permit: doing so turns its eventual
+            # acknowledgement into a new permit and removes the bound.
+            return False
+        with self._permit_lock:
+            self._held_permits += 1
         with PROFILER.stage(STAGE_DISPATCH):
             PROFILER.count_frames(len(batch))
             self.frames_received.emit(batch)
+        return True
 
     def _emit_progress(self, total: int) -> None:
         """Report parse progress from consumed source bytes, never from the file.

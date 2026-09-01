@@ -1,13 +1,14 @@
 ## item_041_remove_the_unbounded_and_serialized_ui_thread_waits - Remove the unbounded and serialized UI-thread waits
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: High
 > Theme: Bounded UI thread
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Removes the only two operator-reachable paths where the Qt event loop stops: the untimed catalog wait reached from a profile switch or a DBC load, and the four chained waits in closeEvent totalling up to 16 s.

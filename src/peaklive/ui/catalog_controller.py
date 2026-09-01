@@ -71,16 +71,6 @@ class WorkspaceCatalog:
             self._catalog_worker.request_cancel()
             self._catalog_generation += 1
 
-    def _await_catalog_operations(self) -> None:
-        """Let in-flight background work finish before mutating synchronously.
-
-        The synchronous paths below prepare against `self._catalog` directly, so
-        they must not overlap a worker that is about to replace it.
-        """
-        worker = self._catalog_worker
-        if worker is not None and worker.isRunning():
-            worker.wait()
-
     def _catalog_progressed(self, generation: int, done: int, total: int, name: str) -> None:
         if generation != self._catalog_generation:
             return
@@ -193,40 +183,31 @@ class WorkspaceCatalog:
     # ---- DBC ------------------------------------------------------------
 
     def _load_profile_dbcs(self) -> None:
-        """Restore the selected profile's catalog synchronously.
-
-        This runs while the workspace is being composed or swapped wholesale, so
-        the operator never sees a half-restored profile. The operator-driven
-        mutations below are the ones that go to a worker thread.
-        """
+        """Restore a profile catalog through the serial background queue."""
         self._cancel_catalog_operation()
-        self._await_catalog_operations()
-        self._catalog.clear()
-        for configured_path in self.selected_profile.dbc_paths:
-            path = Path(configured_path)
-            if path.exists():
-                try:
-                    self._catalog.load(path)
-                except (OSError, ValueError) as error:
-                    self._report_dbc_error(path, str(error))
-        disabled = set(self.selected_profile.trace_filters.get("disabled_dbc_hashes", []))
-        for definition in self._catalog.definitions:
-            self._catalog.set_enabled(
-                definition.content_hash, definition.content_hash not in disabled
+        filters = self.selected_profile.trace_filters
+        paths = tuple(Path(path) for path in self.selected_profile.dbc_paths)
+        if not paths:
+            # Nothing can parse here; clearing an empty profile is immediate
+            # and avoids creating a pointless short-lived worker at startup.
+            self._catalog.clear()
+            self._adopt_catalog_view(self._catalog.view())
+            return
+        self._queue_catalog_operation(
+            CatalogOperation(
+                kind=CatalogOperationKind.RESTORE,
+                paths=paths,
+                disabled_hashes=tuple(
+                    str(value) for value in filters.get("disabled_dbc_hashes", [])
+                ),
+                resolutions=tuple(
+                    (int(raw_id), str(content_hash))
+                    for raw_id, content_hash in dict(
+                        filters.get("dbc_conflict_resolutions", {})
+                    ).items()
+                ),
             )
-        for raw_id, content_hash in dict(
-            self.selected_profile.trace_filters.get("dbc_conflict_resolutions", {})
-        ).items():
-            try:
-                self._catalog.resolve(int(raw_id), str(content_hash))
-            except (KeyError, ValueError):
-                continue
-        view = self._catalog.view()
-        self.dbc_panel.refresh(view)
-        self.explorer_panel.refresh(
-            view.references, self._selected_signal_names, self._favorite_signal_names
         )
-        self._sync_graphs()
 
     def _choose_dbc(self) -> None:
         selected, _ = QFileDialog.getOpenFileNames(
@@ -242,14 +223,17 @@ class WorkspaceCatalog:
         )
 
     def _load_dbc_path(self, path: Path) -> None:
-        """Load one DBC synchronously and commit it.
+        """Load a programmatic fixture without ever waiting for a worker.
 
-        The background path is `_choose_dbc`; this stays synchronous so a single
-        known file can be loaded as a step in a larger operation without the
-        caller having to wait on a signal.
+        The interactive path always queues work.  This small synchronous
+        helper remains for deterministic test/setup callers only when no
+        operation is in flight; if there is one, it joins the queue instead of
+        blocking the UI thread.
         """
-        self._await_catalog_operations()
         operation = CatalogOperation(kind=CatalogOperationKind.LOAD, paths=(path,))
+        if self._catalog_worker is not None:
+            self._queue_catalog_operation(operation)
+            return
         outcome = apply_catalog_operation(self._catalog, operation)
         if outcome is not None:
             self._commit_catalog_outcome(outcome)
@@ -327,6 +311,6 @@ class WorkspaceCatalog:
 
 
 def _operation_message(operation: CatalogOperation) -> str:
-    if operation.kind is CatalogOperationKind.LOAD:
+    if operation.kind in {CatalogOperationKind.LOAD, CatalogOperationKind.RESTORE}:
         return translate("dbc.loading").format(count=len(operation.paths))
     return translate(f"dbc.working_{operation.kind.value}")

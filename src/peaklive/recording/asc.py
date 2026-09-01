@@ -13,6 +13,11 @@ from typing import TextIO
 
 from peaklive.domain import BusEvent, CanFrame, RecordingSettings
 
+# Probe free space once per batch rather than once per received frame.  The
+# same threshold semantics apply, while slow removable/network volumes cannot
+# put storage latency on every acquisition iteration.
+SPACE_CHECK_INTERVAL_FRAMES = 128
+
 
 class RecordingStopped(RuntimeError):
     """Raised when the writer safely stops due to an integrity condition."""
@@ -48,6 +53,7 @@ class AscRecorder:
         self._result = CaptureResult()
         self._warnings: list[str] = []
         self._warned_low_space = False
+        self._frames_since_space_check = 0
 
     @property
     def active(self) -> bool:
@@ -69,11 +75,12 @@ class AscRecorder:
         self._result = CaptureResult()
         self._warnings.clear()
         self._warned_low_space = False
+        self._frames_since_space_check = SPACE_CHECK_INTERVAL_FRAMES
         return self._open_next_segment()
 
     def write_frame(self, frame: CanFrame) -> None:
         self._require_active()
-        self._ensure_space()
+        self._ensure_space_if_due()
         assert self._asc is not None
         if self._timestamp_origin is None:
             self._timestamp_origin = frame.timestamp
@@ -92,7 +99,7 @@ class AscRecorder:
 
     def write_event(self, event: BusEvent) -> None:
         self._require_active()
-        self._ensure_space()
+        self._ensure_space_if_due()
         assert self._asc is not None and self._events is not None
         relative = 0.0
         if self._timestamp_origin is not None:
@@ -185,6 +192,13 @@ class AscRecorder:
             return
         self._close_segment(clean=True)
         self._open_next_segment()
+
+    def _ensure_space_if_due(self) -> None:
+        self._frames_since_space_check += 1
+        if self._frames_since_space_check < SPACE_CHECK_INTERVAL_FRAMES:
+            return
+        self._frames_since_space_check = 0
+        self._ensure_space()
 
     def _ensure_space(self) -> None:
         assert self._settings is not None and self._segment is not None

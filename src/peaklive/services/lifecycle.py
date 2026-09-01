@@ -30,11 +30,15 @@ class AcquisitionPhase(StrEnum):
     TIMED_OUT = "timed_out"
 
 
-#: Phases from which a new acquisition may be opened. ``TIMED_OUT`` is absent on
-#: purpose: a worker that never returned may still hold the driver, so the safe
-#: operator action is to close the application, not to reopen the channel.
+#: A timeout is restartable by explicitly abandoning its generation.  The old
+#: driver may still hold its OS handle; the shell makes that uncertainty clear
+#: and creates a fresh adapter for the next generation.
 STARTABLE_PHASES = frozenset(
-    {AcquisitionPhase.IDLE, AcquisitionPhase.STOPPED, AcquisitionPhase.FAILED}
+    {
+        AcquisitionPhase.IDLE,
+        AcquisitionPhase.STOPPED,
+        AcquisitionPhase.FAILED,
+    }
 )
 
 #: Phases during which Stop is meaningful.
@@ -99,9 +103,20 @@ class AcquisitionLifecycle:
         """Open the next generation, or raise if one is still in flight."""
         if not self.can_start:
             raise RuntimeError(f"Cannot start acquisition from phase {self._phase}")
+        if self._phase is AcquisitionPhase.TIMED_OUT:
+            self.recover_timed_out()
         self._generation += 1
         self._phase = AcquisitionPhase.STARTING
         self._settled = False
+        return self._generation
+
+    def recover_timed_out(self) -> int:
+        """Retire a timed-out generation and return to a startable state."""
+        if self._phase is not AcquisitionPhase.TIMED_OUT:
+            raise RuntimeError(f"Cannot recover from phase {self._phase}")
+        self._generation += 1
+        self._phase = AcquisitionPhase.IDLE
+        self._settled = True
         return self._generation
 
     def advance(self, generation: int, phase: AcquisitionPhase) -> bool:

@@ -27,6 +27,7 @@ from peaklive.analysis import CatalogView, DbcCatalog, DbcDefinition
 
 class CatalogOperationKind(StrEnum):
     LOAD = "load"
+    RESTORE = "restore"
     REMOVE = "remove"
     ENABLE = "enable"
     RESOLVE = "resolve"
@@ -41,6 +42,8 @@ class CatalogOperation:
     content_hash: str = ""
     enabled: bool = True
     arbitration_id: int = 0
+    disabled_hashes: tuple[str, ...] = ()
+    resolutions: tuple[tuple[int, str], ...] = ()
 
     @property
     def cancellable(self) -> bool:
@@ -49,7 +52,7 @@ class CatalogOperation:
         Only loading does enough work to be worth cancelling; the rest are a
         catalog copy and a projection.
         """
-        return self.kind is CatalogOperationKind.LOAD
+        return self.kind in {CatalogOperationKind.LOAD, CatalogOperationKind.RESTORE}
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +82,23 @@ def apply_catalog_operation(
     return means the caller's state is untouched by construction.
     """
     prepared = catalog.copy()
+    if operation.kind is CatalogOperationKind.RESTORE:
+        prepared.clear()
+        outcome = _apply_load(prepared, operation, progress, cancelled)
+        if outcome is None:
+            return None
+        for definition in prepared.definitions:
+            prepared.set_enabled(
+                definition.content_hash, definition.content_hash not in operation.disabled_hashes
+            )
+        for arbitration_id, content_hash in operation.resolutions:
+            try:
+                prepared.resolve(arbitration_id, content_hash)
+            except (KeyError, ValueError):
+                continue
+        return CatalogOutcome(
+            operation, prepared.view(), outcome.added_paths, errors=outcome.errors
+        )
     if operation.kind is CatalogOperationKind.LOAD:
         return _apply_load(prepared, operation, progress, cancelled)
     if operation.kind is CatalogOperationKind.REMOVE:
