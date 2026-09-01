@@ -1,13 +1,14 @@
 ## item_045_make_export_and_recording_thread_safe_and_bounded - Make export and recording thread-safe and bounded
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Thread-safe data paths
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Replaces the lazy cross-thread read of the series store with a stable snapshot, gives the export worker an owner that closeEvent knows about, and moves the recording free-space probe onto a documented interval.

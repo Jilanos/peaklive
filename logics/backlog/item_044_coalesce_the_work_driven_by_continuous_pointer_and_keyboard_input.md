@@ -1,13 +1,14 @@
 ## item_044_coalesce_the_work_driven_by_continuous_pointer_and_keyboard_input - Coalesce the work driven by continuous pointer and keyboard input
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Input-rate coalescing
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Introduces one shared coalescing window for the filtered-table projection, the profile write, and the A-B statistics, so typing in the filter and dragging a cursor or splitter no longer pay per input event.

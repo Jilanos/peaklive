@@ -81,6 +81,7 @@ class AcquisitionBar(QFrame):
     export_requested = Signal()
     start_requested = Signal()
     stop_requested = Signal()
+    recover_requested = Signal()
 
     def __init__(self, profile_names: list[str], parent: QWidget | None = None) -> None:
         super().__init__(parent, objectName="instrument")
@@ -175,6 +176,15 @@ class AcquisitionBar(QFrame):
         self.stop_button.setEnabled(False)
         layout.addWidget(self.stop_button)
 
+        self.recover_button = self._action(
+            translate("acquisition.recover"),
+            "recoverAcquisitionButton",
+            translate("acquisition.recover_tooltip"),
+        )
+        self.recover_button.clicked.connect(self.recover_requested)
+        self.recover_button.setVisible(False)
+        layout.addWidget(self.recover_button)
+
     @staticmethod
     def _action(label: str, object_name: str, tooltip: str) -> QPushButton:
         button = QPushButton(label, objectName=object_name)
@@ -202,6 +212,8 @@ class AcquisitionBar(QFrame):
         self.lifecycle_phase = phase
         self.start_button.setEnabled(phase in STARTABLE_PHASES)
         self.stop_button.setEnabled(phase in STOPPABLE_PHASES)
+        self.recover_button.setVisible(phase is AcquisitionPhase.TIMED_OUT)
+        self.recover_button.setEnabled(phase is AcquisitionPhase.TIMED_OUT)
         self.set_bus_state(PHASE_BUS_STATES.get(phase, "idle"))
 
     def show_profile(self, profile: MeasurementProfile) -> None:

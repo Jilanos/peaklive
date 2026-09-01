@@ -8,6 +8,7 @@
   "acquisition": {
     "start": "Start Acquisition",
     "stop": "Stop Acquisition",
+    "recover": "Recover acquisition",
     "disconnected": "Disconnected",
     "connected": "Connected",
     "opening": "Opening CAN channel…",
@@ -25,6 +26,7 @@
     "ack_off": "no ACK",
     "start_tooltip": "Open the CAN channel and start receiving",
     "stop_tooltip": "Stop receiving and close the CAN channel",
+    "recover_tooltip": "Abandon the timed-out driver and start with a fresh adapter",
     "channel_accessible": "CAN channel",
     "bitrate_accessible": "CAN bitrate",
     "mode_accessible": "Controller acknowledge mode",
@@ -33,7 +35,8 @@
     "stopped": "Acquisition stopped",
     "shutdown_timeout": "Shutdown did not complete within {seconds}s. The CAN driver has not returned. The capture was kept as recoverable .partial files; close PeakLive to release the adapter.",
     "shutdown_recovered": "Shutdown completed after the timeout; the capture was finalized.",
-    "start_blocked": "Acquisition cannot restart until the previous shutdown returns. Close PeakLive to release the adapter."
+    "start_blocked": "Acquisition cannot restart until the previous shutdown returns. Close PeakLive to release the adapter.",
+    "recovering_driver": "Starting with a fresh adapter. The previous CAN driver handle may still be held until it returns."
   },
   "bus": {
     "label": "Bus",

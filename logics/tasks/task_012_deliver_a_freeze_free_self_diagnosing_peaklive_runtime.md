@@ -1,13 +1,15 @@
 ## task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime - Deliver a freeze-free, self-diagnosing PeakLive runtime
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: Codex
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Orchestrates the seven-phase delivery of req_011: reproduce each audit finding as a failing test, then land observability, the bounded UI thread, the recoverable timeout, enforced replay bounds, input coalescing, and the thread-safe export and recording paths.

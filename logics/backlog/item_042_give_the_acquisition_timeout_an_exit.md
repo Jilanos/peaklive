@@ -1,13 +1,14 @@
 ## item_042_give_the_acquisition_timeout_an_exit - Give the acquisition timeout an exit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Recoverable acquisition lifecycle
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Makes the TIMED_OUT phase recoverable in-process and gives a slow or absent adapter connect a bounded, restartable failure instead of a phase with no exit.

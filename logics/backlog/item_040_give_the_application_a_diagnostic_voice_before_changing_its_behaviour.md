@@ -1,13 +1,14 @@
 ## item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour - Give the application a diagnostic voice before changing its behaviour
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Runtime observability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 11:40:43
 
 # AI Context
 - Summary: Adds the local rotating log, the process-wide and per-thread exception hooks, the guarded profile write, and the console build target, so a freeze or a half-applied state leaves evidence on the operator's machine.
