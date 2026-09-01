@@ -15,7 +15,7 @@ from peaklive.analysis.replay import TraceCursor
 from peaklive.domain import BusEvent, CanFrame
 
 #: How many frames one presentation notification carries.
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 
 #: The shortest interval between two progress notifications. Progress is a
 #: reassurance, not a measurement, and emitting one per batch floods the UI

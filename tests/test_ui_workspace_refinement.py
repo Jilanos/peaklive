@@ -283,6 +283,17 @@ def test_shown_and_favorite_selections_survive_a_restart(qtbot, tmp_path):
     restored = MainWindow(store, adapter_factory=FakeCanAdapter)
     qtbot.addWidget(restored)
 
+    # Profile DBC restoration prepares its catalog on the operation queue;
+    # assertions must wait for that atomic async commit rather than assuming
+    # parsing completed during widget construction.
+    qtbot.waitUntil(
+        lambda: any(
+            item.data(0, SIGNAL_KEY_ROLE) == "VehicleStatus.Speed"
+            for item in restored.signal_explorer.findItems(
+                "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
+            )
+        )
+    )
     restored_item = _signal_item(restored, "VehicleStatus.Speed")
     assert restored_item.checkState(SHOWN_COLUMN) == Qt.CheckState.Checked
     assert restored_item.checkState(FAVORITE_COLUMN) == Qt.CheckState.Checked
