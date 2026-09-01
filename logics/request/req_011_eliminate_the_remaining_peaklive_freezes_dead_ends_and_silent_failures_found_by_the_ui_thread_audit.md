@@ -1,12 +1,13 @@
 ## req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit - Eliminate the remaining PeakLive freezes, dead ends, and silent failures found by the UI-thread audit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Freeze-free, self-diagnosing runtime
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-09-01 12:05:20
 
 # AI Context
 - Summary: Corrects the twelve interruption causes found by the UI-thread and threading audit at commit d6605ef: unbounded UI-thread waits, lifecycle states with no exit, absent diagnostics, lost replay backpressure, per-input-event disk and statistics work, and two cross-thread data paths.
