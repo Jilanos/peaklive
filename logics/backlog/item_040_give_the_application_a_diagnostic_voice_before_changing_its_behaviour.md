@@ -1,14 +1,14 @@
 ## item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour - Give the application a diagnostic voice before changing its behaviour
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Runtime observability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-01 11:40:43
+> Indicators reviewed: 2026-09-01 12:05:21
 
 # AI Context
 - Summary: Adds the local rotating log, the process-wide and per-thread exception hooks, the guarded profile write, and the console build target, so a freeze or a half-applied state leaves evidence on the operator's machine.
@@ -59,3 +59,9 @@
 # Priority
 - Priority: High - every other correction in this request is an untestable hypothesis while a freeze leaves no trace on the operator's machine.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`
+
+# Notes
+- Task `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime` was finished via `logics-manager flow finish task` on 2026-09-01.

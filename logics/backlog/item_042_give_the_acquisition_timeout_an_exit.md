@@ -1,14 +1,14 @@
 ## item_042_give_the_acquisition_timeout_an_exit - Give the acquisition timeout an exit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Recoverable acquisition lifecycle
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-01 11:40:43
+> Indicators reviewed: 2026-09-01 12:05:21
 
 # AI Context
 - Summary: Makes the TIMED_OUT phase recoverable in-process and gives a slow or absent adapter connect a bounded, restartable failure instead of a phase with no exit.
@@ -57,3 +57,9 @@
 # Priority
 - Priority: High - a live application whose only remaining action is to close it is the reported symptom, and closing it is the path this request is also repairing.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`
+
+# Notes
+- Task `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime` was finished via `logics-manager flow finish task` on 2026-09-01.

@@ -1,14 +1,14 @@
 ## item_045_make_export_and_recording_thread_safe_and_bounded - Make export and recording thread-safe and bounded
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Thread-safe data paths
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-01 11:40:43
+> Indicators reviewed: 2026-09-01 12:05:21
 
 # AI Context
 - Summary: Replaces the lazy cross-thread read of the series store with a stable snapshot, gives the export worker an owner that closeEvent knows about, and moves the recording free-space probe onto a documented interval.
@@ -57,3 +57,9 @@
 # Priority
 - Priority: Medium - the export path is a clean crash rather than a freeze, and the recording guard costs throughput only on a slow target, but both are data-integrity risks.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`
+
+# Notes
+- Task `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime` was finished via `logics-manager flow finish task` on 2026-09-01.

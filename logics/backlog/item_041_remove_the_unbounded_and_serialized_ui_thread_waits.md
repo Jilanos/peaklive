@@ -1,14 +1,14 @@
 ## item_041_remove_the_unbounded_and_serialized_ui_thread_waits - Remove the unbounded and serialized UI-thread waits
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: High
 > Theme: Bounded UI thread
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-01 11:40:43
+> Indicators reviewed: 2026-09-01 12:05:21
 
 # AI Context
 - Summary: Removes the only two operator-reachable paths where the Qt event loop stops: the untimed catalog wait reached from a profile switch or a DBC load, and the four chained waits in closeEvent totalling up to 16 s.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - these are the only remaining paths where the Qt event loop stops outright, and they are reached by two routine actions: switching profiles and closing the window.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`
+
+# Notes
+- Task `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime` was finished via `logics-manager flow finish task` on 2026-09-01.

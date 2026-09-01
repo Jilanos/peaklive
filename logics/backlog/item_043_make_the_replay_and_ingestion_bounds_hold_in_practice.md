@@ -1,14 +1,14 @@
 ## item_043_make_the_replay_and_ingestion_bounds_hold_in_practice - Make the replay and ingestion bounds hold in practice
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 100%
 > Complexity: High
 > Theme: Enforced ingestion backpressure
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-01 11:40:43
+> Indicators reviewed: 2026-09-01 12:05:21
 
 # AI Context
 - Summary: Fixes the replay semaphore permit accounting that silently disables MAX_PENDING_BATCHES, bounds decode cost per event-loop turn, and reuses one replay presentation timer instead of one per opened trace.
@@ -58,3 +58,9 @@
 # Priority
 - Priority: High - the backpressure bound the design documents stops applying after the first UI slowdown, which is what makes a long replay progressively unresponsive.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`
+
+# Notes
+- Task `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime` was finished via `logics-manager flow finish task` on 2026-09-01.
