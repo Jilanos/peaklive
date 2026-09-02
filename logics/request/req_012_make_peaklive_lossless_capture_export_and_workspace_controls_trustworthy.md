@@ -1,12 +1,13 @@
 ## req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy - Make PeakLive lossless capture export and workspace controls trustworthy
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Lossless capture export and reachable workspace controls
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-09-02 15:06:27
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
