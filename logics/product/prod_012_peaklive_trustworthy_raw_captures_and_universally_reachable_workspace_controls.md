@@ -1,14 +1,26 @@
 ## prod_012_peaklive_trustworthy_raw_captures_and_universally_reachable_workspace_controls - PeakLive trustworthy raw captures and universally reachable workspace controls
 > Date: 2026-09-02
-> Status: Proposed
+> Status: Settled
 > Related request: `req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy`
-> Related backlog: `item_046_deliver_explicit_lossless_asc_and_trc_acquisition_capture_export`, `item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable`
+> Related backlog: `item_046_deliver_explicit_lossless_asc_and_trc_acquisition_capture_export`
 > Related task: `task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-02 15:06:28
 
 # Overview
 PeakLive provides an honest split between decoded analysis exports and lossless raw CAN captures, while its selection and workspace controls remain stable, legible, non-animated, and reachable in every analysis mode.
+
+```mermaid
+flowchart LR
+  Adapter[CAN adapter frames] --> Recorder[ASC or TRC recorder]
+  Recorder --> Evidence[Complete or partial raw evidence]
+  Adapter --> Projection[Bounded trace and decoded signals]
+  Projection --> Export[CSV or Parquet analysis export]
+  Controls[Persistent mode selector] --> Graph[Graph mode]
+  Controls --> Trace[Trace mode]
+  Controls --> Report[Report mode]
+```
 
 # Goals
 - Export every acquisition frame in ASC or PCAN-View text TRC through a durable, explicit capture contract.
@@ -35,5 +47,5 @@ PeakLive provides an honest split between decoded analysis exports and lossless 
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy`
+- Product back-reference: `item_046_deliver_explicit_lossless_asc_and_trc_acquisition_capture_export`
 - Task back-reference: `task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls`

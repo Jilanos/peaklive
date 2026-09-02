@@ -1,14 +1,14 @@
 ## item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable - Make every workspace selector and visible control legible, stable, and reachable
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 60%
+> Progress: 100%
 > Complexity: High
 > Theme: Workspace control reachability and geometry
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-02 15:00:42
+> Indicators reviewed: 2026-09-02 15:06:28
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -58,3 +58,9 @@
 # Priority
 - Priority: High - Trace-only currently strands an operator away from mode switching, and clipped controls block core analysis actions.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls`
+
+# Notes
+- Task `task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls` was finished via `logics-manager flow finish task` on 2026-09-02.
