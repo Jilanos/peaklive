@@ -47,6 +47,7 @@ class RecordingSettings:
     enabled: bool = True
     directory: str = ""
     filename_template: str = "{date}_{time}_{profile}_{iteration:03d}_{segment:03d}.asc"
+    capture_format: str = "asc"
     iteration: int = 1
     rotate_bytes: int = 2 * 1024**3
     warn_free_bytes: int = 10 * 1024**3
@@ -57,6 +58,7 @@ class RecordingSettings:
             "enabled": self.enabled,
             "directory": self.directory,
             "filename_template": self.filename_template,
+            "capture_format": self.capture_format,
             "iteration": self.iteration,
             "rotate_bytes": self.rotate_bytes,
             "warn_free_bytes": self.warn_free_bytes,
@@ -69,6 +71,11 @@ class RecordingSettings:
             enabled=bool(raw.get("enabled", True)),
             directory=str(raw.get("directory", "")),
             filename_template=str(raw.get("filename_template", cls().filename_template)),
+            capture_format=(
+                str(raw.get("capture_format", "asc")).lower()
+                if str(raw.get("capture_format", "asc")).lower() in {"asc", "trc"}
+                else "asc"
+            ),
             iteration=max(1, int(raw.get("iteration", 1))),
             rotate_bytes=max(1, int(raw.get("rotate_bytes", cls().rotate_bytes))),
             warn_free_bytes=max(1, int(raw.get("warn_free_bytes", cls().warn_free_bytes))),

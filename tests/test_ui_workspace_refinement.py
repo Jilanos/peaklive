@@ -794,10 +794,23 @@ def test_graph_commands_stay_in_one_compact_toolbar_row(qtbot):
     bar.show()
     qtbot.waitExposed(bar)
 
-    assert bar.layout().count() == 4
+    assert bar.layout().count() == 3
     for control in _leaf_controls(bar):
         assert control.parentWidget().mapTo(bar, control.pos()).y() >= 0
         assert _paints_its_content(control), control.objectName()
+
+
+@pytest.mark.parametrize("mode", ("combo", "graphs", "trace", "report"))
+def test_workspace_mode_selector_is_visible_and_fully_readable_in_every_mode(qtbot, tmp_path, mode):
+    window = _window(qtbot, tmp_path)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+    selector = window.workspace_mode_selector
+    selector.setCurrentIndex(selector.findData(mode))
+
+    assert selector.isVisible()
+    assert selector.width() >= selector.fontMetrics().horizontalAdvance(selector.currentText())
 
 
 def test_multi_signal_lanes_reserve_an_identical_left_axis_gutter(qtbot, tmp_path):

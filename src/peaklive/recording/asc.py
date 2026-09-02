@@ -38,7 +38,11 @@ class CaptureResult:
 
 
 class AscRecorder:
-    """Write all supplied frames before any UI-specific projection exists."""
+    """Write every supplied frame before any UI-specific projection exists.
+
+    The historical name remains for compatibility; the profile selects ASC or
+    PCAN-View text TRC before acquisition starts.
+    """
 
     def __init__(self, free_space: Callable[[Path], int] | None = None) -> None:
         self._free_space = free_space or self._default_free_space
@@ -54,6 +58,7 @@ class AscRecorder:
         self._warnings: list[str] = []
         self._warned_low_space = False
         self._frames_since_space_check = 0
+        self._format = "asc"
 
     @property
     def active(self) -> bool:
@@ -68,6 +73,7 @@ class AscRecorder:
         if self.active:
             raise RuntimeError("A recording is already active")
         self._settings = settings
+        self._format = settings.capture_format
         self._profile_name = profile_name
         self._started_at = now or datetime.now().astimezone()
         self._timestamp_origin = None
@@ -85,6 +91,10 @@ class AscRecorder:
         if self._timestamp_origin is None:
             self._timestamp_origin = frame.timestamp
         timestamp = max(0.0, frame.timestamp - self._timestamp_origin)
+        if self._format == "trc":
+            self._write_trc_frame(timestamp, frame)
+            self._rotate_if_needed()
+            return
         identifier = f"{frame.arbitration_id:X}{'x' if frame.is_extended_id else ''}"
         direction = "Rx"
         kind = "r" if frame.is_remote_frame else "d"
@@ -104,7 +114,9 @@ class AscRecorder:
         relative = 0.0
         if self._timestamp_origin is not None:
             relative = max(0.0, event.timestamp - self._timestamp_origin)
-        if event.kind == "error_frame":
+        if self._format == "trc":
+            self._asc.write(f"; PeakLive {event.kind}: {event.message.replace(chr(10), ' ')}\n")
+        elif event.kind == "error_frame":
             self._asc.write(f"   {relative:.6f} {self._asc_channel(event.channel)}  ErrorFrame\n")
         else:
             escaped = event.message.replace("\n", " ")
@@ -151,6 +163,7 @@ class AscRecorder:
             self._profile_name,
             self._started_at,
             self._segment_number,
+            self._format,
         )
         final_path = self._next_available_path(directory / filename)
         event_final = final_path.with_suffix(".peaklive-events.jsonl")
@@ -162,15 +175,20 @@ class AscRecorder:
         )
         self._asc = self._segment.partial_path.open("w", encoding="utf-8", newline="\n")
         self._events = self._segment.event_partial_path.open("w", encoding="utf-8", newline="\n")
-        self._asc.write(f"date {self._started_at.strftime('%a %b %d %H:%M:%S %Y')}\n")
-        self._asc.write("base hex  timestamps absolute\ninternal events logged\n")
-        self._asc.write("// PeakLive ASC recording\n")
-        self._asc.write(f"Begin Triggerblock {self._started_at.strftime('%a %b %d %H:%M:%S %Y')}\n")
+        if self._format == "trc":
+            self._asc.write("; PeakLive PCAN-View text TRC recording\n")
+            self._asc.write("; time values are milliseconds\n")
+        else:
+            self._asc.write(f"date {self._started_at.strftime('%a %b %d %H:%M:%S %Y')}\n")
+            self._asc.write("base hex  timestamps absolute\ninternal events logged\n")
+            self._asc.write("// PeakLive ASC recording\n")
+            started = self._started_at.strftime("%a %b %d %H:%M:%S %Y")
+            self._asc.write(f"Begin Triggerblock {started}\n")
         return final_path
 
     def _close_segment(self, clean: bool) -> None:
         assert self._segment is not None and self._asc is not None and self._events is not None
-        if clean:
+        if clean and self._format == "asc":
             self._asc.write("End Triggerblock\n")
         self._asc.flush()
         self._events.flush()
@@ -228,6 +246,7 @@ class AscRecorder:
         profile_name: str,
         now: datetime,
         segment: int,
+        capture_format: str,
     ) -> str:
         safe_profile = re.sub(r"[^A-Za-z0-9._-]+", "_", profile_name).strip("._") or "measurement"
         values = {
@@ -238,7 +257,19 @@ class AscRecorder:
             "segment": segment,
         }
         filename = settings.filename_template.format(**values)
-        return filename if filename.lower().endswith(".asc") else f"{filename}.asc"
+        return str(Path(filename).with_suffix(f".{capture_format}"))
+
+    def _write_trc_frame(self, timestamp: float, frame: CanFrame) -> None:
+        """Emit the text TRC subset accepted by PeakLive's PCAN-View parser."""
+        identifier = f"{frame.arbitration_id:X}{'x' if frame.is_extended_id else ''}"
+        kind = "r" if frame.is_remote_frame else "d"
+        payload = ""
+        if not frame.is_remote_frame:
+            payload = " " + " ".join(f"{byte:02X}" for byte in frame.data)
+        self._asc.write(
+            f"{self._asc_channel(frame.channel)}) {timestamp * 1000:.3f} Rx {identifier} "
+            f"{kind} {frame.dlc}{payload}\n"
+        )
 
     @staticmethod
     def _next_available_path(path: Path) -> Path:

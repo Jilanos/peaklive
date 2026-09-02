@@ -202,12 +202,14 @@ def test_parity_acquisition_setup_persists_and_stays_receive_only(qtbot, tmp_pat
     qtbot.addWidget(window)
 
     window.bitrate_selector.setCurrentIndex(window.bitrate_selector.findData(1_000_000))
+    window.capture_format_selector.setCurrentIndex(window.capture_format_selector.findData("trc"))
     window.controller_mode_selector.setCurrentIndex(
         window.controller_mode_selector.findData(ControllerMode.NORMAL_RECEIVE.value)
     )
 
     restored = store.load().selected
     assert restored.bitrate == 1_000_000
+    assert restored.recording.capture_format == "trc"
     assert restored.controller_mode is ControllerMode.NORMAL_RECEIVE
     assert "APP READ-ONLY" in window.mode_label.text()
 
