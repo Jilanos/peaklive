@@ -75,10 +75,7 @@ class GraphControlsBar(QWidget):
         self.mode_selector = QComboBox(objectName="workspaceModeSelector")
         self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
         self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
-        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        self.mode_selector.setMinimumContentsLength(5)
-        self.mode_selector.setFixedWidth(76)
-        self.row.addWidget(self.mode_selector)
+        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.view_group, view_row = self._group("graphViewGroup")
         self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
@@ -153,7 +150,7 @@ class GraphControlsBar(QWidget):
                 readout.setVisible(False)
 
     def _minimum_row_width(self) -> int:
-        widgets = (self.mode_selector, *self.groups)
+        widgets = self.groups
         return sum(widget.minimumSizeHint().width() for widget in widgets) + (
             self.row.spacing() * (len(widgets) - 1)
         )

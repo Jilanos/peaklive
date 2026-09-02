@@ -8,7 +8,7 @@ say the graphs are the workspace and the other two sections resize around them.
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QSplitter
+from PySide6.QtWidgets import QSizePolicy, QSplitter
 
 from peaklive.i18n import translate
 from peaklive.ui.layout_reflow import (
@@ -33,9 +33,22 @@ class WorkspaceCenter:
         layout = self.trace_graph_panel.body_layout
         self.graph_panel = GraphStackPanel()
         self.workspace_mode_selector = self.graph_panel.controls.mode_selector
+        # The selector must survive Graph-only/Trace-only/Report-only hiding.
+        # Reparent the existing authoritative control out of GraphStackPanel,
+        # rather than maintain two selectors that can drift apart.
+        self.graph_panel.controls.row.removeWidget(self.workspace_mode_selector)
+        self.workspace_mode_selector.setParent(self.trace_graph_panel.body)
+        self.workspace_mode_selector.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
+        )
+        self.workspace_mode_selector.setMinimumContentsLength(22)
+        self.workspace_mode_selector.setFixedWidth(
+            self.workspace_mode_selector.fontMetrics().horizontalAdvance("Graph + trace combo") + 42
+        )
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
+        layout.addWidget(self.workspace_mode_selector, 0)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")
         self.graph_panel.cursors_changed.connect(self._persist_layout)

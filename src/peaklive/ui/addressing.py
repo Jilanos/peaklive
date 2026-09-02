@@ -24,6 +24,10 @@ class WorkspaceAddressing:
         return self.acquisition_bar.bitrate_selector
 
     @property
+    def capture_format_selector(self):
+        return self.acquisition_bar.capture_format_selector
+
+    @property
     def controller_mode_selector(self):
         return self.acquisition_bar.controller_mode_selector
 

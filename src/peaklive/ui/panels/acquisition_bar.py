@@ -114,6 +114,15 @@ class AcquisitionBar(QFrame):
         self.bitrate_selector.currentIndexChanged.connect(self.options_changed)
         layout.addWidget(self.bitrate_selector)
 
+        layout.addWidget(QLabel(translate("acquisition.capture_format").upper()))
+        self.capture_format_selector = QComboBox(objectName="captureFormatSelector")
+        self.capture_format_selector.setAccessibleName(translate("acquisition.capture_format_accessible"))
+        self.capture_format_selector.setToolTip(translate("acquisition.capture_format_accessible"))
+        self.capture_format_selector.addItem(translate("acquisition.capture_format_asc"), "asc")
+        self.capture_format_selector.addItem(translate("acquisition.capture_format_trc"), "trc")
+        self.capture_format_selector.currentIndexChanged.connect(self.options_changed)
+        layout.addWidget(self.capture_format_selector)
+
         self.controller_mode_selector = QComboBox(objectName="controllerModeSelector")
         self.controller_mode_selector.setAccessibleName(translate("acquisition.mode_accessible"))
         self.controller_mode_selector.setToolTip(translate("acquisition.mode_accessible"))
@@ -232,6 +241,12 @@ class AcquisitionBar(QFrame):
         )
         self.bitrate_selector.blockSignals(False)
 
+        self.capture_format_selector.blockSignals(True)
+        self.capture_format_selector.setCurrentIndex(
+            max(0, self.capture_format_selector.findData(profile.recording.capture_format))
+        )
+        self.capture_format_selector.blockSignals(False)
+
         self.controller_mode_selector.blockSignals(True)
         self.controller_mode_selector.setCurrentIndex(
             max(0, self.controller_mode_selector.findData(profile.controller_mode.value))
@@ -239,7 +254,9 @@ class AcquisitionBar(QFrame):
         self.controller_mode_selector.blockSignals(False)
 
         recording = (
-            translate("acquisition.recording_on")
+            translate("acquisition.recording_on").format(
+                format=profile.recording.capture_format.upper()
+            )
             if profile.recording.enabled
             else translate("acquisition.recording_off")
         )
@@ -262,6 +279,9 @@ class AcquisitionBar(QFrame):
         bitrate = self.bitrate_selector.currentData()
         if bitrate is not None:
             profile.bitrate = int(bitrate)
+        capture_format = self.capture_format_selector.currentData()
+        if capture_format is not None:
+            profile.recording.capture_format = str(capture_format)
         mode = self.controller_mode_selector.currentData()
         if mode is not None:
             profile.controller_mode = ControllerMode(str(mode))

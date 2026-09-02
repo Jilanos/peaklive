@@ -34,6 +34,22 @@ def test_recorder_writes_compatible_asc_and_event_sidecar(tmp_path):
     assert started.with_suffix(".peaklive-events.jsonl").exists()
 
 
+def test_recorder_writes_replayable_pcan_view_text_trc(tmp_path):
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    settings = _settings(tmp_path, capture_format="trc")
+    started = recorder.start(settings, "Vehicle test", datetime(2026, 8, 22, 9, 30))
+    recorder.write_frame(CanFrame(10.0, 0x123, b"\x01\x02", channel="channel-2"))
+    recorder.write_frame(
+        CanFrame(10.1, 0x18FEF100, b"", "channel-2", True, True)
+    )
+    recorder.stop()
+
+    assert started.suffix == ".trc"
+    content = started.read_text(encoding="utf-8")
+    assert "2) 0.000 Rx 123 d 2 01 02" in content
+    assert "2) 100.000 Rx 18FEF100x r 0" in content
+
+
 def test_recorder_rotates_without_overwrite(tmp_path):
     recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
     recorder.start(_settings(tmp_path, rotate_bytes=1), "Bench", datetime(2026, 8, 22, 9, 30))

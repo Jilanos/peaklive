@@ -1,13 +1,14 @@
 ## item_046_deliver_explicit_lossless_asc_and_trc_acquisition_capture_export - Deliver explicit lossless ASC and TRC acquisition capture export
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 60%
 > Complexity: High
 > Theme: Raw capture integrity and interoperability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-02 15:00:42
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)

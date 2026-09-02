@@ -1,13 +1,14 @@
 ## item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable - Make every workspace selector and visible control legible, stable, and reachable
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 60%
 > Complexity: High
 > Theme: Workspace control reachability and geometry
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-02 15:00:42
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)

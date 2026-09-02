@@ -12,6 +12,7 @@ from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
+    QApplication,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -126,6 +127,11 @@ class MainWindow(
     # ---- construction --------------------------------------------------
 
     def _build_ui(self) -> None:
+        # Instrument controls should open directly.  These are application-wide
+        # Qt popup effects, covering profile/channel/bitrate and every owned
+        # combo/menu without changing keyboard or focus behaviour.
+        QApplication.setEffectEnabled(Qt.UIEffect.UI_AnimateCombo, False)
+        QApplication.setEffectEnabled(Qt.UIEffect.UI_AnimateMenu, False)
         self.setStyleSheet(APP_STYLE)
         root = QWidget(self)
         root_layout = QVBoxLayout(root)
