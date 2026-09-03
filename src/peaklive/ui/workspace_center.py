@@ -57,7 +57,7 @@ class WorkspaceCenter:
         self.workspace_mode_selector.setSizePolicy(
             QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
         )
-        self.workspace_mode_selector.setMinimumContentsLength(6)
+        self.workspace_mode_selector.setMinimumContentsLength(4)
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
