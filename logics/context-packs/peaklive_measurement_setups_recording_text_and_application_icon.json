@@ -1,0 +1,375 @@
+{
+  "budgets": {
+    "max_docs": 40,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field item_052_create_and_package_the_peaklive_application_icon task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+          "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+          "item_052_create_and_package_the_peaklive_application_icon"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md",
+      "ref": "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace",
+      "sections": {
+        "Goals": [
+          "- Provide a safe, explicit Save As workflow for reusable measurement setups.",
+          "- Define exactly what configuration a setup owns and ensure all supported fields round-trip independently.",
+          "- Make capture names distinguishable with a safe operator-provided text component.",
+          "- Establish a coherent, packaged application icon for runtime and Windows distribution."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "Make PeakLive practical for repeated bench configurations: an operator can preserve a complete measurement setup as a named independent copy, load it later, add a meaningful text label to capture filenames, and recognize the application immediately in the desktop environment."
+        ],
+        "References": [
+          "- Product back-reference: `req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity`",
+          "- Task back-reference: `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive reusable measurement setups and identifiable recording workspace"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "manage, reusable, peaklive, measurement, setups, recording, text, desktop, application, identity",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+          "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+          "item_052_create_and_package_the_peaklive_application_icon"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ]
+      },
+      "path": "logics/request/req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity.md",
+      "ref": "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The active measurement setup can be duplicated through a localized, keyboard-accessible Save As action. The operator supplies a non-empty, unique display name; cancellation or invalid/duplicate input leaves all existing setups unchanged; success creates a new identifier, selects the copy, and persists it atomically.",
+          "- AC2: A newly saved setup is an independent deep copy of the supported measurement configuration: channel, bitrate, controller mode, DBC paths plus enabled/conflict choices, shown/favorite signals, trace filters and columns, workspace layout, and recording settings. Later changes to either setup do not mutate the other. Runtime acquisition state, trace/event contents, recorder reservations, and capture files are never copied.",
+          "- AC3: The selector loads each saved setup and restores its persisted configuration reliably. Missing or unreadable DBC files are surfaced as non-destructive operator feedback; they do not prevent the rest of the setup from loading and do not delete stored references.",
+          "- AC4: Recording settings expose a localized accessible free-text field directly below Next iteration. RecordingSettings persists this value independently per setup, and the default template becomes {date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc for new profiles while existing templates remain unchanged unless the operator edits them.",
+          "- AC5: RecordingNaming accepts the documented {text} placeholder only as a text field, sanitizes it deterministically into one safe filename component, and uses exactly the same expanded value for preview, final/partial/reservation files, rotations, and event sidecars. Empty text produces a deliberate stable result and malformed/unsafe templates remain rejected.",
+          "- AC6: A bundled, license-safe PeakLive icon is assigned before MainWindow creation so the running desktop application has an icon in supported taskbars and window chrome. The Windows PyInstaller build embeds the same icon in the executable, and packaged resource discovery works from source and from the frozen application."
+        ],
+        "Needs": [
+          "- Let an operator create and save a reusable measurement setup from the currently active setup through a visible Save As action, then load a saved setup directly from the profile selector.",
+          "- Make the full persisted scope of a measurement setup intentional: CAN connection settings, DBC references and their local choices, signal presentation choices, trace/workspace preferences, and recording policy should round-trip together without copying capture history or runtime state.",
+          "- Add a profile-scoped free-text recording label immediately below Next iteration. The default recording template must include a {text} placeholder so the label appears in new capture filenames and their live preview.",
+          "- Give the running application and packaged Windows executable a distinctive PeakLive icon so it is identifiable in the taskbar, window chrome, and distribution artifact."
+        ]
+      },
+      "status": "Draft",
+      "title": "Manage reusable PeakLive measurement setups, recording text, and desktop application identity"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, persistent, save, loading, workflows, independent, measurement, setups",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/backlog/item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups.md",
+      "ref": "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Save As duplicates the active setup only after a valid unique name is confirmed; it immediately selects and persists the new independent setup.",
+          "- AC2: Cancel, blank input, and duplicate names make no persisted or in-memory configuration change and give accessible feedback where appropriate.",
+          "- AC3: After a restart, selecting each saved setup restores the documented configuration without cross-profile mutation.",
+          "- AC4: A missing DBC reference is reported without deleting it, blocking unrelated setup restoration, or altering DBC source-content ownership.",
+          "- AC5: Tests exercise all copy boundaries and the profile selector's update/selection behavior headlessly."
+        ],
+        "Problem": [
+          "- The app persists profiles internally but an operator cannot create a named copy of the current configuration through the UI.",
+          "- Existing selector behavior can only expose profiles that were pre-populated outside the supported workflow, and setup ownership/copy boundaries are undocumented in behavior."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add persistent Save As and loading workflows for independent measurement setups"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, safe, profile, scoped, recording, text, placeholder, editor, field",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/backlog/item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field.md",
+      "ref": "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A new profile defaults to the documented template with {text}, and existing profile templates are not silently rewritten.",
+          "- AC2: The text editor is immediately beneath iteration, updates only the selected profile, survives restart and setup switching, and refreshes the preview without creating files.",
+          "- AC3: Preview, normal capture, reservation markers, partial files, rotated segments, and event sidecars agree on the sanitized text-bearing basename.",
+          "- AC4: Empty and unsafe text values have documented deterministic safe outcomes; unsafe templates remain rejected by the same domain service.",
+          "- AC5: Focused non-Qt and offscreen Qt tests protect the grammar and regression-sensitive recording behavior."
+        ],
+        "Problem": [
+          "- The default template can distinguish date, time, setup, iteration, and rotation segment but cannot carry an operator-defined capture label.",
+          "- The filename service has a closed placeholder grammar, so a new text value must be introduced consistently rather than interpolated in the dialog or recorder."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add a safe profile-scoped recording text placeholder and editor field"
+    },
+    {
+      "ai_context": {
+        "keywords": "create, package, peaklive, application, icon",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_052_create_and_package_the_peaklive_application_icon"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/backlog/item_052_create_and_package_the_peaklive_application_icon.md",
+      "ref": "item_052_create_and_package_the_peaklive_application_icon",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The repository contains an original, documented, license-safe icon asset and the formats the current packaged Windows workflow requires.",
+          "- AC2: QApplication receives a non-null PeakLive icon before MainWindow is created, and the MainWindow inherits or explicitly uses it.",
+          "- AC3: peaklive.spec embeds the matching icon and includes any runtime resource needed by the frozen build.",
+          "- AC4: Automated tests verify source asset resolution, application/window icon configuration, and spec references; a release build validates the Windows artifact when that platform is available."
+        ],
+        "Problem": [
+          "- PeakLive starts without an application icon, leaving the taskbar and window chrome unidentified.",
+          "- The current PyInstaller specification does not embed an icon or declare an owned icon asset."
+        ]
+      },
+      "status": "Ready",
+      "title": "Create and package the PeakLive application icon"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+          "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+          "item_052_create_and_package_the_peaklive_application_icon"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md",
+      "ref": "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive reusable measurement setups and identifiable recording workspace"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, reusable, measurement, setups, recording, text, application, icon, identity",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+          "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+          "item_052_create_and_package_the_peaklive_application_icon"
+        ],
+        "prod": [
+          "prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace"
+        ],
+        "req": [
+          "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity"
+        ],
+        "task": [
+          "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+        ]
+      },
+      "path": "logics/tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md",
+      "ref": "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver reusable measurement setups, recording text, and application icon identity"
+    }
+  ],
+  "estimates": {
+    "char_count": 14620,
+    "companion_doc_count": 1,
+    "doc_count": 6
+  },
+  "generated_at": "2026-09-03T10:01:29Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity",
+      "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+      "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+      "item_052_create_and_package_the_peaklive_application_icon",
+      "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 296
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity,item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups,item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field,item_052_create_and_package_the_peaklive_application_icon,task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity",
+  "refs": [
+    "req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity",
+    "item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups",
+    "item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field",
+    "item_052_create_and_package_the_peaklive_application_icon",
+    "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md",
+      "ref": "task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity"
+    }
+  ]
+}
