@@ -1,0 +1,172 @@
+{
+  "title": "Manage reusable PeakLive measurement setups, recording text, and desktop application identity",
+  "references": [
+    "src/peaklive/domain/models.py",
+    "src/peaklive/services/profiles.py",
+    "src/peaklive/recording/naming.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/actions.py",
+    "src/peaklive/ui/panels/acquisition_bar.py",
+    "src/peaklive/ui/dialogs/recording.py",
+    "src/peaklive/app.py",
+    "peaklive.spec",
+    "scripts/build-windows.ps1",
+    "src/peaklive/i18n/en.json",
+    "tests/test_profiles.py",
+    "tests/test_recording_naming.py",
+    "tests/test_recording_settings_ui.py",
+    "tests/test_ui.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Reusable measurement setups and desktop identity",
+    "needs": [
+      "Let an operator create and save a reusable measurement setup from the currently active setup through a visible Save As action, then load a saved setup directly from the profile selector.",
+      "Make the full persisted scope of a measurement setup intentional: CAN connection settings, DBC references and their local choices, signal presentation choices, trace/workspace preferences, and recording policy should round-trip together without copying capture history or runtime state.",
+      "Add a profile-scoped free-text recording label immediately below Next iteration. The default recording template must include a {text} placeholder so the label appears in new capture filenames and their live preview.",
+      "Give the running application and packaged Windows executable a distinctive PeakLive icon so it is identifiable in the taskbar, window chrome, and distribution artifact."
+    ],
+    "context": [
+      "MeasurementProfile is already an atomic, local-only persisted object in profiles.json. It stores channel, bitrate, controller mode, DBC paths, DBC filtering/conflict choices, shown and favorite signals, trace filters/columns, workspace layout, and RecordingSettings.",
+      "The current profile selector can switch profiles already present in ProfileState, but the application exposes no supported UI for creating, naming, duplicating, importing, exporting, or otherwise managing profiles. A new installation creates only Default measurement.",
+      "Profile persistence stores DBC paths, not DBC file contents. A setup must report unavailable DBC files clearly and retain the stored path rather than silently changing the setup or embedding proprietary source data.",
+      "RecordingNaming accepts only date, time, profile, iteration, and segment placeholders. Its preview, expansion, collision reservation, ASC/TRC writers, and sidecar naming must receive the same safe text value without weakening the no-overwrite contract.",
+      "RecordingSettingsDialog already edits a profile in place, persists immediately through MainWindow, and places Next iteration above a non-mutating preview. It is the established location for the requested text field.",
+      "The native PySide6 entry point creates QApplication without an application icon, and the PyInstaller specification has no icon asset configured. The source tree currently has no owned application icon asset.",
+      "The repository has unrelated uncommitted replay/import artifacts. Delivery must not modify, stage, discard, or absorb them."
+    ],
+    "acceptance_criteria": [
+      "AC1: The active measurement setup can be duplicated through a localized, keyboard-accessible Save As action. The operator supplies a non-empty, unique display name; cancellation or invalid/duplicate input leaves all existing setups unchanged; success creates a new identifier, selects the copy, and persists it atomically.",
+      "AC2: A newly saved setup is an independent deep copy of the supported measurement configuration: channel, bitrate, controller mode, DBC paths plus enabled/conflict choices, shown/favorite signals, trace filters and columns, workspace layout, and recording settings. Later changes to either setup do not mutate the other. Runtime acquisition state, trace/event contents, recorder reservations, and capture files are never copied.",
+      "AC3: The selector loads each saved setup and restores its persisted configuration reliably. Missing or unreadable DBC files are surfaced as non-destructive operator feedback; they do not prevent the rest of the setup from loading and do not delete stored references.",
+      "AC4: Recording settings expose a localized accessible free-text field directly below Next iteration. RecordingSettings persists this value independently per setup, and the default template becomes {date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc for new profiles while existing templates remain unchanged unless the operator edits them.",
+      "AC5: RecordingNaming accepts the documented {text} placeholder only as a text field, sanitizes it deterministically into one safe filename component, and uses exactly the same expanded value for preview, final/partial/reservation files, rotations, and event sidecars. Empty text produces a deliberate stable result and malformed/unsafe templates remain rejected.",
+      "AC6: A bundled, license-safe PeakLive icon is assigned before MainWindow creation so the running desktop application has an icon in supported taskbars and window chrome. The Windows PyInstaller build embeds the same icon in the executable, and packaged resource discovery works from source and from the frozen application.",
+      "AC7: New and changed UI text is localized with accessible names/tooltips. Focused profile, naming, resource, packaging-manifest, and offscreen Qt tests cover Save As success/cancellation/validation, deep-copy isolation, persistence and loading, unavailable DBC feedback, text sanitization and collision reservation, preview non-mutation, taskbar/window icon assignment, and build-asset inclusion without regressing capture semantics."
+    ]
+  },
+  "product": {
+    "title": "PeakLive reusable measurement setups and identifiable recording workspace",
+    "overview": "Make PeakLive practical for repeated bench configurations: an operator can preserve a complete measurement setup as a named independent copy, load it later, add a meaningful text label to capture filenames, and recognize the application immediately in the desktop environment.",
+    "goals": [
+      "Provide a safe, explicit Save As workflow for reusable measurement setups.",
+      "Define exactly what configuration a setup owns and ensure all supported fields round-trip independently.",
+      "Make capture names distinguishable with a safe operator-provided text component.",
+      "Establish a coherent, packaged application icon for runtime and Windows distribution."
+    ],
+    "non_goals": [
+      "Cloud synchronisation, collaboration, version history, or sharing setups between machines in this delivery.",
+      "Embedding, copying, or distributing DBC source files inside a setup.",
+      "Deleting, renaming, merging, or importing/exporting setup files unless separately scoped.",
+      "Changing CAN receive/transmit behavior, capture ordering, ASC/TRC semantics, rotation thresholds, or overwrite protection.",
+      "A broad application rebrand, installer redesign, tray integration, or operating-system-specific icon set beyond the owned PeakLive application icon and current Windows artifact."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Add persistent Save As and loading workflows for independent measurement setups",
+      "priority": "High - reusable named setups are the primary operator workflow and must be reliable before its dependent recording settings are trusted.",
+      "complexity": "High",
+      "theme": "Measurement profile lifecycle",
+      "request_acs": ["AC1", "AC2", "AC3", "AC7"],
+      "problem": [
+        "The app persists profiles internally but an operator cannot create a named copy of the current configuration through the UI.",
+        "Existing selector behavior can only expose profiles that were pre-populated outside the supported workflow, and setup ownership/copy boundaries are undocumented in behavior."
+      ],
+      "scope_in": [
+        "Define a profile-store operation that deep-copies supported configuration with a new identifier and validates a unique, non-blank operator-facing name.",
+        "Add a localized Save As action and small modal naming interaction reachable from the profile selector or a clearly discoverable menu location.",
+        "Append, select, save, and restore profiles through the existing ProfileStore atomic persistence path.",
+        "Document and test the exact copied fields: CAN options, DBC paths and choices, signal state, trace/view preferences, workspace layout, and recording settings.",
+        "Keep unavailable DBC paths on load and give clear non-destructive feedback while loading all other profile state.",
+        "Provide offscreen Qt and domain/persistence tests for valid saves, duplicates, whitespace-only values, cancel, isolation, switch/restart, and missing DBC paths."
+      ],
+      "scope_out": [
+        "Profile deletion, rename, reordering, merging, import/export, or external sharing.",
+        "Duplicating active capture data, event history, pending reservations, or any hardware I/O state.",
+        "Modifying DBC parsing, conflict precedence, or CAN adapter behavior."
+      ],
+      "acceptance_criteria": [
+        "AC1: Save As duplicates the active setup only after a valid unique name is confirmed; it immediately selects and persists the new independent setup.",
+        "AC2: Cancel, blank input, and duplicate names make no persisted or in-memory configuration change and give accessible feedback where appropriate.",
+        "AC3: After a restart, selecting each saved setup restores the documented configuration without cross-profile mutation.",
+        "AC4: A missing DBC reference is reported without deleting it, blocking unrelated setup restoration, or altering DBC source-content ownership.",
+        "AC5: Tests exercise all copy boundaries and the profile selector's update/selection behavior headlessly."
+      ]
+    },
+    {
+      "title": "Add a safe profile-scoped recording text placeholder and editor field",
+      "priority": "High - capture identification must be correct, persistent, and collision-safe across every recorder path.",
+      "complexity": "Medium",
+      "theme": "Recording filename configuration",
+      "request_acs": ["AC4", "AC5", "AC7"],
+      "problem": [
+        "The default template can distinguish date, time, setup, iteration, and rotation segment but cannot carry an operator-defined capture label.",
+        "The filename service has a closed placeholder grammar, so a new text value must be introduced consistently rather than interpolated in the dialog or recorder."
+      ],
+      "scope_in": [
+        "Add a persisted free-text field to RecordingSettings and preserve backward compatibility for existing profiles.",
+        "Set the default new-profile template to {date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc while retaining existing stored templates verbatim.",
+        "Add {text} to the Qt-independent naming grammar, deterministic component sanitization, expansion, preview, reservation, rotated filenames, and sidecar derivation.",
+        "Place a localized text editor directly below Next iteration in RecordingSettingsDialog, with an accessible name, tooltip, immediate non-mutating preview, and per-profile persistence.",
+        "Specify the empty-text behavior and ensure it produces no unsafe separators, path traversal, malformed filename, or collision ambiguity.",
+        "Test text validation/sanitization, old-profile migration, preview, reservation collisions, rotation, profile isolation, and existing ASC/TRC behavior."
+      ],
+      "scope_out": [
+        "Arbitrary executable template expressions, directory paths, arbitrary format specifications, or shell expansion.",
+        "Changing existing capture format, rotation, disk-space, sidecar, or no-overwrite policies.",
+        "Recording only selected decoded signals instead of raw received frames."
+      ],
+      "acceptance_criteria": [
+        "AC1: A new profile defaults to the documented template with {text}, and existing profile templates are not silently rewritten.",
+        "AC2: The text editor is immediately beneath iteration, updates only the selected profile, survives restart and setup switching, and refreshes the preview without creating files.",
+        "AC3: Preview, normal capture, reservation markers, partial files, rotated segments, and event sidecars agree on the sanitized text-bearing basename.",
+        "AC4: Empty and unsafe text values have documented deterministic safe outcomes; unsafe templates remain rejected by the same domain service.",
+        "AC5: Focused non-Qt and offscreen Qt tests protect the grammar and regression-sensitive recording behavior."
+      ]
+    },
+    {
+      "title": "Create and package the PeakLive application icon",
+      "priority": "Medium - a visible app identity materially improves desktop usability but does not alter measurement correctness.",
+      "complexity": "Medium",
+      "theme": "Desktop application identity",
+      "request_acs": ["AC6", "AC7"],
+      "problem": [
+        "PeakLive starts without an application icon, leaving the taskbar and window chrome unidentified.",
+        "The current PyInstaller specification does not embed an icon or declare an owned icon asset."
+      ],
+      "scope_in": [
+        "Create an original, license-safe PeakLive icon source suitable for a CAN measurement workstation, plus the platform packaging format(s) required by the current Windows build.",
+        "Store the asset at a stable project-owned path and include it in source and frozen-resource discovery.",
+        "Assign the icon to QApplication before MainWindow construction and configure the existing PyInstaller specification to embed the matching Windows executable icon.",
+        "Test asset availability, Qt application/window icon assignment, and the packaging manifest/specification without requiring a Windows GUI during Linux CI."
+      ],
+      "scope_out": [
+        "Using third-party logos, trademarked vendor marks, or unlicensed icon packs.",
+        "A system tray feature, notifications, installer redesign, or broad visual rebrand.",
+        "Claiming pixel-level OS taskbar behavior that cannot be deterministically asserted outside the target desktop environment."
+      ],
+      "acceptance_criteria": [
+        "AC1: The repository contains an original, documented, license-safe icon asset and the formats the current packaged Windows workflow requires.",
+        "AC2: QApplication receives a non-null PeakLive icon before MainWindow is created, and the MainWindow inherits or explicitly uses it.",
+        "AC3: peaklive.spec embeds the matching icon and includes any runtime resource needed by the frozen build.",
+        "AC4: Automated tests verify source asset resolution, application/window icon configuration, and spec references; a release build validates the Windows artifact when that platform is available."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver reusable measurement setups, recording text, and application icon identity",
+    "plan": [
+      "Characterize current ProfileStore ownership, UI save paths, DBC reload behavior, recording naming/reservation flow, and PyInstaller resource conventions; establish test fixtures without touching unrelated worktree changes.",
+      "Implement and test the profile Save As lifecycle first, including deep-copy boundaries, atomic persistence, selector refresh/selection, validation, and non-destructive missing-DBC feedback.",
+      "Extend RecordingSettings and RecordingNaming with the safe {text} contract, migrate the recording dialog and localization, then verify preview/reservation/rotation/sidecar agreement and profile isolation.",
+      "Create the owned icon asset and connect it to the QApplication and Windows packaging specification, with resource and configuration tests appropriate to headless CI.",
+      "Run targeted and full tests, ruff, Logics validation, lint, and audit; record task-closeout evidence only after each acceptance criterion has traceable proof."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_measurement_setups_recording_text_and_application_icon.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

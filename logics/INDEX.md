@@ -21,6 +21,7 @@ _None_
 | [prod_011_peaklive_freeze_free_and_self_diagnosing_workstation](product/prod_011_peaklive_freeze_free_and_self_diagnosing_workstation.md) | PeakLive freeze-free and self-diagnosing workstation | Settled |  |  | product/prod_011_peaklive_freeze_free_and_self_diagnosing_workstation.md |
 | [prod_012_peaklive_trustworthy_raw_captures_and_universally_reachable_workspace_controls](product/prod_012_peaklive_trustworthy_raw_captures_and_universally_reachable_workspace_controls.md) | PeakLive trustworthy raw captures and universally reachable workspace controls | Settled |  |  | product/prod_012_peaklive_trustworthy_raw_captures_and_universally_reachable_workspace_controls.md |
 | [prod_013_peaklive_configurable_and_collision_safe_acquisition_recording](product/prod_013_peaklive_configurable_and_collision_safe_acquisition_recording.md) | PeakLive configurable and collision-safe acquisition recording | Settled |  |  | product/prod_013_peaklive_configurable_and_collision_safe_acquisition_recording.md |
+| [prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace](product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md) | PeakLive reusable measurement setups and identifiable recording workspace | Proposed |  |  | product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md |
 
 ## Roadmaps
 
@@ -44,6 +45,7 @@ _None_
 | [req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit](request/req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit.md) | Eliminate the remaining PeakLive freezes, dead ends, and silent failures found by the UI-thread audit | Done |  |  | request/req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit.md |
 | [req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy](request/req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy.md) | Make PeakLive lossless capture export and workspace controls trustworthy | Done |  |  | request/req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy.md |
 | [req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive](request/req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive.md) | Add CANalyzer-style recording configuration and collision-safe acquisition naming to PeakLive | Done |  |  | request/req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive.md |
+| [req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity](request/req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity.md) | Manage reusable PeakLive measurement setups, recording text, and desktop application identity | Draft |  |  | request/req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity.md |
 
 ## Backlog
 
@@ -98,6 +100,9 @@ _None_
 | [item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable](backlog/item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable.md) | Make every workspace selector and visible control legible, stable, and reachable | Done |  | 100% | backlog/item_047_make_every_workspace_selector_and_visible_control_legible_stable_and_reachable.md |
 | [item_048_deliver_a_deterministic_recording_naming_and_reservation_service](backlog/item_048_deliver_a_deterministic_recording_naming_and_reservation_service.md) | Deliver a deterministic recording naming and reservation service | Done |  | 100% | backlog/item_048_deliver_a_deterministic_recording_naming_and_reservation_service.md |
 | [item_049_expose_profile_recording_settings_with_live_filename_preview](backlog/item_049_expose_profile_recording_settings_with_live_filename_preview.md) | Expose profile recording settings with live filename preview | Done |  | 100% | backlog/item_049_expose_profile_recording_settings_with_live_filename_preview.md |
+| [item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups](backlog/item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups.md) | Add persistent Save As and loading workflows for independent measurement setups | Ready |  | 0% | backlog/item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups.md |
+| [item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field](backlog/item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field.md) | Add a safe profile-scoped recording text placeholder and editor field | Ready |  | 0% | backlog/item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field.md |
+| [item_052_create_and_package_the_peaklive_application_icon](backlog/item_052_create_and_package_the_peaklive_application_icon.md) | Create and package the PeakLive application icon | Ready |  | 0% | backlog/item_052_create_and_package_the_peaklive_application_icon.md |
 
 ## Tasks
 
@@ -117,6 +122,7 @@ _None_
 | [task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime](tasks/task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime.md) | Deliver a freeze-free, self-diagnosing PeakLive runtime | Done | Codex | 100% | tasks/task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime.md |
 | [task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls](tasks/task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls.md) | Implement trustworthy PeakLive capture exports and universally reachable controls | Done | Codex | 100% | tasks/task_013_implement_trustworthy_peaklive_capture_exports_and_universally_reachable_controls.md |
 | [task_014_implement_configurable_collision_safe_peaklive_recording_names](tasks/task_014_implement_configurable_collision_safe_peaklive_recording_names.md) | Implement configurable, collision-safe PeakLive recording names | Done |  | 100% | tasks/task_014_implement_configurable_collision_safe_peaklive_recording_names.md |
+| [task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity](tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md) | Deliver reusable measurement setups, recording text, and application icon identity | Ready |  | 0% | tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md |
 
 ## Runbooks
 
