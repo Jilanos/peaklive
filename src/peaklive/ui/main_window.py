@@ -36,7 +36,7 @@ from peaklive.services.worker import AcquisitionWorker
 from peaklive.ui.actions import WorkspaceActions
 from peaklive.ui.addressing import WorkspaceAddressing
 from peaklive.ui.catalog_controller import WorkspaceCatalog
-from peaklive.ui.dialogs import ColumnsDialog, ExportDialog
+from peaklive.ui.dialogs import ColumnsDialog, ExportDialog, RecordingSettingsDialog
 from peaklive.ui.ingest_controller import WorkspaceIngest
 from peaklive.ui.layout_reflow import WorkspaceReflow
 from peaklive.ui.panels import (
@@ -377,6 +377,16 @@ class MainWindow(
     def _columns_changed(self) -> None:
         self.trace_panel.apply_columns(self.selected_profile.trace_columns)
         self._save()
+
+    def _open_recording_dialog(self) -> RecordingSettingsDialog:
+        dialog = RecordingSettingsDialog(self.selected_profile, parent=self)
+        dialog.recording_changed.connect(self._recording_changed)
+        dialog.open()
+        return dialog
+
+    def _recording_changed(self) -> None:
+        self._save()
+        self.acquisition_bar.show_profile(self.selected_profile)
 
     def _open_export_dialog(self) -> ExportDialog:
         dialog = ExportDialog(

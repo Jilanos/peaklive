@@ -59,6 +59,41 @@ def test_worker_records_adapter_events_without_emitting_them_as_frames(qtbot, tm
     assert "PCAN error frame 0x4" in next(tmp_path.glob("*.jsonl")).read_text(encoding="utf-8")
 
 
+def test_worker_reports_a_successful_reservation_and_advances_the_iteration(qtbot, tmp_path):
+    profile = MeasurementProfile(name="Reserved")
+    profile.recording.directory = str(tmp_path)
+    profile.recording.iteration = 1
+    worker = AcquisitionWorker(FakeCanAdapter(), profile)
+    reserved: list = []
+    worker.recording_reserved.connect(lambda: reserved.append(True))
+
+    worker.start()
+    qtbot.waitUntil(lambda: bool(reserved))
+    worker.request_stop()
+    qtbot.waitUntil(lambda: not worker.isRunning())
+
+    assert profile.recording.iteration == 2
+
+
+def test_worker_never_reports_a_reservation_when_recording_is_disabled(qtbot, tmp_path):
+    profile = MeasurementProfile(name="Monitor only")
+    profile.recording.directory = str(tmp_path)
+    profile.recording.enabled = False
+    worker = AcquisitionWorker(FakeCanAdapter(), profile)
+    received_frames: list = []
+    reserved: list = []
+    worker.frames_received.connect(received_frames.extend)
+    worker.recording_reserved.connect(lambda: reserved.append(True))
+
+    worker.start()
+    qtbot.waitUntil(lambda: len(received_frames) == 32)
+    worker.request_stop()
+    qtbot.waitUntil(lambda: not worker.isRunning())
+
+    assert not reserved
+    assert not list(tmp_path.glob("*.asc"))
+
+
 def test_worker_surfaces_a_recording_disk_warning_as_an_event(qtbot, tmp_path):
     profile = MeasurementProfile(name="Low disk")
     profile.recording.directory = str(tmp_path)

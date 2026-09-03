@@ -28,6 +28,7 @@ class AcquisitionWorker(QThread):
     event_received = Signal(object)
     acquisition_failed = Signal(str)
     phase_changed = Signal(str)
+    recording_reserved = Signal()
 
     def __init__(
         self,
@@ -64,6 +65,11 @@ class AcquisitionWorker(QThread):
         try:
             event = session.start(self._profile)
             started = True
+            if self._profile.recording.enabled:
+                # The reservation already advanced the in-memory iteration on
+                # the shared profile object; the shell still owns persisting
+                # that value to disk through its normal save path.
+                self.recording_reserved.emit()
             self.status_changed.emit(event.message)
             self.phase_changed.emit(AcquisitionPhase.RUNNING)
             while not self._stop_requested.is_set():

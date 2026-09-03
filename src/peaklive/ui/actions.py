@@ -29,6 +29,7 @@ class WorkspaceActions:
         view_menu = bar.addMenu(translate("menu.view"))
         view_menu.addAction(self._action("menu.start", self._start_acquisition, "F5"))
         view_menu.addAction(self._action("menu.stop", self._stop_acquisition, "F6"))
+        view_menu.addAction(self._action("menu.recording_settings", self._open_recording_dialog))
         view_menu.addSeparator()
         view_menu.addAction(self._action("menu.fit", self.graph_panel.fit, "Ctrl+0"))
         view_menu.addAction(

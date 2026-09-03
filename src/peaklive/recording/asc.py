@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import TextIO
 
 from peaklive.domain import BusEvent, CanFrame, RecordingSettings
+from peaklive.recording.naming import RecordingNaming, Reservation
 
 # Probe free space once per batch rather than once per received frame.  The
 # same threshold semantics apply, while slow removable/network volumes cannot
@@ -46,12 +47,14 @@ class AscRecorder:
 
     def __init__(self, free_space: Callable[[Path], int] | None = None) -> None:
         self._free_space = free_space or self._default_free_space
+        self._naming = RecordingNaming()
         self._settings: RecordingSettings | None = None
         self._profile_name = "measurement"
         self._started_at: datetime | None = None
         self._timestamp_origin: float | None = None
         self._segment_number = 0
         self._segment: CaptureSegment | None = None
+        self._reservation: Reservation | None = None
         self._asc: TextIO | None = None
         self._events: TextIO | None = None
         self._result = CaptureResult()
@@ -69,7 +72,15 @@ class AscRecorder:
         settings: RecordingSettings,
         profile_name: str,
         now: datetime | None = None,
+        reservation: Reservation | None = None,
     ) -> Path:
+        """Open the first segment, honouring an already-reserved capture target.
+
+        The reservation, when given, was created by ``RecordingNaming.reserve``
+        immediately before this call: it names the exact first-segment path this
+        writer must use so the atomic first-free search and the raw writer never
+        disagree about which file is the acquisition's target.
+        """
         if self.active:
             raise RuntimeError("A recording is already active")
         self._settings = settings
@@ -78,6 +89,7 @@ class AscRecorder:
         self._started_at = now or datetime.now().astimezone()
         self._timestamp_origin = None
         self._segment_number = 0
+        self._reservation = reservation
         self._result = CaptureResult()
         self._warnings.clear()
         self._warned_low_space = False
@@ -155,26 +167,42 @@ class AscRecorder:
     def _open_next_segment(self) -> Path:
         assert self._settings is not None and self._started_at is not None
         self._segment_number += 1
-        default_directory = Path.home() / "Documents" / "PeakLive" / "Captures"
-        directory = Path(self._settings.directory or default_directory)
-        directory.mkdir(parents=True, exist_ok=True)
-        filename = self._expanded_filename(
-            self._settings,
-            self._profile_name,
-            self._started_at,
-            self._segment_number,
-            self._format,
-        )
-        final_path = self._next_available_path(directory / filename)
-        event_final = final_path.with_suffix(".peaklive-events.jsonl")
-        self._segment = CaptureSegment(
-            final_path=final_path,
-            partial_path=final_path.with_suffix(final_path.suffix + ".partial"),
-            event_final_path=event_final,
-            event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
-        )
+        if self._segment_number == 1 and self._reservation is not None:
+            reservation = self._reservation
+            reservation.final_path.parent.mkdir(parents=True, exist_ok=True)
+            self._segment = CaptureSegment(
+                final_path=reservation.final_path,
+                partial_path=reservation.partial_path,
+                event_final_path=reservation.event_final_path,
+                event_partial_path=reservation.event_partial_path,
+            )
+        else:
+            default_directory = Path.home() / "Documents" / "PeakLive" / "Captures"
+            directory = Path(self._settings.directory or default_directory)
+            directory.mkdir(parents=True, exist_ok=True)
+            filename = self._naming.expand(
+                self._settings.filename_template,
+                profile_name=self._profile_name,
+                now=self._started_at,
+                iteration=self._settings.iteration,
+                segment=self._segment_number,
+                capture_format=self._format,
+            )
+            final_path = self._next_available_path(directory / filename)
+            event_final = final_path.with_suffix(".peaklive-events.jsonl")
+            self._segment = CaptureSegment(
+                final_path=final_path,
+                partial_path=final_path.with_suffix(final_path.suffix + ".partial"),
+                event_final_path=event_final,
+                event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
+            )
         self._asc = self._segment.partial_path.open("w", encoding="utf-8", newline="\n")
         self._events = self._segment.event_partial_path.open("w", encoding="utf-8", newline="\n")
+        if self._segment_number == 1 and self._reservation is not None:
+            # The partial file now exists, which alone is enough to keep a
+            # future first-free search away from this target; the exclusive
+            # marker has served its purpose for the handoff race.
+            self._reservation.marker_path.unlink(missing_ok=True)
         if self._format == "trc":
             self._asc.write("; PeakLive PCAN-View text TRC recording\n")
             self._asc.write("; time values are milliseconds\n")
@@ -184,7 +212,7 @@ class AscRecorder:
             self._asc.write("// PeakLive ASC recording\n")
             started = self._started_at.strftime("%a %b %d %H:%M:%S %Y")
             self._asc.write(f"Begin Triggerblock {started}\n")
-        return final_path
+        return self._segment.final_path
 
     def _close_segment(self, clean: bool) -> None:
         assert self._segment is not None and self._asc is not None and self._events is not None
@@ -239,25 +267,6 @@ class AscRecorder:
         drained = list(self._warnings)
         self._warnings.clear()
         return drained
-
-    @staticmethod
-    def _expanded_filename(
-        settings: RecordingSettings,
-        profile_name: str,
-        now: datetime,
-        segment: int,
-        capture_format: str,
-    ) -> str:
-        safe_profile = re.sub(r"[^A-Za-z0-9._-]+", "_", profile_name).strip("._") or "measurement"
-        values = {
-            "date": now.strftime("%Y-%m-%d"),
-            "time": now.strftime("%H-%M-%S"),
-            "profile": safe_profile,
-            "iteration": settings.iteration,
-            "segment": segment,
-        }
-        filename = settings.filename_template.format(**values)
-        return str(Path(filename).with_suffix(f".{capture_format}"))
 
     def _write_trc_frame(self, timestamp: float, frame: CanFrame) -> None:
         """Emit the text TRC subset accepted by PeakLive's PCAN-View parser."""

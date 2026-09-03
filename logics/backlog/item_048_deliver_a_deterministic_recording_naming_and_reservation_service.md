@@ -1,14 +1,14 @@
 ## item_048_deliver_a_deterministic_recording_naming_and_reservation_service - Deliver a deterministic recording naming and reservation service
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Recording naming integrity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 10:37:16
+> Indicators reviewed: 2026-09-03 10:57:27
 
 # AI Context
 - Summary: Separates naming, occupancy search, and exclusive target reservation from Qt and the ASC/TRC writer.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - a recording target selected only by an unchecked increment can overwrite irreplaceable acquisition evidence.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_014_implement_configurable_collision_safe_peaklive_recording_names`
+
+# Notes
+- Task `task_014_implement_configurable_collision_safe_peaklive_recording_names` was finished via `logics-manager flow finish task` on 2026-09-03.

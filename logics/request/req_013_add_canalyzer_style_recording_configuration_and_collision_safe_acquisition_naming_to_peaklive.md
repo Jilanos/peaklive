@@ -1,13 +1,13 @@
 ## req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive - Add CANalyzer-style recording configuration and collision-safe acquisition naming to PeakLive
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Operator-configurable, collision-safe acquisition recording
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 10:37:16
+> Indicators reviewed: 2026-09-03 10:57:26
 
 # AI Context
 - Summary: Defines the profile-level naming contract and safe capture-start reservation, including the narrow placeholder grammar and no-overwrite invariant.
