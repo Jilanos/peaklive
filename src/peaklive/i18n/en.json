@@ -286,7 +286,24 @@
   },
   "recording": {
     "warning_disk": "Recording disk space is low: {free} free.",
-    "stopped_disk": "Recording stopped: free space fell below {threshold}."
+    "stopped_disk": "Recording stopped: free space fell below {threshold}.",
+    "title": "Recording settings",
+    "enabled": "Record acquisition",
+    "enabled_tooltip": "Write every received frame to a capture file while acquiring",
+    "directory": "Folder",
+    "directory_tooltip": "Destination folder for this profile's recordings",
+    "directory_default": "Default: Documents\\PeakLive\\Captures",
+    "browse": "Browse…",
+    "template": "Filename template",
+    "template_tooltip": "Placeholders: {date}, {time}, {profile}, {iteration:03d}, {segment:02d}",
+    "iteration": "Next iteration",
+    "iteration_tooltip": "The iteration acquisition will search from; the first free one is used",
+    "reset": "Reset",
+    "reset_tooltip": "Restart the next-iteration search at 1",
+    "preview": "Preview",
+    "preview_tooltip": "The filename acquisition would use right now; never written to disk",
+    "preview_invalid": "—",
+    "close": "Done"
   },
   "menu": {
     "file": "&File",
@@ -299,6 +316,7 @@
     "quit": "&Quit",
     "start": "&Start acquisition",
     "stop": "S&top acquisition",
+    "recording_settings": "&Recording settings…",
     "fullscreen": "&Fullscreen",
     "fit": "&Fit graphs",
     "focus_filter": "Focus trace &filter",

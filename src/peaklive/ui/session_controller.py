@@ -75,11 +75,16 @@ class WorkspaceSession:
         worker.status_changed.connect(self.status.showMessage)
         worker.event_received.connect(self._render_acquisition_event)
         worker.acquisition_failed.connect(self._acquisition_failed)
+        worker.recording_reserved.connect(self._recording_reserved)
         worker.phase_changed.connect(partial(self._worker_phase_changed, generation))
         worker.finished.connect(partial(self._acquisition_finished, generation))
         self._worker = worker
         self._show_lifecycle_phase()
         worker.start()
+
+    def _recording_reserved(self) -> None:
+        """Persist the next collision-safe iteration the worker just claimed."""
+        self._save()
 
     def _recover_timed_out_acquisition(self) -> None:
         """Abandon a stuck generation and start with a fresh adapter instance."""

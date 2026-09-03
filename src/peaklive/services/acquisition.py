@@ -6,13 +6,19 @@ from collections.abc import Iterable
 
 from peaklive.adapters.base import CanAdapter
 from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
-from peaklive.recording import AscRecorder, RecordingStopped
+from peaklive.recording import AscRecorder, RecordingNaming, RecordingStopped
 
 
 class AcquisitionSession:
-    def __init__(self, adapter: CanAdapter, recorder: AscRecorder) -> None:
+    def __init__(
+        self,
+        adapter: CanAdapter,
+        recorder: AscRecorder,
+        naming: RecordingNaming | None = None,
+    ) -> None:
         self._adapter = adapter
         self._recorder = recorder
+        self._naming = naming or RecordingNaming()
         self._notices: list[BusEvent] = []
         self.profile: MeasurementProfile | None = None
 
@@ -20,7 +26,16 @@ class AcquisitionSession:
         self.profile = profile
         event = self._adapter.connect(profile)
         if profile.recording.enabled:
-            self._recorder.start(profile.recording, profile.name)
+            reservation = self._naming.reserve(profile.recording, profile.name)
+            try:
+                self._recorder.start(profile.recording, profile.name, reservation=reservation)
+            except Exception:
+                # The writer never took ownership of the target: give it back
+                # so a retry, or a different profile, can claim it instead of
+                # burning a candidate for good.
+                reservation.release()
+                raise
+            profile.recording.iteration = reservation.next_iteration
             self._recorder.write_event(event)
         return event
 

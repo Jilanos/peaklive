@@ -1,0 +1,185 @@
+"""Qt-independent, collision-safe recording filename resolution and reservation.
+
+The naming policy is deliberately kept out of Qt and out of the ASC/TRC
+writer: a pure service can be tested with plain filesystem fixtures and a
+clock injected instead of touching wall time, and it stays the single place
+that knows the placeholder grammar, the sanitisation rule, and the atomic
+reservation contract that ``AcquisitionSession`` relies on to make an
+overwrite impossible.
+"""
+
+from __future__ import annotations
+
+import os
+import re
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+
+from peaklive.domain import RecordingSettings
+
+#: The only placeholders a template may reference, with the numeric ones
+#: additionally accepting a Python-compatible zero-padded width, e.g.
+#: ``{iteration:03d}`` or ``{iteration:03}``.
+_TOKEN_PATTERN = re.compile(r"\{([A-Za-z_]+)(?::([^{}]*))?\}")
+_NUMERIC_FIELDS = frozenset({"iteration", "segment"})
+_TEXT_FIELDS = frozenset({"date", "time", "profile"})
+_KNOWN_FIELDS = _NUMERIC_FIELDS | _TEXT_FIELDS
+_NUMERIC_SPEC = re.compile(r"^0\d{1,6}d?$")
+
+DEFAULT_CAPTURE_DIRECTORY = Path.home() / "Documents" / "PeakLive" / "Captures"
+
+
+class InvalidTemplateError(ValueError):
+    """A filename template is malformed, unsupported, empty, or path-escaping."""
+
+
+@dataclass(frozen=True, slots=True)
+class Reservation:
+    """One exclusively-owned, not-yet-written capture target."""
+
+    final_path: Path
+    partial_path: Path
+    event_final_path: Path
+    event_partial_path: Path
+    marker_path: Path
+    iteration: int
+    next_iteration: int
+
+    def release(self) -> None:
+        """Give up an unused reservation. Safe to call more than once."""
+        self.marker_path.unlink(missing_ok=True)
+
+
+class RecordingNaming:
+    """Resolves, previews, and atomically reserves recording filenames."""
+
+    def __init__(self, clock: Callable[[], datetime] | None = None) -> None:
+        self._clock = clock or (lambda: datetime.now().astimezone())
+
+    def validate_template(self, template: str) -> None:
+        """Raise :class:`InvalidTemplateError` for anything unsafe or unsupported."""
+        if not template or not template.strip():
+            raise InvalidTemplateError("Filename template cannot be empty.")
+        if "\x00" in template:
+            raise InvalidTemplateError("Filename template contains a null character.")
+        if "/" in template or "\\" in template:
+            raise InvalidTemplateError("Filename template cannot contain path separators.")
+        if ".." in template:
+            raise InvalidTemplateError("Filename template cannot contain '..'.")
+
+        literal = _TOKEN_PATTERN.sub("", template)
+        if literal != re.sub(r"[{}]", "", literal):
+            raise InvalidTemplateError("Filename template has an unmatched '{' or '}'.")
+
+        for name, spec in _TOKEN_PATTERN.findall(template):
+            if name not in _KNOWN_FIELDS:
+                raise InvalidTemplateError(f"Unsupported placeholder: {{{name}}}.")
+            if spec and name not in _NUMERIC_FIELDS:
+                raise InvalidTemplateError(f"Placeholder {{{name}}} does not accept a format spec.")
+            if spec and not _NUMERIC_SPEC.match(spec):
+                raise InvalidTemplateError(
+                    f"Unsupported format spec for {{{name}:{spec}}}; "
+                    "use a zero-padded numeric width such as {iteration:03d}."
+                )
+
+    def expand(
+        self,
+        template: str,
+        *,
+        profile_name: str,
+        now: datetime,
+        iteration: int,
+        segment: int,
+        capture_format: str,
+    ) -> str:
+        """Expand a validated template into a bare filename below any directory."""
+        self.validate_template(template)
+        values = {
+            "date": now.strftime("%Y-%m-%d"),
+            "time": now.strftime("%H-%M-%S"),
+            "profile": _sanitize_profile(profile_name),
+            "iteration": max(1, iteration),
+            "segment": max(1, segment),
+        }
+        filename = template.format(**values)
+        return str(Path(filename).with_suffix(f".{capture_format}"))
+
+    def preview(
+        self,
+        settings: RecordingSettings,
+        profile_name: str,
+        *,
+        now: datetime | None = None,
+        iteration: int | None = None,
+        segment: int = 1,
+    ) -> str:
+        """Return the filename acquisition would use now, without touching disk."""
+        moment = now or self._clock()
+        return self.expand(
+            settings.filename_template,
+            profile_name=profile_name,
+            now=moment,
+            iteration=settings.iteration if iteration is None else iteration,
+            segment=segment,
+            capture_format=settings.capture_format,
+        )
+
+    def resolve_directory(self, settings: RecordingSettings) -> Path:
+        return Path(settings.directory) if settings.directory else DEFAULT_CAPTURE_DIRECTORY
+
+    def reserve(
+        self,
+        settings: RecordingSettings,
+        profile_name: str,
+        *,
+        now: datetime | None = None,
+    ) -> Reservation:
+        """Search from the persisted iteration and atomically own the first free one.
+
+        A candidate is free only when no final, partial, or reservation
+        artifact already claims it. Ownership is taken with an exclusive
+        ``O_CREAT | O_EXCL`` marker create, which is atomic even against a
+        second process or a second instance of this service racing the same
+        directory.
+        """
+        directory = self.resolve_directory(settings)
+        directory.mkdir(parents=True, exist_ok=True)
+        moment = now or self._clock()
+        iteration = max(1, settings.iteration)
+        while True:
+            filename = self.expand(
+                settings.filename_template,
+                profile_name=profile_name,
+                now=moment,
+                iteration=iteration,
+                segment=1,
+                capture_format=settings.capture_format,
+            )
+            final_path = directory / filename
+            partial_path = final_path.with_suffix(final_path.suffix + ".partial")
+            marker_path = final_path.with_suffix(final_path.suffix + ".reserved")
+            if final_path.exists() or partial_path.exists() or marker_path.exists():
+                iteration += 1
+                continue
+            try:
+                fd = os.open(marker_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                iteration += 1
+                continue
+            os.close(fd)
+            event_final = final_path.with_suffix(".peaklive-events.jsonl")
+            return Reservation(
+                final_path=final_path,
+                partial_path=partial_path,
+                event_final_path=event_final,
+                event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
+                marker_path=marker_path,
+                iteration=iteration,
+                next_iteration=iteration + 1,
+            )
+
+
+def _sanitize_profile(profile_name: str) -> str:
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", profile_name).strip("._") or "measurement"
