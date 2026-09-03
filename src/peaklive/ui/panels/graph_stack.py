@@ -41,6 +41,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
 
     cursors_changed = Signal()
     view_changed = Signal()
+    measurement_visibility_changed = Signal(bool)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -64,10 +65,12 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.zoom_in_button.clicked.connect(lambda: self.zoom(1 / ZOOM_STEP))
         self.zoom_out_button.clicked.connect(lambda: self.zoom(ZOOM_STEP))
         self.fit_button.clicked.connect(self.fit)
+        self.fit_y_button.clicked.connect(self.fit_y)
         self.grid_checkbox.toggled.connect(self.set_grid)
         self.follow_checkbox.toggled.connect(self._follow_toggled)
         self.cursor_a_button.clicked.connect(lambda: self.place_cursor("a"))
         self.cursor_b_button.clicked.connect(lambda: self.place_cursor("b"))
+        self.measurement_visibility_button.toggled.connect(self._measurement_visibility_toggled)
         layout.addWidget(self.controls)
 
         # This is intentionally a single surface, not a scroll area full of
@@ -103,6 +106,14 @@ class GraphStackPanel(GraphNavigation, QWidget):
         return self.controls.fit_button
 
     @property
+    def fit_y_button(self) -> QToolButton:
+        return self.controls.fit_y_button
+
+    @property
+    def measurement_visibility_button(self) -> QToolButton:
+        return self.controls.measurement_visibility_button
+
+    @property
     def cursor_a_button(self) -> QToolButton:
         return self.controls.cursor_a_button
 
@@ -125,6 +136,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
     @property
     def cursor_summary(self) -> QLabel:
         return self.controls.cursor_summary
+
+    @property
+    def empty_state_label(self) -> QLabel:
+        return self.controls.empty_state_label
 
     @property
     def plots(self) -> dict[str, pg.PlotWidget]:
@@ -151,16 +166,23 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._curves.clear()
         self._cursor_lines.clear()
         anchor: pg.PlotWidget | None = None
-        for signal_name in wanted:
+        for index, signal_name in enumerate(wanted):
+            colour = theme.TRACE_PALETTE[index % len(theme.TRACE_PALETTE)]
             plot = pg.PlotWidget(objectName=f"livePlot_{signal_name.replace('.', '_')}")
             plot.setAccessibleName(translate("graph.plot_accessible"))
             plot.setBackground(theme.PLOT_BACKGROUND)
             plot.showGrid(x=self._grid, y=self._grid, alpha=0.25)
             plot.setLabel("left", signal_name)
             plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
+            # The colour is a convenience, not the identity: the axis label
+            # text (and this tooltip naming the colour) is what an operator
+            # who cannot rely on colour reads instead.
+            plot.setToolTip(
+                translate("graph.trace_colour").format(signal=signal_name, colour=colour)
+            )
             plot.setMinimumHeight(0)
             plot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            curve = plot.plot(pen=pg.mkPen(theme.CURVE, width=2))
+            curve = plot.plot(pen=pg.mkPen(colour, width=2))
             line_a = pg.InfiniteLine(
                 pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_A)
             )
@@ -218,8 +240,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if extent is not None and self.follow_live:
             self._apply_follow(extent)
         self.note.setVisible(not has_sample)
+        self.empty_state_label.setVisible(not has_sample)
         if not has_sample:
             self.note.show_message(translate("graph.empty"), "info")
+            self.empty_state_label.setText(translate("graph.empty"))
         self._refresh_window_label()
         self.refresh_measurements()
 
@@ -311,3 +335,20 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.measurement.refresh(
             self._store, tuple(self._plots), self.cursor_a, self.cursor_b
         )
+
+    # ---- measurement visibility ----------------------------------------
+
+    def set_measurement_values_visible(self, visible: bool) -> None:
+        """Hide or restore the values/statistics table, never the cursor lines.
+
+        The A/B `InfiniteLine`s live on each plot and are untouched here: only
+        `MeasurementPanel`'s own presentation is toggled.
+        """
+        self.measurement_visibility_button.blockSignals(True)
+        self.measurement_visibility_button.setChecked(visible)
+        self.measurement_visibility_button.blockSignals(False)
+        self.measurement.set_values_visible(visible)
+
+    def _measurement_visibility_toggled(self, visible: bool) -> None:
+        self.measurement.set_values_visible(visible)
+        self.measurement_visibility_changed.emit(visible)

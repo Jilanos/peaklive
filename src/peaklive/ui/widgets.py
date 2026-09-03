@@ -24,6 +24,47 @@ RAIL_WIDTH = 34
 #: a widget says "no maximum" again.
 UNBOUNDED_WIDTH = 16_777_215
 
+#: What a readout asks for, and the least it will accept. A readout must never
+#: size its cluster to the longest string it might ever hold: font metrics
+#: differ per platform, and a cluster wider than its row overflows rather than
+#: wraps.
+READOUT_PREFERRED_WIDTH = 96
+READOUT_MINIMUM_WIDTH = 40
+
+
+class ElidingLabel(QLabel):
+    """A readout that shortens its text to the width it was given.
+
+    `text()` keeps the full value - the shortening happens at paint time - so
+    callers and tests still read what the readout means, and the tooltip
+    carries the untruncated string.
+    """
+
+    def __init__(self, text: str, parent: QWidget | None = None) -> None:
+        super().__init__(text, parent)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.setToolTip(text)
+
+    def setText(self, text: str) -> None:  # noqa: N802 - Qt override
+        super().setText(text)
+        self.setToolTip(text)
+
+    def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        hint = super().sizeHint()
+        return QSize(min(hint.width(), READOUT_PREFERRED_WIDTH), hint.height())
+
+    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        return QSize(READOUT_MINIMUM_WIDTH, super().minimumSizeHint().height())
+
+    def paintEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
+        painter = QPainter(self)
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        elided = self.fontMetrics().elidedText(
+            self.text(), Qt.TextElideMode.ElideRight, self.width()
+        )
+        painter.drawText(self.rect(), int(self.alignment()), elided)
+        painter.end()
+
 
 class VerticalLabel(QLabel):
     """A label painted bottom-to-top, so a collapsed rail still names itself."""
@@ -74,7 +115,8 @@ class CollapsiblePanel(QFrame):
         self._expanded_margins = layout.contentsMargins()
         header = QHBoxLayout()
         self._header = header
-        self.heading = QLabel(title.upper(), objectName="panelHeading")
+        self.heading = ElidingLabel(title.upper())
+        self.heading.setObjectName("panelHeading")
         header.addWidget(self.heading, 1)
         self.toggle = QToolButton(objectName="collapseButton")
         self.toggle.setAccessibleName(translate("panel.collapse").format(panel=title))
@@ -100,6 +142,18 @@ class CollapsiblePanel(QFrame):
         layout = self.body.layout()
         assert isinstance(layout, QVBoxLayout)
         return layout
+
+    @property
+    def header_layout(self) -> QHBoxLayout:
+        """The panel's own title row, so a caller can extend it in place.
+
+        Inserting before the collapse toggle keeps that control last no
+        matter how many widgets a panel adds to its header.
+        """
+        return self._header
+
+    def insert_into_header(self, widget: QWidget) -> None:
+        self._header.insertWidget(self._header.count() - 1, widget)
 
     @property
     def is_collapsed(self) -> bool:

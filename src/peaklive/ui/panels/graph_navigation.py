@@ -100,14 +100,35 @@ class GraphNavigation:
         view.setXRange(center - span / 2, center + span / 2, padding=0)
 
     def fit(self) -> None:
-        """Show the whole extent of the session, capture or live."""
+        """Show the whole extent of every shown lane, on both axes.
+
+        X is set explicitly from the session's extent, and Y is an explicit
+        autorange per lane rather than pyqtgraph's own implicit default, so
+        the action is a deliberate "fit everything" rather than an X-only
+        reset that happens to leave Y wherever the library last left it.
+        """
         anchor = getattr(self, "anchor_plot", None)
         extent = self.global_extent()
         if anchor is None or extent is None:
             return
         self._window_chosen = False
         anchor.getViewBox().setXRange(extent[0], extent[1], padding=0.02)
+        for plot in self._plots.values():
+            plot.getViewBox().enableAutoRange(y=True)
         self._refresh_window_label()
+
+    def fit_y(self) -> None:
+        """Recompute every shown lane's Y range within the current X window.
+
+        The visible time window is left exactly where the operator set it -
+        only the amplitude axis is rescaled, which is what an operator needs
+        after zooming into a time window and losing a signal off the top or
+        bottom of its lane.
+        """
+        if not self._plots:
+            return
+        for plot in self._plots.values():
+            plot.getViewBox().enableAutoRange(y=True)
 
     def set_follow_live(self, enabled: bool) -> None:
         if self.follow_live == enabled:

@@ -1,0 +1,144 @@
+{
+  "title": "Make PeakLive graph comparison and signal controls unmistakably legible",
+  "references": [
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/measurement.py",
+    "src/peaklive/ui/panels/signal_explorer.py",
+    "src/peaklive/ui/panels/acquisition_bar.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/theme.py",
+    "src/peaklive/domain/models.py",
+    "tests/test_ui_workspace_refinement.py",
+    "tests/test_graph_navigation.py",
+    "tests/test_ui_analyst.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Graph comparison and signal-control legibility",
+    "needs": [
+      "Give every visible signal graph a distinct, deterministic and accessible colour so simultaneous traces can be identified immediately.",
+      "Make DBC and message expand/collapse affordances visible against the dark Signals tree, reclaim signal-name width, and replace per-row textual shown/favorite checkboxes with compact eye and star actions.",
+      "Make every drop-down trigger explicit and visually intentional on the dark theme, rather than a confusing white square.",
+      "Keep the Graphs/Trace title, view selection, empty-session state, zoom/resize actions, Play/Stop, cursor actions, and their timing readouts on one graph/trace header line; add explicit controls to fit X and Y together, fit only Y while preserving the current temporal zoom, and hide or restore cursor measurement values.",
+      "Preserve decoding, acquisition lifecycle, signal selection, graph navigation, cursor calculations, accessibility, keyboard operation, and saved measurement setups."
+    ],
+    "context": [
+      "GraphStackPanel currently applies the single theme.CURVE pen to every pyqtgraph curve. Its existing Fit action adjusts the global X extent only; a separate Y-only fit is not implemented.",
+      "The SignalExplorer tree currently uses a DBC > message > signal hierarchy, 14-pixel indentation, and two fixed 46-pixel shown/favorite checkbox columns. The checkbox indicators and QTreeView branches rely on the shared Qt stylesheet.",
+      "The current dark theme explicitly styles a combo box down arrow, but user observation reports a white click target that is ambiguous; the implementation must verify the rendered Qt platform result instead of assuming the stylesheet is sufficient.",
+      "The graph stack currently owns a compact navigation/display/cursor row; the workspace selector is reparented above it and Play/Stop live in the acquisition bar. The confirmed graph/trace header must bring together the Graphs/Trace title, view selection, no-sample state, zoom/resize controls, Play/Stop, cursor actions, and timing readouts on one line without changing lifecycle semantics.",
+      "The A/B, count, min, max, mean, RMS, and standard-deviation values are rendered in MeasurementPanel below the graph. Hiding them is a persisted presentation preference only: cursor lines A/B remain visible and computation/export data are unchanged.",
+      "Existing profiles persist shown and favorite signals and workspace layout. The delivery must add backward-compatible profile persistence for cursor-measurement-value visibility; curve colours remain deterministic rather than user-configured."
+    ],
+    "acceptance_criteria": [
+      "AC1: Every simultaneously shown signal has a visually distinct, deterministic curve colour that remains stable while the graph is refreshed; colour use remains legible on the dark graph background and is exposed in an accessible non-colour-only form.",
+      "AC2: In the Signals tree, DBC and message rows have a visible expanded/collapsed affordance in all enabled, hover, focus, and disabled states; it can be operated with mouse and keyboard.",
+      "AC3: A signal row reserves no separate shown/favorite checkbox columns. Its name remains the primary flexible field, while two compact eye and star controls occupy the leading reserved space; selected state is filled or highlighted and unselected state remains visibly muted, with tooltips, accessible names, and keyboard operation.",
+      "AC4: Signal search, shown-only, favorites-only, grouping, single-click show/hide, DBC enablement separation, and persisted shown/favorite selections retain their semantics after the compact tree redesign.",
+      "AC5: Every QComboBox used by the application has a clearly recognizable, high-contrast drop-down affordance and a coherent hover, focus, disabled, and popup state on supported desktop platforms; it is not rendered as an unexplained white square.",
+      "AC6: At 1024x768, 1280x720, and 1600x900, one horizontal graph/trace header contains the Graphs/Trace title, view selection (including Graphs only), empty-session state when applicable, zoom and resize controls, Play/Stop, cursor actions, and cursor timing readouts without wrapping, overlap, clipping, or inaccessible hidden actions.",
+      "AC7: The graph offers separate explicit actions for fit X+Y across all shown graphs and fit Y only across all shown graphs while preserving the current visible X range. Both actions handle empty/no-sample state safely, are keyboard reachable, named, tooltip-backed, and do not alter retained samples or cursor positions.",
+      "AC8: An explicit toggle hides and restores cursor measurement values (A, B, delta/count, min, max, mean, RMS, and standard deviation) without hiding A/B vertical cursor lines or changing cursor placement, computed values, graph navigation, or exports. The toggle state is visible, accessible, and persisted in the active measurement profile.",
+      "AC9: Offscreen and focused UI regression tests cover colour assignment/stability, tree affordance contrast and compact geometry, shown/favorite interaction and persistence, combo-box trigger states, one-row control containment, fit semantics, measurement visibility, and preserved existing graph/signal workflows."
+    ]
+  },
+  "product": {
+    "title": "PeakLive unmistakable graph comparison and signal controls",
+    "overview": "A precision usability pass for the diagnostic workspace: simultaneous graphs become easy to distinguish, the Signals tree prioritizes names and readable icon actions, and graph controls make fitting and cursor-data visibility explicit without changing CAN analysis semantics.",
+    "goals": [
+      "Reduce operator ambiguity when comparing several signals or navigating a nested DBC tree.",
+      "Make stateful controls readable, compact, accessible, and consistent with the dark instrument theme.",
+      "Preserve a time zoom while fitting amplitudes, and let operators suppress measurement data when it obscures the graph workspace.",
+      "Keep the graph and trace operating surface dense without hiding essential actions."
+    ],
+    "non_goals": [
+      "Change CAN acquisition, DBC decoding, retained data, cursor mathematics, measurement formulas, or export content.",
+      "Replace the DBC/message/signal tree with a different navigation model or add recording filters.",
+      "Introduce a user-editable colour palette, per-signal manual colour picking, or a full application rebrand unless separately approved.",
+      "Change acquisition lifecycle semantics while relocating the existing Play/Stop controls into the confirmed graph/trace header."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Deliver distinguishable graph traces and explicit graph fitting controls",
+      "priority": "High - comparing multiple signals and controlling their viewport are core diagnostic actions, and ambiguous traces or hidden fitting semantics directly obstruct analysis.",
+      "complexity": "High",
+      "theme": "Graph comparison controls",
+      "request_acs": ["AC1", "AC6", "AC7", "AC8", "AC9"],
+      "problem": [
+        "Every curve uses one cyan pen, so overlapping or adjacent signals cannot be rapidly distinguished.",
+        "The current Fit action restores the full X extent but does not express fitting every displayed Y range nor fitting Y while retaining a temporal zoom.",
+        "The cursor measurement table is permanently visible even when its A/B and range statistics distract from graph reading, and its visibility is not stored in a measurement profile."
+      ],
+      "scope_in": [
+        "Define a deterministic, colour-blind-considered palette and stable signal-to-colour mapping for simultaneously shown curves, with a non-colour identity fallback in accessible text and tooltips.",
+        "Add explicit fit-all-axes and fit-Y-only graph actions. Fit-all-axes sets the session X extent and recalculates each shown lane Y range; fit-Y-only recalculates only each shown lane Y range within the present visible X window.",
+        "Add a compact, accessible measurement-visibility control that hides/restores the values/statistics presentation but leaves A/B vertical cursor lines visible and does not affect calculations or data. Persist this preference in the active measurement profile with a backward-compatible default.",
+        "Place the Graphs/Trace title, view selection, no-sample state, zoom/resize controls, existing Play/Stop, cursor actions, and timing readouts on one header row, including supported viewport layout tests.",
+        "Preserve shared X links, cursor positions and lines, follow-live semantics, grid, existing zoom/pan behavior, acquisition lifecycle semantics, profile compatibility, and existing UI tests.",
+        "Add focused regression tests for colour stability, axis-fit semantics, cursor preservation, control accessibility, compact geometry, and measurement visibility."
+      ],
+      "scope_out": [
+        "Changing data acquisition, decoding, retention, measurement formulas, exported records, or numeric precision.",
+        "Implementing manual curve-colour customization or per-signal colour persistence.",
+        "Changing acquisition lifecycle semantics while moving the existing Play/Stop controls into the graph/trace header."
+      ],
+      "acceptance_criteria": [
+        "AC1: Every simultaneously shown signal has a visually distinct, deterministic curve colour that remains stable while the graph is refreshed; colour use remains legible on the dark graph background and is exposed in an accessible non-colour-only form.",
+        "AC6: At 1024x768, 1280x720, and 1600x900, one horizontal graph/trace header contains the Graphs/Trace title, view selection (including Graphs only), empty-session state when applicable, zoom and resize controls, Play/Stop, cursor actions, and cursor timing readouts without wrapping, overlap, clipping, or inaccessible hidden actions.",
+        "AC7: The graph offers separate explicit actions for fit X+Y across all shown graphs and fit Y only across all shown graphs while preserving the current visible X range. Both actions handle empty/no-sample state safely, are keyboard reachable, named, tooltip-backed, and do not alter retained samples or cursor positions.",
+        "AC8: An explicit toggle hides and restores cursor measurement values (A, B, delta/count, min, max, mean, RMS, and standard deviation) without hiding A/B vertical cursor lines or changing cursor placement, computed values, graph navigation, or exports. The toggle state is visible, accessible, and persisted in the active measurement profile.",
+        "AC9: Offscreen and focused UI regression tests cover colour assignment/stability, tree affordance contrast and compact geometry, shown/favorite interaction and persistence, combo-box trigger states, one-row control containment, fit semantics, measurement visibility, and preserved existing graph/signal workflows."
+      ]
+    },
+    {
+      "title": "Deliver a compact, high-contrast Signals tree and explicit drop-down affordances",
+      "priority": "High - signal selection is a primary analyst workflow, and hidden tree controls plus name truncation make the core selection state unreliable.",
+      "complexity": "High",
+      "theme": "Signal navigation and dark-theme affordances",
+      "request_acs": ["AC2", "AC3", "AC4", "AC5", "AC9"],
+      "problem": [
+        "Dark-on-dark or otherwise indistinct branch markers leave an operator unable to tell whether a DBC or message can be expanded or collapsed.",
+        "Nested DBC and message indentation plus two action columns consume width before the signal name, causing routine signal names to be cut off.",
+        "Checkboxes and a white drop-down click target do not clearly communicate their actions within the dark visual system."
+      ],
+      "scope_in": [
+        "Render explicit high-contrast tree branch icons for expanded and collapsed DBC/message nodes, with mouse, keyboard, focus, hover, and disabled states.",
+        "Redesign signal rows to reserve two leading compact action positions after the tree indentation: eye for shown and star for favorite. Use filled/highlighted selected states and muted-but-visible unselected states, without repeating shown/favorite words or a checkbox column/header.",
+        "Allocate remaining row width to the signal name with bounded elision, full-name tooltips, and accessible descriptions; retain DBC then message hierarchy rather than adding another indentation level.",
+        "Audit and improve QComboBox trigger/popup styling across the application so the arrow/action is explicit, readable, and consistent on the supported platform.",
+        "Retain all existing explorer filtering, grouping, shown/favorite behavior, keyboard activation, DBC-library ownership, and profile persistence.",
+        "Add offscreen tests for geometry, branch visibility/state, icon action states/accessibility, combo rendering contract, filtering, and persistence."
+      ],
+      "scope_out": [
+        "Changing DBC catalog management, conflict precedence, frame decoding, or per-signal recording behavior.",
+        "Removing DBC/message grouping or moving DBC enabled/disabled state into the Signals tree.",
+        "Replacing standard combo boxes with a custom menu system outside the stated affordance problem."
+      ],
+      "acceptance_criteria": [
+        "AC2: In the Signals tree, DBC and message rows have a visible expanded/collapsed affordance in all enabled, hover, focus, and disabled states; it can be operated with mouse and keyboard.",
+        "AC3: A signal row reserves no separate shown/favorite checkbox columns. Its name remains the primary flexible field, while two compact eye and star controls occupy the leading reserved space; selected state is filled or highlighted and unselected state remains visibly muted, with tooltips, accessible names, and keyboard operation.",
+        "AC4: Signal search, shown-only, favorites-only, grouping, single-click show/hide, DBC enablement separation, and persisted shown/favorite selections retain their semantics after the compact tree redesign.",
+        "AC5: Every QComboBox used by the application has a clearly recognizable, high-contrast drop-down affordance and a coherent hover, focus, disabled, and popup state on supported desktop platforms; it is not rendered as an unexplained white square.",
+        "AC9: Offscreen and focused UI regression tests cover colour assignment/stability, tree affordance contrast and compact geometry, shown/favorite interaction and persistence, combo-box trigger states, one-row control containment, fit semantics, measurement visibility, and preserved existing graph/signal workflows."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement legible PeakLive graph comparison and signal controls",
+    "plan": [
+      "Implement the confirmed one-line Graphs/Trace header contract and profile-persisted value-visibility preference while keeping A/B cursor lines and lifecycle semantics unchanged.",
+      "Add focused offscreen baselines for graph colours and axis fitting, signal-tree geometry and icon states, combo-box trigger states, measurement visibility, accessibility, and benchmark viewport containment.",
+      "Implement the graph comparison slice: stable palette, explicit X+Y and Y-only fit controls, and non-destructive cursor-measurement visibility.",
+      "Implement the explorer/theme slice: visible branch affordances, compact eye/star actions, name-first geometry, and explicit drop-down styling, while preserving filters and profiles.",
+      "Run targeted and full UI tests, i18n validation for changed copy, Logics validation, audit, and status-required lint. Record closeout proof only after both slices satisfy their acceptance criteria."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_graph_signal_legibility_and_controls.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

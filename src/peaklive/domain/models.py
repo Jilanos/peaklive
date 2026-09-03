@@ -341,6 +341,10 @@ class MeasurementProfile:
     trace_columns: list[TraceColumn] = field(default_factory=default_trace_columns)
     layout: WorkspaceLayout = field(default_factory=WorkspaceLayout)
     recording: RecordingSettings = field(default_factory=RecordingSettings)
+    #: Whether the cursor measurement values/statistics table is shown
+    #: (item_053 AC8). Defaults to today's always-visible behaviour, so a
+    #: profile saved before this field existed restores unchanged.
+    measurement_values_visible: bool = True
     updated_at: str = field(default_factory=lambda: datetime.now().astimezone().isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -358,6 +362,7 @@ class MeasurementProfile:
             "trace_columns": [column.to_dict() for column in self.trace_columns],
             "layout": self.layout.to_dict(),
             "recording": self.recording.to_dict(),
+            "measurement_values_visible": self.measurement_values_visible,
             "updated_at": self.updated_at,
         }
 
@@ -394,6 +399,7 @@ class MeasurementProfile:
             trace_columns=_columns_from_raw(raw.get("trace_columns")),
             layout=_layout_from_raw(raw),
             recording=RecordingSettings.from_dict(dict(raw.get("recording", {}))),
+            measurement_values_visible=bool(raw.get("measurement_values_visible", True)),
             updated_at=str(raw.get("updated_at", datetime.now().astimezone().isoformat())),
         )
 

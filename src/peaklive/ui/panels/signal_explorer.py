@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLineEdit,
-    QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
@@ -18,16 +17,17 @@ from PySide6.QtWidgets import (
 
 from peaklive.analysis.dbc import DbcSignalReference
 from peaklive.i18n import translate
+from peaklive.ui.panels.signal_row_icons import EYE, STAR, BranchAffordanceTree, RowActionDelegate
 
 SIGNAL_KEY_ROLE = Qt.ItemDataRole.UserRole
 ACCESSIBLE_ROLE = Qt.ItemDataRole.AccessibleTextRole
 
-#: Action columns are sized to their checkbox indicator, not to a word, so the
-#: signal name keeps the flexible width (item_026 AC1). The header still names
-#: what each column does.
+#: Action columns are sized to their pictogram, not to a word, so the signal
+#: name keeps the flexible width (item_026 AC1, item_054 AC3). The header
+#: still names what each column does.
 SHOWN_COLUMN = 1
 FAVORITE_COLUMN = 2
-ACTION_COLUMN_WIDTH = 46
+ACTION_COLUMN_WIDTH = 28
 NAME_COLUMN_MINIMUM = 160
 
 
@@ -66,7 +66,7 @@ class SignalExplorerPanel(QWidget):
         toggles.addWidget(self.favorites_only)
         layout.addLayout(toggles)
 
-        self.tree = QTreeWidget(objectName="signalExplorer")
+        self.tree = BranchAffordanceTree(objectName="signalExplorer")
         self.tree.setAccessibleName(translate("signals.explorer"))
         self.tree.setHeaderLabels(
             [
@@ -76,7 +76,11 @@ class SignalExplorerPanel(QWidget):
             ]
         )
         self.tree.setUniformRowHeights(True)
-        self.tree.setIndentation(14)
+        self.tree.setIndentation(18)
+        self._shown_delegate = RowActionDelegate(EYE, SIGNAL_KEY_ROLE, self.tree)
+        self._favorite_delegate = RowActionDelegate(STAR, SIGNAL_KEY_ROLE, self.tree)
+        self.tree.setItemDelegateForColumn(SHOWN_COLUMN, self._shown_delegate)
+        self.tree.setItemDelegateForColumn(FAVORITE_COLUMN, self._favorite_delegate)
         header = self.tree.header()
         header.setStretchLastSection(False)
         header.setMinimumSectionSize(ACTION_COLUMN_WIDTH)

@@ -2,59 +2,20 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
-    QLabel,
     QSizePolicy,
     QToolButton,
     QWidget,
 )
 
 from peaklive.i18n import translate
-
-#: What a readout asks for, and the least it will accept. A readout must never
-#: size its cluster to the longest string it might ever hold: font metrics
-#: differ per platform, and a cluster wider than the bar overflows rather than
-#: wraps.
-READOUT_PREFERRED_WIDTH = 96
-READOUT_MINIMUM_WIDTH = 40
-
-
-class ElidingLabel(QLabel):
-    """A readout that shortens its text to the width it was given.
-
-    `text()` keeps the full value - the shortening happens at paint time - so
-    callers and tests still read what the readout means, and the tooltip
-    carries the untruncated string.
-    """
-
-    def __init__(self, text: str, parent: QWidget | None = None) -> None:
-        super().__init__(text, parent)
-        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        self.setToolTip(text)
-
-    def setText(self, text: str) -> None:  # noqa: N802 - Qt override
-        super().setText(text)
-        self.setToolTip(text)
-
-    def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
-        hint = super().sizeHint()
-        return QSize(min(hint.width(), READOUT_PREFERRED_WIDTH), hint.height())
-
-    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
-        return QSize(READOUT_MINIMUM_WIDTH, super().minimumSizeHint().height())
-
-    def paintEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
-        painter = QPainter(self)
-        painter.setPen(self.palette().color(self.foregroundRole()))
-        elided = self.fontMetrics().elidedText(
-            self.text(), Qt.TextElideMode.ElideRight, self.width()
-        )
-        painter.drawText(self.rect(), int(self.alignment()), elided)
-        painter.end()
+from peaklive.ui.widgets import (
+    READOUT_MINIMUM_WIDTH,  # noqa: F401 - re-exported, existing import path
+    READOUT_PREFERRED_WIDTH,  # noqa: F401 - re-exported, existing import path
+    ElidingLabel,  # noqa: F401 - re-exported, existing import path
+)
 
 
 class GraphControlsBar(QWidget):
@@ -77,11 +38,18 @@ class GraphControlsBar(QWidget):
         self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
         self.mode_selector.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
+        self.empty_state_label = self._readout("graphHeaderEmptyState", "graph.empty")
+        self.empty_state_label.setVisible(False)
+
         self.view_group, view_row = self._group("graphViewGroup")
         self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
         self.zoom_out_button = self._nav("zoomOutButton", "graph.zoom_out", "−")
-        self.fit_button = self._nav("fitButton", "graph.fit", "⤢")
-        for button in (self.zoom_in_button, self.zoom_out_button, self.fit_button):
+        self.fit_button = self._nav("fitButton", "graph.fit_xy", "⤢")
+        self.fit_y_button = self._nav("fitYButton", "graph.fit_y", "↕")
+        view_buttons = (
+            self.zoom_in_button, self.zoom_out_button, self.fit_button, self.fit_y_button
+        )
+        for button in view_buttons:
             view_row.addWidget(button)
         self.window_label = self._readout("windowReadout", "graph.window_empty")
         view_row.addWidget(self.window_label)
@@ -97,6 +65,10 @@ class GraphControlsBar(QWidget):
         self.cursor_b_button = self._nav("cursorBButton", "graph.cursor_b", "B")
         cursor_row.addWidget(self.cursor_a_button)
         cursor_row.addWidget(self.cursor_b_button)
+        self.measurement_visibility_button = self._toggle(
+            "measurementVisibilityButton", "measure.toggle_values", "▤"
+        )
+        cursor_row.addWidget(self.measurement_visibility_button)
         self.cursor_summary = self._readout("cursorSummary", "graph.cursor_summary_empty")
         cursor_row.addWidget(self.cursor_summary)
 
@@ -143,11 +115,13 @@ class GraphControlsBar(QWidget):
         # A compact screen must retain every action.  Dynamic text can instead
         # step down into its tooltip before a layout is allowed to squeeze it
         # below a readable width (notably with Windows font metrics).
+        #
+        # cursor_summary is reparented into WorkspaceHeaderBar (item_053 AC6)
+        # and manages its own visibility there; touching it here as well would
+        # race the two resizeEvent handlers over the same shared widget.
         self.window_label.setVisible(True)
-        self.cursor_summary.setVisible(True)
-        for readout in (self.window_label, self.cursor_summary):
-            if self._minimum_row_width() > self.width():
-                readout.setVisible(False)
+        if self._minimum_row_width() > self.width():
+            self.window_label.setVisible(False)
 
     def _minimum_row_width(self) -> int:
         widgets = self.groups

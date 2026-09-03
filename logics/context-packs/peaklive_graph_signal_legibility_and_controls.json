@@ -1,0 +1,332 @@
+{
+  "budgets": {
+    "max_docs": 32,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances task_016_implement_legible_peaklive_graph_comparison_and_signal_controls --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+          "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/product/prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls.md",
+      "ref": "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls",
+      "sections": {
+        "Goals": [
+          "- Reduce operator ambiguity when comparing several signals or navigating a nested DBC tree.",
+          "- Make stateful controls readable, compact, accessible, and consistent with the dark instrument theme.",
+          "- Preserve a time zoom while fitting amplitudes, and let operators suppress measurement data when it obscures the graph workspace.",
+          "- Keep the graph and trace operating surface dense without hiding essential actions."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A precision usability pass for the diagnostic workspace: simultaneous graphs become easy to distinguish, the Signals tree prioritizes names and readable icon actions, and graph controls make fitting and cursor-data visibility explicit without changing CAN analysis semantics."
+        ],
+        "References": [
+          "- Product back-reference: `req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible`",
+          "- Task back-reference: `task_016_implement_legible_peaklive_graph_comparison_and_signal_controls`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive unmistakable graph comparison and signal controls"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "peaklive, graph, comparison, signal, controls, unmistakably, legible",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+          "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ]
+      },
+      "path": "logics/request/req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible.md",
+      "ref": "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Every simultaneously shown signal has a visually distinct, deterministic curve colour that remains stable while the graph is refreshed; colour use remains legible on the dark graph background and is exposed in an accessible non-colour-only form.",
+          "- AC2: In the Signals tree, DBC and message rows have a visible expanded/collapsed affordance in all enabled, hover, focus, and disabled states; it can be operated with mouse and keyboard.",
+          "- AC3: A signal row reserves no separate shown/favorite checkbox columns. Its name remains the primary flexible field, while two compact eye and star controls occupy the leading reserved space; selected state is filled or highlighted and unselected state remains visibly muted, with tooltips, accessible names, and keyboard operation.",
+          "- AC4: Signal search, shown-only, favorites-only, grouping, single-click show/hide, DBC enablement separation, and persisted shown/favorite selections retain their semantics after the compact tree redesign.",
+          "- AC5: Every QComboBox used by the application has a clearly recognizable, high-contrast drop-down affordance and a coherent hover, focus, disabled, and popup state on supported desktop platforms; it is not rendered as an unexplained white square.",
+          "- AC6: At the agreed supported viewports, the graph/trace operating controls requested for empty and populated sessions are contained on one horizontal command surface without wrapping, overlap, clipping, or inaccessible hidden actions."
+        ],
+        "Needs": [
+          "- Give every visible signal graph a distinct, deterministic and accessible colour so simultaneous traces can be identified immediately.",
+          "- Make DBC and message expand/collapse affordances visible against the dark Signals tree, reclaim signal-name width, and replace per-row textual shown/favorite checkboxes with compact eye and star actions.",
+          "- Make every drop-down trigger explicit and visually intentional on the dark theme, rather than a confusing white square.",
+          "- Keep the graph/trace operating surface compact on one line and add explicit controls to fit X and Y together, fit only Y while preserving the current temporal zoom, and hide or restore cursor measurement data.",
+          "- Preserve decoding, acquisition lifecycle, signal selection, graph navigation, cursor calculations, accessibility, keyboard operation, and saved measurement setups."
+        ]
+      },
+      "status": "Draft",
+      "title": "Make PeakLive graph comparison and signal controls unmistakably legible"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, distinguishable, graph, traces, explicit, fitting, controls",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/backlog/item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls.md",
+      "ref": "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Every simultaneously shown signal has a visually distinct, deterministic curve colour that remains stable while the graph is refreshed; colour use remains legible on the dark graph background and is exposed in an accessible non-colour-only form.",
+          "- AC6: At the agreed supported viewports, the graph/trace operating controls requested for empty and populated sessions are contained on one horizontal command surface without wrapping, overlap, clipping, or inaccessible hidden actions.",
+          "- AC7: The graph offers separate explicit actions for fit X+Y across all shown graphs and fit Y only across all shown graphs while preserving the current visible X range. Both actions handle empty/no-sample state safely, are keyboard reachable, named, tooltip-backed, and do not alter retained samples or cursor positions.",
+          "- AC8: An explicit toggle hides and restores the cursor measurement presentation (A, B, delta/count, min, max, mean, RMS, and standard deviation) without changing cursor placement, computed values, graph navigation, or exports. Its state is visible and accessible.",
+          "- AC9: Offscreen and focused UI regression tests cover colour assignment/stability, tree affordance contrast and compact geometry, shown/favorite interaction and persistence, combo-box trigger states, one-row control containment, fit semantics, measurement visibility, and preserved existing graph/signal workflows."
+        ],
+        "Problem": [
+          "- Every curve uses one cyan pen, so overlapping or adjacent signals cannot be rapidly distinguished.",
+          "- The current Fit action restores the full X extent but does not express fitting every displayed Y range nor fitting Y while retaining a temporal zoom.",
+          "- The cursor measurement table is permanently visible even when its A/B and range statistics distract from graph reading."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver distinguishable graph traces and explicit graph fitting controls"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, compact, high, contrast, signals, tree, explicit, drop, down, affordances",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/backlog/item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances.md",
+      "ref": "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC2: In the Signals tree, DBC and message rows have a visible expanded/collapsed affordance in all enabled, hover, focus, and disabled states; it can be operated with mouse and keyboard.",
+          "- AC3: A signal row reserves no separate shown/favorite checkbox columns. Its name remains the primary flexible field, while two compact eye and star controls occupy the leading reserved space; selected state is filled or highlighted and unselected state remains visibly muted, with tooltips, accessible names, and keyboard operation.",
+          "- AC4: Signal search, shown-only, favorites-only, grouping, single-click show/hide, DBC enablement separation, and persisted shown/favorite selections retain their semantics after the compact tree redesign.",
+          "- AC5: Every QComboBox used by the application has a clearly recognizable, high-contrast drop-down affordance and a coherent hover, focus, disabled, and popup state on supported desktop platforms; it is not rendered as an unexplained white square.",
+          "- AC9: Offscreen and focused UI regression tests cover colour assignment/stability, tree affordance contrast and compact geometry, shown/favorite interaction and persistence, combo-box trigger states, one-row control containment, fit semantics, measurement visibility, and preserved existing graph/signal workflows."
+        ],
+        "Problem": [
+          "- Dark-on-dark or otherwise indistinct branch markers leave an operator unable to tell whether a DBC or message can be expanded or collapsed.",
+          "- Nested DBC and message indentation plus two action columns consume width before the signal name, causing routine signal names to be cut off.",
+          "- Checkboxes and a white drop-down click target do not clearly communicate their actions within the dark visual system."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver a compact, high-contrast Signals tree and explicit drop-down affordances"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+          "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/product/prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls.md",
+      "ref": "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive unmistakable graph comparison and signal controls"
+    },
+    {
+      "ai_context": {
+        "keywords": "implement, legible, peaklive, graph, comparison, signal, controls",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+          "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances"
+        ],
+        "prod": [
+          "prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls"
+        ],
+        "req": [
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/tasks/task_016_implement_legible_peaklive_graph_comparison_and_signal_controls.md",
+      "ref": "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Implement legible PeakLive graph comparison and signal controls"
+    }
+  ],
+  "estimates": {
+    "char_count": 12962,
+    "companion_doc_count": 1,
+    "doc_count": 5
+  },
+  "generated_at": "2026-09-03T12:39:44Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible",
+      "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+      "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances",
+      "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 307
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible,item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls,item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances,task_016_implement_legible_peaklive_graph_comparison_and_signal_controls",
+  "refs": [
+    "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible",
+    "item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls",
+    "item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances",
+    "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_016_implement_legible_peaklive_graph_comparison_and_signal_controls.md",
+      "ref": "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+    }
+  ]
+}

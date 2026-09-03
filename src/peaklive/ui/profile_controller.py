@@ -96,6 +96,7 @@ class WorkspaceProfiles:
                 panel.set_collapsed(panel.key in layout.collapsed_panels)
             self._reflow_workspace()
             self.graph_panel.restore_cursors(layout.cursor_a, layout.cursor_b)
+            self.graph_panel.set_measurement_values_visible(profile.measurement_values_visible)
             if layout.fullscreen and not self.isFullScreen():
                 self.showFullScreen()
         finally:
@@ -132,6 +133,12 @@ class WorkspaceProfiles:
         layout.cursor_a = self.graph_panel.cursor_a
         layout.cursor_b = self.graph_panel.cursor_b
         layout.fullscreen = self.isFullScreen()
+        self._save()
+
+    def _persist_measurement_visibility(self, visible: bool) -> None:
+        if self._restoring:
+            return
+        self.selected_profile.measurement_values_visible = visible
         self._save()
 
     def _persist_trace_filters(self) -> None:
