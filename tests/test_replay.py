@@ -47,3 +47,20 @@ def test_honours_declared_decimal_asc_base(tmp_path):
     assert isinstance(records[0], CanFrame)
     assert records[0].arbitration_id == 291
     assert records[0].data == b"\x0a\xff"
+
+
+def test_streams_vector_asc_records_with_trailing_metadata(tmp_path):
+    trace = tmp_path / "vector.asc"
+    trace.write_text(
+        "base dec  timestamps absolute\n"
+        "  10.320011 1  427 Rx d 8 248 6 50 49 252 239 192 0 "
+        "Length = 225926 BitCount = 117 ID = 427\n",
+        encoding="utf-8",
+    )
+
+    records = list(iter_trace(trace))
+
+    assert len(records) == 1
+    assert isinstance(records[0], CanFrame)
+    assert records[0].arbitration_id == 427
+    assert records[0].data == bytes([248, 6, 50, 49, 252, 239, 192, 0])

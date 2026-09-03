@@ -110,8 +110,12 @@ def _frame(
         dlc = int(dlc_text)
     except ValueError:
         return BusEvent(timestamp, "replay_anomaly", "Invalid DLC", channel)
-    if not 0 <= dlc <= 8 or (kind.lower() != "r" and len(payload) != dlc):
+    if not 0 <= dlc <= 8 or (kind.lower() != "r" and len(payload) < dlc):
         return BusEvent(timestamp, "replay_anomaly", "Invalid classic CAN payload", channel)
+    # Vector ASC exports can append record metadata (for example ``Length``,
+    # ``BitCount``, and ``ID``) after the data bytes.  It is not part of the
+    # CAN payload, which is always exactly DLC bytes long.
+    payload = payload[:dlc]
     def valid_byte(value: str) -> bool:
         if base == 16:
             return bool(_HEX.fullmatch(value)) and len(value) <= 2
