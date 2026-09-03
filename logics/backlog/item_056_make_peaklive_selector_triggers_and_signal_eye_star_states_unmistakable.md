@@ -1,19 +1,20 @@
 ## item_056_make_peaklive_selector_triggers_and_signal_eye_star_states_unmistakable - Make PeakLive selector triggers and signal eye-star states unmistakable
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Dark-theme control and icon state clarity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-04 00:32:09
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Replace the ambiguous combo drop-down affordance and give the selected favorite a decisive bright yellow, distinct from the shown-eye's cyan, without weakening any existing eye/star behavior.
 - Keywords: peaklive, selector, triggers, signal, eye, star, states, unmistakable
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Changing combo-box drop-down styling or the Signals tree's eye/favorite pictogram colours or contrast.
+- Skip when: The change is only about DBC/message/signal hierarchy or unrelated control styling.
 
 # Problem
 - A white rectangle at the right of combo boxes does not communicate a drop-down action in the dark theme.
@@ -57,3 +58,9 @@
 # Priority
 - Priority: High - ambiguous selectors and weak shown/favorite states make common configuration and signal-selection actions unreliable.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_017_implement_compact_graph_controls_and_unmistakable_signal_states`
+
+# Notes
+- Task `task_017_implement_compact_graph_controls_and_unmistakable_signal_states` was finished via `logics-manager flow finish task` on 2026-09-04.

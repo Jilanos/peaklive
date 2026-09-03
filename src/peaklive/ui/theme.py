@@ -71,6 +71,11 @@ INDICATOR_CHECKED_BORDER: Final = "#bae6fd"
 ROW_ACTION_ACTIVE: Final = "#38bdf8"
 ROW_ACTION_MUTED: Final = "#7f92ad"
 
+#: A selected favorite needs to read as decisively different from the shown
+#: eye's cyan, not as another shade of it (item_056 AC5) - a bright, saturated
+#: yellow reserved for this one state.
+ROW_ACTION_FAVORITE_ACTIVE: Final = "#fde047"
+
 STATE_IDLE: Final = "#64748b"
 STATE_BUSY: Final = "#38bdf8"
 STATE_RUNNING: Final = "#22c55e"
@@ -115,6 +120,7 @@ QToolButton#collapseButton {{ background: #202b3a; color: {TEXT_BODY}; min-width
 QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18px; padding: 0; }}
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};
                                 min-width: 22px; padding: 0 2px; }}
+QToolButton[fitGlyph="true"] {{ font-size: 13px; }}
 QPushButton#chipButton {{ background: #1d2a3b; border: 1px solid {BORDER}; color: {ACCENT_SOFT};
                           font-weight: 600; min-height: 22px; padding: 0 8px; }}
 QPushButton:disabled, QToolButton:disabled {{ background: #334155; color: {TEXT_MUTED}; }}
@@ -142,13 +148,22 @@ CONTROL_STYLE: Final = f"""
 QComboBox {{ background: {CONTROL_SURFACE}; color: {TEXT}; }}
 QComboBox:hover {{ background: {CONTROL_HOVER}; border-color: {CONTROL_BORDER}; }}
 QComboBox:disabled {{ background: {DISABLED_BACKGROUND}; color: {DISABLED_TEXT}; }}
-QComboBox::drop-down {{ border: none; width: 18px; }}
+QComboBox::drop-down {{
+    subcontrol-origin: padding; subcontrol-position: top right;
+    background: {CONTROL_SURFACE}; border: none; border-left: 1px solid {CONTROL_BORDER};
+    width: 20px; border-top-right-radius: 4px; border-bottom-right-radius: 4px;
+}}
+QComboBox:hover::drop-down {{ background: {CONTROL_HOVER}; }}
+QComboBox::drop-down:disabled {{ background: {DISABLED_BACKGROUND}; }}
+QComboBox::drop-down:on {{ background: {SELECTION_BACKGROUND}; }}
 QComboBox::down-arrow {{
+    image: none;
     border-left: 4px solid transparent; border-right: 4px solid transparent;
-    border-top: 5px solid {TEXT_BODY}; height: 0; width: 0;
+    border-top: 6px solid {TEXT}; height: 0; width: 0;
 }}
 QComboBox::down-arrow:disabled {{ border-top-color: {DISABLED_TEXT}; }}
 QComboBox::down-arrow:hover {{ border-top-color: {FOCUS_RING}; }}
+QComboBox::down-arrow:on {{ border-top-color: {SELECTION_TEXT}; }}
 QComboBox QAbstractItemView {{
     background: {POPUP_SURFACE}; border: 1px solid {CONTROL_BORDER}; color: {TEXT};
     outline: none; selection-background-color: {SELECTION_BACKGROUND};

@@ -1,14 +1,23 @@
 ## prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states - PeakLive compact graph controls and unmistakable signal states
 > Date: 2026-09-03
-> Status: Proposed
+> Status: Settled
 > Related request: `req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states`
-> Related backlog: `item_055_simplify_and_make_the_peaklive_graph_command_row_legible`, `item_056_make_peaklive_selector_triggers_and_signal_eye_star_states_unmistakable`
+> Related backlog: `item_055_simplify_and_make_the_peaklive_graph_command_row_legible`
 > Related task: `task_017_implement_compact_graph_controls_and_unmistakable_signal_states`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-04 00:32:09
 
 # Overview
 A focused visual cleanup makes every selector look intentional, leaves the graph header to the controls operators actually use, gives both cursor times enough room, and makes signal visibility and favorites obvious at a glance.
+
+```mermaid
+flowchart LR
+  Combo[Ambiguous drop-down] --> Trigger[High-contrast trigger]
+  Header[Crowded graph header] --> Compact[Fit, Follow live, cursors only]
+  Compact --> Readout[Complete A/B cursor times]
+  Star[Cyan-shaded favorite] --> Yellow[Decisive bright-yellow favorite]
+```
 
 # Goals
 - Eliminate ambiguous drop-down and signal-state affordances in the dark workspace.
@@ -35,5 +44,5 @@ A focused visual cleanup makes every selector look intentional, leaves the graph
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states`
+- Product back-reference: `item_055_simplify_and_make_the_peaklive_graph_command_row_legible`
 - Task back-reference: `task_017_implement_compact_graph_controls_and_unmistakable_signal_states`
