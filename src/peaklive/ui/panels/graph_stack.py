@@ -16,7 +16,7 @@ from peaklive.analysis import SeriesStore
 from peaklive.i18n import translate
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
-from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, ZOOM_STEP, GraphNavigation
+from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 
@@ -51,7 +51,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._axis_mode = AXIS_CAPTURE
         self._live_extent_end = 0.0
         self._window_chosen = False
-        self._grid = True
         self._plots: dict[str, pg.PlotWidget] = {}
         self._curves: dict[str, pg.PlotDataItem] = {}
         self._cursor_lines: dict[str, tuple[pg.InfiniteLine, pg.InfiniteLine]] = {}
@@ -62,11 +61,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.controls = GraphControlsBar()
-        self.zoom_in_button.clicked.connect(lambda: self.zoom(1 / ZOOM_STEP))
-        self.zoom_out_button.clicked.connect(lambda: self.zoom(ZOOM_STEP))
         self.fit_button.clicked.connect(self.fit)
         self.fit_y_button.clicked.connect(self.fit_y)
-        self.grid_checkbox.toggled.connect(self.set_grid)
         self.follow_checkbox.toggled.connect(self._follow_toggled)
         self.cursor_a_button.clicked.connect(lambda: self.place_cursor("a"))
         self.cursor_b_button.clicked.connect(lambda: self.place_cursor("b"))
@@ -94,14 +90,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
     # ---- construction -------------------------------------------------
 
     @property
-    def zoom_in_button(self) -> QToolButton:
-        return self.controls.zoom_in_button
-
-    @property
-    def zoom_out_button(self) -> QToolButton:
-        return self.controls.zoom_out_button
-
-    @property
     def fit_button(self) -> QToolButton:
         return self.controls.fit_button
 
@@ -122,16 +110,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
         return self.controls.cursor_b_button
 
     @property
-    def grid_checkbox(self) -> QToolButton:
-        return self.controls.grid_checkbox
-
-    @property
     def follow_checkbox(self) -> QToolButton:
         return self.controls.follow_checkbox
-
-    @property
-    def window_label(self) -> QLabel:
-        return self.controls.window_label
 
     @property
     def cursor_summary(self) -> QLabel:
@@ -171,7 +151,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
             plot = pg.PlotWidget(objectName=f"livePlot_{signal_name.replace('.', '_')}")
             plot.setAccessibleName(translate("graph.plot_accessible"))
             plot.setBackground(theme.PLOT_BACKGROUND)
-            plot.showGrid(x=self._grid, y=self._grid, alpha=0.25)
+            plot.showGrid(x=True, y=True, alpha=0.25)
             plot.setLabel("left", signal_name)
             plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
             # The colour is a convenience, not the identity: the axis label
@@ -244,7 +224,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if not has_sample:
             self.note.show_message(translate("graph.empty"), "info")
             self.empty_state_label.setText(translate("graph.empty"))
-        self._refresh_window_label()
         self.refresh_measurements()
 
     def _seed_cursors(self, bounds: tuple[float, float]) -> None:
@@ -258,13 +237,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
             changed = True
         if changed:
             self._apply_cursor_lines()
-
-    # ---- navigation ---------------------------------------------------
-
-    def set_grid(self, enabled: bool) -> None:
-        self._grid = enabled
-        for plot in self._plots.values():
-            plot.showGrid(x=enabled, y=enabled, alpha=0.25)
 
     # ---- cursors ------------------------------------------------------
 
@@ -321,7 +293,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
             translate("graph.cursor_summary").format(
                 cursor_a=f"{self.cursor_a:.3f}s",
                 cursor_b=f"{self.cursor_b:.3f}s",
-                delta=f"{abs(self.cursor_b - self.cursor_a):.3f}s",
             )
         )
 

@@ -11,8 +11,6 @@ operator who zooms keeps the window they chose.
 
 from __future__ import annotations
 
-from peaklive.i18n import translate
-
 #: A completed capture is a fixed thing to read: its extent is exactly the span
 #: of the samples it retained.
 AXIS_CAPTURE = "capture"
@@ -115,7 +113,6 @@ class GraphNavigation:
         anchor.getViewBox().setXRange(extent[0], extent[1], padding=0.02)
         for plot in self._plots.values():
             plot.getViewBox().enableAutoRange(y=True)
-        self._refresh_window_label()
 
     def fit_y(self) -> None:
         """Recompute every shown lane's Y range within the current X window.
@@ -151,23 +148,5 @@ class GraphNavigation:
         return float(low), float(high)
 
     def _x_range_changed(self) -> None:
-        self._refresh_window_label()
         self.view_changed.emit()
-
-    def _refresh_window_label(self) -> None:
-        window = self.visible_window()
-        extent = self.global_extent()
-        if window is None or extent is None:
-            self.window_label.setText(translate("graph.window_empty"))
-            return
-        low, high = window
-        full_low, full_high = extent
-        full_span = full_high - full_low
-        span = high - low
-        zoom = full_span / span if span > 0 and full_span > 0 else 1.0
-        self.window_label.setText(
-            translate("graph.window").format(
-                start=f"{low:.3f}s", end=f"{high:.3f}s", zoom=f"{zoom:.1f}"
-            )
-        )
 

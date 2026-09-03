@@ -1,18 +1,19 @@
 ## req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states - Compact PeakLive graph controls and unmistakable signal states
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
-> Understanding: 90%
-> Confidence: 85%
+> Status: Done
+> Understanding: 95%
+> Confidence: 90%
 > Complexity: Medium
 > Theme: Compact graph controls and signal-state clarity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-09-04 00:32:08
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Compact the graph command row and make combo drop-downs and signal eye/favorite states unmistakable in the dark theme, without touching acquisition, decoding, or persistence semantics.
 - Keywords: compact, peaklive, graph, controls, unmistakable, signal, states
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Scoping or reviewing the compact-controls and signal-state-clarity delivery.
+- Skip when: The change is unrelated to graph header controls, combo styling, or eye/favorite state rendering.
 
 # Needs
 - Replace the unexplained white rectangle at the right of every application drop-down, including channel, measurement profile, Graphs only, and Trace only, with a clear dark-theme drop-down affordance.

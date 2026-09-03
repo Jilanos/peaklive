@@ -78,6 +78,13 @@ def _with_dbc(qtbot, tmp_path, **kwargs) -> MainWindow:
     return window
 
 
+def _speed_frame(timestamp: float, raw_speed: int):
+    from peaklive.domain import CanFrame
+
+    payload = raw_speed.to_bytes(2, "little") + b"\x00" * 6
+    return CanFrame(timestamp, 291, payload)
+
+
 def _signal_item(window: MainWindow, key: str):
     for item in window.signal_explorer.findItems(
         "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
@@ -613,20 +620,16 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
 
     assert [group.objectName() for group in bar.groups] == [
         "graphViewGroup",
-        "graphDisplayGroup",
         "graphCursorGroup",
     ]
-    assert bar.grid_checkbox.parent() is bar.display_group
-    assert bar.follow_checkbox.parent() is bar.display_group
-    assert bar.window_label.parent() is bar.view_group
     # These commands were reparented into the one-line Graphs/Trace header
     # (item_053 AC6) - GraphControlsBar still owns and wires them, it just no
     # longer displays them in its own row.
     header = window.workspace_header
     for control in (
-        bar.zoom_in_button,
         bar.fit_button,
         bar.fit_y_button,
+        bar.follow_checkbox,
         bar.cursor_a_button,
         bar.cursor_b_button,
         bar.measurement_visibility_button,
@@ -650,17 +653,20 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
         assert group.x() >= 0
         assert group.x() + group.width() <= bar.width() + 1
 
-    assert bar.window_label.isVisible() or bar.window_label.toolTip()
-
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
 def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     qtbot, tmp_path, size
 ):
-    """item_053 AC6: title, view selection, fit, Play/Stop, and cursor actions
-    on one row, at every bench viewport, without wrapping, overlap, or clipping.
+    """item_053 AC6 / item_055 AC3: title, view selection, fit, Follow live,
+    Play/Stop, and cursor actions on one row, at every bench viewport, without
+    wrapping, overlap, or clipping - and both complete cursor timestamps stay
+    visible together rather than falling back to a tooltip.
     """
     window = _with_dbc(qtbot, tmp_path, size=size)
+    window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
+    window.graph_panel.place_cursor("a", 1078.077)
+    window.graph_panel.place_cursor("b", 84.387)
     qtbot.wait(20)
     header = window.workspace_header
     heading = window.trace_graph_panel.heading
@@ -679,6 +685,7 @@ def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     assert window.acquisition_bar.stop_button in controls
     assert window.graph_panel.fit_button in controls
     assert window.graph_panel.fit_y_button in controls
+    assert window.graph_panel.follow_checkbox in controls
     assert window.graph_panel.cursor_a_button in controls
     assert window.graph_panel.cursor_b_button in controls
 
@@ -696,7 +703,9 @@ def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
         assert 0 <= left <= right <= header.width(), control.objectName()
 
     summary = window.graph_panel.cursor_summary
-    assert summary.isVisible() or summary.toolTip()
+    assert summary.isVisible()
+    assert "1078.077" in summary.text() and "84.387" in summary.text()
+    assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -804,7 +813,6 @@ def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot, tmp_path):
     long_text = "A 1234.567s · B 9876.543s · Δ 8641.976s " * 4
 
     bar.cursor_summary.setText(long_text)
-    bar.window_label.setText(long_text)
     qtbot.wait(20)
 
     for group in bar.groups:
@@ -836,7 +844,7 @@ def test_graph_commands_stay_in_one_compact_toolbar_row(qtbot):
     bar.show()
     qtbot.waitExposed(bar)
 
-    assert bar.layout().count() == 3
+    assert bar.layout().count() == 2
     for control in _leaf_controls(bar):
         assert control.parentWidget().mapTo(bar, control.pos()).y() >= 0
         assert _paints_its_content(control), control.objectName()

@@ -201,7 +201,7 @@ def test_stacked_plots_share_one_time_axis(qtbot, tmp_path):
     assert plots[1].getViewBox().viewRange()[0] == pytest.approx([1.0, 2.0], abs=1e-6)
 
 
-def test_graph_navigation_controls_change_the_window_and_report_the_zoom(qtbot, tmp_path):
+def test_graph_navigation_controls_change_the_visible_window(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
     window._render_frames([CanFrame(float(i), 0x100, bytes([i])) for i in range(20)])
     graph = window.graph_panel
@@ -213,7 +213,6 @@ def test_graph_navigation_controls_change_the_window_and_report_the_zoom(qtbot, 
     zoomed = graph.visible_window()
     assert zoomed is not None
     assert (zoomed[1] - zoomed[0]) < (full[1] - full[0])
-    assert "×" in graph.window_label.text()
     # Zooming leaves follow-live so the operator's window is not yanked back.
     assert not graph.follow_live
 
@@ -221,9 +220,6 @@ def test_graph_navigation_controls_change_the_window_and_report_the_zoom(qtbot, 
     refit = graph.visible_window()
     assert refit is not None
     assert (refit[1] - refit[0]) == pytest.approx(full[1] - full[0], rel=1e-6)
-
-    graph.grid_checkbox.setChecked(False)
-    assert not graph._grid
 
 
 def test_follow_live_tracks_new_samples_and_yields_to_navigation(qtbot, tmp_path):

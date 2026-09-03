@@ -41,10 +41,9 @@ class WorkspaceCenter:
         for source_row, widget in (
             (controls.row, self.workspace_mode_selector),
             (controls.row, controls.empty_state_label),
-            (controls.view_group.layout(), controls.zoom_in_button),
-            (controls.view_group.layout(), controls.zoom_out_button),
             (controls.view_group.layout(), controls.fit_button),
             (controls.view_group.layout(), controls.fit_y_button),
+            (controls.view_group.layout(), controls.follow_checkbox),
             (self.acquisition_bar.layout(), self.acquisition_bar.start_button),
             (self.acquisition_bar.layout(), self.acquisition_bar.stop_button),
             (controls.cursor_group.layout(), controls.cursor_a_button),
@@ -55,19 +54,18 @@ class WorkspaceCenter:
             source_row.removeWidget(widget)
             widget.setParent(self.workspace_header)
         self.workspace_mode_selector.setSizePolicy(
-            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
         )
         self.workspace_mode_selector.setMinimumContentsLength(4)
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
         self.workspace_header.add(self.workspace_mode_selector)
-        self.workspace_header.add(controls.empty_state_label, name="empty_state_label")
+        self.workspace_header.add(controls.empty_state_label)
         for button in (
-            controls.zoom_in_button,
-            controls.zoom_out_button,
             controls.fit_button,
             controls.fit_y_button,
+            controls.follow_checkbox,
         ):
             self.workspace_header.add(button)
         self.workspace_header.add(self.acquisition_bar.start_button)
@@ -75,7 +73,7 @@ class WorkspaceCenter:
         self.workspace_header.add(controls.cursor_a_button)
         self.workspace_header.add(controls.cursor_b_button)
         self.workspace_header.add(controls.measurement_visibility_button)
-        self.workspace_header.add(controls.cursor_summary, name="cursor_summary")
+        self.workspace_header.add(controls.cursor_summary)
         self.trace_graph_panel.insert_into_header(self.workspace_header)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")

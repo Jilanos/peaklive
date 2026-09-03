@@ -17,6 +17,13 @@ from peaklive.ui.widgets import (
     ElidingLabel,  # noqa: F401 - re-exported, existing import path
 )
 
+#: A cursor readout carries both complete A and B timestamps at once
+#: (item_055 AC3) - the shared readout floor is not enough for that without
+#: falling back to a squeezed, tooltip-only string, so this one gets its own
+#: wider floor sized for a six-digit-second capture instead of eliding at the
+#: generic width.
+CURSOR_SUMMARY_MINIMUM_WIDTH = 170
+
 
 class GraphControlsBar(QWidget):
     """One dense toolbar for graph navigation, display, cursor, and view mode.
@@ -36,29 +43,19 @@ class GraphControlsBar(QWidget):
         self.mode_selector = QComboBox(objectName="workspaceModeSelector")
         self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
         self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
-        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
 
         self.empty_state_label = self._readout("graphHeaderEmptyState", "graph.empty")
         self.empty_state_label.setVisible(False)
 
         self.view_group, view_row = self._group("graphViewGroup")
-        self.zoom_in_button = self._nav("zoomInButton", "graph.zoom_in", "+")
-        self.zoom_out_button = self._nav("zoomOutButton", "graph.zoom_out", "−")
         self.fit_button = self._nav("fitButton", "graph.fit_xy", "⤢")
         self.fit_y_button = self._nav("fitYButton", "graph.fit_y", "↕")
-        view_buttons = (
-            self.zoom_in_button, self.zoom_out_button, self.fit_button, self.fit_y_button
-        )
-        for button in view_buttons:
+        for button in (self.fit_button, self.fit_y_button):
+            button.setProperty("fitGlyph", True)
             view_row.addWidget(button)
-        self.window_label = self._readout("windowReadout", "graph.window_empty")
-        view_row.addWidget(self.window_label)
-
-        self.display_group, display_row = self._group("graphDisplayGroup")
-        self.grid_checkbox = self._toggle("gridCheckbox", "graph.grid", "▦")
         self.follow_checkbox = self._toggle("followCheckbox", "graph.follow", "▶")
-        display_row.addWidget(self.grid_checkbox)
-        display_row.addWidget(self.follow_checkbox)
+        view_row.addWidget(self.follow_checkbox)
 
         self.cursor_group, cursor_row = self._group("graphCursorGroup")
         self.cursor_a_button = self._nav("cursorAButton", "graph.cursor_a", "A")
@@ -70,6 +67,7 @@ class GraphControlsBar(QWidget):
         )
         cursor_row.addWidget(self.measurement_visibility_button)
         self.cursor_summary = self._readout("cursorSummary", "graph.cursor_summary_empty")
+        self.cursor_summary.setMinimumWidth(CURSOR_SUMMARY_MINIMUM_WIDTH)
         cursor_row.addWidget(self.cursor_summary)
 
     # ---- construction -------------------------------------------------
@@ -106,25 +104,4 @@ class GraphControlsBar(QWidget):
 
     @property
     def groups(self) -> tuple[QWidget, ...]:
-        return (self.view_group, self.display_group, self.cursor_group)
-
-    def resizeEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
-        super().resizeEvent(event)
-        if self.width() <= 0:
-            return
-        # A compact screen must retain every action.  Dynamic text can instead
-        # step down into its tooltip before a layout is allowed to squeeze it
-        # below a readable width (notably with Windows font metrics).
-        #
-        # cursor_summary is reparented into WorkspaceHeaderBar (item_053 AC6)
-        # and manages its own visibility there; touching it here as well would
-        # race the two resizeEvent handlers over the same shared widget.
-        self.window_label.setVisible(True)
-        if self._minimum_row_width() > self.width():
-            self.window_label.setVisible(False)
-
-    def _minimum_row_width(self) -> int:
-        widgets = self.groups
-        return sum(widget.minimumSizeHint().width() for widget in widgets) + (
-            self.row.spacing() * (len(widgets) - 1)
-        )
+        return (self.view_group, self.cursor_group)

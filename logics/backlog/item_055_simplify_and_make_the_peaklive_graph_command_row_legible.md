@@ -1,19 +1,20 @@
 ## item_055_simplify_and_make_the_peaklive_graph_command_row_legible - Simplify and make the PeakLive graph command row legible
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Graph header density and cursor readouts
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-04 00:32:09
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Remove the zoom/grid/window-readout controls, enlarge the fit glyphs, keep Follow live on the same row, and let complete A/B cursor timestamps render together without eliding.
 - Keywords: simplify, peaklive, graph, command, row, legible
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Changing what the graph command row displays or how it lays out fit, Follow live, and cursor readouts.
+- Skip when: The change is only about curve data, decoding, or export scope, not the command row's own controls.
 
 # Problem
 - The + and - zoom buttons, grid toggle, and window readout consume scarce header width while the B cursor time clips.
@@ -57,3 +58,9 @@
 # Priority
 - Priority: High - graph navigation and A/B comparison are core diagnostic actions; clipped cursor times and redundant controls directly obstruct their use.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_017_implement_compact_graph_controls_and_unmistakable_signal_states`
+
+# Notes
+- Task `task_017_implement_compact_graph_controls_and_unmistakable_signal_states` was finished via `logics-manager flow finish task` on 2026-09-04.

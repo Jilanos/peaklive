@@ -104,7 +104,11 @@ class RowActionDelegate(QStyledItemDelegate):
         # the enum member directly is always False without this cast.
         raw_state = index.data(Qt.ItemDataRole.CheckStateRole)
         checked = raw_state is not None and Qt.CheckState(raw_state) == Qt.CheckState.Checked
-        colour = QColor(theme.ROW_ACTION_ACTIVE if checked else theme.ROW_ACTION_MUTED)
+        # A selected favorite reads as a decisively different colour family
+        # from a shown signal, not a brighter shade of the same cyan
+        # (item_056 AC5); an unselected star keeps the shared muted treatment.
+        active = theme.ROW_ACTION_FAVORITE_ACTIVE if self._kind == STAR else theme.ROW_ACTION_ACTIVE
+        colour = QColor(active if checked else theme.ROW_ACTION_MUTED)
 
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -121,7 +125,9 @@ class RowActionDelegate(QStyledItemDelegate):
 def _paint_eye(
     painter: QPainter, cx: float, cy: float, size: float, colour: QColor, filled: bool
 ) -> None:
-    painter.setPen(QPen(colour, 1.6))
+    # Checked vs unchecked differ in outline weight and pupil fill together,
+    # not colour alone (item_056 AC5).
+    painter.setPen(QPen(colour, 2.2 if filled else 1.2))
     painter.setBrush(Qt.BrushStyle.NoBrush)
     eye_rect = QRectF(cx - size / 2, cy - size / 3, size, size * 2 / 3)
     painter.drawEllipse(eye_rect)
@@ -133,7 +139,7 @@ def _paint_eye(
 def _paint_star(
     painter: QPainter, cx: float, cy: float, size: float, colour: QColor, filled: bool
 ) -> None:
-    painter.setPen(QPen(colour, 1.4))
+    painter.setPen(QPen(colour, 2.0 if filled else 1.2))
     painter.setBrush(colour if filled else Qt.BrushStyle.NoBrush)
     painter.drawPolygon(_star_points(cx, cy, size / 2, size / 4.4))
 
