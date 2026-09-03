@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pytest
 
-from peaklive.domain import RecordingSettings
-from peaklive.recording import InvalidTemplateError, RecordingNaming
+from peaklive.domain import DEFAULT_FILENAME_TEMPLATE, RecordingSettings
+from peaklive.recording import EMPTY_TEXT_COMPONENT, InvalidTemplateError, RecordingNaming
 
 
 def _settings(tmp_path, **overrides):
@@ -129,3 +129,81 @@ def test_reset_to_one_restarts_the_search_rather_than_permitting_an_overwrite(tm
     assert reservation.iteration == 3
     assert (tmp_path / "capture_001.asc").read_text(encoding="utf-8") == "evidence"
     assert (tmp_path / "capture_002.asc").read_text(encoding="utf-8") == "evidence"
+
+
+def test_the_default_template_carries_the_operator_text(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, text="roulage BL")
+
+    filename = naming.preview(settings, "Vehicle Test", now=datetime(2026, 9, 3, 14, 5, 30))
+
+    assert settings.filename_template == DEFAULT_FILENAME_TEMPLATE
+    assert filename == "2026-09-03_14-05-30_Vehicle_Test_roulage_BL_001_001.asc"
+
+
+@pytest.mark.parametrize(
+    ("text", "component"),
+    [
+        ("roulage BL", "roulage_BL"),
+        ("../../etc/passwd", "etc_passwd"),
+        ("a:b*c?d", "a_b_c_d"),
+        ("  spaced  ", "spaced"),
+        ("", EMPTY_TEXT_COMPONENT),
+        ("   ", EMPTY_TEXT_COMPONENT),
+        ("///", EMPTY_TEXT_COMPONENT),
+        ("...", EMPTY_TEXT_COMPONENT),
+    ],
+)
+def test_text_is_sanitized_into_exactly_one_safe_component(tmp_path, text, component):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="{text}", text=text)
+
+    filename = naming.preview(settings, "Bench", now=datetime(2026, 9, 3, 9, 0, 0))
+
+    assert filename == f"{component}.asc"
+
+
+def test_text_does_not_accept_a_format_spec(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="{text:03d}", text="bench")
+
+    with pytest.raises(InvalidTemplateError):
+        naming.preview(settings, "Bench", now=datetime(2026, 9, 3, 9, 0, 0))
+
+
+def test_reservation_preview_and_sidecars_agree_on_the_text_basename(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, text="roulage BL")
+    moment = datetime(2026, 9, 3, 14, 5, 30)
+
+    expected = naming.preview(settings, "Bench", now=moment)
+    reservation = naming.reserve(settings, "Bench", now=moment)
+
+    assert reservation.final_path.name == expected
+    assert reservation.partial_path.name == f"{expected}.partial"
+    assert reservation.marker_path.name == f"{expected}.reserved"
+    assert reservation.event_final_path.name.startswith(expected.removesuffix(".asc"))
+    assert reservation.event_final_path.name.endswith(".peaklive-events.jsonl")
+    assert "roulage_BL" in reservation.event_final_path.name
+
+
+def test_changing_only_the_text_reserves_a_different_capture(tmp_path):
+    naming = RecordingNaming()
+    moment = datetime(2026, 9, 3, 14, 5, 30)
+    first = naming.reserve(_settings(tmp_path, text="run A"), "Bench", now=moment)
+    second = naming.reserve(_settings(tmp_path, text="run B"), "Bench", now=moment)
+
+    assert first.final_path != second.final_path
+    assert first.iteration == second.iteration == 1
+
+
+def test_two_captures_with_the_same_text_never_collide(tmp_path):
+    naming = RecordingNaming()
+    moment = datetime(2026, 9, 3, 14, 5, 30)
+    settings = _settings(tmp_path, text="run A")
+
+    first = naming.reserve(settings, "Bench", now=moment)
+    second = naming.reserve(settings, "Bench", now=moment)
+
+    assert first.final_path != second.final_path
+    assert second.iteration == first.iteration + 1

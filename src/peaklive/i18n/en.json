@@ -56,7 +56,14 @@
     "degraded": "Shutdown degraded"
   },
   "profile": {
-    "label": "Measurement profile"
+    "label": "Measurement profile",
+    "save_as": "Save setup &as…",
+    "save_as_button": "Save as…",
+    "save_as_tooltip": "Save the active measurement setup as a new, independent setup",
+    "save_as_prompt": "Name for the new measurement setup:",
+    "save_as_saved": "Measurement setup '{name}' saved.",
+    "save_as_failed": "Could not save the measurement setup: {message}",
+    "save_as_suggested": "{name} copy"
   },
   "panel": {
     "collapse": "Collapse {panel}",
@@ -295,11 +302,14 @@
     "directory_default": "Default: Documents\\PeakLive\\Captures",
     "browse": "Browse…",
     "template": "Filename template",
-    "template_tooltip": "Placeholders: {date}, {time}, {profile}, {iteration:03d}, {segment:02d}",
+    "template_tooltip": "Placeholders: {date}, {time}, {profile}, {text}, {iteration:03d}, {segment:02d}",
     "iteration": "Next iteration",
     "iteration_tooltip": "The iteration acquisition will search from; the first free one is used",
     "reset": "Reset",
     "reset_tooltip": "Restart the next-iteration search at 1",
+    "text": "Recording text",
+    "text_tooltip": "Free label placed in the filename by {text}; unsafe characters become '_' and an empty label becomes 'unnamed'",
+    "text_placeholder": "Optional capture label",
     "preview": "Preview",
     "preview_tooltip": "The filename acquisition would use right now; never written to disk",
     "preview_invalid": "—",
@@ -325,7 +335,8 @@
     "about_build": "Build: {identifier}",
     "about_packaged": "Running from the packaged Windows executable.",
     "about_source": "Running from source.",
-    "about_test_rebuild": "This is a tagged test rebuild ({tag})."
+    "about_test_rebuild": "This is a tagged test rebuild ({tag}).",
+    "save_profile_as": "Save measurement setup &as…"
   },
   "progress": {
     "cancel": "Cancel",

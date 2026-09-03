@@ -71,20 +71,32 @@ Excluded from the MVP:
 A named measurement profile stores the selected adapter/channel, bitrate,
 controller mode, ordered DBC set and conflict choices, favorites, displayed
 signals, graph layout, trace filters, capture directory, recording enablement,
-and filename template. The last selected profile is restored and displayed at
-startup, but the bus stays disconnected until the user acts.
+filename template, and recording text label. The last selected profile is
+restored and displayed at startup, but the bus stays disconnected until the
+user acts.
+
+**Save setup as**, offered next to the profile selector and in the File menu,
+duplicates the active setup under a new unique name and selects the copy. The
+copy is independent: later edits to either setup leave the other untouched.
+Cancelling the prompt, or supplying a blank or already-used name, changes
+nothing. A setup that references a DBC file that is missing or unreadable
+reports it and keeps the reference; the rest of the setup still loads.
 
 The MVP uses the unambiguous English labels **Start Acquisition** and **Stop
 Acquisition**. Starting acquisition applies the visible profile and, when that
 profile enables recording, opens the ASC session as part of the same operation.
 Stopping acquisition finalizes it. A monitor-only profile may disable recording.
 
-Recording templates support at least `{date}`, `{time}`, `{profile}`, and a
-zero-padded configurable `{iteration}` token. The iteration value is visible
+Recording templates support at least `{date}`, `{time}`, `{profile}`, the
+operator-supplied `{text}` label, and a zero-padded configurable `{iteration}`
+token. The text label is edited directly below **Next iteration** in the
+recording settings, belongs to one setup only, and is sanitized into a single
+safe filename component; an empty label expands to `unnamed`. The iteration value is visible
 before starting and advances without overwriting an existing capture. Sessions
 rotate by default at 2 GiB into numbered segments, so templates also support
 `{segment}`. The default template is
-`{date}_{time}_{profile}_{iteration:03d}_{segment:03d}.asc`.
+`{date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc` for a newly
+created setup; a template an operator has already stored is never rewritten.
 
 PeakLive warns when the target volume falls below 10 GiB free and stops the
 recorder cleanly at 2 GiB free. Both thresholds and the segment size are

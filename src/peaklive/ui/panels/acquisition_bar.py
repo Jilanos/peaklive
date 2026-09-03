@@ -75,6 +75,7 @@ class AcquisitionBar(QFrame):
     """Bus setup and lifecycle controls, with no transmit affordance at all."""
 
     profile_changed = Signal(int)
+    save_profile_as_requested = Signal()
     options_changed = Signal()
     load_dbc_requested = Signal()
     open_trace_requested = Signal()
@@ -94,6 +95,14 @@ class AcquisitionBar(QFrame):
         self.profile_selector.addItems(profile_names)
         self.profile_selector.currentIndexChanged.connect(self.profile_changed)
         layout.addWidget(self.profile_selector, 1)
+
+        self.save_profile_as_button = self._action(
+            translate("profile.save_as_button"),
+            "saveProfileAsButton",
+            translate("profile.save_as_tooltip"),
+        )
+        self.save_profile_as_button.clicked.connect(self.save_profile_as_requested)
+        layout.addWidget(self.save_profile_as_button)
 
         layout.addWidget(QLabel(translate("acquisition.channel").upper()))
         self.channel_selector = QComboBox(objectName="channelSelector")

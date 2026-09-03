@@ -187,6 +187,7 @@ class AscRecorder:
                 iteration=self._settings.iteration,
                 segment=self._segment_number,
                 capture_format=self._format,
+                text=self._settings.text,
             )
             final_path = self._next_available_path(directory / filename)
             event_final = final_path.with_suffix(".peaklive-events.jsonl")

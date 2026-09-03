@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="PeakLive">
+  <title>PeakLive</title>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#101820"/>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="none" stroke="#1f2c38" stroke-width="8"/>
+  <path d="M32 168 L88 168 L112 96 L144 200 L168 136 L224 136"
+        fill="none" stroke="#2fd27a" stroke-width="16"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="144" cy="200" r="14" fill="#2fd27a"/>
+</svg>

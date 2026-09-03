@@ -154,3 +154,69 @@ def test_recording_dialog_can_be_constructed_headlessly(qtbot, tmp_path):
     qtbot.addWidget(dialog)
 
     assert dialog.windowTitle()
+
+
+def test_the_text_field_sits_directly_below_next_iteration(qtbot, tmp_path):
+    from PySide6.QtWidgets import QFormLayout
+
+    window = _window(qtbot, tmp_path)
+    dialog = window._open_recording_dialog()
+    qtbot.addWidget(dialog)
+    form = dialog.findChild(QFormLayout)
+
+    rows = [
+        form.itemAt(row, QFormLayout.ItemRole.FieldRole).widget()
+        for row in range(form.rowCount())
+    ]
+    iteration_row = next(
+        index
+        for index, widget in enumerate(rows)
+        if widget.findChild(type(dialog.iteration_spin)) is dialog.iteration_spin
+    )
+
+    assert rows[iteration_row + 1] is dialog.text_edit
+    assert dialog.text_edit.accessibleName()
+    assert dialog.text_edit.toolTip()
+
+
+def test_editing_the_text_updates_the_preview_and_persists(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window.selected_profile.recording.directory = str(tmp_path / "captures")
+    dialog = window._open_recording_dialog()
+    qtbot.addWidget(dialog)
+
+    dialog.template_edit.setText("bench_{text}_{iteration:03d}")
+    dialog.text_edit.setText("roulage BL")
+
+    assert dialog.preview_label.text() == "bench_roulage_BL_001.asc"
+    assert not (tmp_path / "captures").exists()
+    reloaded = ProfileStore(tmp_path / "settings").load().selected
+    assert reloaded.recording.text == "roulage BL"
+
+
+def test_the_text_belongs_to_one_setup_only(qtbot, tmp_path):
+    from peaklive.domain import MeasurementProfile
+
+    window = _window(qtbot, tmp_path)
+    store = window._store
+    state = store.load()
+    first = state.profiles[0]
+    second = MeasurementProfile(name="Second profile")
+    store.save(ProfileState([first, second], first.identifier))
+    window._state = store.load()
+    window.acquisition_bar.profile_selector.clear()
+    window.acquisition_bar.profile_selector.addItems([p.name for p in window._state.profiles])
+    window._select_last_profile()
+
+    window.acquisition_bar.profile_selector.setCurrentIndex(0)
+    dialog_a = window._open_recording_dialog()
+    qtbot.addWidget(dialog_a)
+    dialog_a.text_edit.setText("first only")
+    dialog_a.close()
+
+    window.acquisition_bar.profile_selector.setCurrentIndex(1)
+    dialog_b = window._open_recording_dialog()
+    qtbot.addWidget(dialog_b)
+
+    assert dialog_b.text_edit.text() == ""
+    assert ProfileStore(tmp_path / "settings").load().profiles[0].recording.text == "first only"

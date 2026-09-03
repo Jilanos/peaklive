@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 
 from peaklive.domain import BusEvent, CanFrame, RecordingSettings
-from peaklive.recording import AscRecorder, RecordingStopped
+from peaklive.recording import EMPTY_TEXT_COMPONENT, AscRecorder, RecordingStopped
 
 
 def _settings(tmp_path, **overrides):
@@ -70,3 +70,29 @@ def test_low_space_leaves_recoverable_partial_capture(tmp_path):
 
     assert recorder.stop().incomplete is True
     assert list(tmp_path.glob("*.partial"))
+
+
+def test_every_rotated_segment_and_sidecar_carries_the_operator_text(tmp_path):
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    recorder.start(
+        _settings(tmp_path, rotate_bytes=1, text="roulage BL"),
+        "Bench",
+        datetime(2026, 8, 22, 9, 30),
+    )
+    recorder.write_frame(CanFrame(1.0, 0x123, b"\x00"))
+    recorder.write_frame(CanFrame(2.0, 0x123, b"\x01"))
+    result = recorder.stop()
+
+    assert len(result.segments) >= 2
+    for segment in result.segments:
+        assert "roulage_BL" in segment.name
+        assert segment.with_suffix(".peaklive-events.jsonl").exists()
+
+
+def test_an_empty_text_still_produces_the_documented_stable_basename(tmp_path):
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    started = recorder.start(_settings(tmp_path), "Bench", datetime(2026, 8, 22, 9, 30))
+    recorder.stop()
+
+    assert EMPTY_TEXT_COMPONENT in started.name
+    assert "__" not in started.name

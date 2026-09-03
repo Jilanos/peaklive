@@ -1,14 +1,14 @@
 ## item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups - Add persistent Save As and loading workflows for independent measurement setups
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Measurement profile lifecycle
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 12:02:14
+> Indicators reviewed: 2026-09-03 12:17:14
 
 # AI Context
 - Summary: Establishes profile duplication as a deliberate persistence operation rather than an accidental by-product of the selector.
@@ -41,10 +41,10 @@
 - AC5: Tests exercise all copy boundaries and the profile selector's update/selection behavior headlessly.
 
 # AC Traceability
-- request-AC1 -> This backlog slice. Proof: AC1: Save As duplicates the active setup only after a valid unique name is confirmed; it immediately selects and persists the new independent setup.
-- request-AC2 -> This backlog slice. Proof: AC2: Cancel, blank input, and duplicate names make no persisted or in-memory configuration change and give accessible feedback where appropriate.
-- request-AC3 -> This backlog slice. Proof: AC3: After a restart, selecting each saved setup restores the documented configuration without cross-profile mutation.
-- request-AC7 -> This backlog slice. Proof: AC4: A missing DBC reference is reported without deleting it, blocking unrelated setup restoration, or altering DBC source-content ownership.
+- request-AC1 -> This backlog slice. Proof: AC1 — `tests/test_profile_save_as_ui.py::test_save_as_creates_selects_and_persists_an_independent_setup` and `tests/test_profiles.py::test_save_as_persists_an_independent_copy_and_selects_it`.
+- request-AC2 -> This backlog slice. Proof: AC2 — `tests/test_profile_save_as_ui.py::test_cancelling_the_prompt_changes_nothing`, `::test_a_blank_name_is_refused_with_accessible_feedback`, `::test_a_duplicate_name_is_refused_and_leaves_the_setups_alone`, and `tests/test_profiles.py::test_a_failed_write_rolls_the_copy_back_out_of_memory`.
+- request-AC3 -> This backlog slice. Proof: AC3 — `tests/test_profile_save_as_ui.py::test_the_selector_reloads_each_saved_setup_after_a_restart` and `tests/test_profiles.py::test_each_saved_setup_reloads_its_own_configuration`.
+- request-AC7 -> This backlog slice. Proof: AC4/AC5 — `tests/test_profile_save_as_ui.py::test_an_unavailable_dbc_is_reported_without_dropping_the_reference` and the offscreen selector tests in the same module.
 
 # Decision framing
 - Product framing: Not needed
@@ -59,3 +59,9 @@
 # Priority
 - Priority: High - reusable named setups are the primary operator workflow and must be reliable before its dependent recording settings are trusted.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`
+
+# Notes
+- Task `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity` was finished via `logics-manager flow finish task` on 2026-09-03.

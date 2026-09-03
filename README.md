@@ -15,7 +15,8 @@ listen-only mode.
 - one Classic USB CAN channel, with a vendor-neutral adapter boundary;
 - manual 125/250/500/1000 kbit/s selection and an optional assisted bitrate scan;
 - named measurement profiles containing bus, DBC, favorites, plots, filters,
-  and recording settings, with the last profile selected at startup;
+  and recording settings, with the last profile selected at startup, and a
+  **Save setup as** action that duplicates the active setup independently;
 - explicit **Start Acquisition** and **Stop Acquisition** controls;
 - robust connect, disconnect, error-state, and reconnect handling;
 - chronological live trace with display-only filtering;

@@ -24,11 +24,17 @@ from peaklive.domain import RecordingSettings
 #: ``{iteration:03d}`` or ``{iteration:03}``.
 _TOKEN_PATTERN = re.compile(r"\{([A-Za-z_]+)(?::([^{}]*))?\}")
 _NUMERIC_FIELDS = frozenset({"iteration", "segment"})
-_TEXT_FIELDS = frozenset({"date", "time", "profile"})
+_TEXT_FIELDS = frozenset({"date", "time", "profile", "text"})
 _KNOWN_FIELDS = _NUMERIC_FIELDS | _TEXT_FIELDS
 _NUMERIC_SPEC = re.compile(r"^0\d{1,6}d?$")
 
 DEFAULT_CAPTURE_DIRECTORY = Path.home() / "Documents" / "PeakLive" / "Captures"
+
+#: What ``{text}`` expands to when the operator left the label empty, or typed
+#: only characters a filename cannot carry. A fixed word rather than an empty
+#: string keeps the separators in the template meaningful and keeps the
+#: resulting basename stable, which the reservation search relies on.
+EMPTY_TEXT_COMPONENT = "unnamed"
 
 
 class InvalidTemplateError(ValueError):
@@ -93,13 +99,15 @@ class RecordingNaming:
         iteration: int,
         segment: int,
         capture_format: str,
+        text: str = "",
     ) -> str:
         """Expand a validated template into a bare filename below any directory."""
         self.validate_template(template)
         values = {
             "date": now.strftime("%Y-%m-%d"),
             "time": now.strftime("%H-%M-%S"),
-            "profile": _sanitize_profile(profile_name),
+            "profile": _sanitize_component(profile_name, "measurement"),
+            "text": _sanitize_component(text, EMPTY_TEXT_COMPONENT),
             "iteration": max(1, iteration),
             "segment": max(1, segment),
         }
@@ -124,6 +132,7 @@ class RecordingNaming:
             iteration=settings.iteration if iteration is None else iteration,
             segment=segment,
             capture_format=settings.capture_format,
+            text=settings.text,
         )
 
     def resolve_directory(self, settings: RecordingSettings) -> Path:
@@ -156,6 +165,7 @@ class RecordingNaming:
                 iteration=iteration,
                 segment=1,
                 capture_format=settings.capture_format,
+                text=settings.text,
             )
             final_path = directory / filename
             partial_path = final_path.with_suffix(final_path.suffix + ".partial")
@@ -181,5 +191,12 @@ class RecordingNaming:
             )
 
 
-def _sanitize_profile(profile_name: str) -> str:
-    return re.sub(r"[^A-Za-z0-9._-]+", "_", profile_name).strip("._") or "measurement"
+def _sanitize_component(value: str, fallback: str) -> str:
+    """Reduce free operator text to one safe, deterministic filename component.
+
+    Anything outside the conservative set becomes an underscore, so a path
+    separator, a traversal, or a shell character cannot survive into a
+    filename; an empty result falls back rather than collapsing separators
+    the template author placed deliberately.
+    """
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("._") or fallback

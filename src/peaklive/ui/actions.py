@@ -24,6 +24,10 @@ class WorkspaceActions:
         file_menu.addAction(self._action("menu.export", self._open_export_dialog, "Ctrl+E"))
         file_menu.addAction(self._action("menu.export_report", self._export_report))
         file_menu.addSeparator()
+        file_menu.addAction(
+            self._action("menu.save_profile_as", self._save_profile_as, "Ctrl+Shift+S")
+        )
+        file_menu.addSeparator()
         file_menu.addAction(self._action("menu.quit", self.close, "Ctrl+Q"))
 
         view_menu = bar.addMenu(translate("menu.view"))

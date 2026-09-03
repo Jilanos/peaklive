@@ -194,20 +194,44 @@ to a user-selectable directory under Documents. Real captures and DBC files are
 never copied into the source repository. Named, schema-versioned measurement
 profiles include adapter/channel, bitrate, controller mode, ordered DBCs and
 conflict choices, favorites, display filters, plotted signals, panel layout,
-capture directory, recording enablement, filename template, and visible
-iteration. The last selected profile is restored at launch, but PeakLive never
-silently reconnects to a bus.
+capture directory, recording enablement, filename template, recording text
+label, and visible iteration. **Save setup as** duplicates the active profile
+under a new, unique operator-supplied name: the copy is a deep, independent
+copy of that persisted configuration and of nothing else — no acquired frames,
+events, reservations, or capture files — and it is appended, selected, and
+written through the same atomic path. A stored DBC reference that has become
+unreadable is reported to the operator and kept; it never removes itself and
+never blocks the rest of the setup from loading. The last selected profile is
+restored at launch, but PeakLive never silently reconnects to a bus.
 
 The initial bitrate catalog is 125/250/500/1000 kbit/s. The English-only MVP
 uses **Start Acquisition** and **Stop Acquisition**; recording begins and ends
 with that lifecycle when enabled by the active profile. Filename expansion is
-collision-safe and supports date, time, profile, and zero-padded iteration
-and segment tokens. The default writer rotates at 2 GiB, warns at 10 GiB free,
+collision-safe and supports date, time, profile, the free operator `{text}`
+label, and zero-padded iteration and segment tokens. `{profile}` and `{text}`
+are reduced to one conservative filename component each — anything outside
+`[A-Za-z0-9._-]` becomes `_`, and an empty or fully-unsafe label becomes
+`unnamed` — and the same expanded value is used by the preview, the
+reservation marker, the partial and final files, every rotated segment, and
+the event sidecar. The default writer rotates at 2 GiB, warns at 10 GiB free,
 and stops recording at 2 GiB free; these values are profile-configurable and a
 forced low-space stop marks the session incomplete. Both thresholds surface as
 operator-visible notices: the warning once per recording, the stop as a
 `recording_warning` bus event that pauses recording without stopping the
 receive-only acquisition.
+
+## Desktop identity and packaged assets
+
+`src/peaklive/resources/peaklive.svg` is the original PeakLive icon; the
+multi-size `peaklive.ico` beside it is generated from that SVG by
+`scripts/generate_icon.py` and is the only icon the product ships. The entry
+point assigns it to the `QApplication` before `MainWindow` is constructed, so
+the taskbar and the window chrome are badged from the first mapped window, and
+`peaklive.spec` embeds the same file in `PeakLive.exe` and ships the resources
+directory as package data. Assets are addressed through
+`peaklive.resources.resource_path`, which looks beside the package and then
+under the PyInstaller extraction root, so discovery works identically from
+source and from the frozen application.
 
 ## Failure model
 

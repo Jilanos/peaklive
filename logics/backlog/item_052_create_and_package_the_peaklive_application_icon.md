@@ -1,14 +1,14 @@
 ## item_052_create_and_package_the_peaklive_application_icon - Create and package the PeakLive application icon
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Desktop application identity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 12:02:14
+> Indicators reviewed: 2026-09-03 12:17:14
 
 # AI Context
 - Summary: Delivers one owned visual identity asset through both the live Qt application and the frozen Windows executable.
@@ -38,8 +38,8 @@
 - AC4: Automated tests verify source asset resolution, application/window icon configuration, and spec references; a release build validates the Windows artifact when that platform is available.
 
 # AC Traceability
-- request-AC6 -> This backlog slice. Proof: AC1: The repository contains an original, documented, license-safe icon asset and the formats the current packaged Windows workflow requires.
-- request-AC7 -> This backlog slice. Proof: AC2: QApplication receives a non-null PeakLive icon before MainWindow is created, and the MainWindow inherits or explicitly uses it.
+- request-AC6 -> This backlog slice. Proof: AC1/AC3 — `tests/test_application_icon.py::test_the_owned_icon_asset_ships_in_the_source_tree`, `::test_the_icon_carries_every_size_windows_chrome_asks_for`, `::test_the_windows_package_embeds_the_same_icon_and_ships_the_resources`.
+- request-AC7 -> This backlog slice. Proof: AC2/AC4 — `tests/test_application_icon.py::test_the_application_is_badged_before_any_window_is_built` and `::test_a_frozen_build_resolves_the_asset_under_the_extraction_root`.
 
 # Decision framing
 - Product framing: Not needed
@@ -54,3 +54,9 @@
 # Priority
 - Priority: Medium - a visible app identity materially improves desktop usability but does not alter measurement correctness.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`
+
+# Notes
+- Task `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity` was finished via `logics-manager flow finish task` on 2026-09-03.
