@@ -139,7 +139,8 @@
     "time_axis": "Time",
     "zoom_in": "Zoom in",
     "zoom_out": "Zoom out",
-    "fit": "Fit to extent",
+    "fit_xy": "Fit X + Y to extent",
+    "fit_y": "Fit Y only",
     "grid": "Grid",
     "follow": "Follow live",
     "cursor_a": "Place cursor A",
@@ -149,6 +150,7 @@
     "cursor_summary": "A {cursor_a} · B {cursor_b} · Δ {delta}",
     "cursor_summary_empty": "Cursors: place A and B to measure a range.",
     "empty": "No plot yet. Show a DBC signal, or start an acquisition for the raw preview.",
+    "trace_colour": "{signal} — trace colour {colour}",
     "group_view": "Navigate",
     "group_display": "Display",
     "group_cursors": "Cursors"
@@ -168,7 +170,10 @@
     "needs_cursors": "Place both cursors to measure a range.",
     "range": "Range {start} – {end}",
     "no_sample": "no sample in range",
-    "accessible": "Cursor and range measurements"
+    "accessible": "Cursor and range measurements",
+    "toggle_values": "Show/hide measurement values",
+    "toggle_values_on": "Measurement values are shown",
+    "toggle_values_off": "Measurement values are hidden — cursor lines stay visible"
   },
   "trace": {
     "table": "CAN trace",

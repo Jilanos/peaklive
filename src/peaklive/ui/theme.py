@@ -27,6 +27,24 @@ CURVE: Final = "#38bdf8"
 CURSOR_A: Final = "#f59e0b"
 CURSOR_B: Final = "#a78bfa"
 
+#: Deterministic, colour-blind-considered palette for simultaneously shown
+#: curves (item_053 AC1). Assigned by each signal's position in the sorted
+#: shown-signal list, never by identity alone, so it stays stable across a
+#: live refresh but never needs a persisted per-signal mapping. Every entry is
+#: legible against PLOT_BACKGROUND and distinguishable under common colour-
+#: vision deficiencies (kept far apart in hue and paired with varying
+#: lightness rather than relying on hue alone).
+TRACE_PALETTE: Final[list[str]] = [
+    "#38bdf8",  # sky
+    "#fb923c",  # orange
+    "#4ade80",  # green
+    "#f472b6",  # pink
+    "#facc15",  # yellow
+    "#c084fc",  # violet
+    "#2dd4bf",  # teal
+    "#f87171",  # red
+]
+
 #: Control-state contract shared by every interactive Qt control (item_027).
 #: Each state pairs a foreground with a background so no control inherits an
 #: ambient colour, and focus adds a thicker outline so the state never depends
@@ -46,6 +64,12 @@ INDICATOR_BACKGROUND: Final = "#0a121c"
 INDICATOR_BORDER: Final = "#7f92ad"
 INDICATOR_CHECKED: Final = "#38bdf8"
 INDICATOR_CHECKED_BORDER: Final = "#bae6fd"
+
+#: Eye/star row-action pictograms (item_054 AC3): filled/accent when the
+#: signal is shown or favorited, muted-but-still-visible otherwise so an
+#: unselected action never reads as absent.
+ROW_ACTION_ACTIVE: Final = "#38bdf8"
+ROW_ACTION_MUTED: Final = "#7f92ad"
 
 STATE_IDLE: Final = "#64748b"
 STATE_BUSY: Final = "#38bdf8"
@@ -124,6 +148,7 @@ QComboBox::down-arrow {{
     border-top: 5px solid {TEXT_BODY}; height: 0; width: 0;
 }}
 QComboBox::down-arrow:disabled {{ border-top-color: {DISABLED_TEXT}; }}
+QComboBox::down-arrow:hover {{ border-top-color: {FOCUS_RING}; }}
 QComboBox QAbstractItemView {{
     background: {POPUP_SURFACE}; border: 1px solid {CONTROL_BORDER}; color: {TEXT};
     outline: none; selection-background-color: {SELECTION_BACKGROUND};

@@ -9,6 +9,7 @@ from .report import ReportPanel
 from .signal_explorer import SignalExplorerPanel
 from .trace_filters import TraceFilterBar
 from .trace_view import TraceViewPanel
+from .workspace_header import WorkspaceHeaderBar
 
 __all__ = [
     "AcquisitionBar",
@@ -20,4 +21,5 @@ __all__ = [
     "SignalExplorerPanel",
     "TraceFilterBar",
     "TraceViewPanel",
+    "WorkspaceHeaderBar",
 ]

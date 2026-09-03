@@ -53,6 +53,17 @@ class MeasurementPanel(QWidget):
         self.table.setMaximumHeight(140)
         layout.addWidget(self.table)
 
+    def set_values_visible(self, visible: bool) -> None:
+        """Hide or restore the values/statistics presentation.
+
+        This never touches the A/B cursor lines: those live on the plots in
+        `GraphStackPanel`, one level up, and this panel has no reach into
+        them. Hiding only clears clutter from the read - it changes no
+        computed value, cursor position, or export.
+        """
+        self.range_label.setVisible(visible)
+        self.table.setVisible(visible)
+
     def refresh(
         self,
         store: SeriesStore | None,

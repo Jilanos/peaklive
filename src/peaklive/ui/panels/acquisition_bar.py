@@ -177,19 +177,25 @@ class AcquisitionBar(QFrame):
         self.export_button.clicked.connect(self.export_requested)
         layout.addWidget(self.export_button)
 
+        # Reparented into the one-line Graphs/Trace header (item_053 AC6):
+        # compact Play/Stop glyphs, same as every other header action, with
+        # the full "Start/Stop Acquisition" wording kept as tooltip and
+        # accessible name so nothing is lost, only made compact.
         self.start_button = self._action(
-            translate("acquisition.start"),
+            "▶",
             "startAcquisitionButton",
             translate("acquisition.start_tooltip"),
         )
+        self.start_button.setAccessibleName(translate("acquisition.start"))
         self.start_button.clicked.connect(self.start_requested)
         layout.addWidget(self.start_button)
 
         self.stop_button = self._action(
-            translate("acquisition.stop"),
+            "■",
             "stopAcquisitionButton",
             translate("acquisition.stop_tooltip"),
         )
+        self.stop_button.setAccessibleName(translate("acquisition.stop"))
         self.stop_button.clicked.connect(self.stop_requested)
         self.stop_button.setEnabled(False)
         layout.addWidget(self.stop_button)

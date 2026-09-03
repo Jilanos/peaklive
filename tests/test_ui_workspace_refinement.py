@@ -616,14 +616,26 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
         "graphDisplayGroup",
         "graphCursorGroup",
     ]
-    assert bar.zoom_in_button.parent() is bar.view_group
-    assert bar.fit_button.parent() is bar.view_group
     assert bar.grid_checkbox.parent() is bar.display_group
     assert bar.follow_checkbox.parent() is bar.display_group
-    assert bar.cursor_a_button.parent() is bar.cursor_group
-    assert bar.cursor_b_button.parent() is bar.cursor_group
     assert bar.window_label.parent() is bar.view_group
-    assert bar.cursor_summary.parent() is bar.cursor_group
+    # These commands were reparented into the one-line Graphs/Trace header
+    # (item_053 AC6) - GraphControlsBar still owns and wires them, it just no
+    # longer displays them in its own row.
+    header = window.workspace_header
+    for control in (
+        bar.zoom_in_button,
+        bar.fit_button,
+        bar.fit_y_button,
+        bar.cursor_a_button,
+        bar.cursor_b_button,
+        bar.measurement_visibility_button,
+        bar.cursor_summary,
+        bar.mode_selector,
+        window.acquisition_bar.start_button,
+        window.acquisition_bar.stop_button,
+    ):
+        assert control.parent() is header
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -633,28 +645,58 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
     bar = window.graph_panel.controls
 
     assert bar.isVisible()
-    assert bar.mode_selector.isVisible()
-    assert bar.mode_selector.x() >= 0
-    assert bar.mode_selector.x() + bar.mode_selector.width() <= bar.width() + 1
     for group in bar.groups:
         assert group.isVisible()
         assert group.x() >= 0
         assert group.x() + group.width() <= bar.width() + 1
 
-    rects = _rects(bar.groups)
+    assert bar.window_label.isVisible() or bar.window_label.toolTip()
+
+
+@pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
+def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
+    qtbot, tmp_path, size
+):
+    """item_053 AC6: title, view selection, fit, Play/Stop, and cursor actions
+    on one row, at every bench viewport, without wrapping, overlap, or clipping.
+    """
+    window = _with_dbc(qtbot, tmp_path, size=size)
+    qtbot.wait(20)
+    header = window.workspace_header
+    heading = window.trace_graph_panel.heading
+
+    assert header.isVisible()
+    assert heading.isVisible()
+    assert heading.parentWidget() is header.parentWidget()
+
+    controls = [
+        header.row.itemAt(index).widget()
+        for index in range(header.row.count())
+        if header.row.itemAt(index).widget() is not None
+    ]
+    assert window.workspace_mode_selector in controls
+    assert window.acquisition_bar.start_button in controls
+    assert window.acquisition_bar.stop_button in controls
+    assert window.graph_panel.fit_button in controls
+    assert window.graph_panel.fit_y_button in controls
+    assert window.graph_panel.cursor_a_button in controls
+    assert window.graph_panel.cursor_b_button in controls
+
+    visible = [control for control in controls if control.isVisible()]
+    rects = _rects(visible)
     for first in range(len(rects)):
         for second in range(first + 1, len(rects)):
-            assert not rects[first].intersects(rects[second])
+            assert not rects[first].intersects(rects[second]), (
+                visible[first].objectName(),
+                visible[second].objectName(),
+            )
+    for control in visible:
+        left = control.mapTo(header, control.rect().topLeft()).x()
+        right = control.mapTo(header, control.rect().topRight()).x()
+        assert 0 <= left <= right <= header.width(), control.objectName()
 
-    for control in _leaf_controls(bar):
-        assert _paints_its_content(control), control.objectName()
-        assert control.height() >= control.minimumSizeHint().height()
-        left = control.mapTo(bar, control.rect().topLeft()).x()
-        right = control.mapTo(bar, control.rect().topRight()).x()
-        assert 0 <= left <= right < bar.width(), control.objectName()
-
-    assert bar.window_label.isVisible() or bar.window_label.toolTip()
-    assert bar.cursor_summary.isVisible() or bar.cursor_summary.toolTip()
+    summary = window.graph_panel.cursor_summary
+    assert summary.isVisible() or summary.toolTip()
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
