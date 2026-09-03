@@ -1,0 +1,134 @@
+{
+  "title": "Compact PeakLive graph controls and unmistakable signal states",
+  "references": [
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/signal_explorer.py",
+    "src/peaklive/ui/panels/signal_row_icons.py",
+    "src/peaklive/ui/theme.py",
+    "src/peaklive/i18n/en.json",
+    "tests/test_ui_workspace_refinement.py",
+    "tests/test_ui_signal_affordances.py",
+    "tests/test_graph_navigation.py"
+  ],
+  "request": {
+    "complexity": "Medium",
+    "theme": "Compact graph controls and signal-state clarity",
+    "needs": [
+      "Replace the unexplained white rectangle at the right of every application drop-down, including channel, measurement profile, Graphs only, and Trace only, with a clear dark-theme drop-down affordance.",
+      "Simplify the graph command row: remove the + and - zoom buttons and the grid control, make the two fit/resize icons visibly larger in their buttons, and keep Follow live on that same row beside the remaining graph commands.",
+      "Show complete A and B cursor times simultaneously; reclaim the needed width by removing the graph window readout, including its start/end seconds, delta/zoom information, and No sample yet state.",
+      "Keep the unselected favorite star icon unchanged, but render the selected favorite in a notably brighter yellow. Make selected versus unselected states of both the visibility eye and favorite star immediately distinguishable.",
+      "Preserve all CAN acquisition, decoding, cursor placement, graph data, follow-live behavior, signal filtering, favorite persistence, accessibility, and keyboard interaction semantics not explicitly removed."
+    ],
+    "context": [
+      "GraphControlsBar currently renders zoom-in (+), zoom-out (-), fit-all (⤢), fit-Y (↕), a window/no-sample readout, grid, Follow live, A/B actions, and a cursor summary in compact groups. The window readout is populated by GraphNavigation._refresh_window_label().",
+      "The graph controls must remain a single non-wrapping row at supported desktop viewports. The existing user request explicitly trades the window readout and grid toggle for room to display both cursor timestamps and retain Follow live inline.",
+      "All application QComboBox instances share the dark-theme QSS. Its current down-arrow implementation can render as a confusing white rectangular target on the supported desktop style, so the replacement must be verified from rendered widgets rather than stylesheet text alone.",
+      "SignalExplorerPanel paints shown and favorite state through RowActionDelegate. The current active colour is shared cyan and inactive icons use a muted grey-blue; favorite selection requires a brighter yellow while the inactive star's current appearance remains unchanged.",
+      "'Eye of fav' is interpreted as the eye and favorite controls: both must have a stronger checked/unchecked distinction. This is recorded as an implementation assumption because no alternate control is present in the Signals tree."
+    ],
+    "acceptance_criteria": [
+      "AC1: At each application combo box, including channel, measurement profile, Graphs only, and Trace only, the right-side trigger is a recognizable high-contrast drop-down symbol with coherent normal, hover, focus, disabled, and popup states; no unexplained white rectangle is visible on the supported desktop platform.",
+      "AC2: The graph command row has no + zoom button, - zoom button, or grid control. The remaining fit-all and fit-Y/resize glyphs are visually larger and centered in their buttons, Follow live is on the same horizontal row as these commands, and all remaining actions retain accessible names, tooltips, keyboard reachability, and working behavior.",
+      "AC3: At 1024x768, 1280x720, and 1600x900, both complete A and B cursor timestamps are visible together in the graph header without clipping, overlap, wrapping, or tooltip-only fallback. The graph header shows neither start/end-second window text, delta/zoom window text, nor the No sample yet placeholder.",
+      "AC4: The graph no longer exposes the removed zoom buttons, grid toggle, or window readout through visible UI, keyboard shortcuts, inaccessible focus targets, or misleading tooltips. Existing pan/scroll navigation, fit actions, cursor placement, Follow live, and measurement calculations remain intact.",
+      "AC5: An unselected favorite star keeps its current muted visual treatment. A selected favorite star is filled or otherwise selected in a bright, saturated yellow with materially higher contrast. The shown/hidden eye likewise has a clearly stronger checked/unchecked distinction through shape fill, colour, and/or contrast, without relying on colour alone.",
+      "AC6: Eye and favorite actions keep their current click, keyboard, tooltip, accessible-name/state, filtering, and profile-persistence behavior; their state remains unambiguous in normal, hover, focus, and disabled rendering.",
+      "AC7: Focused offscreen/rendered UI regression tests prove combo trigger contrast, removed-control absence, enlarged fit glyph geometry, one-row containment, simultaneous complete A/B timestamps, absent window/no-sample text, Follow live placement, eye/star state contrast, and preserved graph/signal workflows."
+    ]
+  },
+  "product": {
+    "title": "PeakLive compact graph controls and unmistakable signal states",
+    "overview": "A focused visual cleanup makes every selector look intentional, leaves the graph header to the controls operators actually use, gives both cursor times enough room, and makes signal visibility and favorites obvious at a glance.",
+    "goals": [
+      "Eliminate ambiguous drop-down and signal-state affordances in the dark workspace.",
+      "Make the graph command row calmer and readable without sacrificing fit, cursor, or Follow live operation.",
+      "Prioritize simultaneous complete A/B cursor-time visibility over redundant window-status information.",
+      "Preserve familiar unselected favorite styling while making selected state decisive."
+    ],
+    "non_goals": [
+      "Change CAN acquisition, decoding, retained samples, export data, cursor mathematics, or measurement formulas.",
+      "Add new graph navigation modes, manual colour customization, or a global visual redesign.",
+      "Redesign signal-tree hierarchy, change profile schema, or alter what shown/favorite state means.",
+      "Remove mouse-wheel, pan, or existing non-button graph navigation unless a focused regression proves it is coupled to the removed buttons."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Simplify and make the PeakLive graph command row legible",
+      "priority": "High - graph navigation and A/B comparison are core diagnostic actions; clipped cursor times and redundant controls directly obstruct their use.",
+      "complexity": "Medium",
+      "theme": "Graph header density and cursor readouts",
+      "request_acs": ["AC2", "AC3", "AC4", "AC7"],
+      "problem": [
+        "The + and - zoom buttons, grid toggle, and window readout consume scarce header width while the B cursor time clips.",
+        "The fit/resize glyphs are too small to be recognized reliably inside their buttons.",
+        "Follow live is not guaranteed to sit with the primary graph commands after responsive layout pressure."
+      ],
+      "scope_in": [
+        "Remove visible and focusable zoom-in, zoom-out, grid, and window/no-sample readout controls and their misleading tooltips/shortcuts.",
+        "Retain and enlarge the fit-all and fit-Y glyphs while preserving their semantics, accessibility, and keyboard operation.",
+        "Lay out Follow live alongside the remaining graph commands in one non-wrapping graph header row.",
+        "Allocate header width so complete A and B cursor times display together at all supported viewports; retain cursor placement and measurement behavior.",
+        "Add rendering and interaction regressions for removal, geometry, complete cursor readouts, and retained navigation behavior."
+      ],
+      "scope_out": [
+        "Changing sample storage, cursor calculation, export scope, or data acquisition lifecycle.",
+        "Removing wheel/pan navigation or fit actions.",
+        "Introducing a second graph toolbar or a wrapping layout."
+      ],
+      "acceptance_criteria": [
+        "AC2: The graph command row has no + zoom button, - zoom button, or grid control. The remaining fit-all and fit-Y/resize glyphs are visually larger and centered in their buttons, Follow live is on the same horizontal row as these commands, and all remaining actions retain accessible names, tooltips, keyboard reachability, and working behavior.",
+        "AC3: At 1024x768, 1280x720, and 1600x900, both complete A and B cursor timestamps are visible together in the graph header without clipping, overlap, wrapping, or tooltip-only fallback. The graph header shows neither start/end-second window text, delta/zoom window text, nor the No sample yet placeholder.",
+        "AC4: The graph no longer exposes the removed zoom buttons, grid toggle, or window readout through visible UI, keyboard shortcuts, inaccessible focus targets, or misleading tooltips. Existing pan/scroll navigation, fit actions, cursor placement, Follow live, and measurement calculations remain intact.",
+        "AC7: Focused offscreen/rendered UI regression tests prove combo trigger contrast, removed-control absence, enlarged fit glyph geometry, one-row containment, simultaneous complete A/B timestamps, absent window/no-sample text, Follow live placement, eye/star state contrast, and preserved graph/signal workflows."
+      ]
+    },
+    {
+      "title": "Make PeakLive selector triggers and signal eye-star states unmistakable",
+      "priority": "High - ambiguous selectors and weak shown/favorite states make common configuration and signal-selection actions unreliable.",
+      "complexity": "Medium",
+      "theme": "Dark-theme control and icon state clarity",
+      "request_acs": ["AC1", "AC5", "AC6", "AC7"],
+      "problem": [
+        "A white rectangle at the right of combo boxes does not communicate a drop-down action in the dark theme.",
+        "The selected favorite uses the same cyan family as visibility state, while the desired selected favorite needs a decisive bright yellow.",
+        "The checked and unchecked eye/star states are too similar for rapid signal selection."
+      ],
+      "scope_in": [
+        "Implement and render-verify an intuitive, high-contrast combo trigger across all application QComboBox states and popups.",
+        "Keep the inactive favorite star unchanged and change only its selected presentation to bright saturated yellow.",
+        "Strengthen selected/unselected differentiation for both visibility eye and favorite star without relying on colour alone.",
+        "Preserve the existing tree interaction model, keyboard operation, screen-reader state, filters, and persisted shown/favorite selections.",
+        "Add focused rendered contrast/state tests for selectors and signal actions."
+      ],
+      "scope_out": [
+        "Changing DBC/message/signal tree hierarchy or action-column layout.",
+        "Changing the meaning of shown or favorite state, DBC enablement, decoding, or profile storage.",
+        "Rebranding unrelated controls."
+      ],
+      "acceptance_criteria": [
+        "AC1: At each application combo box, including channel, measurement profile, Graphs only, and Trace only, the right-side trigger is a recognizable high-contrast drop-down symbol with coherent normal, hover, focus, disabled, and popup states; no unexplained white rectangle is visible on the supported desktop platform.",
+        "AC5: An unselected favorite star keeps its current muted visual treatment. A selected favorite star is filled or otherwise selected in a bright, saturated yellow with materially higher contrast. The shown/hidden eye likewise has a clearly stronger checked/unchecked distinction through shape fill, colour, and/or contrast, without relying on colour alone.",
+        "AC6: Eye and favorite actions keep their current click, keyboard, tooltip, accessible-name/state, filtering, and profile-persistence behavior; their state remains unambiguous in normal, hover, focus, and disabled rendering.",
+        "AC7: Focused offscreen/rendered UI regression tests prove combo trigger contrast, removed-control absence, enlarged fit glyph geometry, one-row containment, simultaneous complete A/B timestamps, absent window/no-sample text, Follow live placement, eye/star state contrast, and preserved graph/signal workflows."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement compact graph controls and unmistakable signal states",
+    "plan": [
+      "Capture current rendered baselines for graph-header geometry, combo triggers, and eye/star states at the supported viewports.",
+      "Remove the specified graph controls and window readout, enlarge fit glyphs, place Follow live inline, and make complete A/B cursor times durable at supported sizes.",
+      "Replace the ambiguous combo trigger across the shared dark theme and strengthen shown/favorite rendering, keeping the inactive favorite star unchanged and selected favorite bright yellow.",
+      "Add focused offscreen/rendered tests for every requested visual and behavioral contract, then run targeted UI, i18n, and full regression suites.",
+      "Validate the request chain, audit and lint Logics docs, record closeout evidence, and leave the repository commit-ready."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_compact_graph_controls_and_signal_state_icons.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
