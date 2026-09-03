@@ -114,7 +114,7 @@ QPushButton, QToolButton {{ background: {ACCENT}; border: none; border-radius: 5
 QToolButton#collapseButton {{ background: #202b3a; color: {TEXT_BODY}; min-width: 24px; }}
 QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18px; padding: 0; }}
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};
-                                min-width: 26px; padding: 0 4px; }}
+                                min-width: 22px; padding: 0 2px; }}
 QPushButton#chipButton {{ background: #1d2a3b; border: 1px solid {BORDER}; color: {ACCENT_SOFT};
                           font-weight: 600; min-height: 22px; padding: 0 8px; }}
 QPushButton:disabled, QToolButton:disabled {{ background: #334155; color: {TEXT_MUTED}; }}
