@@ -1,0 +1,139 @@
+{
+  "title": "Add CANalyzer-style recording configuration and collision-safe acquisition naming to PeakLive",
+  "references": [
+    "src/peaklive/domain/models.py",
+    "src/peaklive/services/profiles.py",
+    "src/peaklive/services/acquisition.py",
+    "src/peaklive/recording/asc.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/panels/acquisition_bar.py",
+    "src/peaklive/ui/actions.py",
+    "src/peaklive/i18n/en.json",
+    "tests/test_profiles.py",
+    "tests/test_acquisition.py",
+    "tests/test_asc_recorder.py",
+    "tests/test_ui_parity.py",
+    "tests/test_ui_lifecycle.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Operator-configurable, collision-safe acquisition recording",
+    "needs": [
+      "Give the operator one clear Recording settings route for each measurement profile, with recording enablement, output folder selection, filename template, visible iteration control, reset action, and immediate filename preview.",
+      "Use a small domain naming service rather than Qt widgets or the acquisition controller to interpret recording templates and produce safe capture paths.",
+      "Prevent an acquisition from overwriting prior evidence: select the first free iteration at acquisition start, reserve it atomically before the recorder writes, and persist the next suggested iteration.",
+      "Keep the existing receive-only acquisition, ASC/TRC writer behaviour, rotation, profile persistence, localization, and headless Qt testability intact."
+    ],
+    "context": [
+      "MeasurementProfile already persists RecordingSettings with enabled, directory, filename_template, iteration, capture_format, and rotation thresholds. The default template currently contains date, time, profile, iteration, and segment fields.",
+      "AscRecorder currently expands its own template and uses a suffix-based collision fallback. That protects a single target but does not implement the requested visible iteration progression, first-free search, or an atomic reservation shared with session start.",
+      "AcquisitionSession starts the recorder before it passes frames to presentation, so filename resolution and reservation belong immediately before recorder start, not in the UI or after a bounded display buffer.",
+      "AcquisitionBar exposes profile, channel, bitrate, capture format, lifecycle, and export controls, but offers no Recording settings action or editor. Existing profile changes are persisted through the window/controller path.",
+      "The app is a native PySide6 desktop application. QFileDialog.getExistingDirectory is the appropriate folder chooser, while business logic must remain usable without Qt and be covered by deterministic filesystem tests.",
+      "The worktree has unrelated replay and external-artifact changes. Delivery must not modify, stage, or discard them."
+    ],
+    "acceptance_criteria": [
+      "AC1: A profile-scoped Recording settings surface is reachable from the application menu or acquisition controls before acquisition starts and exposes enable recording, Folder with Browse, Filename template, iteration, Reset, format-aware read-only preview, validation feedback, and localized accessible labels/tooltips.",
+      "AC2: Browse opens a directory-only QFileDialog and commits only a selected folder; cancelling leaves the profile unchanged. Recording fields round-trip through profile persistence and switching profiles restores each profile's independent values.",
+      "AC3: A Qt-independent RecordingNaming service expands only the documented placeholders {date}, {time}, {profile}, {iteration:03}, optional Python-compatible numeric widths, and {segment:02}; it yields a safe filename below the selected directory and reports malformed, unsupported, empty, or path-escaping templates clearly.",
+      "AC4: The preview reacts immediately to template, folder, profile, iteration, segment, and capture-format changes, uses a clearly defined preview clock, never creates a file, and shows the same filename syntax that acquisition will use.",
+      "AC5: On acquisition start, the service searches from the profile iteration for the first unoccupied filename, considering final files and in-progress reservation/partial files. It atomically reserves that exact candidate before the writer opens it, so concurrent starts or a crash cannot overwrite an existing acquisition.",
+      "AC6: After a successful reservation, the persisted profile iteration becomes the next candidate. If files for 012 and 013 exist and 014 is free, recording uses 014 and the next visible iteration is 015. Reset restarts the search at one rather than permitting an overwrite.",
+      "AC7: SessionController and the recorder consume the reservation without duplicating template parsing or changing raw-frame ordering, ASC/TRC output, rotation semantics, error handling, or the existing incomplete-capture truthfulness contract. Failed startup releases an unused reservation or leaves recoverable evidence that is never mistaken for a completed capture.",
+      "AC8: Focused unit, service, profile-persistence, and offscreen UI tests cover formatting, sanitization and rejection cases, preview non-mutation, first-free search, atomic collision handling, restart after a reserved/partial file, reset behaviour, directory cancellation, profile switching, accessibility, and regression of current acquisition/ASC tests."
+    ]
+  },
+  "product": {
+    "title": "PeakLive configurable and collision-safe acquisition recording",
+    "overview": "PeakLive lets an operator configure a profile's recording destination and a readable semi-automatic filename while reliably reserving the first available iteration before capture evidence is written.",
+    "goals": [
+      "Make recording configuration visible, understandable, and profile-scoped.",
+      "Produce deterministic, readable filenames from a limited documented placeholder language.",
+      "Guarantee that starting a recording does not overwrite an earlier or concurrently reserved acquisition.",
+      "Keep naming policy independent from Qt and from the capture writer."
+    ],
+    "non_goals": [
+      "Add new CAN capture formats, transmission, cloud destinations, scheduled recording, or a file browser for prior captures.",
+      "Change raw-frame capture completeness, rotation byte thresholds, CAN decoding, replay, or export semantics.",
+      "Support arbitrary template expressions, arbitrary filesystem paths embedded in templates, or user-defined scripting.",
+      "Guarantee recovery of a capture whose process and storage both failed before durable data was written."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Deliver a deterministic recording naming and reservation service",
+      "priority": "High - a recording target selected only by an unchecked increment can overwrite irreplaceable acquisition evidence.",
+      "complexity": "High",
+      "theme": "Recording naming integrity",
+      "request_acs": ["AC3", "AC5", "AC6", "AC7", "AC8"],
+      "problem": [
+        "Template expansion and collision fallback live inside AscRecorder. They cannot provide a single testable naming contract, preview result, visible first-free iteration, or durable reservation before session start.",
+        "A simple iteration increment is unsafe when recordings were moved, a prior process crashed, or two acquisition starts contend for the same target."
+      ],
+      "scope_in": [
+        "Create a Qt-independent RecordingNaming service/value types that validate and expand the bounded placeholder grammar, sanitize profile text consistently, and keep resolved paths within the configured directory.",
+        "Implement non-mutating preview and a first-free resolver beginning from the persisted iteration, including final, partial, and reservation artifacts in occupancy checks.",
+        "Implement exclusive, durable reservation before writer open; define ownership, release/finalization, crash recovery, and failed-start behaviour so no artifact can look like a clean completed capture.",
+        "Integrate the service between session start and the ASC/TRC recorder, preserving current raw-frame-before-presentation ordering, rotation, capture format suffixes, failure notes, and completed/incomplete evidence rules.",
+        "Advance and persist the next iteration only after reservation succeeds, with a deterministic reset-to-one search policy.",
+        "Add deterministic tests including competing resolver instances, existing final/partial/reserved targets, malformed placeholders, clock injection, and recorder/acquisition regression fixtures."
+      ],
+      "scope_out": [
+        "A UI settings dialog or menu action.",
+        "Changing ASC/TRC syntax, adding formats, changing segment rotation policy, or deleting old captures automatically.",
+        "Cross-machine locks for shared network filesystems beyond the platform's atomic local create guarantees."
+      ],
+      "acceptance_criteria": [
+        "AC1: A pure service resolves valid templates deterministically and rejects unsafe templates with actionable errors.",
+        "AC2: First-free selection and atomic reservation make overwrite impossible for pre-existing and concurrently chosen local targets.",
+        "AC3: The selected capture path, completed/incomplete state, rotation behaviour, and raw frame writer contract remain correct through session lifecycle tests.",
+        "AC4: The profile's next iteration is persisted after reservation and reset searches safely from one.",
+        "AC5: Deterministic service, concurrency, and lifecycle fixtures prove failure recovery and preserve the current writer contract."
+      ]
+    },
+    {
+      "title": "Expose profile recording settings with live filename preview",
+      "priority": "High - the existing recording policy is persisted but invisible, so an operator cannot deliberately choose the evidence destination or understand the next filename.",
+      "complexity": "Medium",
+      "theme": "Recording configuration usability",
+      "request_acs": ["AC1", "AC2", "AC4", "AC6", "AC8"],
+      "problem": [
+        "The acquisition bar has no route to configure recording enablement, directory, template, or iteration even though the profile model already stores them.",
+        "Without a live preview and validation, template mistakes are discovered only at start, and the user cannot see the collision-safe next name."
+      ],
+      "scope_in": [
+        "Add a localized, keyboard-accessible Recording settings menu action and compact PySide6 editor appropriate to the existing instrument UI.",
+        "Bind enablement, folder, template, iteration, reset, and format-aware read-only preview to the selected MeasurementProfile without moving naming policy into Qt.",
+        "Use QFileDialog.getExistingDirectory for Browse; cancellation changes nothing, while a chosen directory is normalized and persisted through existing profile save paths.",
+        "Give immediate invalid-template feedback, disable or guard start according to the existing error-reporting convention, and preserve edits when switching profiles only after their normal persistence point.",
+        "Cover offscreen layout, accessible names, keyboard focus, preview updates, reset, browse cancellation/selection, profile switching, and current acquisition-bar behaviour."
+      ],
+      "scope_out": [
+        "A general profile-management redesign, editing rotation/free-space thresholds, or a capture-history UI.",
+        "Changing CAN channel, bitrate, controller mode, or raw-export controls beyond keeping their current persistence intact."
+      ],
+      "acceptance_criteria": [
+        "AC1: Every selected profile has an operable Recording settings route with all requested fields and localized accessibility metadata.",
+        "AC2: Folder selection and profile persistence have correct cancel, selection, and profile-switch semantics.",
+        "AC3: Preview is instant, read-only, and non-mutating, and it agrees with the domain naming service for valid input.",
+        "AC4: Reset and visible next iteration accurately reflect collision-safe acquisition naming without overwriting previous files.",
+        "AC5: Offscreen UI and persistence regression tests cover accessible interaction and preserve existing acquisition-bar behaviour."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement configurable, collision-safe PeakLive recording names",
+    "plan": [
+      "Characterize current RecordingSettings, recorder lifecycle, profile persistence, and ASC/TRC tests; introduce a clock-injectable naming/reservation contract with focused failure and concurrency fixtures.",
+      "Wire reservation and next-iteration persistence into acquisition startup and recorder finalization without changing raw capture ordering, formats, rotations, or incomplete-capture evidence.",
+      "Add the localized Recording settings action/editor with folder browse, validation, profile binding, reset, and immediate non-mutating preview.",
+      "Run targeted unit/service/profile/offscreen UI tests, the full test suite and Logics validation; refresh the Logics index and leave unrelated worktree changes untouched."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_recording_configuration_and_collision_safe_naming.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
