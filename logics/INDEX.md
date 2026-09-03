@@ -23,6 +23,7 @@ _None_
 | [prod_013_peaklive_configurable_and_collision_safe_acquisition_recording](product/prod_013_peaklive_configurable_and_collision_safe_acquisition_recording.md) | PeakLive configurable and collision-safe acquisition recording | Settled |  |  | product/prod_013_peaklive_configurable_and_collision_safe_acquisition_recording.md |
 | [prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace](product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md) | PeakLive reusable measurement setups and identifiable recording workspace | Settled |  |  | product/prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace.md |
 | [prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls](product/prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls.md) | PeakLive unmistakable graph comparison and signal controls | Proposed |  |  | product/prod_015_peaklive_unmistakable_graph_comparison_and_signal_controls.md |
+| [prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states](product/prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states.md) | PeakLive compact graph controls and unmistakable signal states | Proposed |  |  | product/prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states.md |
 
 ## Roadmaps
 
@@ -48,6 +49,7 @@ _None_
 | [req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive](request/req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive.md) | Add CANalyzer-style recording configuration and collision-safe acquisition naming to PeakLive | Done |  |  | request/req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive.md |
 | [req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity](request/req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity.md) | Manage reusable PeakLive measurement setups, recording text, and desktop application identity | Done |  |  | request/req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity.md |
 | [req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible](request/req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible.md) | Make PeakLive graph comparison and signal controls unmistakably legible | Draft |  |  | request/req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible.md |
+| [req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states](request/req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states.md) | Compact PeakLive graph controls and unmistakable signal states | Draft |  |  | request/req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states.md |
 
 ## Backlog
 
@@ -107,6 +109,8 @@ _None_
 | [item_052_create_and_package_the_peaklive_application_icon](backlog/item_052_create_and_package_the_peaklive_application_icon.md) | Create and package the PeakLive application icon | Done |  | 100% | backlog/item_052_create_and_package_the_peaklive_application_icon.md |
 | [item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls](backlog/item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls.md) | Deliver distinguishable graph traces and explicit graph fitting controls | Done |  | 100% | backlog/item_053_deliver_distinguishable_graph_traces_and_explicit_graph_fitting_controls.md |
 | [item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances](backlog/item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances.md) | Deliver a compact, high-contrast Signals tree and explicit drop-down affordances | In progress |  | 85% | backlog/item_054_deliver_a_compact_high_contrast_signals_tree_and_explicit_drop_down_affordances.md |
+| [item_055_simplify_and_make_the_peaklive_graph_command_row_legible](backlog/item_055_simplify_and_make_the_peaklive_graph_command_row_legible.md) | Simplify and make the PeakLive graph command row legible | Ready |  | 0% | backlog/item_055_simplify_and_make_the_peaklive_graph_command_row_legible.md |
+| [item_056_make_peaklive_selector_triggers_and_signal_eye_star_states_unmistakable](backlog/item_056_make_peaklive_selector_triggers_and_signal_eye_star_states_unmistakable.md) | Make PeakLive selector triggers and signal eye-star states unmistakable | Ready |  | 0% | backlog/item_056_make_peaklive_selector_triggers_and_signal_eye_star_states_unmistakable.md |
 
 ## Tasks
 
@@ -128,6 +132,7 @@ _None_
 | [task_014_implement_configurable_collision_safe_peaklive_recording_names](tasks/task_014_implement_configurable_collision_safe_peaklive_recording_names.md) | Implement configurable, collision-safe PeakLive recording names | Done |  | 100% | tasks/task_014_implement_configurable_collision_safe_peaklive_recording_names.md |
 | [task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity](tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md) | Deliver reusable measurement setups, recording text, and application icon identity | Done |  | 100% | tasks/task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity.md |
 | [task_016_implement_legible_peaklive_graph_comparison_and_signal_controls](tasks/task_016_implement_legible_peaklive_graph_comparison_and_signal_controls.md) | Implement legible PeakLive graph comparison and signal controls | In progress |  | 85% | tasks/task_016_implement_legible_peaklive_graph_comparison_and_signal_controls.md |
+| [task_017_implement_compact_graph_controls_and_unmistakable_signal_states](tasks/task_017_implement_compact_graph_controls_and_unmistakable_signal_states.md) | Implement compact graph controls and unmistakable signal states | Ready |  | 0% | tasks/task_017_implement_compact_graph_controls_and_unmistakable_signal_states.md |
 
 ## Runbooks
 
