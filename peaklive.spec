@@ -19,7 +19,11 @@ from peaklive.version import build_identifier  # noqa: E402
 IDENTIFIER = build_identifier()
 print(f"PeakLive build identity: {IDENTIFIER}")
 
-datas = collect_data_files("peaklive", includes=["i18n/*.json"])
+datas = collect_data_files("peaklive", includes=["i18n/*.json", "resources/*"])
+
+# The same generated icon the running application loads, so the executable in
+# Explorer and the window it opens cannot show two different marks.
+ICON = str(Path.cwd() / "src" / "peaklive" / "resources" / "peaklive.ico")
 
 hiddenimports = ["can.interfaces.pcan"]
 if (Path.cwd() / "src" / "peaklive" / "_build.py").exists():
@@ -49,4 +53,5 @@ exe = EXE(
     [],
     name="PeakLive",
     console=False,
+    icon=ICON,
 )

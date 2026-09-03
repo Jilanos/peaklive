@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
@@ -42,12 +43,19 @@ class BusEvent:
     channel: str = "channel-1"
 
 
+#: The template a profile created from now on starts with. Stored templates
+#: are never rewritten to it: an operator who tuned a filename keeps it.
+DEFAULT_FILENAME_TEMPLATE = "{date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc"
+
+
 @dataclass(slots=True)
 class RecordingSettings:
     enabled: bool = True
     directory: str = ""
-    filename_template: str = "{date}_{time}_{profile}_{iteration:03d}_{segment:03d}.asc"
+    filename_template: str = DEFAULT_FILENAME_TEMPLATE
     capture_format: str = "asc"
+    #: Free operator label placed in the filename by the ``{text}`` placeholder.
+    text: str = ""
     iteration: int = 1
     rotate_bytes: int = 2 * 1024**3
     warn_free_bytes: int = 10 * 1024**3
@@ -59,6 +67,7 @@ class RecordingSettings:
             "directory": self.directory,
             "filename_template": self.filename_template,
             "capture_format": self.capture_format,
+            "text": self.text,
             "iteration": self.iteration,
             "rotate_bytes": self.rotate_bytes,
             "warn_free_bytes": self.warn_free_bytes,
@@ -76,6 +85,7 @@ class RecordingSettings:
                 if str(raw.get("capture_format", "asc")).lower() in {"asc", "trc"}
                 else "asc"
             ),
+            text=str(raw.get("text", "")),
             iteration=max(1, int(raw.get("iteration", 1))),
             rotate_bytes=max(1, int(raw.get("rotate_bytes", cls().rotate_bytes))),
             warn_free_bytes=max(1, int(raw.get("warn_free_bytes", cls().warn_free_bytes))),
@@ -350,6 +360,22 @@ class MeasurementProfile:
             "recording": self.recording.to_dict(),
             "updated_at": self.updated_at,
         }
+
+    def duplicate(self, name: str) -> MeasurementProfile:
+        """Return an independent copy of the persisted configuration.
+
+        The copy is rebuilt from the serialized form, so every nested
+        structure — DBC paths and their choices, signal lists, trace columns,
+        layout, recording settings — is a new object. Nothing that belongs to
+        a running session (acquired frames, events, reservations, capture
+        files) lives in this dataclass, so nothing of the sort can be copied.
+        """
+        raw = deepcopy(self.to_dict())
+        copy = MeasurementProfile.from_dict(raw)
+        copy.identifier = str(uuid4())
+        copy.name = name
+        copy.updated_at = datetime.now().astimezone().isoformat()
+        return copy
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> MeasurementProfile:

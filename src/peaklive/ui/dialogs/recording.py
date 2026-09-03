@@ -100,6 +100,13 @@ class RecordingSettingsDialog(QDialog):
         iteration_host.setLayout(iteration_row)
         form.addRow(QLabel(translate("recording.iteration")), iteration_host)
 
+        self.text_edit = QLineEdit(profile.recording.text, objectName="recordingText")
+        self.text_edit.setAccessibleName(translate("recording.text"))
+        self.text_edit.setToolTip(translate("recording.text_tooltip"))
+        self.text_edit.setPlaceholderText(translate("recording.text_placeholder"))
+        self.text_edit.textChanged.connect(self._set_text)
+        form.addRow(QLabel(translate("recording.text")), self.text_edit)
+
         self.preview_label = QLabel(objectName="recordingPreview")
         self.preview_label.setAccessibleName(translate("recording.preview"))
         self.preview_label.setToolTip(translate("recording.preview_tooltip"))
@@ -139,6 +146,12 @@ class RecordingSettingsDialog(QDialog):
 
     def _set_template(self, text: str) -> None:
         self._profile.recording.filename_template = text
+        self._refresh_preview()
+        self.recording_changed.emit()
+
+    def _set_text(self, text: str) -> None:
+        """Store the label verbatim; sanitisation belongs to the naming service."""
+        self._profile.recording.text = text
         self._refresh_preview()
         self.recording_changed.emit()
 

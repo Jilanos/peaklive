@@ -8,7 +8,6 @@ the session facts, and the workers — and keeps the measurement profile in sync
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
@@ -25,7 +24,7 @@ from PySide6.QtWidgets import (
 
 from peaklive.adapters import CanAdapter, default_adapter
 from peaklive.analysis import DbcCatalog, TraceRecord
-from peaklive.diagnostics import logger, set_operator_notifier
+from peaklive.diagnostics import set_operator_notifier
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.dbc_worker import CatalogOperation, DbcCatalogWorker
@@ -46,6 +45,7 @@ from peaklive.ui.panels import (
     SignalExplorerPanel,
 )
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
+from peaklive.ui.profile_controller import WorkspaceProfiles
 from peaklive.ui.session_controller import SHUTDOWN_TIMEOUT_MS, WorkspaceSession
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
@@ -66,6 +66,7 @@ class MainWindow(
     WorkspaceCatalog,
     WorkspaceCenter,
     WorkspaceIngest,
+    WorkspaceProfiles,
     WorkspaceReflow,
     WorkspaceSession,
     WorkspaceShutdown,
@@ -140,6 +141,7 @@ class MainWindow(
 
         self.acquisition_bar = AcquisitionBar([p.name for p in self._state.profiles])
         self.acquisition_bar.profile_changed.connect(self._profile_changed)
+        self.acquisition_bar.save_profile_as_requested.connect(self._save_profile_as)
         self.acquisition_bar.options_changed.connect(self._acquisition_options_changed)
         self.acquisition_bar.load_dbc_requested.connect(self._choose_dbc)
         self.acquisition_bar.open_trace_requested.connect(self._choose_trace)
@@ -199,118 +201,6 @@ class MainWindow(
         self.status.showMessage(translate("acquisition.disconnected"))
         self.setStatusBar(self.status)
         self._build_menu()
-
-    # ---- profiles ------------------------------------------------------
-
-    def _select_last_profile(self) -> None:
-        selected_index = next(
-            index
-            for index, profile in enumerate(self._state.profiles)
-            if profile.identifier == self._state.last_profile_id
-        )
-        self.profile_selector.setCurrentIndex(selected_index)
-        self._show_profile(self.selected_profile)
-
-    def _profile_changed(self, index: int) -> None:
-        if index < 0:
-            return
-        self._state.last_profile_id = self._state.profiles[index].identifier
-        self._selected_signal_names = set(self.selected_profile.displayed_signals)
-        self._favorite_signal_names = set(self.selected_profile.favorite_signals)
-        self._save()
-        self._show_profile(self.selected_profile)
-        self._load_profile_dbcs()
-
-    def _show_profile(self, profile: MeasurementProfile) -> None:
-        self._restoring = True
-        try:
-            self.acquisition_bar.show_profile(profile)
-            self.trace_panel.apply_columns(profile.trace_columns)
-            self.trace_panel.apply_settings(profile.trace_filter)
-            layout = profile.layout
-            mode_index = self.workspace_mode_selector.findData(layout.workspace_mode)
-            self.workspace_mode_selector.setCurrentIndex(max(0, mode_index))
-            if layout.splitter_sizes:
-                self.workspace.setSizes(layout.splitter_sizes)
-            if layout.divider_sizes:
-                self.center_divider.setSizes(layout.divider_sizes)
-            self._expanded_widths = dict(layout.panel_widths)
-            for panel in self._layout_panels:
-                panel.set_collapsed(panel.key in layout.collapsed_panels)
-            self._reflow_workspace()
-            self.graph_panel.restore_cursors(layout.cursor_a, layout.cursor_b)
-            if layout.fullscreen and not self.isFullScreen():
-                self.showFullScreen()
-        finally:
-            self._restoring = False
-        self._apply_workspace_mode(profile.layout.workspace_mode)
-
-    def _acquisition_options_changed(self) -> None:
-        profile = self.selected_profile
-        self.acquisition_bar.apply_to_profile(profile)
-        self._save()
-        self.acquisition_bar.show_profile(profile)
-
-    def _save(self) -> None:
-        self.selected_profile.updated_at = datetime.now().astimezone().isoformat()
-        try:
-            self._store.save(self._state)
-        except OSError as error:
-            # Persistence is useful, but must never make an input slot take
-            # down the interactive session or discard its in-memory state.
-            self.session_note.show_message(str(error), "warning")
-            logger().exception("Could not save measurement profiles")
-
-    def _persist_layout(self) -> None:
-        if self._restoring:
-            return
-        self._remember_panel_widths()
-        layout = self.selected_profile.layout
-        layout.splitter_sizes = list(self.workspace.sizes())
-        layout.divider_sizes = list(self.center_divider.sizes())
-        layout.panel_widths = dict(self._expanded_widths)
-        layout.collapsed_panels = [
-            panel.key for panel in self._layout_panels if panel.is_collapsed
-        ]
-        layout.cursor_a = self.graph_panel.cursor_a
-        layout.cursor_b = self.graph_panel.cursor_b
-        layout.fullscreen = self.isFullScreen()
-        self._save()
-
-    def _persist_trace_filters(self) -> None:
-        if self._restoring:
-            return
-        self.selected_profile.trace_filter = self.trace_panel.settings
-        self._save()
-
-    def _persist_signal_state(self, signal_names: tuple[str, ...] | None = None) -> None:
-        """Persist the selection, reusing already-computed names when given.
-
-        A catalog commit has just walked every message off-thread; recomputing
-        the same names here would put that work straight back on the UI thread.
-        """
-        profile = self.selected_profile
-        available = set(
-            self._catalog.signal_names() if signal_names is None else signal_names
-        )
-        profile.displayed_signals = sorted(
-            name for name in self._selected_signal_names if not available or name in available
-        )
-        profile.favorite_signals = sorted(self._favorite_signal_names)
-        self._save()
-
-    def _persist_dbc_state(self) -> None:
-        profile = self.selected_profile
-        profile.trace_filters["disabled_dbc_hashes"] = [
-            definition.content_hash
-            for definition in self._catalog.definitions
-            if not self._catalog.is_enabled(definition.content_hash)
-        ]
-        profile.trace_filters["dbc_conflict_resolutions"] = {
-            str(arbitration_id): content_hash
-            for arbitration_id, content_hash in self._catalog.resolutions.items()
-        }
-        self._save()
 
     # ---- inspector -----------------------------------------------------
 

@@ -15,6 +15,10 @@ from peaklive.domain import MeasurementProfile
 SCHEMA_VERSION = 1
 
 
+class ProfileNameError(ValueError):
+    """An operator-supplied setup name is blank or already taken."""
+
+
 @dataclass(slots=True)
 class ProfileState:
     profiles: list[MeasurementProfile]
@@ -25,6 +29,22 @@ class ProfileState:
         return next(
             profile for profile in self.profiles if profile.identifier == self.last_profile_id
         )
+
+    def duplicate_selected(self, name: str) -> MeasurementProfile:
+        """Append an independent copy of the active setup and select it.
+
+        Validation happens before anything is mutated, so a rejected name
+        leaves the state exactly as it was.
+        """
+        cleaned = name.strip()
+        if not cleaned:
+            raise ProfileNameError("A measurement setup name cannot be blank.")
+        if any(profile.name.casefold() == cleaned.casefold() for profile in self.profiles):
+            raise ProfileNameError(f"A measurement setup named {cleaned!r} already exists.")
+        copy = self.selected.duplicate(cleaned)
+        self.profiles.append(copy)
+        self.last_profile_id = copy.identifier
+        return copy
 
 
 class ProfileStore:
@@ -48,6 +68,22 @@ class ProfileStore:
             profiles[0],
         )
         return ProfileState(profiles, selected.identifier)
+
+    def save_as(self, state: ProfileState, name: str) -> MeasurementProfile:
+        """Duplicate the active setup under `name` and persist atomically.
+
+        A failed write must not leave the in-memory state claiming a setup the
+        file does not have, so the copy is rolled back when persistence fails.
+        """
+        previous = state.last_profile_id
+        copy = state.duplicate_selected(name)
+        try:
+            self.save(state)
+        except OSError:
+            state.profiles.remove(copy)
+            state.last_profile_id = previous
+            raise
+        return copy
 
     def save(self, state: ProfileState) -> None:
         self.data_dir.mkdir(parents=True, exist_ok=True)

@@ -1,11 +1,12 @@
 ## prod_014_peaklive_reusable_measurement_setups_and_identifiable_recording_workspace - PeakLive reusable measurement setups and identifiable recording workspace
 > Date: 2026-09-03
-> Status: Proposed
+> Status: Settled
 > Related request: `req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity`
-> Related backlog: `item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups`, `item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field`, `item_052_create_and_package_the_peaklive_application_icon`
+> Related backlog: `item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups`
 > Related task: `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-03 12:17:14
 
 # Overview
 Make PeakLive practical for repeated bench configurations: an operator can preserve a complete measurement setup as a named independent copy, load it later, add a meaningful text label to capture filenames, and recognize the application immediately in the desktop environment.
@@ -45,5 +46,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_014_manage_reusable_peaklive_measurement_setups_recording_text_and_desktop_application_identity`
+- Product back-reference: `item_050_add_persistent_save_as_and_loading_workflows_for_independent_measurement_setups`
 - Task back-reference: `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`

@@ -1,6 +1,7 @@
 """Framework-free PeakLive domain types."""
 
 from .models import (
+    DEFAULT_FILENAME_TEMPLATE,
     TRACE_COLUMN_DEFAULTS,
     TRACE_COLUMN_FORMATS,
     TRACE_DECODE_ANY,
@@ -17,6 +18,7 @@ from .models import (
 )
 
 __all__ = [
+    "DEFAULT_FILENAME_TEMPLATE",
     "TRACE_COLUMN_DEFAULTS",
     "TRACE_COLUMN_FORMATS",
     "TRACE_DECODE_ANY",

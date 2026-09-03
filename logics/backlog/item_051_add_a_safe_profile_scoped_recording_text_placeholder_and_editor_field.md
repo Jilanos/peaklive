@@ -1,14 +1,14 @@
 ## item_051_add_a_safe_profile_scoped_recording_text_placeholder_and_editor_field - Add a safe profile-scoped recording text placeholder and editor field
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Recording filename configuration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 12:02:14
+> Indicators reviewed: 2026-09-03 12:17:14
 
 # AI Context
 - Summary: Extends the closed recording filename grammar with one operator label while preserving deterministic preview and atomic reservation behavior.
@@ -41,9 +41,9 @@
 - AC5: Focused non-Qt and offscreen Qt tests protect the grammar and regression-sensitive recording behavior.
 
 # AC Traceability
-- request-AC4 -> This backlog slice. Proof: AC1: A new profile defaults to the documented template with {text}, and existing profile templates are not silently rewritten.
-- request-AC5 -> This backlog slice. Proof: AC2: The text editor is immediately beneath iteration, updates only the selected profile, survives restart and setup switching, and refreshes the preview without creating files.
-- request-AC7 -> This backlog slice. Proof: AC3: Preview, normal capture, reservation markers, partial files, rotated segments, and event sidecars agree on the sanitized text-bearing basename.
+- request-AC4 -> This backlog slice. Proof: AC1 — `tests/test_recording_naming.py::test_the_default_template_carries_the_operator_text`; stored templates are read back verbatim by `RecordingSettings.from_dict`, covered by `tests/test_recording_settings_ui.py::test_toggling_and_editing_fields_persists_through_profile_storage`.
+- request-AC5 -> This backlog slice. Proof: AC2/AC3 — `tests/test_recording_settings_ui.py::test_the_text_field_sits_directly_below_next_iteration`, `::test_editing_the_text_updates_the_preview_and_persists`, `::test_the_text_belongs_to_one_setup_only`.
+- request-AC7 -> This backlog slice. Proof: AC3/AC4/AC5 — `tests/test_recording_naming.py` sanitization, reservation, and collision cases and `tests/test_asc_recorder.py` rotation and empty-label cases.
 
 # Decision framing
 - Product framing: Not needed
@@ -58,3 +58,9 @@
 # Priority
 - Priority: High - capture identification must be correct, persistent, and collision-safe across every recorder path.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity`
+
+# Notes
+- Task `task_015_deliver_reusable_measurement_setups_recording_text_and_application_icon_identity` was finished via `logics-manager flow finish task` on 2026-09-03.
