@@ -288,12 +288,18 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _refresh_cursor_summary(self) -> None:
         if self.cursor_a is None or self.cursor_b is None:
             self.cursor_summary.setText(translate("graph.cursor_summary_empty"))
+            self.cursor_summary.setMinimumWidth(0)
             return
-        self.cursor_summary.setText(
-            translate("graph.cursor_summary").format(
-                cursor_a=f"{self.cursor_a:.3f}s",
-                cursor_b=f"{self.cursor_b:.3f}s",
-            )
+        text = translate("graph.cursor_summary").format(
+            cursor_a=f"{self.cursor_a:.3f}s",
+            cursor_b=f"{self.cursor_b:.3f}s",
+        )
+        self.cursor_summary.setText(text)
+        # A floor sized from the live text's own font metrics (item_055 AC3)
+        # tracks whatever font a given platform actually renders with,
+        # instead of a guessed pixel constant a wider Windows font invalidates.
+        self.cursor_summary.setMinimumWidth(
+            self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4
         )
 
     @property

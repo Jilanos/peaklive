@@ -86,15 +86,22 @@ def test_no_control_exposes_a_removed_objects_name(qtbot, tmp_path):
         assert window.findChild(type(window), object_name) is None
 
 
-def test_the_fit_glyphs_render_larger_than_a_same_row_cursor_action(qtbot, tmp_path):
+def test_the_fit_glyphs_are_marked_for_the_enlarged_treatment(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     bar = window.graph_panel.controls
 
+    assert 'QToolButton[fitGlyph="true"]' in theme.APP_STYLE
     for fit_button in (bar.fit_button, bar.fit_y_button):
-        assert fit_button.fontInfo().pixelSize() > bar.cursor_a_button.fontInfo().pixelSize()
+        # The pixel/point size QFontInfo reports for a stylesheet-driven font
+        # is not portable across platforms (Windows CI has reported -1 for
+        # both sides of this comparison) - the `fitGlyph` property, which the
+        # theme's QSS keys its larger font-size rule off, is the reliable,
+        # platform-independent signal that the enlargement is applied.
+        assert fit_button.property("fitGlyph") is True
         assert fit_button.accessibleName()
         assert fit_button.toolTip()
         assert fit_button.focusPolicy() != Qt.FocusPolicy.NoFocus
+    assert bar.cursor_a_button.property("fitGlyph") is not True
 
 
 def test_follow_live_shares_the_fit_commands_row(qtbot, tmp_path):

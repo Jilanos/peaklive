@@ -624,7 +624,10 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
     ]
     # These commands were reparented into the one-line Graphs/Trace header
     # (item_053 AC6) - GraphControlsBar still owns and wires them, it just no
-    # longer displays them in its own row.
+    # longer displays them in its own row. cursor_summary stays behind in
+    # GraphControlsBar's own row instead (item_055 AC3): the shared header has
+    # too little width on every platform to hold both complete A/B timestamps
+    # without eliding, while the dedicated row spans the full graph column.
     header = window.workspace_header
     for control in (
         bar.fit_button,
@@ -633,12 +636,12 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
         bar.cursor_a_button,
         bar.cursor_b_button,
         bar.measurement_visibility_button,
-        bar.cursor_summary,
         bar.mode_selector,
         window.acquisition_bar.start_button,
         window.acquisition_bar.stop_button,
     ):
         assert control.parent() is header
+    assert bar.cursor_summary.parent() is bar.cursor_group
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -658,10 +661,11 @@ def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path
 def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     qtbot, tmp_path, size
 ):
-    """item_053 AC6 / item_055 AC3: title, view selection, fit, Follow live,
-    Play/Stop, and cursor actions on one row, at every bench viewport, without
-    wrapping, overlap, or clipping - and both complete cursor timestamps stay
-    visible together rather than falling back to a tooltip.
+    """item_053 AC6: title, view selection, fit, Follow live, Play/Stop, and
+    cursor actions on one row, at every bench viewport, without wrapping,
+    overlap, or clipping. item_055 AC3: both complete cursor timestamps stay
+    visible together (in GraphControlsBar's own row) rather than falling back
+    to a tooltip.
     """
     window = _with_dbc(qtbot, tmp_path, size=size)
     window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])

@@ -17,13 +17,6 @@ from peaklive.ui.widgets import (
     ElidingLabel,  # noqa: F401 - re-exported, existing import path
 )
 
-#: A cursor readout carries both complete A and B timestamps at once
-#: (item_055 AC3) - the shared readout floor is not enough for that without
-#: falling back to a squeezed, tooltip-only string, so this one gets its own
-#: wider floor sized for a six-digit-second capture instead of eliding at the
-#: generic width.
-CURSOR_SUMMARY_MINIMUM_WIDTH = 170
-
 
 class GraphControlsBar(QWidget):
     """One dense toolbar for graph navigation, display, cursor, and view mode.
@@ -43,7 +36,7 @@ class GraphControlsBar(QWidget):
         self.mode_selector = QComboBox(objectName="workspaceModeSelector")
         self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
         self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
-        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.mode_selector.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.empty_state_label = self._readout("graphHeaderEmptyState", "graph.empty")
         self.empty_state_label.setVisible(False)
@@ -67,7 +60,6 @@ class GraphControlsBar(QWidget):
         )
         cursor_row.addWidget(self.measurement_visibility_button)
         self.cursor_summary = self._readout("cursorSummary", "graph.cursor_summary_empty")
-        self.cursor_summary.setMinimumWidth(CURSOR_SUMMARY_MINIMUM_WIDTH)
         cursor_row.addWidget(self.cursor_summary)
 
     # ---- construction -------------------------------------------------
