@@ -49,12 +49,11 @@ class WorkspaceCenter:
             (controls.cursor_group.layout(), controls.cursor_a_button),
             (controls.cursor_group.layout(), controls.cursor_b_button),
             (controls.cursor_group.layout(), controls.measurement_visibility_button),
-            (controls.cursor_group.layout(), controls.cursor_summary),
         ):
             source_row.removeWidget(widget)
             widget.setParent(self.workspace_header)
         self.workspace_mode_selector.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
         )
         self.workspace_mode_selector.setMinimumContentsLength(4)
         for value, key in WORKSPACE_MODES:
@@ -73,7 +72,11 @@ class WorkspaceCenter:
         self.workspace_header.add(controls.cursor_a_button)
         self.workspace_header.add(controls.cursor_b_button)
         self.workspace_header.add(controls.measurement_visibility_button)
-        self.workspace_header.add(controls.cursor_summary)
+        # cursor_summary deliberately stays in GraphControlsBar's own row
+        # (item_055 AC3): the shared one-line header has too little width on
+        # every platform to hold both complete A/B timestamps alongside the
+        # view selector and acquisition/fit/cursor actions without eliding,
+        # while the dedicated row spans the full graph column.
         self.trace_graph_panel.insert_into_header(self.workspace_header)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")

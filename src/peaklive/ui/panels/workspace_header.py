@@ -18,7 +18,7 @@ class WorkspaceHeaderBar(QWidget):
         super().__init__(parent, objectName="workspaceHeaderBar")
         self.row = QHBoxLayout(self)
         self.row.setContentsMargins(0, 0, 0, 0)
-        self.row.setSpacing(2)
+        self.row.setSpacing(1)
 
     def add(self, widget: QWidget) -> QWidget:
         self.row.addWidget(widget)
