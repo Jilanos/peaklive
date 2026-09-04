@@ -1,0 +1,128 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+VAL_TABLE_ Input_table_3bit 7 "Error" 6 "Value 6" 5 "Value 5" 4 "Value 4" 3 "Value 3" 2 "Value 2" 1 "Value 1" ;
+VAL_TABLE_ Output_table_1bit 1 "Powered" 0 "Not Powered" ;
+VAL_TABLE_ Input_table 1 "On" 0 "Off" ;
+VAL_TABLE_ Output_table_2bit 3 "Error" 2 "Not Powered" 1 "Powered" ;
+
+
+BO_ 1621 BCM_to_Invers: 8 Vector__XXX
+ SG_ Output_121 : 49|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_116 : 51|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_114 : 53|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_111 : 30|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Output_081 : 55|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_079 : 41|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_077 : 43|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_075 : 45|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_073 : 47|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_071 : 33|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_069 : 31|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Output_067 : 35|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_062 : 16|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Output_060 : 17|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Output_058 : 18|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Output_056 : 37|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_054 : 39|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_052 : 25|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_050 : 27|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Output_048 : 29|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ Input_106 : 20|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_102 : 21|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_043 : 22|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_042 : 23|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_040 : 8|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_038 : 9|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_033 : 10|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_032 : 11|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_024 : 12|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_023 : 13|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_021 : 14|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_019 : 15|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_014 : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_013 : 1|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_009 : 4|3@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ Input_008 : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_007 : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ Input_006 : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ErrorCode : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ Output_044 : 19|1@0+ (1,0) [0|1] "" Vector__XXX
+
+
+
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "BusType" "CAN";
+VAL_ 1621 Output_121 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_116 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_114 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_111 1 "Powered" 0 "Not Powered" ;
+VAL_ 1621 Output_081 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_079 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_077 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_075 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_073 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_071 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_069 1 "Powered" 0 "Not Powered" ;
+VAL_ 1621 Output_067 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_062 1 "Powered" 0 "Not Powered" ;
+VAL_ 1621 Output_060 1 "Powered" 0 "Not Powered" ;
+VAL_ 1621 Output_058 1 "Powered" 0 "Not Powered" ;
+VAL_ 1621 Output_056 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_054 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_052 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_050 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Output_048 3 "Error" 2 "Not Powered" 1 "Powered" ;
+VAL_ 1621 Input_106 1 "On" 0 "Off" ;
+VAL_ 1621 Input_102 1 "On" 0 "Off" ;
+VAL_ 1621 Input_043 1 "On" 0 "Off" ;
+VAL_ 1621 Input_042 1 "On" 0 "Off" ;
+VAL_ 1621 Input_040 1 "On" 0 "Off" ;
+VAL_ 1621 Input_038 1 "On" 0 "Off" ;
+VAL_ 1621 Input_033 1 "On" 0 "Off" ;
+VAL_ 1621 Input_032 1 "On" 0 "Off" ;
+VAL_ 1621 Input_024 1 "On" 0 "Off" ;
+VAL_ 1621 Input_023 1 "On" 0 "Off" ;
+VAL_ 1621 Input_021 1 "On" 0 "Off" ;
+VAL_ 1621 Input_019 1 "On" 0 "Off" ;
+VAL_ 1621 Input_014 1 "On" 0 "Off" ;
+VAL_ 1621 Input_013 1 "On" 0 "Off" ;
+VAL_ 1621 Input_009 7 "Error" 6 "Value 6" 5 "Value 5" 4 "Value 4" 3 "Value 3" 2 "Value 2" 1 "Value 1" ;
+VAL_ 1621 Input_008 1 "On" 0 "Off" ;
+VAL_ 1621 Input_007 1 "On" 0 "Off" ;
+VAL_ 1621 Input_006 1 "On" 0 "Off" ;
+VAL_ 1621 Output_044 1 "Powered" 0 "Not Powered" ;
+

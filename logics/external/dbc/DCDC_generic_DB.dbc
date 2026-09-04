@@ -1,0 +1,117 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DCDC MASTER
+VAL_TABLE_ DCDC_MODE 15 "Invalid" 8 "Derating due to temperature" 7 "Shutdown in progress" 6 "Reserved" 5 "Autonomous mode" 4 "Buck or boost conversion" 3 "Reserved" 2 "Standby mode" 1 "Initialization in progress" 0 "Reserved" ;
+VAL_TABLE_ DCDC_PRE_STATUS 3 "Invalid" 2 "No precharge ongoing" 1 "Precharge ongoing" 0 "Reserved" ;
+VAL_TABLE_ DCDC_FAULT 256 "Power supply fault" 16 "Over temperature fault" 0 "No fault" ;
+VAL_TABLE_ DCDC_FAULT_ST 4 "Permenent failure(Comfirmed)" 2 "Temporary failure occurred" 1 "Power limitation (derating)" 0 "Normal status" ;
+VAL_TABLE_ DCDC_U_STATUS 128 "Over voltage on HV network" 64 "High voltage on HV network" 32 "Low voltage on HV network" 16 "Under voltage on HV network" 8 "Over voltage on LV network" 4 "High voltage on LV network" 2 "Low voltage on LV network" 1 "Under voltage on LV network" 0 "No voltage out of range" ;
+VAL_TABLE_ DCDC_I_STATUS 3 "Reserved" 2 "Over current on LV network" 1 "Over current on HV network" 0 "No over current occurred" ;
+VAL_TABLE_ DCDC_Pre_Command 1 "Activate DCDC Precharge Mode" 0 "Deactivate DCDC Precharge Mode" ;
+VAL_TABLE_ DCDC_Ver_Command 1 "Activate DCDC version frame" 0 "Deactivate DCDC version frame" ;
+VAL_TABLE_ DCDC_Conv_Command 3 "Invalid Command" 2 "Boost Conversion Command" 1 "Buck Conversion Command" 0 "No Conversion Command" ;
+
+
+BO_ 1440 DCDC_VERSION: 8 DCDC
+ SG_ HW_VERSION : 27|4@0+ (1,0) [0|0] ""  MASTER
+ SG_ SW_VER_PATCH_ID : 23|8@0+ (1,0) [0|0] ""  MASTER
+ SG_ SW_VER_MINOR_ID : 15|8@0+ (1,0) [0|0] ""  MASTER
+ SG_ SW_VER_MAJOR_ID : 7|8@0+ (1,0) [0|0] ""  MASTER
+
+BO_ 417 DCDC_ELEC_VALUE: 8 DCDC
+ SG_ DCDC_TEMP : 47|8@0+ (1,-48) [-48|206] ""  MASTER
+ SG_ DCDC_IHV : 28|9@0+ (1,-255) [-255|255] "A" Vector__XXX
+ SG_ DCDC_UHV : 22|10@0+ (0.1,0) [0|70] "V" Vector__XXX
+ SG_ DCDC_I14 : 15|9@0+ (1,-255) [-255|255] "A" Vector__XXX
+ SG_ DCDC_U14 : 7|8@0+ (0.1,0) [0|25.4] "V" Vector__XXX
+
+BO_ 416 DCDC_PARAMETER: 8 DCDC
+ SG_ DCDC_VOLTAGE_STATUS : 15|8@0+ (1,0) [0|255] ""  MASTER
+ SG_ DCDC_CURRENT_STATUS : 1|2@0+ (1,0) [0|3] ""  MASTER
+ SG_ DCDC_PRECH_STATUS : 29|2@0+ (1,0) [0|3] ""  MASTER
+ SG_ DCDC_FAULT : 23|10@0+ (1,0) [0|1023] ""  MASTER
+ SG_ DCDC_MODE : 27|4@0+ (1,0) [0|15] ""  MASTER
+ SG_ DCDC_FAULT_STATUS : 4|3@0+ (1,0) [0|7] ""  MASTER
+
+BO_ 688 DCDC_CTRL: 8 MASTER
+ SG_ DCDC_UPRECH_REQ : 27|12@0+ (0.015,0) [0|61.425] "V" Vector__XXX
+ SG_ DCDC_PRECH_REQ : 4|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DCDC_VERSION_REQ : 3|1@0+ (1,0) [0|1] ""  DCDC
+ SG_ DCDC_DIRECTION_REQ : 1|2@0+ (1,0) [0|1] ""  DCDC
+ SG_ DCDC_UREG_REQ : 23|12@0+ (0.015,0) [0|61.41] "V"  DCDC
+ SG_ DCDC_IMAX_REQ : 15|8@0+ (1,0) [0|255] "A"  DCDC
+
+
+
+CM_ SG_ 417 DCDC_TEMP "PCB board temperature measurement";
+CM_ SG_ 417 DCDC_IHV "HV network current measurement";
+CM_ SG_ 417 DCDC_UHV "HV network voltage measurement";
+CM_ SG_ 417 DCDC_I14 "LV network current measurement";
+CM_ SG_ 417 DCDC_U14 "LV network voltage measurement";
+CM_ SG_ 416 DCDC_VOLTAGE_STATUS "LV network and HV network voltage status: under, low, high, over";
+CM_ SG_ 416 DCDC_CURRENT_STATUS "DCDC current status for LV network and HV network";
+CM_ SG_ 416 DCDC_PRECH_STATUS "Precharge status";
+CM_ SG_ 416 DCDC_FAULT "Overtemeprature fault or power supply fault";
+CM_ SG_ 416 DCDC_MODE "DCDC current working mode";
+CM_ SG_ 416 DCDC_FAULT_STATUS "Fault type: powe limitation, temporary fault, permenent fault";
+CM_ SG_ 688 DCDC_UPRECH_REQ "Precharge voltage set point request value";
+CM_ SG_ 688 DCDC_PRECH_REQ "DCDC precharge command, when active, DCDC will start precharge convesion";
+CM_ SG_ 688 DCDC_VERSION_REQ "Version request command, when active, DCDC will send out the version information of HW and software";
+CM_ SG_ 688 DCDC_DIRECTION_REQ "DCDC Conversion command from uper layer, EMS, HCU, ECU....";
+CM_ SG_ 688 DCDC_UREG_REQ "Buck or boost voltage set pint request value";
+CM_ SG_ 688 DCDC_IMAX_REQ "The maximum current limitation value from uper";
+BA_DEF_ BO_  "CycleTime" INT 0 1000;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "CycleTime" 0;
+BA_DEF_DEF_  "DBName" "";
+BA_DEF_DEF_  "BusType" "";
+BA_ "BusType" "CAN";
+BA_ "DBName" "DCDC_CAN_DB";
+BA_ "CycleTime" BO_ 1440 100;
+BA_ "CycleTime" BO_ 417 10;
+BA_ "CycleTime" BO_ 416 50;
+BA_ "CycleTime" BO_ 688 10;
+VAL_ 416 DCDC_VOLTAGE_STATUS 128 "Over voltage on HV network" 64 "High voltage on HV network" 32 "Low voltage on HV network" 16 "Under voltage on HV network" 8 "Over voltage on LV network" 4 "High voltage on LV network" 2 "Low voltage on LV network" 1 "Under voltage on LV network" 0 "No voltage out of range" ;
+VAL_ 416 DCDC_CURRENT_STATUS 3 "Reserved" 2 "Over current on LV network" 1 "Over current on HV network" 0 "No over current occurred" ;
+VAL_ 416 DCDC_PRECH_STATUS 3 "Invalid" 2 "No precharge ongoing" 1 "Precharge ongoing" 0 "Reserved" ;
+VAL_ 416 DCDC_FAULT 512 "Reserved" 128 "Product overheating" 64 "Reserved" 32 "CVT fault" 8 "CAN loss" 4 "Precharge target fault" 2 "5V abnormal" 1 "TinFaultIn" 256 "Power Supply Undervoltage" 16 "Buck mode fault" 0 "No fault" ;
+VAL_ 416 DCDC_MODE 15 "Invalid" 8 "Derating due to temperature" 7 "Shutdown in progress" 6 "Reserved" 5 "Autonomous mode" 4 "Buck or boost conversion" 3 "Reserved" 2 "Standby mode" 1 "Initialization in progress" 0 "Reserved" ;
+VAL_ 416 DCDC_FAULT_STATUS 4 "Permenent failure(Comfirmed)" 2 "Temporary failure occurred" 1 "Power limitation (derating)" 0 "Normal status" ;
+VAL_ 688 DCDC_PRECH_REQ 1 "Activate DCDC Precharge Mode" 0 "Deactivate DCDC Precharge Mode" ;
+VAL_ 688 DCDC_VERSION_REQ 1 "Activate DCDC version frame" 0 "Deactivate DCDC version frame" ;
+VAL_ 688 DCDC_DIRECTION_REQ 3 "Invalid Command" 2 "Boost Conversion Command" 1 "Buck Conversion Command" 0 "No Conversion Command" ;
+

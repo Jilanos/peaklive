@@ -1,0 +1,60 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+
+
+BO_ 849 Calibration_0: 8 Vector__XXX
+ SG_ Tester_ForSASCalibrate : 7|8@0+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 848 Steering: 8 Vector__XXX
+ SG_ SAS_SwVersion : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ SAS_SteeringAngleSpeed : 23|8@0+ (4,0) [0|1020] "" Vector__XXX
+ SG_ SAS_Steering_Angle : 7|16@0- (0.1,0) [-3276.8|3276.7] "" Vector__XXX
+ SG_ SAS_SASCalibrated : 28|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SAS_HwVersion : 52|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ SAS_Counting : 51|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ Checksum : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+
+
+
+CM_ SG_ 849 Tester_ForSASCalibrate "0x03:Request SAS Calibrate
+0x05:Request SAS De-Calibrate
+0x00:Default Other Byte";
+BA_DEF_  "MultiplexExtEnabled" ENUM  "No","Yes";
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "MultiplexExtEnabled" "No";
+BA_DEF_DEF_  "BusType" "CAN";
+

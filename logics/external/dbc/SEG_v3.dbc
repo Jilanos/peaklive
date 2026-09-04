@@ -1,0 +1,172 @@
+VERSION "created by canmatrix"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: ED PT EEM Tester
+
+
+BO_ 2617021955 XCP_EA_CRO_01: 8 Tester
+
+BO_ 2617021956 XCP_EA_DTO_01: 8 ED
+
+BO_ 163 Edrv_Act_1: 8 ED
+ SG_ Edrv_nrChksAct : 7|8@0+ (1,0) [0|255] ""  PT
+ SG_ Edrv_nrAlvCntrAct : 11|4@0+ (1,0) [0|15] ""  PT
+ SG_ Edrv_stRunAct : 15|3@0+ (1,0) [0|7] ""  PT
+ SG_ Edrv_stOperModAct : 23|4@0+ (1,0) [0|15] ""  PT
+ SG_ Edrv_tqAct : 19|11@0+ (0.1,-100) [-100|104.7] "Nm"  PT
+ SG_ Edrv_nAct : 24|13@0+ (6,-24000) [-24000|25146] "rpm"  PT
+ SG_ Edrv_uAct : 43|10@0+ (0.0625,0) [0|63.9375] "V"  PT
+ SG_ Edrv_iAct : 49|10@0+ (1,-500) [-500|523] "A"  PT
+
+BO_ 164 Edrv_Dern_1: 8 ED
+ SG_ Edrv_nrChksDern : 7|8@0+ (1,0) [0|255] ""  PT
+ SG_ Edrv_nrAlvCntrDern : 11|4@0+ (1,0) [0|15] ""  PT
+ SG_ Edrv_tqMinAvl : 23|10@0+ (0.1,-90) [-90|12.3] "Nm"  PT
+ SG_ Edrv_tqMaxAvl : 29|10@0+ (0.1,-12.3) [-12.3|90] "Nm"  PT
+ SG_ Edrv_stActDern : 35|4@0+ (1,0) [0|15] ""  PT
+ SG_ Edrv_ratTCritIvtr : 47|7@0+ (1,0) [0|127] "%"  PT
+ SG_ Edrv_ratTCritMac : 40|7@0+ (1,0) [0|127] "%"  PT
+ SG_ Edrv_stFltId : 49|10@0+ (1,0) [0|1023] ""  PT
+
+BO_ 165 Eem_Edrv_Lim_1: 8 EEM
+ SG_ Eem_nrChksLim : 7|8@0+ (1,0) [0|255] ""  ED
+ SG_ Eem_nrAlvCntrLim : 11|4@0+ (1,0) [0|15] ""  ED
+ SG_ Eem_iMinEdrv : 23|8@0+ (2,-510) [-510|0] "A"  ED
+ SG_ Eem_iMaxEdrv : 31|8@0+ (2,0) [0|510] "A"  ED
+ SG_ Eem_uMinEdrv : 39|8@0+ (0.2,10) [10|61] "V"  ED
+ SG_ Eem_uMaxEdrv : 47|8@0+ (0.2,10) [10|61] "V"  ED
+ SG_ Eem_rMvbEdrv : 55|8@0+ (0.005,0.005) [0.005|1.28] "Ohm"  ED
+ SG_ Eem_uDesEdrv : 63|8@0+ (0.1,30) [30|55.5] "V"  ED
+
+BO_ 166 Pt_Edrv_Des_1: 7 PT
+ SG_ Pt_nrChksDes : 7|8@0+ (1,0) [0|255] ""  ED
+ SG_ Pt_nrAlvCntrDes : 11|4@0+ (1,0) [0|15] ""  ED
+ SG_ Pt_stOperModDesEdrv : 15|4@0+ (1,0) [0|15] ""  ED
+ SG_ Pt_tqDesEdrv : 23|12@0+ (0.1,-200) [-200|209.5] "Nm"  ED
+ SG_ Pt_tqMinEdrv : 27|11@0+ (0.1,-204.7) [-204.7|0] "Nm"  ED
+ SG_ Pt_tqMaxEdrv : 32|11@0+ (0.1,0) [0|204.7] "Nm"  ED
+ SG_ Pt_stIgnSwt : 53|3@0+ (1,0) [0|7] ""  ED
+
+BO_ 167 Pt_Veh_1: 7 PT
+ SG_ Pt_nrChksVeh1 : 7|8@0+ (1,0) [0|255] ""  ED
+ SG_ Pt_nrAlvCntrVeh1 : 11|4@0+ (1,0) [0|15] ""  ED
+ SG_ Pt_tAmbEdrv : 23|8@0+ (1,-40) [-40|215] "°C"  ED
+ SG_ Pt_dAirPresEdrv : 31|8@0+ (5,300) [300|1575] "hPa"  ED
+ SG_ Pt_dstOdo : 39|24@0+ (0.1,0) [0|1677721.5] "km"  ED
+
+BO_ 168 Pt_Veh_2: 6 PT
+ SG_ Pt_nrChksVeh2 : 7|8@0+ (1,0) [0|255] ""  ED
+ SG_ Pt_nrAlvCntrVeh2 : 11|4@0+ (1,0) [0|15] ""  ED
+ SG_ Pt_tiAbs : 23|32@0+ (1,0) [0|4294967295] "sec"  ED
+
+BO_ 1891 Diag_Edrv_Resp: 8 ED
+
+BO_ 1859 Diag_Edrv_Req: 8 Tester
+
+BO_ 1795 Diag_Edrv_GlobalReq: 8 Tester
+
+
+
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgNrOfRepetitions" INT 0 65535;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclicX","spontanX","cyclicIfActiveX","spontanWithDelay","cyclicAndSpontanX","cyclicAndSpontanWithDelay","spontanWithRepitition","cyclicIfActiveAndSpontanWD","cyclicIfActiveFast","cyclicWithRepeatOnDemand","none";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 65535;
+BA_DEF_ BO_  "GenMsgStartValue" STRING ;
+BA_DEF_ SG_  "GenSigStartValue" FLOAT 0 100000000000;
+BA_DEF_ SG_  "LongName" STRING ;
+BA_DEF_ BU_  "NWM-Knoten" ENUM  "nein","ja";
+BA_DEF_ BU_  "NWM-Stationsadresse" HEX 0 63;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "GenMsgNrOfRepetitions" 0;
+BA_DEF_DEF_  "GenMsgSendType" "";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "GenMsgStartValue" "";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "LongName" "";
+BA_DEF_DEF_  "NWM-Knoten" "";
+BA_DEF_DEF_  "NWM-Stationsadresse" 0;
+BA_ "NWM-Stationsadresse" BU_ ED 0;
+BA_ "NWM-Knoten" BU_ ED 0;
+BA_ "NWM-Stationsadresse" BU_ PT 0;
+BA_ "NWM-Knoten" BU_ PT 0;
+BA_ "NWM-Stationsadresse" BU_ EEM 0;
+BA_ "NWM-Knoten" BU_ EEM 0;
+BA_ "NWM-Stationsadresse" BU_ Tester 0;
+BA_ "NWM-Knoten" BU_ Tester 0;
+BA_ "GenMsgStartValue" BO_ 2617021955 "0000000000000000";
+BA_ "GenMsgSendType" BO_ 2617021955 1;
+BA_ "GenMsgStartValue" BO_ 2617021956 "0000000000000000";
+BA_ "GenMsgSendType" BO_ 2617021956 1;
+BA_ "GenMsgStartValue" BO_ 163 "000007d0fa0001f4";
+BA_ "GenMsgSendType" BO_ 163 0;
+BA_ "GenMsgCycleTime" BO_ 163 10;
+BA_ "GenMsgStartValue" BO_ 164 "0000e107b0000000";
+BA_ "GenMsgSendType" BO_ 164 0;
+BA_ "GenMsgCycleTime" BO_ 164 10;
+BA_ "GenMsgStartValue" BO_ 165 "0000ff0000000000";
+BA_ "GenMsgSendType" BO_ 165 0;
+BA_ "GenMsgCycleTime" BO_ 165 10;
+BA_ "GenMsgStartValue" BO_ 166 "00007d0ffe0000";
+BA_ "GenMsgSendType" BO_ 166 0;
+BA_ "GenMsgCycleTime" BO_ 166 10;
+BA_ "GenMsgStartValue" BO_ 167 "00002800000000";
+BA_ "GenMsgSendType" BO_ 167 0;
+BA_ "GenMsgCycleTime" BO_ 167 100;
+BA_ "GenMsgStartValue" BO_ 168 "000000000000";
+BA_ "GenMsgSendType" BO_ 168 0;
+BA_ "GenMsgCycleTime" BO_ 168 100;
+BA_ "GenMsgStartValue" BO_ 1891 "0000000000000000";
+BA_ "GenMsgSendType" BO_ 1891 1;
+BA_ "GenMsgStartValue" BO_ 1859 "0000000000000000";
+BA_ "GenMsgSendType" BO_ 1859 1;
+BA_ "GenMsgStartValue" BO_ 1795 "0000000000000000";
+BA_ "GenMsgSendType" BO_ 1795 1;
+BA_ "GenSigStartValue" SG_ 163 Edrv_tqAct 1000;
+BA_ "GenSigStartValue" SG_ 163 Edrv_nAct 4000;
+BA_ "GenSigStartValue" SG_ 163 Edrv_iAct 500;
+BA_ "GenSigStartValue" SG_ 164 Edrv_tqMinAvl 900;
+BA_ "GenSigStartValue" SG_ 164 Edrv_tqMaxAvl 123;
+BA_ "GenSigStartValue" SG_ 165 Eem_iMinEdrv 255;
+BA_ "GenSigStartValue" SG_ 166 Pt_tqDesEdrv 2000;
+BA_ "GenSigStartValue" SG_ 166 Pt_tqMinEdrv 2047;
+BA_ "GenSigStartValue" SG_ 167 Pt_tAmbEdrv 40;
+VAL_ 163 Edrv_stRunAct 0 "PRE_RUN" 1 "STANDBY" 2 "RUN" 3 "POST_RUN" 4 "SHUT_DOWN" 5 "SHUT_DOWN_FINISHED" 6 "FREE" 7 "ERROR" ;
+VAL_ 163 Edrv_stOperModAct 0 "IDLE" 1 "TORQUE" 2 "VOLTAGE" 3 "LIMPHOMECOMLOSS" 4 "LIMPHOMEBATTLOSS" 5 "FREE" 6 "FREE" 7 "FREE" 8 "FREE" 9 "FREE" 10 "FREE" 11 "FREE" 12 "FREE" 13 "FREE" 14 "INACTIVE" 15 "ERROR" ;
+VAL_ 164 Edrv_stActDern 0 "NO_LIMITATION" 1 "DC_VOLTAGE_LIMITATION" 2 "DC_CURRENT_LIMITATION" 3 "TORQUE_LIMITATION" 4 "FREE" 5 "INVERTER_TEMPERATURE_LIMITATION" 6 "MOTOR_TEMPERATURE_LIMITATION" 7 "POWER_LIMITATION" 8 "FREE" 9 "FREE" 10 "FREE" 11 "FREE" 12 "FREE" 13 "FREE" 14 "FREE" 15 "SNA" ;
+VAL_ 166 Pt_stOperModDesEdrv 0 "IDLE" 1 "TORQUE" 2 "VOLTAGE" 3 "FREE" 4 "LIMPHOMEBATTLOSS" 5 "FREE" 6 "FREE" 7 "FREE" 8 "FREE" 9 "FREE" 10 "FREE" 11 "FREE" 12 "FREE" 13 "FREE" 14 "FREE" 15 "FREE" ;
+VAL_ 166 Pt_stIgnSwt 0 "IGN_LOCK" 1 "IGN_OFF" 2 "IGN_ACC" 3 "FREE" 4 "IGN_ON" 5 "IGN_START" ;
+

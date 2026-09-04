@@ -1,0 +1,72 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: F6A BMS
+VAL_TABLE_ DO_Diag_vt 3 "OpenLoad" 2 "STGnd" 1 "STBatt" 0 "Normal" ;
+
+
+BO_ 480 CANCommunication: 8 Vector__XXX
+ SG_ COM_SBS_640 : 15|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_SBS_630 : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_SBS_610 : 1|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_iBSG_60 : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_iBSG_5E : 3|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_iBSG_5A : 4|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_iBSG_50 : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_DCDC_1A1 : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ COM_DCDC_1A0 : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 448 LSCmd: 8 Vector__XXX
+ SG_ S_S_BackLight : 9|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ WakeUpBattery : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 427 DigitalInput: 8 Vector__XXX
+ SG_ NeutralButton : 38|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DriveButton : 39|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ BrakePedal1 : 28|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ BrakePedal2 : 29|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ StopStartButton : 40|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ReverseButton : 41|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ParkBrake : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 423 AnalogInput2: 8 BMS
+ SG_ acc2 : 39|16@0+ (1,0) [0|65535] "" Vector__XXX
+ SG_ acc1 : 23|16@0+ (1,0) [0|65535] "" Vector__XXX
+
+
+
+CM_ BO_ 427 "Cyclic PDO with 8ms cycle rate";
+CM_ BO_ 423 "Cyclic PDO with 8ms cycle rate";
+

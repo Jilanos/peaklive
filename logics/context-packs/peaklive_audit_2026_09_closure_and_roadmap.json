@@ -1,0 +1,1982 @@
+{
+  "budgets": {
+    "max_docs": 344,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap item_057_bound_recording_name_reservation_and_cancel_it_safely item_058_recover_safely_from_a_corrupt_profile_store item_059_separate_exhaustive_ingestion_from_visual_coalescing item_060_disconnect_the_adapter_after_a_post_connect_start_failure item_061_own_export_workers_independently_of_transient_dialogs item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings item_063_bound_malformed_replay_diagnostics_and_prevent_false_success item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions item_065_drain_abandoned_workers_safely_at_process_exit item_066_make_profile_writes_durable_and_multi_instance_safe item_067_debounce_filters_signal_search_and_profile_persistence item_068_make_manual_graph_zoom_disable_live_follow item_069_decimate_plots_and_bound_measurement_recomputation item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices item_071_deliver_an_aggregate_identifier_diagnostics_view item_072_replace_the_trace_table_with_a_bounded_virtual_model item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources item_074_export_immutable_snapshots_with_efficient_row_serialization item_075_log_all_operational_failures_and_expose_driver_overruns item_076_enforce_class_surface_architecture_budgets item_077_introduce_profile_schema_migration_dispatch item_078_inject_a_recorder_factory_into_acquisition_workers item_079_add_complete_interactive_button_states item_080_set_fusion_and_an_application_wide_dark_palette item_081_render_graphs_with_antialiasing_and_palette_derived_axes item_082_standardize_table_chrome_and_data_typography item_083_create_semantic_control_variants_and_dominant_start_stop_actions item_084_tokenize_spacing_geometry_and_stable_focus item_085_add_trace_and_graph_context_commands_with_copy_support item_086_create_an_acquisition_command_surface_with_gated_actions item_087_show_decoded_values_and_graph_identity_across_views item_088_unify_recording_workflow_and_refresh_reports_live item_089_replace_unicode_command_glyphs_with_qpainter_icons item_090_deliver_recent_sessions_and_recent_trace_files item_091_clarify_graph_cursors_and_trace_graph_linkage item_092_add_bus_load_and_real_time_counters item_093_introduce_capture_writer_ports_and_reader_registry item_094_extend_adapter_capability_ports_and_roadmap_discovery item_095_prepare_an_approved_future_can_transmit_product_path item_096_remove_domain_ui_text_and_duplicated_formatting_utilities item_097_align_documentation_with_delivered_and_roadmap_capabilities task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+          "item_058_recover_safely_from_a_corrupt_profile_store",
+          "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+          "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+          "item_061_own_export_workers_independently_of_transient_dialogs",
+          "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+          "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+          "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+          "item_065_drain_abandoned_workers_safely_at_process_exit",
+          "item_066_make_profile_writes_durable_and_multi_instance_safe",
+          "item_067_debounce_filters_signal_search_and_profile_persistence",
+          "item_068_make_manual_graph_zoom_disable_live_follow",
+          "item_069_decimate_plots_and_bound_measurement_recomputation",
+          "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+          "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+          "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+          "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+          "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+          "item_075_log_all_operational_failures_and_expose_driver_overruns",
+          "item_076_enforce_class_surface_architecture_budgets",
+          "item_077_introduce_profile_schema_migration_dispatch",
+          "item_078_inject_a_recorder_factory_into_acquisition_workers",
+          "item_079_add_complete_interactive_button_states",
+          "item_080_set_fusion_and_an_application_wide_dark_palette",
+          "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+          "item_082_standardize_table_chrome_and_data_typography",
+          "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+          "item_084_tokenize_spacing_geometry_and_stable_focus",
+          "item_085_add_trace_and_graph_context_commands_with_copy_support",
+          "item_086_create_an_acquisition_command_surface_with_gated_actions",
+          "item_087_show_decoded_values_and_graph_identity_across_views",
+          "item_088_unify_recording_workflow_and_refresh_reports_live",
+          "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+          "item_090_deliver_recent_sessions_and_recent_trace_files",
+          "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+          "item_092_add_bus_load_and_real_time_counters",
+          "item_093_introduce_capture_writer_ports_and_reader_registry",
+          "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+          "item_095_prepare_an_approved_future_can_transmit_product_path",
+          "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+          "item_097_align_documentation_with_delivered_and_roadmap_capabilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/product/prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap.md",
+      "ref": "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap",
+      "sections": {
+        "Goals": [
+          "- Eliminate the audit's P0 freezes, crashes, silent data loss, and false-success outcomes.",
+          "- Preserve exhaustive measurement facts while bounding visual work and continuous-input work.",
+          "- Make the most important diagnostic workflows discoverable, fast, and visually unambiguous.",
+          "- Replace accidental architecture constraints with tested extension seams and an honest capability roadmap.",
+          "- Keep implementation evidence current rather than relying on historical Done status."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A complete, evidence-driven remediation and delivery roadmap that makes PeakLive correct under load, resilient under failure, legible as a professional CAN diagnostic tool, and deliberately extensible toward new formats, adapters, and later CAN transmission."
+        ],
+        "References": [
+          "- Product back-reference: `req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap`",
+          "- Task back-reference: `task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive audit closure and future-ready CAN workstation roadmap"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "close, september, 2026, peaklive, audit, deliver, future, ready, roadmap",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+          "item_058_recover_safely_from_a_corrupt_profile_store",
+          "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+          "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+          "item_061_own_export_workers_independently_of_transient_dialogs",
+          "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+          "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+          "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+          "item_065_drain_abandoned_workers_safely_at_process_exit",
+          "item_066_make_profile_writes_durable_and_multi_instance_safe",
+          "item_067_debounce_filters_signal_search_and_profile_persistence",
+          "item_068_make_manual_graph_zoom_disable_live_follow",
+          "item_069_decimate_plots_and_bound_measurement_recomputation",
+          "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+          "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+          "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+          "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+          "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+          "item_075_log_all_operational_failures_and_expose_driver_overruns",
+          "item_076_enforce_class_surface_architecture_budgets",
+          "item_077_introduce_profile_schema_migration_dispatch",
+          "item_078_inject_a_recorder_factory_into_acquisition_workers",
+          "item_079_add_complete_interactive_button_states",
+          "item_080_set_fusion_and_an_application_wide_dark_palette",
+          "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+          "item_082_standardize_table_chrome_and_data_typography",
+          "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+          "item_084_tokenize_spacing_geometry_and_stable_focus",
+          "item_085_add_trace_and_graph_context_commands_with_copy_support",
+          "item_086_create_an_acquisition_command_surface_with_gated_actions",
+          "item_087_show_decoded_values_and_graph_identity_across_views",
+          "item_088_unify_recording_workflow_and_refresh_reports_live",
+          "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+          "item_090_deliver_recent_sessions_and_recent_trace_files",
+          "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+          "item_092_add_bus_load_and_real_time_counters",
+          "item_093_introduce_capture_writer_ports_and_reader_registry",
+          "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+          "item_095_prepare_an_approved_future_can_transmit_product_path",
+          "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+          "item_097_align_documentation_with_delivered_and_roadmap_capabilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ]
+      },
+      "path": "logics/request/req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap.md",
+      "ref": "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Every P0 item is implemented with focused Linux automated tests that fail against the audited behaviour; no P0 failure can freeze, silently corrupt a result, or silently prevent application start.",
+          "- AC2: All captured and replayed frames update session facts, frame cache, deferred decode inputs, and series state exactly once; trace and graph rendering may remain bounded and coalesced independently.",
+          "- AC3: Acquisition and replay cannot mix their data. Configuration passed to a worker is immutable for that session, and invalid recording templates cannot be persisted.",
+          "- AC4: Adapter error recovery uses bounded automatic reconnect with an explicit operator alert and rate-limited, rotating recording evidence.",
+          "- AC5: A malformed profile or trace, a failed post-connect recording start, an export during close, and recording-name collisions each have an explicit, tested operator outcome.",
+          "- AC6: The UI has an application-wide Fusion dark palette, accessible semantic states, consistent control geometry, data-aligned typography, and tests or targeted assertions for stateful behaviour where practical."
+        ],
+        "Needs": [
+          "- Resolve every finding in the September 2026 audit without treating completed historical Logics work as proof that its claimed outcome remains present.",
+          "- Restore measurement correctness: all acquired and replayed frames must feed facts, the frame cache, deferred decode, and series state; only visual projection may be coalesced.",
+          "- Make routine failure modes recoverable and explicit, including corrupt profiles, unavailable adapters, collision-safe recording, malformed traces, and application close during export.",
+          "- Deliver a coherent English diagnostic-tool interface and a sequenced roadmap for capabilities that are intentionally deferred or depend on future adapters and formats."
+        ]
+      },
+      "status": "Draft",
+      "title": "Close the September 2026 PeakLive audit and deliver its future-ready roadmap"
+    },
+    {
+      "ai_context": {
+        "keywords": "bound, recording, name, reservation, cancel, safely",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_057_bound_recording_name_reservation_and_cancel_it_safely"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_057_bound_recording_name_reservation_and_cancel_it_safely.md",
+      "ref": "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- A repeated {profile}.asc name reserves a suffixed path or fails clearly within the bound.",
+          "- Stop cancels reservation and tests cover both paths."
+        ],
+        "Problem": [
+          "- A non-discriminating recording template loops forever during reservation."
+        ]
+      },
+      "status": "Ready",
+      "title": "Bound recording-name reservation and cancel it safely"
+    },
+    {
+      "ai_context": {
+        "keywords": "recover, safely, corrupt, profile, store",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_058_recover_safely_from_a_corrupt_profile_store"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_058_recover_safely_from_a_corrupt_profile_store.md",
+      "ref": "item_058_recover_safely_from_a_corrupt_profile_store",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Corrupt JSON, invalid controller mode, and invalid bitrate start the application on defaults.",
+          "- The backup path is logged and the operator sees a warning."
+        ],
+        "Problem": [
+          "- Unreadable or invalid profiles.json crashes before the window exists."
+        ]
+      },
+      "status": "Ready",
+      "title": "Recover safely from a corrupt profile store"
+    },
+    {
+      "ai_context": {
+        "keywords": "separate, exhaustive, ingestion, visual, coalescing",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_059_separate_exhaustive_ingestion_from_visual_coalescing"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_059_separate_exhaustive_ingestion_from_visual_coalescing.md",
+      "ref": "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- A high-rate synthetic stream yields exact facts and cache counts while rendered rows remain bounded.",
+          "- Deferred decode sees the full retained cache, not a presentation sample."
+        ],
+        "Problem": [
+          "- Presentation-frame replacement drops over 90 percent of frames before facts, cache, series, and deferred decode."
+        ]
+      },
+      "status": "Ready",
+      "title": "Separate exhaustive ingestion from visual coalescing"
+    },
+    {
+      "ai_context": {
+        "keywords": "disconnect, adapter, after, post, connect, start, failure",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_060_disconnect_the_adapter_after_a_post_connect_start_failure"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_060_disconnect_the_adapter_after_a_post_connect_start_failure.md",
+      "ref": "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- A failed start disconnects exactly once and a later start can reconnect."
+        ],
+        "Problem": [
+          "- Failure reserving or opening a recording after connect leaks the adapter handle."
+        ]
+      },
+      "status": "Ready",
+      "title": "Disconnect the adapter after a post-connect start failure"
+    },
+    {
+      "ai_context": {
+        "keywords": "own, export, workers, independently, transient, dialogs",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_061_own_export_workers_independently_of_transient_dialogs"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_061_own_export_workers_independently_of_transient_dialogs.md",
+      "ref": "item_061_own_export_workers_independently_of_transient_dialogs",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Close during export waits visibly, can be explicitly forced, and never destroys a running QThread.",
+          "- Interrupted output is marked incomplete or removed."
+        ],
+        "Problem": [
+          "- A running QThread is owned by its dialog and is destroyed with the window."
+        ]
+      },
+      "status": "Ready",
+      "title": "Own export workers independently of transient dialogs"
+    },
+    {
+      "ai_context": {
+        "keywords": "rate, limit, adapter, error, events, rotate, event, only, recordings",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings.md",
+      "ref": "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Persistent error has bounded signal and recording rate.",
+          "- Automatic reconnect attempts are bounded and alerted.",
+          "- Fatal adapter absence reaches a restartable error state."
+        ],
+        "Problem": [
+          "- Persistent driver errors spin hot, queue unlimited signals, and grow event-only recordings without rotation."
+        ]
+      },
+      "status": "Ready",
+      "title": "Rate-limit adapter error events and rotate event-only recordings"
+    },
+    {
+      "ai_context": {
+        "keywords": "bound, malformed, replay, diagnostics, prevent, false, success",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_063_bound_malformed_replay_diagnostics_and_prevent_false_success.md",
+      "ref": "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Millions of invalid lines yield bounded events and memory.",
+          "- Binary-like input fails visibly and never reports replay complete."
+        ],
+        "Problem": [
+          "- Line-numbered anomaly keys defeat aggregation and unhandled worker failures still announce success."
+        ]
+      },
+      "status": "Ready",
+      "title": "Bound malformed replay diagnostics and prevent false success"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, september, 2026, audit, correction, future, roadmap, milestone",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+          "item_058_recover_safely_from_a_corrupt_profile_store",
+          "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+          "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+          "item_061_own_export_workers_independently_of_transient_dialogs",
+          "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+          "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+          "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+          "item_065_drain_abandoned_workers_safely_at_process_exit",
+          "item_066_make_profile_writes_durable_and_multi_instance_safe",
+          "item_067_debounce_filters_signal_search_and_profile_persistence",
+          "item_068_make_manual_graph_zoom_disable_live_follow",
+          "item_069_decimate_plots_and_bound_measurement_recomputation",
+          "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+          "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+          "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+          "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+          "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+          "item_075_log_all_operational_failures_and_expose_driver_overruns",
+          "item_076_enforce_class_surface_architecture_budgets",
+          "item_077_introduce_profile_schema_migration_dispatch",
+          "item_078_inject_a_recorder_factory_into_acquisition_workers",
+          "item_079_add_complete_interactive_button_states",
+          "item_080_set_fusion_and_an_application_wide_dark_palette",
+          "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+          "item_082_standardize_table_chrome_and_data_typography",
+          "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+          "item_084_tokenize_spacing_geometry_and_stable_focus",
+          "item_085_add_trace_and_graph_context_commands_with_copy_support",
+          "item_086_create_an_acquisition_command_surface_with_gated_actions",
+          "item_087_show_decoded_values_and_graph_identity_across_views",
+          "item_088_unify_recording_workflow_and_refresh_reports_live",
+          "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+          "item_090_deliver_recent_sessions_and_recent_trace_files",
+          "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+          "item_092_add_bus_load_and_real_time_counters",
+          "item_093_introduce_capture_writer_ports_and_reader_registry",
+          "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+          "item_095_prepare_an_approved_future_can_transmit_product_path",
+          "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+          "item_097_align_documentation_with_delivered_and_roadmap_capabilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/tasks/task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone.md",
+      "ref": "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver every September 2026 audit correction and future roadmap milestone"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+          "item_058_recover_safely_from_a_corrupt_profile_store",
+          "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+          "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+          "item_061_own_export_workers_independently_of_transient_dialogs",
+          "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+          "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+          "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+          "item_065_drain_abandoned_workers_safely_at_process_exit",
+          "item_066_make_profile_writes_durable_and_multi_instance_safe",
+          "item_067_debounce_filters_signal_search_and_profile_persistence",
+          "item_068_make_manual_graph_zoom_disable_live_follow",
+          "item_069_decimate_plots_and_bound_measurement_recomputation",
+          "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+          "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+          "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+          "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+          "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+          "item_075_log_all_operational_failures_and_expose_driver_overruns",
+          "item_076_enforce_class_surface_architecture_budgets",
+          "item_077_introduce_profile_schema_migration_dispatch",
+          "item_078_inject_a_recorder_factory_into_acquisition_workers",
+          "item_079_add_complete_interactive_button_states",
+          "item_080_set_fusion_and_an_application_wide_dark_palette",
+          "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+          "item_082_standardize_table_chrome_and_data_typography",
+          "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+          "item_084_tokenize_spacing_geometry_and_stable_focus",
+          "item_085_add_trace_and_graph_context_commands_with_copy_support",
+          "item_086_create_an_acquisition_command_surface_with_gated_actions",
+          "item_087_show_decoded_values_and_graph_identity_across_views",
+          "item_088_unify_recording_workflow_and_refresh_reports_live",
+          "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+          "item_090_deliver_recent_sessions_and_recent_trace_files",
+          "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+          "item_092_add_bus_load_and_real_time_counters",
+          "item_093_introduce_capture_writer_ports_and_reader_registry",
+          "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+          "item_095_prepare_an_approved_future_can_transmit_product_path",
+          "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+          "item_097_align_documentation_with_delivered_and_roadmap_capabilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/product/prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap.md",
+      "ref": "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive audit closure and future-ready CAN workstation roadmap"
+    },
+    {
+      "ai_context": {
+        "keywords": "enforce, mutually, exclusive, immutable, live, replay, sessions",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions.md",
+      "ref": "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Live and replay never share a session buffer.",
+          "- Mid-session settings edits cannot mutate a worker profile.",
+          "- Invalid templates are neither saved nor used."
+        ],
+        "Problem": [
+          "- Live and replay can write the same buffers and live profile edits cross a thread boundary."
+        ]
+      },
+      "status": "Ready",
+      "title": "Enforce mutually exclusive immutable live and replay sessions"
+    },
+    {
+      "ai_context": {
+        "keywords": "drain, abandoned, workers, safely, process, exit",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_065_drain_abandoned_workers_safely_at_process_exit"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_065_drain_abandoned_workers_safely_at_process_exit.md",
+      "ref": "item_065_drain_abandoned_workers_safely_at_process_exit",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Completed abandoned workers are removed.",
+          "- Active workers at forced exit are reported with evidence and no Qt destruction crash occurs."
+        ],
+        "Problem": [
+          "- The abandoned-worker collection can retain active threads until interpreter teardown."
+        ]
+      },
+      "status": "Ready",
+      "title": "Drain abandoned workers safely at process exit"
+    },
+    {
+      "ai_context": {
+        "keywords": "profile, writes, durable, multi, instance, safe",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_066_make_profile_writes_durable_and_multi_instance_safe"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_066_make_profile_writes_durable_and_multi_instance_safe.md",
+      "ref": "item_066_make_profile_writes_durable_and_multi_instance_safe",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Concurrent stores never share a temporary filename.",
+          "- Successful writes fsync before replace and failed writes preserve a readable prior file."
+        ],
+        "Problem": [
+          "- A fixed temporary name and no fsync make profile writes vulnerable to interruption and concurrent instances."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make profile writes durable and multi-instance safe"
+    },
+    {
+      "ai_context": {
+        "keywords": "debounce, filters, signal, search, profile, persistence",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_067_debounce_filters_signal_search_and_profile_persistence"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_067_debounce_filters_signal_search_and_profile_persistence.md",
+      "ref": "item_067_debounce_filters_signal_search_and_profile_persistence",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Burst input causes at most one expensive projection and save per window.",
+          "- Lightweight feedback remains immediate and final state is persisted."
+        ],
+        "Problem": [
+          "- Each keystroke or pointer event triggers expensive reconstruction and a profile write."
+        ]
+      },
+      "status": "Ready",
+      "title": "Debounce filters, signal search, and profile persistence"
+    },
+    {
+      "ai_context": {
+        "keywords": "manual, graph, zoom, disable, live, follow",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_068_make_manual_graph_zoom_disable_live_follow"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_068_make_manual_graph_zoom_disable_live_follow.md",
+      "ref": "item_068_make_manual_graph_zoom_disable_live_follow",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Wheel zoom remains visible after the next refresh and re-follow restores live extent."
+        ],
+        "Problem": [
+          "- Manual pyqtgraph range changes do not notify live-follow state."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make manual graph zoom disable live follow"
+    },
+    {
+      "ai_context": {
+        "keywords": "decimate, plots, bound, measurement, recomputation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_069_decimate_plots_and_bound_measurement_recomputation"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_069_decimate_plots_and_bound_measurement_recomputation.md",
+      "ref": "item_069_decimate_plots_and_bound_measurement_recomputation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Displayed points are bounded by viewport policy.",
+          "- Measurement calculations run no more than their documented cadence and preserve final values."
+        ],
+        "Problem": [
+          "- Plots redraw all points and statistics recalculate at 20 Hz."
+        ]
+      },
+      "status": "Ready",
+      "title": "Decimate plots and bound measurement recomputation"
+    },
+    {
+      "ai_context": {
+        "keywords": "cache, dbc, decode, lookup, deduplicate, conflict, notices",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices.md",
+      "ref": "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Repeated unknown IDs avoid repeated exception work.",
+          "- A sustained conflict produces one visible report per identifier/session."
+        ],
+        "Problem": [
+          "- DBC candidates are rebuilt per frame and one conflict can restyle UI per frame."
+        ]
+      },
+      "status": "Ready",
+      "title": "Cache DBC decode lookup and deduplicate conflict notices"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, aggregate, identifier, diagnostics, view",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_071_deliver_an_aggregate_identifier_diagnostics_view"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_071_deliver_an_aggregate_identifier_diagnostics_view.md",
+      "ref": "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Each identifier has one updating row with the specified fields.",
+          "- Counts and period metrics match deterministic fixtures."
+        ],
+        "Problem": [
+          "- No view aggregates identifiers, period, delta-t, or counts."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver an aggregate identifier diagnostics view"
+    },
+    {
+      "ai_context": {
+        "keywords": "replace, trace, table, bounded, virtual, model",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_072_replace_the_trace_table_with_a_bounded_virtual_model"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_072_replace_the_trace_table_with_a_bounded_virtual_model.md",
+      "ref": "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Refresh does not create one Qt item per cell.",
+          "- Existing trace behaviours remain covered and 5000-row updates meet the documented Linux baseline."
+        ],
+        "Problem": [
+          "- QTableWidget reconstructs 5000 by 8 cells and blocks the event loop."
+        ]
+      },
+      "status": "Ready",
+      "title": "Replace the trace table with a bounded virtual model"
+    },
+    {
+      "ai_context": {
+        "keywords": "synchronize, graph, panels, incrementally, destroy, removed, resources",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources.md",
+      "ref": "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Repeated sync leaves stable widget and connection counts.",
+          "- Existing plots preserve their intended state."
+        ],
+        "Problem": [
+          "- Graph sync recreates plots without deterministic teardown."
+        ]
+      },
+      "status": "Ready",
+      "title": "Synchronize graph panels incrementally and destroy removed resources"
+    },
+    {
+      "ai_context": {
+        "keywords": "export, immutable, snapshots, efficient, row, serialization",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_074_export_immutable_snapshots_with_efficient_row_serialization"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_074_export_immutable_snapshots_with_efficient_row_serialization.md",
+      "ref": "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Large export starts without full UI-thread materialization.",
+          "- Output matches existing fixtures and is internally consistent during live acquisition."
+        ],
+        "Problem": [
+          "- Tuple materialization and asdict deep-copy defeat streaming and stress the UI."
+        ]
+      },
+      "status": "Ready",
+      "title": "Export immutable snapshots with efficient row serialization"
+    },
+    {
+      "ai_context": {
+        "keywords": "log, all, operational, failures, expose, driver, overruns",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_075_log_all_operational_failures_and_expose_driver_overruns"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_075_log_all_operational_failures_and_expose_driver_overruns.md",
+      "ref": "item_075_log_all_operational_failures_and_expose_driver_overruns",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Each named failure has structured local log evidence.",
+          "- Driver overrun and bus warnings are visible in diagnostics and report fixtures."
+        ],
+        "Problem": [
+          "- Acquisition, replay, DBC, export, and adapter overruns are volatile or ignored."
+        ]
+      },
+      "status": "Ready",
+      "title": "Log all operational failures and expose driver overruns"
+    },
+    {
+      "ai_context": {
+        "keywords": "enforce, class, surface, architecture, budgets",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_076_enforce_class_surface_architecture_budgets"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_076_enforce_class_surface_architecture_budgets.md",
+      "ref": "item_076_enforce_class_surface_architecture_budgets",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Structural tests fail when declared class-surface budgets are exceeded.",
+          "- The selected collaborators have explicit interfaces and no owned-state getattr workaround."
+        ],
+        "Problem": [
+          "- Multiple inheritance distributes one implicit window state across files."
+        ]
+      },
+      "status": "Ready",
+      "title": "Enforce class-surface architecture budgets"
+    },
+    {
+      "ai_context": {
+        "keywords": "introduce, profile, schema, migration, dispatch",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_077_introduce_profile_schema_migration_dispatch"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_077_introduce_profile_schema_migration_dispatch.md",
+      "ref": "item_077_introduce_profile_schema_migration_dispatch",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Fixtures from supported schema versions migrate deterministically.",
+          "- Unknown future versions fail safely with an operator-visible outcome."
+        ],
+        "Problem": [
+          "- Migration is inferred from keys and ambiguous filter fields coexist."
+        ]
+      },
+      "status": "Ready",
+      "title": "Introduce profile schema migration dispatch"
+    },
+    {
+      "ai_context": {
+        "keywords": "inject, recorder, factory, acquisition, workers",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_078_inject_a_recorder_factory_into_acquisition_workers"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_078_inject_a_recorder_factory_into_acquisition_workers.md",
+      "ref": "item_078_inject_a_recorder_factory_into_acquisition_workers",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Worker tests deterministically simulate disk conditions and rotation."
+        ],
+        "Problem": [
+          "- Worker constructs the recorder directly despite existing injectable seams."
+        ]
+      },
+      "status": "Ready",
+      "title": "Inject a recorder factory into acquisition workers"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, complete, interactive, button, states",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_079_add_complete_interactive_button_states"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_079_add_complete_interactive_button_states.md",
+      "ref": "item_079_add_complete_interactive_button_states",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Toggle state is visually distinguishable and state rules cover buttons and tool buttons."
+        ],
+        "Problem": [
+          "- QSS defines none of the primary interaction states for buttons."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add complete interactive button states"
+    },
+    {
+      "ai_context": {
+        "keywords": "set, fusion, application, wide, dark, palette",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_080_set_fusion_and_an_application_wide_dark_palette"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_080_set_fusion_and_an_application_wide_dark_palette.md",
+      "ref": "item_080_set_fusion_and_an_application_wide_dark_palette",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Dialogs, tooltips, alternate rows, and table corner use the same dark palette."
+        ],
+        "Problem": [
+          "- No fixed Qt style or full palette and stylesheet is window-only."
+        ]
+      },
+      "status": "Ready",
+      "title": "Set Fusion and an application-wide dark palette"
+    },
+    {
+      "ai_context": {
+        "keywords": "render, graphs, antialiasing, palette, derived, axes",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_081_render_graphs_with_antialiasing_and_palette_derived_axes"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_081_render_graphs_with_antialiasing_and_palette_derived_axes.md",
+      "ref": "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Curves, labels, grid, and background use documented tokens."
+        ],
+        "Problem": [
+          "- Curves lack antialiasing and axes/grid ignore theme tokens."
+        ]
+      },
+      "status": "Ready",
+      "title": "Render graphs with antialiasing and palette-derived axes"
+    },
+    {
+      "ai_context": {
+        "keywords": "standardize, table, chrome, data, typography",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_082_standardize_table_chrome_and_data_typography"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_082_standardize_table_chrome_and_data_typography.md",
+      "ref": "item_082_standardize_table_chrome_and_data_typography",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Hex, payload, timestamp, and measurement columns are visually aligned and tables have no unthemed chrome."
+        ],
+        "Problem": [
+          "- Tables expose native fragments and use proportional, left-aligned numeric data."
+        ]
+      },
+      "status": "Ready",
+      "title": "Standardize table chrome and data typography"
+    },
+    {
+      "ai_context": {
+        "keywords": "create, semantic, control, variants, dominant, start, actions",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_083_create_semantic_control_variants_and_dominant_start_stop_actions"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_083_create_semantic_control_variants_and_dominant_start_stop_actions.md",
+      "ref": "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Lifecycle actions remain reachable and semantically distinct in every workspace layout."
+        ],
+        "Problem": [
+          "- One accent style is used for all commands and critical lifecycle controls are tiny."
+        ]
+      },
+      "status": "Ready",
+      "title": "Create semantic control variants and dominant Start Stop actions"
+    },
+    {
+      "ai_context": {
+        "keywords": "tokenize, spacing, geometry, stable, focus",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_084_tokenize_spacing_geometry_and_stable_focus"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_084_tokenize_spacing_geometry_and_stable_focus.md",
+      "ref": "item_084_tokenize_spacing_geometry_and_stable_focus",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Controls on a shared row use one height and focus never shifts content."
+        ],
+        "Problem": [
+          "- Fourteen spacing values, competing heights, and focus borders shift layout."
+        ]
+      },
+      "status": "Ready",
+      "title": "Tokenize spacing geometry and stable focus"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, trace, graph, context, commands, copy, support",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_085_add_trace_and_graph_context_commands_with_copy_support"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_085_add_trace_and_graph_context_commands_with_copy_support.md",
+      "ref": "item_085_add_trace_and_graph_context_commands_with_copy_support",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Context commands operate on deterministic trace and graph fixtures."
+        ],
+        "Problem": [
+          "- No context menu, frame copy, or direct filter action exists."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add trace and graph context commands with copy support"
+    },
+    {
+      "ai_context": {
+        "keywords": "create, acquisition, command, surface, gated, actions",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_086_create_an_acquisition_command_surface_with_gated_actions"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_086_create_an_acquisition_command_surface_with_gated_actions.md",
+      "ref": "item_086_create_an_acquisition_command_surface_with_gated_actions",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Menu, buttons, and shortcuts present identical enabled state and invalid actions explain why."
+        ],
+        "Problem": [
+          "- Start and Stop appear under View and actions are not retained for gating."
+        ]
+      },
+      "status": "Ready",
+      "title": "Create an acquisition command surface with gated actions"
+    },
+    {
+      "ai_context": {
+        "keywords": "show, decoded, values, graph, identity, across, views",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_087_show_decoded_values_and_graph_identity_across_views"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_087_show_decoded_values_and_graph_identity_across_views.md",
+      "ref": "item_087_show_decoded_values_and_graph_identity_across_views",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Fixture decode values appear in trace and graph-linked measurement rows are unambiguous."
+        ],
+        "Problem": [
+          "- Trace lacks decoded values and measurement rows are not tied to plot color."
+        ]
+      },
+      "status": "Ready",
+      "title": "Show decoded values and graph identity across views"
+    },
+    {
+      "ai_context": {
+        "keywords": "unify, recording, workflow, refresh, reports, live",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_088_unify_recording_workflow_and_refresh_reports_live"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_088_unify_recording_workflow_and_refresh_reports_live.md",
+      "ref": "item_088_unify_recording_workflow_and_refresh_reports_live",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- All recording settings are discoverable from one command surface and live report facts update without manual refresh."
+        ],
+        "Problem": [
+          "- Recording controls are scattered and reports require manual refresh."
+        ]
+      },
+      "status": "Ready",
+      "title": "Unify recording workflow and refresh reports live"
+    },
+    {
+      "ai_context": {
+        "keywords": "replace, unicode, command, glyphs, qpainter, icons",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_089_replace_unicode_command_glyphs_with_qpainter_icons"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_089_replace_unicode_command_glyphs_with_qpainter_icons.md",
+      "ref": "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Icons render consistently in offscreen tests and respect enabled and checked state."
+        ],
+        "Problem": [
+          "- Control icons depend on font glyph interpretation and can become emoji."
+        ]
+      },
+      "status": "Ready",
+      "title": "Replace Unicode command glyphs with QPainter icons"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, recent, sessions, trace, files",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_090_deliver_recent_sessions_and_recent_trace_files"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_090_deliver_recent_sessions_and_recent_trace_files.md",
+      "ref": "item_090_deliver_recent_sessions_and_recent_trace_files",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Opening or saving updates recents and a missing item has a clear removal or retry outcome."
+        ],
+        "Problem": [
+          "- Recent sessions and files are promised but no workflow exists."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver recent sessions and recent trace files"
+    },
+    {
+      "ai_context": {
+        "keywords": "clarify, graph, cursors, trace, linkage",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_091_clarify_graph_cursors_and_trace_graph_linkage"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_091_clarify_graph_cursors_and_trace_graph_linkage.md",
+      "ref": "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Selecting a trace and a graph point moves the linked context deterministically."
+        ],
+        "Problem": [
+          "- Cursors lack labels and trace-to-graph navigation is absent."
+        ]
+      },
+      "status": "Ready",
+      "title": "Clarify graph cursors and trace graph linkage"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, bus, load, real, time, counters",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_092_add_bus_load_and_real_time_counters"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_092_add_bus_load_and_real_time_counters.md",
+      "ref": "item_092_add_bus_load_and_real_time_counters",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Counters and load match deterministic known-rate fixtures."
+        ],
+        "Problem": [
+          "- Bus load and counters are absent from acquisition bar."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add bus load and real-time counters"
+    },
+    {
+      "ai_context": {
+        "keywords": "introduce, capture, writer, ports, reader, registry",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_093_introduce_capture_writer_ports_and_reader_registry"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_093_introduce_capture_writer_ports_and_reader_registry.md",
+      "ref": "item_093_introduce_capture_writer_ports_and_reader_registry",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- ASC and TRC pass existing fixtures through ports and registry.",
+          "- BLF/MDF are recorded as next roadmap consumers."
+        ],
+        "Problem": [
+          "- ASC recorder embeds TRC branches and readers dispatch on suffix conditionals."
+        ]
+      },
+      "status": "Ready",
+      "title": "Introduce capture-writer ports and reader registry"
+    },
+    {
+      "ai_context": {
+        "keywords": "extend, adapter, capability, ports, roadmap, discovery",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_094_extend_adapter_capability_ports_and_roadmap_discovery"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_094_extend_adapter_capability_ports_and_roadmap_discovery.md",
+      "ref": "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- UI uses adapter-provided capabilities with deterministic fake-adapter tests.",
+          "- Roadmap defines hardware acceptance for scan and discovery."
+        ],
+        "Problem": [
+          "- Adapter capabilities exist partially but are not consumed; discovery and bitrate scan are absent."
+        ]
+      },
+      "status": "Ready",
+      "title": "Extend adapter capability ports and roadmap discovery"
+    },
+    {
+      "ai_context": {
+        "keywords": "prepare, approved, future, can, transmit, product, path",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_095_prepare_an_approved_future_can_transmit_product_path"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_095_prepare_an_approved_future_can_transmit_product_path.md",
+      "ref": "item_095_prepare_an_approved_future_can_transmit_product_path",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Roadmap names prerequisites and a separate approval gate before any transmit backlog item can be promoted."
+        ],
+        "Problem": [
+          "- CAN transmit is out of current scope but needs a safe, explicit future decision rather than accidental implementation."
+        ]
+      },
+      "status": "Ready",
+      "title": "Prepare an approved future CAN transmit product path"
+    },
+    {
+      "ai_context": {
+        "keywords": "remove, domain, text, duplicated, formatting, utilities",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_096_remove_domain_ui_text_and_duplicated_formatting_utilities.md",
+      "ref": "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- Domain modules contain no presentation labels and one canonical helper exists for each consolidated concern."
+        ],
+        "Problem": [
+          "- Domain produces English UI text and several helpers are duplicated."
+        ]
+      },
+      "status": "Ready",
+      "title": "Remove domain UI text and duplicated formatting utilities"
+    },
+    {
+      "ai_context": {
+        "keywords": "align, documentation, delivered, roadmap, capabilities",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_097_align_documentation_with_delivered_and_roadmap_capabilities"
+        ],
+        "prod": [
+          "prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap"
+        ],
+        "req": [
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap"
+        ],
+        "task": [
+          "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+        ]
+      },
+      "path": "logics/backlog/item_097_align_documentation_with_delivered_and_roadmap_capabilities.md",
+      "ref": "item_097_align_documentation_with_delivered_and_roadmap_capabilities",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- No document claims unavailable functionality as delivered and each deferred capability has a roadmap reference.",
+          "- The complete chain passes Logics validation, lint, and audit and includes the deep context pack."
+        ],
+        "Problem": [
+          "- Readme, scope, and UX delta claim features absent from code."
+        ]
+      },
+      "status": "Ready",
+      "title": "Align documentation with delivered and roadmap capabilities"
+    }
+  ],
+  "estimates": {
+    "char_count": 65197,
+    "companion_doc_count": 1,
+    "doc_count": 44
+  },
+  "generated_at": "2026-09-04T09:48:09Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap",
+      "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+      "item_058_recover_safely_from_a_corrupt_profile_store",
+      "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+      "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+      "item_061_own_export_workers_independently_of_transient_dialogs",
+      "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+      "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+      "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+      "item_065_drain_abandoned_workers_safely_at_process_exit",
+      "item_066_make_profile_writes_durable_and_multi_instance_safe",
+      "item_067_debounce_filters_signal_search_and_profile_persistence",
+      "item_068_make_manual_graph_zoom_disable_live_follow",
+      "item_069_decimate_plots_and_bound_measurement_recomputation",
+      "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+      "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+      "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+      "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+      "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+      "item_075_log_all_operational_failures_and_expose_driver_overruns",
+      "item_076_enforce_class_surface_architecture_budgets",
+      "item_077_introduce_profile_schema_migration_dispatch",
+      "item_078_inject_a_recorder_factory_into_acquisition_workers",
+      "item_079_add_complete_interactive_button_states",
+      "item_080_set_fusion_and_an_application_wide_dark_palette",
+      "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+      "item_082_standardize_table_chrome_and_data_typography",
+      "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+      "item_084_tokenize_spacing_geometry_and_stable_focus",
+      "item_085_add_trace_and_graph_context_commands_with_copy_support",
+      "item_086_create_an_acquisition_command_surface_with_gated_actions",
+      "item_087_show_decoded_values_and_graph_identity_across_views",
+      "item_088_unify_recording_workflow_and_refresh_reports_live",
+      "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+      "item_090_deliver_recent_sessions_and_recent_trace_files",
+      "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+      "item_092_add_bus_load_and_real_time_counters",
+      "item_093_introduce_capture_writer_ports_and_reader_registry",
+      "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+      "item_095_prepare_an_approved_future_can_transmit_product_path",
+      "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+      "item_097_align_documentation_with_delivered_and_roadmap_capabilities",
+      "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 306
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap,item_057_bound_recording_name_reservation_and_cancel_it_safely,item_058_recover_safely_from_a_corrupt_profile_store,item_059_separate_exhaustive_ingestion_from_visual_coalescing,item_060_disconnect_the_adapter_after_a_post_connect_start_failure,item_061_own_export_workers_independently_of_transient_dialogs,item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings,item_063_bound_malformed_replay_diagnostics_and_prevent_false_success,item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions,item_065_drain_abandoned_workers_safely_at_process_exit,item_066_make_profile_writes_durable_and_multi_instance_safe,item_067_debounce_filters_signal_search_and_profile_persistence,item_068_make_manual_graph_zoom_disable_live_follow,item_069_decimate_plots_and_bound_measurement_recomputation,item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices,item_071_deliver_an_aggregate_identifier_diagnostics_view,item_072_replace_the_trace_table_with_a_bounded_virtual_model,item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources,item_074_export_immutable_snapshots_with_efficient_row_serialization,item_075_log_all_operational_failures_and_expose_driver_overruns,item_076_enforce_class_surface_architecture_budgets,item_077_introduce_profile_schema_migration_dispatch,item_078_inject_a_recorder_factory_into_acquisition_workers,item_079_add_complete_interactive_button_states,item_080_set_fusion_and_an_application_wide_dark_palette,item_081_render_graphs_with_antialiasing_and_palette_derived_axes,item_082_standardize_table_chrome_and_data_typography,item_083_create_semantic_control_variants_and_dominant_start_stop_actions,item_084_tokenize_spacing_geometry_and_stable_focus,item_085_add_trace_and_graph_context_commands_with_copy_support,item_086_create_an_acquisition_command_surface_with_gated_actions,item_087_show_decoded_values_and_graph_identity_across_views,item_088_unify_recording_workflow_and_refresh_reports_live,item_089_replace_unicode_command_glyphs_with_qpainter_icons,item_090_deliver_recent_sessions_and_recent_trace_files,item_091_clarify_graph_cursors_and_trace_graph_linkage,item_092_add_bus_load_and_real_time_counters,item_093_introduce_capture_writer_ports_and_reader_registry,item_094_extend_adapter_capability_ports_and_roadmap_discovery,item_095_prepare_an_approved_future_can_transmit_product_path,item_096_remove_domain_ui_text_and_duplicated_formatting_utilities,item_097_align_documentation_with_delivered_and_roadmap_capabilities,task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone",
+  "refs": [
+    "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap",
+    "item_057_bound_recording_name_reservation_and_cancel_it_safely",
+    "item_058_recover_safely_from_a_corrupt_profile_store",
+    "item_059_separate_exhaustive_ingestion_from_visual_coalescing",
+    "item_060_disconnect_the_adapter_after_a_post_connect_start_failure",
+    "item_061_own_export_workers_independently_of_transient_dialogs",
+    "item_062_rate_limit_adapter_error_events_and_rotate_event_only_recordings",
+    "item_063_bound_malformed_replay_diagnostics_and_prevent_false_success",
+    "item_064_enforce_mutually_exclusive_immutable_live_and_replay_sessions",
+    "item_065_drain_abandoned_workers_safely_at_process_exit",
+    "item_066_make_profile_writes_durable_and_multi_instance_safe",
+    "item_067_debounce_filters_signal_search_and_profile_persistence",
+    "item_068_make_manual_graph_zoom_disable_live_follow",
+    "item_069_decimate_plots_and_bound_measurement_recomputation",
+    "item_070_cache_dbc_decode_lookup_and_deduplicate_conflict_notices",
+    "item_071_deliver_an_aggregate_identifier_diagnostics_view",
+    "item_072_replace_the_trace_table_with_a_bounded_virtual_model",
+    "item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources",
+    "item_074_export_immutable_snapshots_with_efficient_row_serialization",
+    "item_075_log_all_operational_failures_and_expose_driver_overruns",
+    "item_076_enforce_class_surface_architecture_budgets",
+    "item_077_introduce_profile_schema_migration_dispatch",
+    "item_078_inject_a_recorder_factory_into_acquisition_workers",
+    "item_079_add_complete_interactive_button_states",
+    "item_080_set_fusion_and_an_application_wide_dark_palette",
+    "item_081_render_graphs_with_antialiasing_and_palette_derived_axes",
+    "item_082_standardize_table_chrome_and_data_typography",
+    "item_083_create_semantic_control_variants_and_dominant_start_stop_actions",
+    "item_084_tokenize_spacing_geometry_and_stable_focus",
+    "item_085_add_trace_and_graph_context_commands_with_copy_support",
+    "item_086_create_an_acquisition_command_surface_with_gated_actions",
+    "item_087_show_decoded_values_and_graph_identity_across_views",
+    "item_088_unify_recording_workflow_and_refresh_reports_live",
+    "item_089_replace_unicode_command_glyphs_with_qpainter_icons",
+    "item_090_deliver_recent_sessions_and_recent_trace_files",
+    "item_091_clarify_graph_cursors_and_trace_graph_linkage",
+    "item_092_add_bus_load_and_real_time_counters",
+    "item_093_introduce_capture_writer_ports_and_reader_registry",
+    "item_094_extend_adapter_capability_ports_and_roadmap_discovery",
+    "item_095_prepare_an_approved_future_can_transmit_product_path",
+    "item_096_remove_domain_ui_text_and_duplicated_formatting_utilities",
+    "item_097_align_documentation_with_delivered_and_roadmap_capabilities",
+    "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone.md",
+      "ref": "task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone"
+    }
+  ]
+}
