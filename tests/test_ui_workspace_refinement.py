@@ -254,14 +254,17 @@ def test_search_and_the_two_filters_keep_working(qtbot, tmp_path):
     )
 
     window.signal_filter.setText("rpm")
+    window._signal_explorer_debouncer.flush()
     assert [item.text(0) for item in _signal_rows(window)] == ["Rpm [rpm]"]
 
     window.signal_filter.clear()
     window.shown_only_checkbox.setChecked(True)
+    window._signal_explorer_debouncer.flush()
     assert [item.text(0) for item in _signal_rows(window)] == ["Speed [km/h]"]
 
     window.shown_only_checkbox.setChecked(False)
     window.favorites_only_checkbox.setChecked(True)
+    window._signal_explorer_debouncer.flush()
     assert _signal_rows(window) == []
 
 
@@ -286,6 +289,7 @@ def test_shown_and_favorite_selections_survive_a_restart(qtbot, tmp_path):
     item = _signal_item(window, "VehicleStatus.Speed")
     item.setCheckState(SHOWN_COLUMN, Qt.CheckState.Checked)
     item.setCheckState(FAVORITE_COLUMN, Qt.CheckState.Checked)
+    window._flush_save()
 
     restored = MainWindow(store, adapter_factory=FakeCanAdapter)
     qtbot.addWidget(restored)
@@ -540,7 +544,7 @@ def test_the_collapsed_state_and_remembered_width_persist_per_profile(qtbot, tmp
     window.workspace.setSizes([340, 700, 240])
     window._persist_layout()
     window.inspector_panel.set_collapsed(True)
-    qtbot.wait(10)
+    window._flush_save()
 
     stored = store.load().selected.layout
     assert stored.collapsed_panels == ["inspector"]
@@ -745,6 +749,7 @@ def test_the_centre_sections_remain_resizable_and_persisted(qtbot, tmp_path):
     before = window.center_divider.sizes()
     window.center_divider.setSizes([before[0] - 120, before[1] + 120, 0])
     window._persist_layout()
+    window._flush_save()
     adjusted = window.center_divider.sizes()
     assert adjusted != before
     assert adjusted[1] > before[1]

@@ -5,7 +5,6 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import DbcSummary
@@ -15,6 +14,7 @@ from peaklive.i18n import translate
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
+from peaklive.ui.worker_lifecycle import abandon_worker
 
 #: How long the shell waits for a worker shutdown before declaring it degraded.
 SHUTDOWN_TIMEOUT_MS = 5_000
@@ -22,20 +22,6 @@ SHUTDOWN_TIMEOUT_MS = 5_000
 # A replay batch is deliberately handled on its own event-loop turn.  Qt can
 # otherwise dispatch several queued cross-thread signals in one processEvents
 # call, making the UI ingest four 512-frame batches before pointer/Stop input.
-#: Worker threads the shell has stopped listening to but that are still running.
-#:
-#: Qt aborts the process if a running QThread is destroyed, so an abandoned
-#: worker has to outlive the window that started it. Membership here is the only
-#: reference keeping it alive; each worker removes itself when it finally lands.
-_ABANDONED_WORKERS: set[QThread] = set()
-
-
-def abandon_worker(worker: QThread | None) -> None:
-    """Stop caring about a worker's result without destroying it mid-flight."""
-    if worker is None or worker.isFinished():
-        return
-    _ABANDONED_WORKERS.add(worker)
-    worker.finished.connect(lambda: _ABANDONED_WORKERS.discard(worker))
 
 #: The status line for the phases that own one. Phases absent here are narrated
 #: by the worker's own status messages or by an inline session note instead.
@@ -59,6 +45,11 @@ class WorkspaceSession:
 
     def _start_acquisition(self) -> None:
         """Open a new acquisition generation, or explain why it is refused."""
+        if self._replay_worker is not None and self._replay_worker.isRunning():
+            self.session_note.show_message(
+                translate("acquisition.start_blocked_by_replay"), "warning"
+            )
+            return
         if not self._lifecycle.can_start:
             if self._lifecycle.phase is AcquisitionPhase.TIMED_OUT:
                 self.session_note.show_message(translate("acquisition.start_blocked"), "warning")
@@ -68,7 +59,10 @@ class WorkspaceSession:
         self._begin_presentation_generation(generation)
         worker = AcquisitionWorker(
             self._adapter_factory(),
-            self.selected_profile,
+            # A deep, independent snapshot: a worker thread must never read a
+            # profile the UI thread can still mutate mid-run (a settings-dialog
+            # edit racing the worker's own reservation/reconnect reads).
+            self.selected_profile.duplicate(self.selected_profile.name),
             generation,
             self._queue_acquisition_frames,
         )
@@ -82,8 +76,14 @@ class WorkspaceSession:
         self._show_lifecycle_phase()
         worker.start()
 
-    def _recording_reserved(self) -> None:
-        """Persist the next collision-safe iteration the worker just claimed."""
+    def _recording_reserved(self, next_iteration: int) -> None:
+        """Persist the next collision-safe iteration the worker just claimed.
+
+        The worker reserved against its own profile snapshot, not the shared
+        one the UI edits, so the advanced count is applied here - on the UI
+        thread, to the real profile - before the ordinary save path persists it.
+        """
+        self.selected_profile.recording.iteration = next_iteration
         self._save()
 
     def _recover_timed_out_acquisition(self) -> None:
@@ -162,6 +162,19 @@ class WorkspaceSession:
             self.progress.setVisible(True)
         elif phase is not AcquisitionPhase.RUNNING:
             self._end_work()
+        self._update_mode_availability()
+
+    def _update_mode_availability(self) -> None:
+        """Grey out Start and Open Trace while the other session mode is running.
+
+        Live and replay must never ingest into the same buffers at once,
+        so the action that would start the mode not already running is
+        disabled outright rather than relying only on the runtime refusal.
+        """
+        replay_active = self._replay_worker is not None and self._replay_worker.isRunning()
+        acquisition_active = self._worker is not None and self._worker.isRunning()
+        self.start_action.setEnabled(not replay_active)
+        self.open_trace_action.setEnabled(not acquisition_active)
 
     def _choose_trace(self) -> None:
         selected, _ = QFileDialog.getOpenFileName(
@@ -171,6 +184,11 @@ class WorkspaceSession:
             self._open_trace(Path(selected))
 
     def _open_trace(self, path: Path) -> None:
+        if self._worker is not None and self._worker.isRunning():
+            self.session_note.show_message(
+                translate("trace.open_blocked_by_acquisition"), "warning"
+            )
+            return
         previous = self._replay_worker
         if previous is not None and previous.isRunning():
             previous.request_stop()
@@ -197,6 +215,7 @@ class WorkspaceSession:
         self._replay_worker.finished.connect(partial(self._replay_finished, generation))
         self._begin_work(translate("trace.opening").format(name=path.name))
         self._replay_worker.start()
+        self._update_mode_availability()
 
     def _replay_event_for_generation(self, generation: int, event: object) -> None:
         if generation == getattr(self, "_replay_generation", 0):
@@ -242,11 +261,22 @@ class WorkspaceSession:
         self.progress.setValue(done)
 
     def _replay_failed_for_generation(self, generation: int, message: str) -> None:
-        if generation == getattr(self, "_replay_generation", 0):
-            self._acquisition_failed(message)
+        if generation != getattr(self, "_replay_generation", 0):
+            return
+        # Recorded before the worker's own `finished` lands, so the completion
+        # path below never overwrites this failure with a false "done".
+        self._replay_failed_generation = generation
+        self._acquisition_failed(message)
+        self._clear_pending_replay_batches()
+        self._pending_replay_finish_generation = None
+        self._replay_worker = None
+        self._end_work()
+        self._update_mode_availability()
 
     def _replay_finished(self, generation: int) -> None:
         if generation != getattr(self, "_replay_generation", 0):
+            return
+        if getattr(self, "_replay_failed_generation", None) == generation:
             return
         if self._pending_replay_batches or self._replay_presentation_timer.isActive():
             self._pending_replay_finish_generation = generation
@@ -261,6 +291,7 @@ class WorkspaceSession:
         self._clear_pending_replay_batches()
         self._replay_worker = None
         self._end_work()
+        self._update_mode_availability()
         self._settle_presentation()
         # A finished capture is read as a whole, not as its last few seconds.
         self.graph_panel.show_full_extent()
@@ -276,6 +307,7 @@ class WorkspaceSession:
         self.session_note.clear_message()
         self.graph_panel.begin_session(live=not source)
         self._cancel_signal_backfill()
+        self._reported_dbc_conflicts.clear()
         self._series.clear()
         self._trace.clear()
         self._frames.clear()

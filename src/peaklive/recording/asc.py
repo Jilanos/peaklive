@@ -145,6 +145,7 @@ class AscRecorder:
             )
             + "\n"
         )
+        self._rotate_if_needed()
 
     def flush(self) -> None:
         """Push buffered records to disk so a partial capture stays recoverable.

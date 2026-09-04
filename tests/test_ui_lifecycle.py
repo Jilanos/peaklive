@@ -16,7 +16,7 @@ from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
-from peaklive.ui.session_controller import _ABANDONED_WORKERS
+from peaklive.ui.worker_lifecycle import _ABANDONED_WORKERS
 
 
 class ControlledAdapter(FakeCanAdapter):

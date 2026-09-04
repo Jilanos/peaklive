@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from peaklive.adapters.base import CanAdapter
 from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
@@ -21,12 +21,31 @@ class AcquisitionSession:
         self._naming = naming or RecordingNaming()
         self._notices: list[BusEvent] = []
         self.profile: MeasurementProfile | None = None
+        self._connected = False
 
-    def start(self, profile: MeasurementProfile) -> BusEvent:
+    @property
+    def connected(self) -> bool:
+        """Whether the adapter is connected and needs a matching disconnect.
+
+        Set as soon as ``connect()`` returns, independent of whether
+        recording reservation or the recorder itself goes on to fail, so a
+        caller always knows whether shutdown owes the adapter a disconnect.
+        """
+        return self._connected
+
+    def start(
+        self,
+        profile: MeasurementProfile,
+        *,
+        stop_requested: Callable[[], bool] | None = None,
+    ) -> BusEvent:
         self.profile = profile
         event = self._adapter.connect(profile)
+        self._connected = True
         if profile.recording.enabled:
-            reservation = self._naming.reserve(profile.recording, profile.name)
+            reservation = self._naming.reserve(
+                profile.recording, profile.name, stop_requested=stop_requested
+            )
             try:
                 self._recorder.start(profile.recording, profile.name, reservation=reservation)
             except Exception:
@@ -37,6 +56,23 @@ class AcquisitionSession:
                 raise
             profile.recording.iteration = reservation.next_iteration
             self._recorder.write_event(event)
+        return event
+
+    def reconnect(self, profile: MeasurementProfile) -> BusEvent:
+        """Cycle the adapter after a persistent error storm the driver won't clear on its own.
+
+        The prior connection is torn down best-effort — a driver already
+        misbehaving may itself raise on disconnect — before a fresh connect is
+        attempted. `connected` reflects the outcome either way, so a caller
+        that ultimately gives up still gets a consistent shutdown.
+        """
+        try:
+            self._adapter.disconnect()
+        except Exception:
+            pass
+        self._connected = False
+        event = self._adapter.connect(profile)
+        self._connected = True
         return event
 
     def ingest(self, frames: Iterable[CanFrame]) -> list[CanFrame]:
@@ -88,11 +124,13 @@ class AcquisitionSession:
         try:
             event = self._adapter.disconnect()
         except Exception as error:
+            self._connected = False
             self._finalize(
                 BusEvent(0.0, "disconnect_failed", f"Disconnect failed: {error}"),
                 clean=False,
             )
             raise
+        self._connected = False
         self._finalize(event, clean=clean)
         return event
 

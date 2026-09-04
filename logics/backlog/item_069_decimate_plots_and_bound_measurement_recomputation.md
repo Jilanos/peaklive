@@ -1,13 +1,14 @@
 ## item_069_decimate_plots_and_bound_measurement_recomputation - Decimate plots and bound measurement recomputation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P1 graph performance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-04 11:57:42
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)

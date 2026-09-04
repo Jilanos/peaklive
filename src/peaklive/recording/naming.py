@@ -37,8 +37,23 @@ DEFAULT_CAPTURE_DIRECTORY = Path.home() / "Documents" / "PeakLive" / "Captures"
 EMPTY_TEXT_COMPONENT = "unnamed"
 
 
+#: Upper bound on candidates a single reservation search will try before
+#: giving up. Without a bound, a filename template that never varies between
+#: attempts (no ``{iteration}``/``{text}``/``{time}``) combined with a
+#: permanently blocked candidate spins the search forever.
+_MAX_RESERVATION_ATTEMPTS = 10000
+
+
 class InvalidTemplateError(ValueError):
     """A filename template is malformed, unsupported, empty, or path-escaping."""
+
+
+class ReservationExhaustedError(RuntimeError):
+    """No free candidate was found within :data:`_MAX_RESERVATION_ATTEMPTS`."""
+
+
+class ReservationCancelledError(RuntimeError):
+    """A caller-supplied ``stop_requested`` check cancelled the search."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,6 +159,7 @@ class RecordingNaming:
         profile_name: str,
         *,
         now: datetime | None = None,
+        stop_requested: Callable[[], bool] | None = None,
     ) -> Reservation:
         """Search from the persisted iteration and atomically own the first free one.
 
@@ -152,13 +168,26 @@ class RecordingNaming:
         ``O_CREAT | O_EXCL`` marker create, which is atomic even against a
         second process or a second instance of this service racing the same
         directory.
+
+        The search is bounded to :data:`_MAX_RESERVATION_ATTEMPTS` candidates
+        and raises :class:`ReservationExhaustedError` rather than spinning
+        forever. When the template doesn't discriminate between attempts
+        (e.g. it has no ``{iteration}``/``{text}``/``{time}`` placeholder),
+        a numeric suffix is appended so each attempt still tries a distinct
+        candidate. If ``stop_requested`` is given and returns ``True``, the
+        search stops early with :class:`ReservationCancelledError`.
         """
         directory = self.resolve_directory(settings)
         directory.mkdir(parents=True, exist_ok=True)
         moment = now or self._clock()
         iteration = max(1, settings.iteration)
-        while True:
-            filename = self.expand(
+        previous_base: str | None = None
+        for attempt in range(1, _MAX_RESERVATION_ATTEMPTS + 1):
+            if stop_requested is not None and stop_requested():
+                raise ReservationCancelledError(
+                    "Recording-name reservation was cancelled before a candidate was claimed."
+                )
+            base = self.expand(
                 settings.filename_template,
                 profile_name=profile_name,
                 now=moment,
@@ -167,6 +196,8 @@ class RecordingNaming:
                 capture_format=settings.capture_format,
                 text=settings.text,
             )
+            filename = base if base != previous_base else _suffixed(base, attempt)
+            previous_base = base
             final_path = directory / filename
             partial_path = final_path.with_suffix(final_path.suffix + ".partial")
             marker_path = final_path.with_suffix(final_path.suffix + ".reserved")
@@ -189,6 +220,16 @@ class RecordingNaming:
                 iteration=iteration,
                 next_iteration=iteration + 1,
             )
+        raise ReservationExhaustedError(
+            f"Could not reserve a free recording name in {directory} after "
+            f"{_MAX_RESERVATION_ATTEMPTS} attempts."
+        )
+
+
+def _suffixed(filename: str, attempt: int) -> str:
+    """Disambiguate a filename that repeated between two search attempts."""
+    path = Path(filename)
+    return str(path.with_name(f"{path.stem}-{attempt}{path.suffix}"))
 
 
 def _sanitize_component(value: str, fallback: str) -> str:

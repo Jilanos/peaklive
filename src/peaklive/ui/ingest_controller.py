@@ -2,11 +2,10 @@
 
 Acquisition and replay both land here, and they land on the same terms: every
 frame reaches the bounded trace buffer, the bounded series store, the bounded
-frame cache, and the session facts. What differs is the repaint. Acquisition is
-already coalesced upstream by the presentation queue and repaints immediately;
-replay arrives as fast as the disk allows and only marks the plots dirty, so a
-capture with a thousand batches in it still repaints on a timer rather than a
-thousand times.
+frame cache, and the session facts. What differs is the repaint. Both queue
+every worker batch without dropping any of it, then coalesce only the trace
+and graph projection on a timer, so a saturated bus or a capture with a
+thousand batches in it still repaints on a timer rather than once per batch.
 """
 
 from __future__ import annotations
@@ -43,12 +42,6 @@ from peaklive.services.signal_decode_worker import (
 )
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
-# A 64-frame worker batch is efficient for recording, but rendering all of it
-# at once can monopolize slower Windows UI threads.  The trace is a coalesced
-# visual projection, so keep the newest slice small enough for timers and Stop
-# to run between paints.
-MAX_PRESENTATION_FRAMES = 8
-
 # Replay delivers every frame - the trace, the series, and the report all have
 # to see the whole capture - but the plots do not have to be redrawn once per
 # batch. Redrawing every curve from scratch is the most expensive step in the
@@ -77,6 +70,9 @@ class WorkspaceIngest:
         self._signal_decode_worker: SignalDecodeWorker | None = None
         self._signal_decode_generation = 0
         self._signal_decode_queue: list[str] = []
+        # A sustained conflict raises once per frame; the operator only needs
+        # to see it once per arbitration ID for the session, not once per frame.
+        self._reported_dbc_conflicts: set[int] = set()
 
     # ---- on-demand signal decoding -------------------------------------
 
@@ -281,19 +277,20 @@ class WorkspaceIngest:
             self._presentation_timer.stop()
 
     def _queue_acquisition_frames(self, generation: int, frames: list[CanFrame]) -> None:
-        """Replace pending visual work from the worker thread without posting Qt events."""
+        """Queue every worker batch from the worker thread without posting Qt events.
+
+        Facts, the frame cache, the series store, and deferred decode must see
+        every ingested frame, so batches accumulate here rather than replace
+        one another; only the trace and graph projection that follows may
+        coalesce a backlog into fewer paints.
+        """
         with self._presentation_lock:
             if self._presentation_generation != generation:
                 return
-            # A partial final batch represents the whole finite capture (the
-            # offline adapter deliberately produces 32 frames), while a full
-            # 64-frame batch marks an ongoing saturated acquisition.
-            self._pending_presentation_frames = (
-                frames[-MAX_PRESENTATION_FRAMES:] if len(frames) == 64 else frames
-            )
+            self._pending_presentation_frames.extend(frames)
 
     def _drain_presentation_frames(self) -> None:
-        """Render at most one current batch per UI tick, keeping the event loop fair."""
+        """Render every queued frame at once, keeping live plots at the operator's tick."""
         with self._presentation_lock:
             frames = self._pending_presentation_frames
             self._pending_presentation_frames = []
@@ -343,10 +340,12 @@ class WorkspaceIngest:
         return added
 
     def _render_frames(self, frames: list[CanFrame]) -> None:
-        """Ingest one batch and repaint the plots immediately.
+        """Ingest every queued frame and repaint the plots immediately.
 
-        Acquisition arrives already coalesced by the presentation queue, so the
-        repaint is affordable and keeps the live plots at the operator's tick.
+        The presentation queue accumulates whatever arrived since the last UI
+        tick without dropping any of it, so this always sees every frame; only
+        the cadence of the repaint is coalesced, by the 16ms presentation timer
+        upstream, not by discarding frames here.
         """
         self._ingest_frames(frames)
         self._graph_dirty = True
@@ -383,7 +382,11 @@ class WorkspaceIngest:
             signals = self._catalog.decode(frame)
         except AmbiguousMessageError as error:
             self._facts.record_anomaly("dbc_conflict")
-            self.dbc_panel.show_error(str(error))
+            # A sustained conflict raises for every matching frame; the
+            # restyle it drives is only worth showing once per identifier.
+            if frame.arbitration_id not in self._reported_dbc_conflicts:
+                self._reported_dbc_conflicts.add(frame.arbitration_id)
+                self.dbc_panel.show_error(str(error))
             return [], DECODE_CONFLICT
         if not signals:
             return [], DECODE_UNKNOWN

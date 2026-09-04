@@ -61,6 +61,18 @@ def test_recorder_rotates_without_overwrite(tmp_path):
     assert len({segment.name for segment in result.segments}) == len(result.segments)
 
 
+def test_an_event_only_recording_still_rotates(tmp_path):
+    """A stream of nothing but adapter events must not grow one segment forever."""
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    recorder.start(_settings(tmp_path, rotate_bytes=1), "Bench", datetime(2026, 8, 22, 9, 30))
+    recorder.write_event(BusEvent(1.0, "error_frame", "bus warning"))
+    recorder.write_event(BusEvent(2.0, "error_frame", "bus warning"))
+    result = recorder.stop()
+
+    assert len(result.segments) >= 2
+    assert len({segment.name for segment in result.segments}) == len(result.segments)
+
+
 def test_low_space_leaves_recoverable_partial_capture(tmp_path):
     recorder = AscRecorder(free_space=lambda path: 1)
     recorder.start(_settings(tmp_path, stop_free_bytes=2), "Bench", datetime(2026, 8, 22, 9, 30))

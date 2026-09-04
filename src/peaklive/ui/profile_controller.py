@@ -16,6 +16,7 @@ from peaklive.diagnostics import logger
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileNameError
+from peaklive.ui.debounce import SAVE_DEBOUNCE_MS, Debouncer
 
 
 class WorkspaceProfiles:
@@ -34,6 +35,9 @@ class WorkspaceProfiles:
     def _profile_changed(self, index: int) -> None:
         if index < 0:
             return
+        # Any debounced edit still pending belongs to the profile being left,
+        # so it must land before its identity changes underneath it.
+        self._flush_save()
         self._state.last_profile_id = self._state.profiles[index].identifier
         self._selected_signal_names = set(self.selected_profile.displayed_signals)
         self._favorite_signal_names = set(self.selected_profile.favorite_signals)
@@ -119,6 +123,35 @@ class WorkspaceProfiles:
             self.session_note.show_message(str(error), "warning")
             logger().exception("Could not save measurement profiles")
 
+    @property
+    def _save_debouncer(self) -> Debouncer:
+        """Coalesce a burst of persistence triggers into one write.
+
+        Created lazily so mixin composition order never has to reserve an
+        `__init__` slot for it; every high-frequency `_persist_*` caller
+        shares this single instance and its single pending write.
+        """
+        debouncer = getattr(self, "_save_debouncer_instance", None)
+        if debouncer is None:
+            # A lambda, not the bound method: `_save` is looked up fresh on
+            # every fire, so a subclass or test override installed after
+            # this lazily-created debouncer still takes effect.
+            debouncer = Debouncer(SAVE_DEBOUNCE_MS, lambda: self._save(), self)
+            self._save_debouncer_instance = debouncer
+        return debouncer
+
+    def _schedule_save(self) -> None:
+        """Persist after a burst of edits goes quiet, not once per edit."""
+        self._save_debouncer.trigger()
+
+    def _flush_save(self) -> None:
+        """Persist a pending debounced edit immediately.
+
+        Called wherever a delayed write could otherwise be lost or land in
+        the wrong place: switching profiles, and closing the window.
+        """
+        self._save_debouncer.flush()
+
     def _persist_layout(self) -> None:
         if self._restoring:
             return
@@ -133,19 +166,19 @@ class WorkspaceProfiles:
         layout.cursor_a = self.graph_panel.cursor_a
         layout.cursor_b = self.graph_panel.cursor_b
         layout.fullscreen = self.isFullScreen()
-        self._save()
+        self._schedule_save()
 
     def _persist_measurement_visibility(self, visible: bool) -> None:
         if self._restoring:
             return
         self.selected_profile.measurement_values_visible = visible
-        self._save()
+        self._schedule_save()
 
     def _persist_trace_filters(self) -> None:
         if self._restoring:
             return
         self.selected_profile.trace_filter = self.trace_panel.settings
-        self._save()
+        self._schedule_save()
 
     def _persist_signal_state(self, signal_names: tuple[str, ...] | None = None) -> None:
         """Persist the selection, reusing already-computed names when given.
@@ -161,7 +194,7 @@ class WorkspaceProfiles:
             name for name in self._selected_signal_names if not available or name in available
         )
         profile.favorite_signals = sorted(self._favorite_signal_names)
-        self._save()
+        self._schedule_save()
 
     def _persist_dbc_state(self) -> None:
         profile = self.selected_profile
@@ -174,4 +207,4 @@ class WorkspaceProfiles:
             str(arbitration_id): content_hash
             for arbitration_id, content_hash in self._catalog.resolutions.items()
         }
-        self._save()
+        self._schedule_save()

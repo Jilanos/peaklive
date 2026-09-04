@@ -18,6 +18,7 @@ from peaklive.analysis import TraceBuffer, TraceRecord, filter_records, matches
 from peaklive.analysis.trace import cell_text
 from peaklive.domain import TraceColumn, TraceFilterSettings
 from peaklive.i18n import translate
+from peaklive.ui.debounce import INTERACTIVE_DEBOUNCE_MS, Debouncer
 from peaklive.ui.panels.trace_filters import TraceFilterBar
 from peaklive.ui.widgets import StateNote
 
@@ -45,8 +46,11 @@ class TraceViewPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        self._filters_debouncer = Debouncer(
+            INTERACTIVE_DEBOUNCE_MS, lambda: self._filters_changed(), self
+        )
         self.filter_bar = TraceFilterBar()
-        self.filter_bar.changed.connect(self._filters_changed)
+        self.filter_bar.changed.connect(self._filters_debouncer.trigger)
         self.filter_bar.columns_requested.connect(self.columns_requested)
         layout.addWidget(self.filter_bar)
 

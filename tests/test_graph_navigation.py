@@ -12,6 +12,7 @@ import pytest
 from peaklive.adapters import FakeCanAdapter
 from peaklive.analysis import SeriesStore
 from peaklive.analysis.benchmark import CaptureProfile, synthetic_dbc, write_synthetic_capture
+from peaklive.domain import CanFrame
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW, GraphStackPanel
@@ -99,6 +100,70 @@ def test_follow_tail_is_an_explicit_control_that_restores_the_extent(panel):
     extent = panel.global_extent()
     # A window narrower than the extent now tracks the newest data.
     assert high >= extent[1] - 1e-6
+
+
+def test_a_manual_range_change_disables_follow_live(panel):
+    """A direct viewbox range change is exactly what pyqtgraph's own wheel
+    zoom and drag-pan handling do internally - not `panel.zoom()`, which
+    already goes through `set_follow_live(False)` explicitly."""
+    panel.begin_session(live=True)
+    _filled(panel, [(index * 0.1, index) for index in range(50)])
+    assert panel.follow_live is True
+
+    panel.anchor_plot.getViewBox().setXRange(1.0, 2.0, padding=0)
+
+    assert panel.follow_live is False
+
+
+def test_a_manual_zoom_remains_visible_after_the_next_refresh(panel):
+    panel.begin_session(live=True)
+    store = _filled(panel, [(index * 0.1, index) for index in range(50)])
+
+    panel.anchor_plot.getViewBox().setXRange(1.0, 2.0, padding=0)
+    zoomed = panel.visible_window()
+    store.append(RAW_PREVIEW, 10.0, 1)
+    panel.refresh_data()
+
+    # A follow-live update would have moved this to track the new sample;
+    # a manual zoom must be left exactly where the operator put it.
+    assert panel.visible_window() == pytest.approx(zoomed)
+
+
+def test_re_following_after_a_manual_zoom_restores_live_extent(panel):
+    panel.begin_session(live=True)
+    store = _filled(panel, [(index * 0.1, index) for index in range(50)])
+    panel.anchor_plot.getViewBox().setXRange(1.0, 2.0, padding=0)
+    assert panel.follow_live is False
+
+    panel.follow_checkbox.setChecked(True)
+    store.append(RAW_PREVIEW, 10.0, 1)
+    panel.refresh_data()
+
+    assert panel.follow_live is True
+    _, high = panel.visible_window()
+    extent = panel.global_extent()
+    assert high >= extent[1] - 1e-6
+
+
+def test_the_first_data_landing_on_a_fresh_plot_never_disables_follow_live(qtbot, tmp_path):
+    """pyqtgraph auto-ranges a new plot the instant `setData` lands the first
+    sample; that internal auto-fit must never be mistaken for a manual zoom."""
+    window = _window(qtbot, tmp_path)
+
+    window._render_frames([CanFrame(0.0, 0x100, b"\x01")])
+
+    assert window.graph_panel.follow_live is True
+
+
+def test_fit_does_not_itself_disable_follow_live(panel):
+    """Fit is a deliberate view action, not a manual-zoom navigation choice."""
+    panel.begin_session(live=False)
+    _filled(panel, [(index * 0.1, index) for index in range(200)])
+    assert panel.follow_live is True
+
+    panel.fit()
+
+    assert panel.follow_live is True
 
 
 # --------------------------------------------------------------------------

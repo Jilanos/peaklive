@@ -329,35 +329,55 @@ def test_each_trace_filter_narrows_the_display_only(qtbot, tmp_path):
     panel = window.trace_panel
     assert panel.table.rowCount() == 3
 
+    def flush() -> None:
+        # The expensive filter recompute is debounced; a test that drives
+        # several filters back-to-back has to settle it explicitly rather
+        # than waiting out real time between each one.
+        panel._filters_debouncer.flush()
+
     panel.id_filter.setText("0x123")
+    flush()
     assert panel.table.rowCount() == 1
     assert len(window._trace) == 3
     panel.id_filter.clear()
+    flush()
 
     panel.message_filter.setText("vehicle")
+    flush()
     assert panel.table.rowCount() == 1
     panel.message_filter.clear()
+    flush()
 
     panel.signal_filter.setText("speed")
+    flush()
     assert panel.table.rowCount() == 1
     panel.signal_filter.clear()
+    flush()
 
     panel.status_filter.setCurrentIndex(panel.status_filter.findData(DECODE_UNKNOWN))
+    flush()
     assert panel.table.rowCount() == 1
     panel.status_filter.setCurrentIndex(0)
+    flush()
 
     panel.event_filter.setText("error")
+    flush()
     assert panel.table.rowCount() == 1
     panel.event_filter.clear()
+    flush()
 
     panel.time_start_filter.setText("2.5")
+    flush()
     assert panel.table.rowCount() == 1
     panel.time_start_filter.clear()
+    flush()
 
     panel.show_events.setChecked(False)
+    flush()
     assert panel.table.rowCount() == 2
     panel.show_events.setChecked(True)
     panel.show_frames.setChecked(False)
+    flush()
     assert panel.table.rowCount() == 1
 
 
@@ -389,6 +409,7 @@ def test_a_filter_matching_nothing_is_distinct_from_an_empty_trace(qtbot, tmp_pa
 
     _seed_mixed_trace(window, tmp_path)
     panel.id_filter.setText("0x7FF")
+    panel._filters_debouncer.flush()
 
     assert panel.table.rowCount() == 0
     assert "No row matches the active filters" in panel.note.text()
@@ -401,6 +422,7 @@ def test_trace_filters_persist_across_a_restart(qtbot, tmp_path):
     qtbot.addWidget(window)
     window.trace_panel.id_filter.setText("0x2A")
     window.trace_panel.show_events.setChecked(False)
+    window._flush_save()
 
     restored = MainWindow(store, adapter_factory=FakeCanAdapter)
     qtbot.addWidget(restored)
@@ -861,6 +883,7 @@ def test_layout_geometry_and_collapse_state_persist_across_a_restart(qtbot, tmp_
     window.center_divider.setSizes([300, 400, 0])
     window.inspector_panel.set_collapsed(True)
     window._persist_layout()
+    window._flush_save()
 
     # Qt rescales requested sizes to the real widget width, so what is stored
     # is the resulting geometry, and that is what has to come back.

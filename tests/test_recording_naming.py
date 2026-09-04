@@ -3,7 +3,13 @@ from datetime import datetime
 import pytest
 
 from peaklive.domain import DEFAULT_FILENAME_TEMPLATE, RecordingSettings
-from peaklive.recording import EMPTY_TEXT_COMPONENT, InvalidTemplateError, RecordingNaming
+from peaklive.recording import (
+    EMPTY_TEXT_COMPONENT,
+    InvalidTemplateError,
+    RecordingNaming,
+    ReservationCancelledError,
+    ReservationExhaustedError,
+)
 
 
 def _settings(tmp_path, **overrides):
@@ -207,3 +213,58 @@ def test_two_captures_with_the_same_text_never_collide(tmp_path):
 
     assert first.final_path != second.final_path
     assert second.iteration == first.iteration + 1
+
+
+def test_a_repeated_non_discriminating_template_reserves_a_suffixed_path(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="{profile}")
+    (tmp_path / "Bench.asc").write_text("done", encoding="utf-8")
+
+    reservation = naming.reserve(settings, "Bench", now=datetime(2026, 9, 3, 9, 0, 0))
+
+    assert reservation.final_path.name == "Bench-2.asc"
+
+
+def test_a_non_discriminating_template_fails_clearly_within_the_search_bound(
+    tmp_path, monkeypatch
+):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="{profile}")
+
+    def _always_taken(*args, **kwargs):
+        raise FileExistsError
+
+    monkeypatch.setattr("peaklive.recording.naming.os.open", _always_taken)
+
+    with pytest.raises(ReservationExhaustedError):
+        naming.reserve(settings, "Bench", now=datetime(2026, 9, 3, 9, 0, 0))
+
+
+def test_stop_requested_cancels_reservation_before_a_candidate_is_claimed(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="capture_{iteration:03d}", iteration=1)
+
+    with pytest.raises(ReservationCancelledError):
+        naming.reserve(
+            settings,
+            "Bench",
+            now=datetime(2026, 9, 3, 9, 0, 0),
+            stop_requested=lambda: True,
+        )
+    assert not list(tmp_path.iterdir()) or all(
+        not path.name.endswith(".reserved") for path in tmp_path.iterdir()
+    )
+
+
+def test_stop_requested_does_not_interrupt_a_successful_reservation(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="capture_{iteration:03d}", iteration=1)
+
+    reservation = naming.reserve(
+        settings,
+        "Bench",
+        now=datetime(2026, 9, 3, 9, 0, 0),
+        stop_requested=lambda: False,
+    )
+
+    assert reservation.marker_path.exists()

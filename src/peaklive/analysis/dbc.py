@@ -16,6 +16,13 @@ class AmbiguousMessageError(RuntimeError):
     """Raised until an arbitration-ID conflict is resolved explicitly."""
 
 
+class _Unresolved:
+    """Sentinel: no enabled definition has a message for this arbitration ID."""
+
+
+_UNRESOLVED = _Unresolved()
+
+
 @dataclass(frozen=True, slots=True)
 class DecodedSignal:
     database_hash: str
@@ -93,6 +100,17 @@ class DbcCatalog:
         self._definitions: list[DbcDefinition] = []
         self._disabled_hashes: set[str] = set()
         self._resolutions: dict[int, str] = {}
+        # Keyed by arbitration ID: the resolved (definition, message) pair, the
+        # _UNRESOLVED sentinel, or a cached AmbiguousMessageError to re-raise -
+        # rebuilding candidates and fingerprints costs the same whether the
+        # frame decodes cleanly or not, and a session can see thousands of
+        # frames for the same ID before its catalog changes at all.
+        self._decode_cache: dict[
+            int, tuple[DbcDefinition, Any] | _Unresolved | AmbiguousMessageError
+        ] = {}
+
+    def _invalidate_decode_cache(self) -> None:
+        self._decode_cache.clear()
 
     @property
     def definitions(self) -> tuple[DbcDefinition, ...]:
@@ -152,6 +170,7 @@ class DbcCatalog:
         self._definitions.clear()
         self._disabled_hashes.clear()
         self._resolutions.clear()
+        self._invalidate_decode_cache()
 
     def copy(self) -> DbcCatalog:
         """Return an independent catalog over the same immutable definitions.
@@ -200,6 +219,7 @@ class DbcCatalog:
             raise ValueError(f"Unsupported or malformed DBC file: {error}") from error
         definition = DbcDefinition(digest, path, database)
         self._definitions.append(definition)
+        self._invalidate_decode_cache()
         return definition
 
     def remove(self, content_hash: str) -> None:
@@ -214,6 +234,7 @@ class DbcCatalog:
             for arbitration_id, resolution in self._resolutions.items()
             if resolution != content_hash
         }
+        self._invalidate_decode_cache()
 
     def set_enabled(self, content_hash: str, enabled: bool) -> None:
         if content_hash not in {definition.content_hash for definition in self._definitions}:
@@ -227,6 +248,7 @@ class DbcCatalog:
                 for arbitration_id, resolution in self._resolutions.items()
                 if resolution != content_hash
             }
+        self._invalidate_decode_cache()
 
     def is_enabled(self, content_hash: str) -> bool:
         return content_hash not in self._disabled_hashes
@@ -258,17 +280,18 @@ class DbcCatalog:
         if content_hash not in {definition.content_hash for definition in self._definitions}:
             raise KeyError(f"Unknown DBC hash: {content_hash}")
         self._resolutions[arbitration_id] = content_hash
+        self._invalidate_decode_cache()
 
     def decode(self, frame: CanFrame) -> list[DecodedSignal]:
-        candidates = [
-            (definition, definition.database.get_message_by_frame_id(frame.arbitration_id))
-            for definition in self.enabled_definitions
-            if self._has_message(definition.database, frame.arbitration_id)
-        ]
-        if not candidates:
+        cached = self._decode_cache.get(frame.arbitration_id)
+        if cached is None:
+            cached = self._resolve_candidate(frame.arbitration_id)
+            self._decode_cache[frame.arbitration_id] = cached
+        if cached is _UNRESOLVED:
             return []
-        selected = self._select_candidate(frame.arbitration_id, candidates)
-        definition, message = selected
+        if isinstance(cached, AmbiguousMessageError):
+            raise cached
+        definition, message = cached
         values = definition.database.decode_message(frame.arbitration_id, frame.data)
         return [
             DecodedSignal(
@@ -281,6 +304,22 @@ class DbcCatalog:
             for signal in message.signals
             if signal.name in values
         ]
+
+    def _resolve_candidate(
+        self, arbitration_id: int
+    ) -> tuple[DbcDefinition, Any] | _Unresolved | AmbiguousMessageError:
+        """Do the expensive per-ID work exactly once between catalog mutations."""
+        candidates = [
+            (definition, definition.database.get_message_by_frame_id(arbitration_id))
+            for definition in self.enabled_definitions
+            if self._has_message(definition.database, arbitration_id)
+        ]
+        if not candidates:
+            return _UNRESOLVED
+        try:
+            return self._select_candidate(arbitration_id, candidates)
+        except AmbiguousMessageError as error:
+            return error
 
     @staticmethod
     def _has_message(database: Any, arbitration_id: int) -> bool:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -32,6 +32,12 @@ SCOPE_ALL = "all"
 
 class ExportDialog(QDialog):
     """Streams the selected signals over a chosen range to CSV or Parquet."""
+
+    #: Carries the worker so the window can own it independently of this
+    #: dialog's lifetime: closing or destroying the dialog must never take a
+    #: still-running export thread down with it.
+    worker_started = Signal(object)
+    worker_finished = Signal(object)
 
     def __init__(
         self,
@@ -174,13 +180,17 @@ class ExportDialog(QDialog):
         # selected range before crossing the thread boundary so the worker can
         # never observe an invalidated cache half-way through an acquisition.
         rows = tuple(export_rows(self._store, names, start, end))
-        worker = ExportWorker(self.destination, rows, self.value_format, self)
+        # Deliberately parentless: a Qt child of this dialog would be
+        # force-destroyed with it, aborting a running QThread. The window
+        # tracks it independently via worker_started/worker_finished instead.
+        worker = ExportWorker(self.destination, rows, self.value_format)
         self._worker = worker
         worker.progress.connect(self._show_progress)
         worker.export_finished.connect(self._finished)
         worker.export_failed.connect(self._failed)
         worker.export_cancelled.connect(self._cancelled)
         self._set_running(True)
+        self.worker_started.emit(worker)
         if not blocking:
             worker.finished.connect(self._worker_done)
             worker.start()
@@ -198,7 +208,10 @@ class ExportDialog(QDialog):
 
     def _worker_done(self) -> None:
         self._set_running(False)
+        finished = self._worker
         self._worker = None
+        if finished is not None:
+            self.worker_finished.emit(finished)
 
     def cancel_export(self) -> None:
         if self._worker is not None:

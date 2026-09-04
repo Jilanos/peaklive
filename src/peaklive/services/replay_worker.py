@@ -36,6 +36,28 @@ MAX_PENDING_BATCHES = 4
 #: receives another acknowledgement, so the wait must never be unbounded.
 ACKNOWLEDGEMENT_TIMEOUT_S = 0.25
 
+#: A defensive cap on distinct anomaly messages tracked per replay. Every
+#: anomaly source in `iter_trace` uses a small, static vocabulary, so this
+#: should never bind in practice; it exists so a future anomaly message that
+#: accidentally carries per-record detail cannot grow this Counter or the
+#: drained event count without a hard ceiling.
+MAX_ANOMALY_KEYS = 64
+
+#: How many records `iter_trace` must produce before the anomaly ratio is
+#: judged. A short, mostly-broken file is common (an operator stopped a
+#: capture mid-line); a judgement made too early on it would reject
+#: legitimate small traces.
+IMPLAUSIBLE_INPUT_MIN_RECORDS = 500
+
+#: Once judged, this fraction of anomalies marks the input as not actually a
+#: supported trace - binary data, or the wrong file entirely - rather than a
+#: real capture with a few malformed lines.
+IMPLAUSIBLE_INPUT_ANOMALY_RATIO = 0.95
+
+
+class ImplausibleTraceError(RuntimeError):
+    """Raised when parsed input looks like it is not a supported trace at all."""
+
 
 class ReplayWorker(QThread):
     """Read ASC/TRC records incrementally and batch presentation notifications."""
@@ -57,6 +79,17 @@ class ReplayWorker(QThread):
         self._held_permits = 0
         self._last_progress = 0
         self._last_progress_at = 0.0
+        self._succeeded = False
+
+    @property
+    def succeeded(self) -> bool:
+        """Whether `run()` reached completion without an unhandled failure.
+
+        `finished` fires whenever the thread returns, success or not, so a
+        caller that wants to know the difference must check this rather than
+        assume completion from `finished` alone.
+        """
+        return self._succeeded
 
     def request_stop(self) -> None:
         self._stop_requested.set()
@@ -78,6 +111,8 @@ class ReplayWorker(QThread):
     def run(self) -> None:
         batch: list[CanFrame] = []
         anomalies: Counter[str] = Counter()
+        record_count = 0
+        anomaly_count = 0
         try:
             total = self._path.stat().st_size
             records = PROFILER.timed_iter(
@@ -86,9 +121,13 @@ class ReplayWorker(QThread):
             for record in records:
                 if self._stop_requested.is_set():
                     break
+                record_count += 1
                 if isinstance(record, BusEvent):
                     if record.kind == "replay_anomaly":
-                        anomalies[record.message] += 1
+                        anomaly_count += 1
+                        if len(anomalies) < MAX_ANOMALY_KEYS or record.message in anomalies:
+                            anomalies[record.message] += 1
+                        self._reject_if_implausible(record_count, anomaly_count)
                     else:
                         self.event_received.emit(record)
                     continue
@@ -104,8 +143,25 @@ class ReplayWorker(QThread):
                 suffix = f" ({count} occurrences)" if count > 1 else ""
                 self.event_received.emit(BusEvent(0.0, "replay_anomaly", message + suffix))
             self.progressed.emit(total, total)
-        except OSError as error:
+            self._succeeded = True
+        except Exception as error:
             self.replay_failed.emit(str(error))
+
+    def _reject_if_implausible(self, record_count: int, anomaly_count: int) -> None:
+        """Abort a file that is overwhelmingly unparseable rather than replay it.
+
+        Judged only once enough records have been seen, and only against a
+        generous ratio, so a real capture with a handful of malformed lines
+        is never mistaken for binary-like or wrong-format input.
+        """
+        if record_count < IMPLAUSIBLE_INPUT_MIN_RECORDS:
+            return
+        if anomaly_count / record_count < IMPLAUSIBLE_INPUT_ANOMALY_RATIO:
+            return
+        raise ImplausibleTraceError(
+            f"{self._path.name} does not look like a supported trace: "
+            f"{anomaly_count} of the first {record_count} records were unparseable."
+        )
 
     def _dispatch(self, batch: list[CanFrame]) -> bool:
         """Hand one batch to the UI, waiting if it is already several behind.
