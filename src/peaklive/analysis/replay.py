@@ -13,6 +13,13 @@ _TIMESTAMP = re.compile(r"^\s*([+-]?\d+(?:\.\d+)?)\s+(.*)$")
 _TRC = re.compile(r"^\s*\d+\)\s*([+-]?\d+(?:\.\d+)?)\s+(.*)$")
 _HEX = re.compile(r"^[0-9A-Fa-f]+$")
 
+#: The longest chunk one `readline()` call will buffer. Supported captures are
+#: one short record per line; binary-like input can be one line for its
+#: entire length, and reading that unbounded would defeat every other bound
+#: in the parse path. A line longer than this is read in bounded slices and
+#: each slice is judged - and, if unparseable, counted - on its own.
+_MAX_LINE_LENGTH = 65_536
+
 
 @dataclass(slots=True)
 class TraceCursor:
@@ -33,7 +40,7 @@ def iter_trace(path: Path, cursor: TraceCursor | None = None) -> Iterator[CanFra
     parser = _parse_trc_line if path.suffix.lower() == ".trc" else None
     base = 16
     with path.open(encoding="utf-8", errors="replace") as handle:
-        for line_number, raw in enumerate(handle, 1):
+        for raw in _read_bounded_lines(handle):
             if cursor is not None:
                 cursor.consumed += len(raw)
             if parser is None:
@@ -46,7 +53,24 @@ def iter_trace(path: Path, cursor: TraceCursor | None = None) -> Iterator[CanFra
             if record is not None:
                 yield record
             elif raw.strip() and not _is_header(raw):
-                yield BusEvent(0.0, "replay_anomaly", f"Line {line_number}: unsupported record")
+                # A stable, line-count-independent message: the anomaly key
+                # every caller aggregates on must never grow with the file.
+                yield BusEvent(0.0, "replay_anomaly", "Unsupported record")
+
+
+def _read_bounded_lines(handle) -> Iterator[str]:  # type: ignore[no-untyped-def]
+    """Yield each line, splitting anything longer than `_MAX_LINE_LENGTH`.
+
+    `TextIOWrapper.readline(size)` never reads more than `size` characters and
+    stops early at a real newline, so ordinary captures are unaffected; only a
+    pathologically long or newline-free line - the shape binary-like input
+    tends to take - is ever read in more than one bounded slice.
+    """
+    while True:
+        raw = handle.readline(_MAX_LINE_LENGTH)
+        if not raw:
+            return
+        yield raw
 
 
 def _parse_asc_line(raw: str, *, base: int = 16) -> CanFrame | BusEvent | None:

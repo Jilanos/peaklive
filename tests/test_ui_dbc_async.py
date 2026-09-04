@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QFileDialog
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.analysis import DbcCatalog
+from peaklive.domain import CanFrame
 from peaklive.services.dbc_worker import CatalogOperation, CatalogOperationKind
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
@@ -273,3 +274,31 @@ BO_ 291 VehicleStatus: 8 GW
     assert window.selected_profile.trace_filters["dbc_conflict_resolutions"] == {
         "291": content_hash
     }
+
+
+def test_a_sustained_conflict_shows_the_notice_once_per_session(qtbot, tmp_path):
+    conflicting = '''VERSION ""
+NS_ :
+BS_:
+BU_: GW
+BO_ 291 VehicleStatus: 8 GW
+ SG_ Speed : 0|8@1+ (1,0) [0|255] "km/h" GW
+'''
+    window = _window(qtbot, tmp_path)
+    window._load_dbc_path(_write(tmp_path, "vehicle.dbc", VEHICLE_DBC))
+    window._load_dbc_path(_write(tmp_path, "gateway.dbc", conflicting))
+    errors: list = []
+    window.dbc_panel.show_error = lambda message: errors.append(message)  # type: ignore[method-assign]
+
+    for index in range(20):
+        window._render_frames([CanFrame(float(index), 291, b"\x00" * 8)])
+
+    assert len(errors) == 1
+
+    # A new session (a fresh acquisition, a newly opened trace) is a fresh
+    # chance for the operator to see it - the dedup is per session, not
+    # permanent.
+    window._reset_session("")
+    window._render_frames([CanFrame(0.0, 291, b"\x00" * 8)])
+
+    assert len(errors) == 2

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pyqtgraph as pg
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import (
     QLabel,
     QSizePolicy,
@@ -29,6 +29,12 @@ PLOT_AREA_MINIMUM_HEIGHT = 180
 #: AxisItems from their own ticks and labels, shifting time grids and cursors.
 SHARED_LEFT_AXIS_WIDTH = 88
 
+#: The documented cadence A/B statistics recompute at while frames stream in
+#: or a cursor drags, instead of once per 20Hz graph-refresh tick or drag
+#: pointer-move. Slow enough that a table rebuild over several signals never
+#: competes with input handling; fast enough to still read as live.
+MEASUREMENT_REFRESH_INTERVAL_MS = 250
+
 
 class GraphStackPanel(GraphNavigation, QWidget):
     """One plot per shown signal on a shared time axis, plus the A/B measurement.
@@ -51,11 +57,22 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._axis_mode = AXIS_CAPTURE
         self._live_extent_end = 0.0
         self._window_chosen = False
+        # True only while code (not the operator) is setting the X range, so
+        # a follow-live or fit update is never mistaken for a manual zoom.
+        self._applying_range = False
         self._plots: dict[str, pg.PlotWidget] = {}
         self._curves: dict[str, pg.PlotDataItem] = {}
         self._cursor_lines: dict[str, tuple[pg.InfiniteLine, pg.InfiniteLine]] = {}
         self._store: SeriesStore | None = None
         self._updating_cursors = False
+        # A live-streaming refresh tick and a cursor drag can each ask for a
+        # measurement recompute far faster than the documented cadence below;
+        # both just mark this dirty, and one periodic timer coalesces however
+        # many requests arrived into the next tick's single recompute.
+        self._measurement_dirty = False
+        self._measurement_refresh_timer = QTimer(self)
+        self._measurement_refresh_timer.setInterval(MEASUREMENT_REFRESH_INTERVAL_MS)
+        self._measurement_refresh_timer.timeout.connect(self._flush_measurements)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -154,6 +171,11 @@ class GraphStackPanel(GraphNavigation, QWidget):
             plot.showGrid(x=True, y=True, alpha=0.25)
             plot.setLabel("left", signal_name)
             plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
+            # X is entirely ours to manage (follow-live, fit, zoom): pyqtgraph's
+            # own default auto-range would otherwise autofit - and emit its own
+            # sigXRangeChanged - the instant `setData` lands the first sample,
+            # disabling follow-live before a session ever really begins.
+            plot.getViewBox().enableAutoRange(x=False)
             # The colour is a convenience, not the identity: the axis label
             # text (and this tooltip naming the colour) is what an operator
             # who cannot rely on colour reads instead.
@@ -163,6 +185,13 @@ class GraphStackPanel(GraphNavigation, QWidget):
             plot.setMinimumHeight(0)
             plot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             curve = plot.plot(pen=pg.mkPen(colour, width=2))
+            # A retained series can hold up to 20,000 points; rendering every
+            # one of them every tick costs far more than the screen can show.
+            # Clipping to the visible range and peak-preserving downsampling
+            # bound what is actually drawn to the viewport's own resolution
+            # without discarding a single retained sample.
+            curve.setClipToView(True)
+            curve.setDownsampling(auto=True, method="peak")
             line_a = pg.InfiniteLine(
                 pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_A)
             )
@@ -224,7 +253,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if not has_sample:
             self.note.show_message(translate("graph.empty"), "info")
             self.empty_state_label.setText(translate("graph.empty"))
-        self.refresh_measurements()
+        self._mark_measurements_dirty()
 
     def _seed_cursors(self, bounds: tuple[float, float]) -> None:
         """Seed unplaced cursors once; never re-pin a cursor the operator moved."""
@@ -270,7 +299,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         else:
             self.cursor_b = position
         self._apply_cursor_lines()
-        self.refresh_measurements()
+        self._mark_measurements_dirty()
         self.cursors_changed.emit()
 
     def _apply_cursor_lines(self) -> None:
@@ -312,6 +341,24 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.measurement.refresh(
             self._store, tuple(self._plots), self.cursor_a, self.cursor_b
         )
+
+    def _mark_measurements_dirty(self) -> None:
+        """Ask for a recompute without performing one per request.
+
+        A live stream can call this every 20Hz graph-refresh tick, and a
+        cursor drag every pointer-move tick; either way, at most one
+        recompute happens per `MEASUREMENT_REFRESH_INTERVAL_MS`.
+        """
+        self._measurement_dirty = True
+        if not self._measurement_refresh_timer.isActive():
+            self._measurement_refresh_timer.start()
+
+    def _flush_measurements(self) -> None:
+        if not self._measurement_dirty:
+            self._measurement_refresh_timer.stop()
+            return
+        self._measurement_dirty = False
+        self.refresh_measurements()
 
     # ---- measurement visibility ----------------------------------------
 

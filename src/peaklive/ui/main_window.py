@@ -27,7 +27,9 @@ from peaklive.analysis import DbcCatalog, TraceRecord
 from peaklive.diagnostics import set_operator_notifier
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
+from peaklive.recording import InvalidTemplateError, RecordingNaming
 from peaklive.services.dbc_worker import CatalogOperation, DbcCatalogWorker
+from peaklive.services.export_worker import ExportWorker
 from peaklive.services.lifecycle import AcquisitionLifecycle
 from peaklive.services.profiles import ProfileState, ProfileStore
 from peaklive.services.replay_worker import ReplayWorker
@@ -85,6 +87,7 @@ class MainWindow(
         self._adapter_factory = adapter_factory
         self._worker: AcquisitionWorker | None = None
         self._replay_worker: ReplayWorker | None = None
+        self._export_workers: list[ExportWorker] = []
         self._lifecycle = AcquisitionLifecycle()
         self._shutdown_timeout_ms = SHUTDOWN_TIMEOUT_MS
         self._shutdown_timer = QTimer(self)
@@ -103,6 +106,7 @@ class MainWindow(
         self._pending_replay_batches = []
         self._pending_replay_finish_generation: int | None = None
         self._replay_generation = 0
+        self._replay_failed_generation: int | None = None
         self._replay_presentation_timer = QTimer(self)
         self._replay_presentation_timer.setSingleShot(True)
         self._replay_presentation_timer.setInterval(1)
@@ -113,6 +117,13 @@ class MainWindow(
         self._expanded_widths: dict[str, int] = dict(self.selected_profile.layout.panel_widths)
         self._build_ui()
         set_operator_notifier(lambda message: self.session_note.show_message(message, "error"))
+        if self._state.recovered_from is not None:
+            QMessageBox.warning(
+                self,
+                "Profile store reset",
+                "The measurement profile store could not be read and has been reset to "
+                f"defaults.\n\nThe previous file was saved to:\n{self._state.recovered_from}",
+            )
         self._install_shortcuts()
         self._select_last_profile()
         self._load_profile_dbcs()
@@ -163,7 +174,7 @@ class MainWindow(
         self.dbc_panel.conflict_resolved.connect(self._resolve_conflict)
         self.signals_panel.body_layout.addWidget(self.dbc_panel)
         self.explorer_panel = SignalExplorerPanel()
-        self.explorer_panel.filters_changed.connect(self._refresh_signal_explorer)
+        self.explorer_panel.filters_changed.connect(self._schedule_signal_explorer_refresh)
         self.explorer_panel.shown_changed.connect(self._signal_shown_changed)
         self.explorer_panel.favorite_changed.connect(self._signal_favorite_changed)
         self.signals_panel.body_layout.addWidget(self.explorer_panel, 1)
@@ -275,6 +286,17 @@ class MainWindow(
         return dialog
 
     def _recording_changed(self) -> None:
+        """Persist a recording-settings edit, unless the template is invalid.
+
+        An in-progress edit (e.g. a template mid-keystroke) must never reach
+        disk: a later start would either use a broken template or, worse,
+        silently fall back to whatever was last valid while the operator
+        believes the invalid one is in effect.
+        """
+        try:
+            RecordingNaming().validate_template(self.selected_profile.recording.filename_template)
+        except InvalidTemplateError:
+            return
         self._save()
         self.acquisition_bar.show_profile(self.selected_profile)
 
@@ -286,5 +308,7 @@ class MainWindow(
             self.graph_panel.visible_window(),
             self,
         )
+        dialog.worker_started.connect(self._track_export_worker)
+        dialog.worker_finished.connect(self._untrack_export_worker)
         dialog.open()
         return dialog

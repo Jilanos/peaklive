@@ -40,6 +40,7 @@
     "shutdown_timeout": "Shutdown did not complete within {seconds}s. The CAN driver has not returned. The capture was kept as recoverable .partial files; close PeakLive to release the adapter.",
     "shutdown_recovered": "Shutdown completed after the timeout; the capture was finalized.",
     "start_blocked": "Acquisition cannot restart until the previous shutdown returns. Close PeakLive to release the adapter.",
+    "start_blocked_by_replay": "Cannot start acquisition while a trace replay is in progress. Wait for it to finish, or close it first.",
     "recovering_driver": "Starting with a fresh adapter. The previous CAN driver handle may still be held until it returns."
   },
   "bus": {
@@ -176,6 +177,7 @@
     "open_dialog": "Open Trace",
     "open_filter": "CAN traces (*.asc *.trc)",
     "opening": "Opening trace: {name}",
+    "open_blocked_by_acquisition": "Cannot open a trace while acquisition is running. Stop acquisition first.",
     "replay_done": "Trace replay complete",
     "replay_event": "Replay {kind}: {message}",
     "filters": "Filters",

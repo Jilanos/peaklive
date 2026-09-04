@@ -23,6 +23,7 @@ from peaklive.services.dbc_worker import (
     DbcCatalogWorker,
     apply_catalog_operation,
 )
+from peaklive.ui.debounce import INTERACTIVE_DEBOUNCE_MS, Debouncer
 
 
 class WorkspaceCatalog:
@@ -273,6 +274,20 @@ class WorkspaceCatalog:
         )
 
     # ---- signals -------------------------------------------------------
+
+    @property
+    def _signal_explorer_debouncer(self) -> Debouncer:
+        """Coalesce a burst of search keystrokes into one tree rebuild."""
+        debouncer = getattr(self, "_signal_explorer_debouncer_instance", None)
+        if debouncer is None:
+            debouncer = Debouncer(
+                INTERACTIVE_DEBOUNCE_MS, lambda: self._refresh_signal_explorer(), self
+            )
+            self._signal_explorer_debouncer_instance = debouncer
+        return debouncer
+
+    def _schedule_signal_explorer_refresh(self) -> None:
+        self._signal_explorer_debouncer.trigger()
 
     def _refresh_signal_explorer(self) -> None:
         self.explorer_panel.refresh(

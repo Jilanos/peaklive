@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import pytest
 
 from peaklive.domain import ControllerMode, MeasurementProfile
@@ -29,6 +32,35 @@ def test_missing_store_has_passive_default_profile(tmp_path):
     assert profile.name == "Default measurement"
     assert profile.controller_mode is ControllerMode.PASSIVE_LISTEN_ONLY
     assert profile.recording.enabled is True
+
+
+def test_missing_store_reports_no_recovery(tmp_path):
+    assert ProfileStore(tmp_path).load().recovered_from is None
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "{not valid json",
+        '{"profiles": [{"controller_mode": "not_a_real_mode"}]}',
+        '{"profiles": [{"bitrate": "not_a_number"}]}',
+        '{"profiles": "not_a_list"}',
+    ],
+)
+def test_a_corrupt_or_invalid_store_starts_from_defaults_and_is_quarantined(tmp_path, content):
+    store = ProfileStore(tmp_path)
+    store.path.parent.mkdir(parents=True, exist_ok=True)
+    store.path.write_text(content, encoding="utf-8")
+
+    state = store.load()
+
+    assert state.selected.name == "Default measurement"
+    assert state.selected.controller_mode is ControllerMode.PASSIVE_LISTEN_ONLY
+    assert not store.path.exists()
+    assert state.recovered_from is not None
+    assert state.recovered_from.exists()
+    assert state.recovered_from.read_text(encoding="utf-8") == content
+    assert state.recovered_from.name.startswith("profiles.json.corrupt-")
 
 
 def test_save_as_persists_an_independent_copy_and_selects_it(tmp_path):
@@ -144,6 +176,69 @@ def test_a_failed_write_rolls_the_copy_back_out_of_memory(tmp_path, monkeypatch)
     assert [profile.name for profile in state.profiles] == ["Default measurement"]
     assert state.last_profile_id == original_id
     assert len(ProfileStore(tmp_path).load().profiles) == 1
+
+
+def test_two_saves_never_reuse_the_same_temporary_filename(tmp_path, monkeypatch):
+    store = ProfileStore(tmp_path)
+    state = store.load()
+    seen: list[str] = []
+    original_replace = Path.replace
+
+    def spy_replace(self, target):
+        seen.append(self.name)
+        return original_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", spy_replace)
+
+    store.save(state)
+    store.save(state)
+
+    assert len(seen) == 2
+    assert seen[0] != seen[1]
+
+
+def test_save_flushes_and_fsyncs_before_replacing_the_store(tmp_path, monkeypatch):
+    store = ProfileStore(tmp_path)
+    state = store.load()
+    order: list[str] = []
+    original_fsync = os.fsync
+    original_replace = Path.replace
+
+    def spy_fsync(fd):
+        order.append("fsync")
+        return original_fsync(fd)
+
+    def spy_replace(self, target):
+        order.append("replace")
+        return original_replace(self, target)
+
+    monkeypatch.setattr(os, "fsync", spy_fsync)
+    monkeypatch.setattr(Path, "replace", spy_replace)
+
+    store.save(state)
+
+    assert order == ["fsync", "replace"]
+
+
+def test_a_failed_write_preserves_the_prior_readable_store(tmp_path, monkeypatch):
+    store = ProfileStore(tmp_path)
+    state = store.load()
+    store.save(state)
+    original_content = store.path.read_text(encoding="utf-8")
+
+    state.selected.name = "Changed after the last durable save"
+
+    def fail_fsync(fd):
+        raise OSError("simulated fsync failure")
+
+    monkeypatch.setattr(os, "fsync", fail_fsync)
+
+    with pytest.raises(OSError):
+        store.save(state)
+
+    assert store.path.read_text(encoding="utf-8") == original_content
+    assert ProfileStore(tmp_path).load().selected.name == "Default measurement"
+    assert not list(tmp_path.glob("*.tmp"))
 
 
 def test_each_saved_setup_reloads_its_own_configuration(tmp_path):

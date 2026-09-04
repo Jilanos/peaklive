@@ -80,10 +80,14 @@ class GraphNavigation:
         current = view.viewRange()[0]
         span = current[1] - current[0]
         full = extent[1] - extent[0]
-        if not self._window_chosen or span <= 0 or span >= full:
-            view.setXRange(extent[0], extent[1], padding=0.02)
-            return
-        view.setXRange(extent[1] - span, extent[1], padding=0)
+        self._applying_range = True
+        try:
+            if not self._window_chosen or span <= 0 or span >= full:
+                view.setXRange(extent[0], extent[1], padding=0.02)
+                return
+            view.setXRange(extent[1] - span, extent[1], padding=0)
+        finally:
+            self._applying_range = False
 
     def zoom(self, factor: float) -> None:
         anchor = getattr(self, "anchor_plot", None)
@@ -110,7 +114,11 @@ class GraphNavigation:
         if anchor is None or extent is None:
             return
         self._window_chosen = False
-        anchor.getViewBox().setXRange(extent[0], extent[1], padding=0.02)
+        self._applying_range = True
+        try:
+            anchor.getViewBox().setXRange(extent[0], extent[1], padding=0.02)
+        finally:
+            self._applying_range = False
         for plot in self._plots.values():
             plot.getViewBox().enableAutoRange(y=True)
 
@@ -148,5 +156,16 @@ class GraphNavigation:
         return float(low), float(high)
 
     def _x_range_changed(self) -> None:
+        """React to any X-range change, telling a manual one from our own.
+
+        pyqtgraph fires the same signal whether the operator just wheel-zoomed
+        or panned the plot directly, or a follow-live/fit update just moved
+        it programmatically. Only the former is a manual navigation choice
+        that must disable follow-live; the latter would otherwise be
+        immediately undone by the very update that caused it.
+        """
+        if not self._applying_range:
+            self.set_follow_live(False)
+            self._window_chosen = True
         self.view_changed.emit()
 

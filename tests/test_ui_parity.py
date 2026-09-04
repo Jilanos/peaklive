@@ -124,14 +124,17 @@ def test_parity_signal_explorer_groups_filters_and_favorites(qtbot, tmp_path):
     assert window.selected_profile.favorite_signals == ["BodyStatus.DoorOpen"]
 
     window.signal_filter.setText("doorop")
+    window._signal_explorer_debouncer.flush()
     assert window.signal_explorer.topLevelItemCount() == 1
 
     window.signal_filter.setText("")
     window.favorites_only_checkbox.setChecked(True)
+    window._signal_explorer_debouncer.flush()
     assert window.signal_explorer.topLevelItemCount() == 1
     window.favorites_only_checkbox.setChecked(False)
 
     window.shown_only_checkbox.setChecked(True)
+    window._signal_explorer_debouncer.flush()
     shown_keys = {
         item.data(0, SIGNAL_KEY_ROLE)
         for item in window.signal_explorer.findItems(

@@ -6,6 +6,8 @@ from .naming import (
     InvalidTemplateError,
     RecordingNaming,
     Reservation,
+    ReservationCancelledError,
+    ReservationExhaustedError,
 )
 
 __all__ = [
@@ -15,4 +17,6 @@ __all__ = [
     "RecordingNaming",
     "RecordingStopped",
     "Reservation",
+    "ReservationCancelledError",
+    "ReservationExhaustedError",
 ]

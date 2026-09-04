@@ -138,6 +138,7 @@ def test_the_measurement_toggle_state_persists_in_the_profile(qtbot, tmp_path):
 
     window.graph_panel.measurement_visibility_button.setChecked(False)
     assert window.selected_profile.measurement_values_visible is False
+    window._flush_save()
 
     restored = MainWindow(store, adapter_factory=FakeCanAdapter)
     qtbot.addWidget(restored)

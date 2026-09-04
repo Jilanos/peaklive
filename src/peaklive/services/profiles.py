@@ -5,11 +5,14 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from platformdirs import user_data_path
 
+from peaklive.diagnostics import logger
 from peaklive.domain import MeasurementProfile
 
 SCHEMA_VERSION = 1
@@ -23,6 +26,10 @@ class ProfileNameError(ValueError):
 class ProfileState:
     profiles: list[MeasurementProfile]
     last_profile_id: str
+    #: Set only when ``load()`` had to discard an unreadable or invalid
+    #: store and start from defaults; carries where the original file was
+    #: moved so the shell can tell the operator.
+    recovered_from: Path | None = None
 
     @property
     def selected(self) -> MeasurementProfile:
@@ -57,8 +64,19 @@ class ProfileStore:
         if not self.path.exists():
             profile = MeasurementProfile(name="Default measurement")
             return ProfileState([profile], profile.identifier)
-        raw = json.loads(self.path.read_text(encoding="utf-8"))
-        profiles = [MeasurementProfile.from_dict(item) for item in raw.get("profiles", [])]
+        try:
+            raw = json.loads(self.path.read_text(encoding="utf-8"))
+            profiles = [MeasurementProfile.from_dict(item) for item in raw.get("profiles", [])]
+        except (json.JSONDecodeError, OSError, ValueError, TypeError, KeyError, AttributeError):
+            backup_path = self._quarantine_corrupt_store()
+            logger().warning(
+                "Profile store %s was unreadable or invalid; moved it to %s and started"
+                " from defaults.",
+                self.path,
+                backup_path,
+            )
+            profile = MeasurementProfile(name="Default measurement")
+            return ProfileState([profile], profile.identifier, recovered_from=backup_path)
         if not profiles:
             profile = MeasurementProfile(name="Default measurement")
             return ProfileState([profile], profile.identifier)
@@ -68,6 +86,13 @@ class ProfileStore:
             profiles[0],
         )
         return ProfileState(profiles, selected.identifier)
+
+    def _quarantine_corrupt_store(self) -> Path:
+        """Rename the unreadable store out of the way so it isn't overwritten."""
+        stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
+        backup_path = self.data_dir / f"profiles.json.corrupt-{stamp}"
+        self.path.replace(backup_path)
+        return backup_path
 
     def save_as(self, state: ProfileState, name: str) -> MeasurementProfile:
         """Duplicate the active setup under `name` and persist atomically.
@@ -86,12 +111,32 @@ class ProfileStore:
         return copy
 
     def save(self, state: ProfileState) -> None:
+        """Write the store atomically, durably, and safely alongside another instance.
+
+        A fixed temporary name lets two writers - two PeakLive instances, or
+        a save racing a crash-recovery quarantine - collide on the same
+        partial file. A name unique per process and per call rules that out.
+        The write is flushed and fsynced before the rename, so a crash right
+        after a successful save cannot leave the replaced file truncated; a
+        failure before the rename never touches `self.path`, so a prior,
+        readable store is always left in place.
+        """
         self.data_dir.mkdir(parents=True, exist_ok=True)
         raw: dict[str, Any] = {
             "schema_version": SCHEMA_VERSION,
             "last_profile_id": state.last_profile_id,
             "profiles": [profile.to_dict() for profile in state.profiles],
         }
-        temporary = self.path.with_suffix(".tmp")
-        temporary.write_text(json.dumps(raw, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        temporary.replace(self.path)
+        payload = json.dumps(raw, indent=2, sort_keys=True) + "\n"
+        temporary = self.path.with_name(
+            f"{self.path.name}.{os.getpid()}.{uuid4().hex[:8]}.tmp"
+        )
+        try:
+            with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            temporary.replace(self.path)
+        except OSError:
+            temporary.unlink(missing_ok=True)
+            raise

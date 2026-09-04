@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 from peaklive.diagnostics import install_exception_hooks
 from peaklive.resources import application_icon_path
 from peaklive.ui import MainWindow
+from peaklive.ui.worker_lifecycle import drain_abandoned_workers_at_exit
 
 
 def apply_application_identity(app: QApplication) -> QIcon:
@@ -30,6 +31,10 @@ def main() -> int:
     install_exception_hooks()
     app = QApplication(sys.argv)
     apply_application_identity(app)
+    # Every window's own closeEvent already applies its shutdown budget; this
+    # is the one further, final chance before the interpreter tears down
+    # whatever a stuck driver left running in the abandoned-worker set.
+    app.aboutToQuit.connect(drain_abandoned_workers_at_exit)
     window = MainWindow()
     window.show()
     return app.exec()

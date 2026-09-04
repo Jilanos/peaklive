@@ -133,3 +133,44 @@ def test_a_failed_writer_start_releases_the_reservation_without_advancing_iterat
 
     assert profile.recording.iteration == 1
     assert not list(tmp_path.glob("*.reserved"))
+
+
+def test_a_post_connect_start_failure_leaves_the_session_connected_for_shutdown(tmp_path):
+    """The adapter is connected before recording setup, and stays known-connected on failure.
+
+    A caller that only disconnects when `AcquisitionSession.start` fully
+    succeeds leaks the adapter handle on a reservation or recorder-start
+    failure. `connected` is set the moment `connect()` returns, so shutdown
+    code can always tell whether it owes the adapter a disconnect.
+    """
+    profile = MeasurementProfile(name="Refused")
+    profile.recording.directory = str(tmp_path)
+    adapter = FakeCanAdapter()
+    session = AcquisitionSession(adapter, RefusingRecorder())
+
+    with pytest.raises(RuntimeError, match="disk write refused"):
+        session.start(profile)
+
+    assert session.connected
+    assert adapter.connected
+
+    session.stop()
+
+    assert not session.connected
+    assert not adapter.connected
+
+
+class UnreachableAdapter(FakeCanAdapter):
+    def connect(self, profile):
+        raise RuntimeError("target unreachable")
+
+
+def test_a_connect_failure_never_marks_the_session_connected(tmp_path):
+    profile = MeasurementProfile(name="Unreachable")
+    profile.recording.directory = str(tmp_path)
+    session = AcquisitionSession(UnreachableAdapter(), AscRecorder())
+
+    with pytest.raises(RuntimeError, match="target unreachable"):
+        session.start(profile)
+
+    assert not session.connected
