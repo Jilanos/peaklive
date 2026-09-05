@@ -35,6 +35,15 @@ A complete, evidence-driven remediation and delivery roadmap that makes PeakLive
 - Generated docs pass lint and audit without broad manual rewrites.
 - Context-pack output can be handed to an implementation agent directly.
 
+## Future CAN transmit gate
+CAN transmission remains excluded from the delivered product. A future transmit
+chain may be promoted only after: (1) an adapter capability contract is landed,
+(2) receive-only and passive-mode regressions pass on supported hardware,
+(3) a safety review approves frame authoring, rate limits, and an operator
+confirmation flow, and (4) a dedicated request/backlog/task chain is promoted.
+No transmit control may be added as an incidental part of receive, replay, or
+roadmap work.
+
 # References
 - Product back-reference: `req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap`
 - Task back-reference: `task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone`
