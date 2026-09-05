@@ -46,6 +46,7 @@ class SessionReport:
     anomalies: tuple[tuple[str, int], ...]
     tracked_id_count: int
     truncated_ids: bool
+    identifier_aggregates: tuple[IdentifierAggregate, ...] = ()
 
     @property
     def duration(self) -> float:
@@ -83,6 +84,7 @@ class SessionFacts:
         self._ids: Counter[int] = Counter()
         self._truncated_ids = False
         self._anomalies: Counter[str] = Counter()
+        self._aggregates: dict[int, IdentifierAggregate] = {}
 
     def reset(self, source: str = "") -> None:
         self.source = source
@@ -94,6 +96,7 @@ class SessionFacts:
         self._ids = Counter()
         self._truncated_ids = False
         self._anomalies = Counter()
+        self._aggregates = {}
 
     def record_frame(self, frame: CanFrame, *, decoded: bool) -> None:
         self._frames += 1
@@ -104,6 +107,11 @@ class SessionFacts:
             self._anomalies["unknown_id"] += 1
         if frame.arbitration_id in self._ids or len(self._ids) < self._max_tracked_ids:
             self._ids[frame.arbitration_id] += 1
+            aggregate = self._aggregates.get(frame.arbitration_id)
+            if aggregate is None:
+                aggregate = IdentifierAggregate(frame.arbitration_id)
+                self._aggregates[frame.arbitration_id] = aggregate
+            aggregate.update(frame, decoded=decoded)
         else:
             self._truncated_ids = True
 
@@ -135,7 +143,79 @@ class SessionFacts:
             anomalies=tuple(sorted(self._anomalies.items())),
             tracked_id_count=len(self._ids),
             truncated_ids=self._truncated_ids,
+            identifier_aggregates=tuple(
+                sorted(
+                    self._aggregates.values(),
+                    key=lambda item: (-item.count, item.arbitration_id),
+                )
+            ),
         )
+
+
+@dataclass(frozen=True, slots=True)
+class IdentifierAggregate:
+    """A bounded, O(1)-updated diagnostic row for one arbitration ID."""
+
+    arbitration_id: int
+    latest_frame: CanFrame | None = None
+    count: int = 0
+    mean_period: float | None = None
+    delta_t: float | None = None
+    load_contribution: float | None = None
+    decode_status: str = "unknown"
+    _last_timestamp: float | None = field(default=None, repr=False, compare=False)
+    _period_sum: float = field(default=0.0, repr=False, compare=False)
+    _period_count: int = field(default=0, repr=False, compare=False)
+
+    def update(self, frame: CanFrame, *, decoded: bool, bitrate: int | None = None) -> None:
+        """Update this row in constant time; callers retain one row per ID."""
+        previous = self._last_timestamp
+        interval = None if previous is None else max(0.0, frame.timestamp - previous)
+        period_sum = self._period_sum + (interval or 0.0)
+        period_count = self._period_count + (interval is not None)
+        status = "decoded" if decoded else "unknown"
+        if self.count and self.decode_status != status:
+            status = "partial"
+        object.__setattr__(self, "latest_frame", frame)
+        object.__setattr__(self, "count", self.count + 1)
+        object.__setattr__(self, "delta_t", interval)
+        object.__setattr__(self, "_last_timestamp", frame.timestamp)
+        object.__setattr__(self, "_period_sum", period_sum)
+        object.__setattr__(self, "_period_count", period_count)
+        object.__setattr__(self, "mean_period", period_sum / period_count if period_count else None)
+        object.__setattr__(self, "decode_status", status)
+        if bitrate and bitrate > 0:
+            bits = 47 + (8 * frame.dlc)
+            object.__setattr__(
+                self,
+                "load_contribution",
+                bits / max(self.mean_period or 0.0, 1e-12) / bitrate,
+            )
+
+
+class IdentifierDiagnostics:
+    """Standalone aggregate model for live and replay views."""
+
+    def __init__(self, max_identifiers: int = MAX_TRACKED_IDS, bitrate: int | None = None) -> None:
+        self.max_identifiers = max_identifiers
+        self.bitrate = bitrate
+        self._rows: dict[int, IdentifierAggregate] = {}
+
+    def reset(self) -> None:
+        self._rows.clear()
+
+    def update(self, frame: CanFrame, *, decoded: bool) -> IdentifierAggregate | None:
+        row = self._rows.get(frame.arbitration_id)
+        if row is None:
+            if len(self._rows) >= self.max_identifiers:
+                return None
+            row = IdentifierAggregate(frame.arbitration_id)
+            self._rows[frame.arbitration_id] = row
+        row.update(frame, decoded=decoded, bitrate=self.bitrate)
+        return row
+
+    def rows(self) -> tuple[IdentifierAggregate, ...]:
+        return tuple(sorted(self._rows.values(), key=lambda item: item.arbitration_id))
 
 
 @dataclass(slots=True)
