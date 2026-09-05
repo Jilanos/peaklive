@@ -65,12 +65,16 @@ class AcquisitionWorker(QThread):
         profile: MeasurementProfile,
         generation: int = 0,
         presentation_sink: Callable[[int, list[CanFrame]], None] | None = None,
+        recorder_factory: Callable[[], AscRecorder] | None = None,
     ) -> None:
         super().__init__()
         self._adapter = adapter
         self._profile = profile
         self._generation = generation
         self._presentation_sink = presentation_sink
+        # Resolve the default at construction time so tests and deployments
+        # can inject format-specific writers without patching worker logic.
+        self._recorder_factory = recorder_factory or AscRecorder
         self._stop_requested = Event()
         self._consecutive_errors = 0
         self._last_error_signature: tuple[str, str] | None = None
@@ -89,7 +93,7 @@ class AcquisitionWorker(QThread):
         self._stop_requested.set()
 
     def run(self) -> None:
-        session = AcquisitionSession(self._adapter, AscRecorder())
+        session = AcquisitionSession(self._adapter, self._recorder_factory())
         failure: str | None = None
         batch: list[CanFrame] = []
         self.phase_changed.emit(AcquisitionPhase.STARTING)
