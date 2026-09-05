@@ -4,7 +4,12 @@ from pathlib import Path
 import pytest
 
 from peaklive.domain import ControllerMode, MeasurementProfile
-from peaklive.services.profiles import ProfileNameError, ProfileState, ProfileStore
+from peaklive.services.profiles import (
+    ProfileNameError,
+    ProfileState,
+    ProfileStore,
+    migrate_profile_store,
+)
 
 
 def test_profile_store_restores_last_selected_profile(tmp_path):
@@ -254,3 +259,13 @@ def test_each_saved_setup_reloads_its_own_configuration(tmp_path):
     assert by_name["Default measurement"].bitrate == 125_000
     assert by_name["Second"].bitrate == 1_000_000
     assert restored.selected.name == "Second"
+
+
+def test_unversioned_profile_store_is_migrated_deterministically():
+    raw = {"profiles": [], "last_profile_id": ""}
+    assert migrate_profile_store(raw)["schema_version"] == 1
+
+
+def test_future_profile_schema_is_rejected():
+    with pytest.raises(ValueError, match="newer"):
+        migrate_profile_store({"schema_version": 99})
