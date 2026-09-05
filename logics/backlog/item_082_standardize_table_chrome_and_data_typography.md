@@ -1,10 +1,10 @@
 ## item_082_standardize_table_chrome_and_data_typography - Standardize table chrome and data typography
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 46%
+> Progress: 100%
 > Complexity: Low
 > Theme: P2 data legibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
