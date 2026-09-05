@@ -1,10 +1,10 @@
 ## item_078_inject_a_recorder_factory_into_acquisition_workers - Inject a recorder factory into acquisition workers
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 39%
+> Progress: 100%
 > Complexity: Low
 > Theme: P1 testability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
