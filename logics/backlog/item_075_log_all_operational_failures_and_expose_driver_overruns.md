@@ -1,10 +1,10 @@
 ## item_075_log_all_operational_failures_and_expose_driver_overruns - Log all operational failures and expose driver overruns
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 56%
+> Progress: 100%
 > Complexity: Low
 > Theme: P1 observability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
