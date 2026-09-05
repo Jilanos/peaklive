@@ -21,7 +21,14 @@ from .frames import DEFAULT_FRAME_CACHE_CAPACITY, FrameCache
 from .profiling import PROFILER, STAGES, StageProfile, StageProfiler
 from .replay import TraceCursor, iter_trace
 from .series import SeriesStore, SignalSeries
-from .session import DbcSummary, ReportRenderer, SessionFacts, SessionReport
+from .session import (
+    DbcSummary,
+    IdentifierAggregate,
+    IdentifierDiagnostics,
+    ReportRenderer,
+    SessionFacts,
+    SessionReport,
+)
 from .statistics import RangeStatistics, cursor_value, numeric_delta, range_statistics
 from .trace import (
     DECODE_CONFLICT,
@@ -51,6 +58,8 @@ __all__ = [
     "DbcDefinition",
     "DbcSignalReference",
     "DbcSummary",
+    "IdentifierAggregate",
+    "IdentifierDiagnostics",
     "DecodedSignal",
     "ExportRow",
     "FrameCache",
