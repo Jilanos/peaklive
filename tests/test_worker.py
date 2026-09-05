@@ -1,7 +1,7 @@
 import pytest
 
 from peaklive.adapters import FakeCanAdapter
-from peaklive.domain import BusEvent, MeasurementProfile
+from peaklive.domain import BusEvent, MeasurementProfile, RecordingSettings
 from peaklive.recording import AscRecorder
 from peaklive.services import worker as worker_module
 from peaklive.services.acquisition import AcquisitionSession
@@ -301,3 +301,22 @@ def test_exhausting_every_reconnect_attempt_raises_a_restartable_failure(tmp_pat
     reconnect_notices = [event for event in received if event.kind == "reconnecting"]
     assert len(reconnect_notices) == MAX_RECONNECT_ATTEMPTS
     assert not session.connected
+
+
+def test_worker_uses_an_injected_recorder_factory(qtbot):
+    created = []
+
+    def factory():
+        recorder = AscRecorder()
+        created.append(recorder)
+        return recorder
+
+    profile = MeasurementProfile(
+        name="Factory", recording=RecordingSettings(enabled=False)
+    )
+    worker = AcquisitionWorker(FakeCanAdapter(), profile, recorder_factory=factory)
+    worker.start()
+    qtbot.wait(50)
+    worker.request_stop()
+    assert worker.wait(3000)
+    assert len(created) == 1
