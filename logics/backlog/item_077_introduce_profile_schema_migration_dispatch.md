@@ -1,10 +1,10 @@
 ## item_077_introduce_profile_schema_migration_dispatch - Introduce profile schema migration dispatch
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 34%
+> Progress: 100%
 > Complexity: Low
 > Theme: P1 profile evolution
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
