@@ -18,6 +18,27 @@ from peaklive.domain import MeasurementProfile
 SCHEMA_VERSION = 1
 
 
+class ProfileSchemaError(ValueError):
+    """The profile store uses a schema version this build cannot read."""
+
+
+def migrate_profile_store(raw: dict[str, Any]) -> dict[str, Any]:
+    """Dispatch persisted data through explicit, deterministic schema migrations."""
+    version = raw.get("schema_version", 0)
+    if isinstance(version, bool) or not isinstance(version, int) or version < 0:
+        raise ProfileSchemaError("Profile store schema version is invalid.")
+    if version > SCHEMA_VERSION:
+        raise ProfileSchemaError(
+            f"Profile store schema version {version} is newer than supported {SCHEMA_VERSION}."
+        )
+    migrated = dict(raw)
+    if version == 0:
+        # Pre-versioned stores already use the v1 profile shape; only the
+        # dispatch marker was missing.
+        migrated["schema_version"] = SCHEMA_VERSION
+    return migrated
+
+
 class ProfileNameError(ValueError):
     """An operator-supplied setup name is blank or already taken."""
 
@@ -65,7 +86,7 @@ class ProfileStore:
             profile = MeasurementProfile(name="Default measurement")
             return ProfileState([profile], profile.identifier)
         try:
-            raw = json.loads(self.path.read_text(encoding="utf-8"))
+            raw = migrate_profile_store(json.loads(self.path.read_text(encoding="utf-8")))
             profiles = [MeasurementProfile.from_dict(item) for item in raw.get("profiles", [])]
         except (json.JSONDecodeError, OSError, ValueError, TypeError, KeyError, AttributeError):
             backup_path = self._quarantine_corrupt_store()
