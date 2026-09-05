@@ -139,6 +139,9 @@ QComboBox, QListWidget, QTableWidget, QTreeWidget, QLineEdit, QSpinBox, QPlainTe
 }}
 QCheckBox {{ color: {TEXT_BODY}; spacing: 8px; }}
 QHeaderView::section {{ background: #17202b; color: {TEXT_MUTED}; border: none; padding: 5px; }}
+QTableWidget, QTableView {{ gridline-color: {BORDER}; alternate-background-color: {SURFACE}; }}
+QTableWidget::item, QTableView::item {{ padding: 3px 6px; }}
+QTableCornerButton::section {{ background: #17202b; border: none; }}
 QProgressBar {{ background: {SURFACE_DEEP}; border: 1px solid {BORDER_SUBTLE}; border-radius: 5px;
                 color: {TEXT}; text-align: center; }}
 QProgressBar::chunk {{ background: {ACCENT}; border-radius: 4px; }}
