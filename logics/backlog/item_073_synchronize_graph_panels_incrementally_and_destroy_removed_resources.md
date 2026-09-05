@@ -1,10 +1,10 @@
 ## item_073_synchronize_graph_panels_incrementally_and_destroy_removed_resources - Synchronize graph panels incrementally and destroy removed resources
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 54%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P1 graph lifetime
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
