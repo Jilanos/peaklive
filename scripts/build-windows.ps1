@@ -1,3 +1,10 @@
+param(
+    # CI validates dependencies, linting, and tests in dedicated steps before
+    # invoking this script. Skipping that duplicate work leaves this script
+    # useful for local release builds while keeping hosted packaging focused.
+    [switch] $SkipValidation
+)
+
 $ErrorActionPreference = "Stop"
 
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
@@ -58,9 +65,11 @@ $buildModule = Join-Path $PWD "src/peaklive/_build.py"
 BUILD_TAG = "$buildTag"
 "@ | Set-Content -Path $buildModule -Encoding utf8
 
-Invoke-NativeStep "uv sync" { uv sync --all-extras }
-Invoke-NativeStep "ruff" { uv run ruff check . }
-Invoke-NativeStep "pytest" { uv run python -m pytest }
+if (-not $SkipValidation) {
+    Invoke-NativeStep "uv sync" { uv sync --all-extras }
+    Invoke-NativeStep "ruff" { uv run ruff check . }
+    Invoke-NativeStep "pytest" { uv run python -m pytest }
+}
 Invoke-PyInstaller -TimeoutSeconds 900
 
 $identifier = (uv run python -m peaklive.version).Trim()
