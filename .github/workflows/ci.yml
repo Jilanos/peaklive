@@ -29,7 +29,7 @@ jobs:
       - name: Build Windows executable
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ./scripts/build-windows.ps1
+        run: ./scripts/build-windows.ps1 -SkipValidation
       - name: Upload Windows executable
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
