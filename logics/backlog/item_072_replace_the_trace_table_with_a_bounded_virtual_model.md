@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 39%
+> Progress: 41%
 > Complexity: High
 > Theme: P1 trace performance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
