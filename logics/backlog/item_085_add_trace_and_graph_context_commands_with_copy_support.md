@@ -1,10 +1,10 @@
 ## item_085_add_trace_and_graph_context_commands_with_copy_support - Add trace and graph context commands with copy support
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 61%
+> Progress: 100%
 > Complexity: Low
 > Theme: P2 diagnostic workflows
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
