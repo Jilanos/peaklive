@@ -9,6 +9,7 @@ from time import monotonic
 from PySide6.QtCore import QThread, Signal
 
 from peaklive.adapters.base import CanAdapter
+from peaklive.diagnostics import logger
 from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
 from peaklive.recording import AscRecorder
 from peaklive.services.acquisition import AcquisitionSession
@@ -128,6 +129,7 @@ class AcquisitionWorker(QThread):
                     self.msleep(1)
         except Exception as error:
             failure = str(error)
+            logger().exception("acquisition worker failed: %s", error)
             self.acquisition_failed.emit(failure)
         finally:
             failure = self._shut_down(session, batch, failure)
@@ -158,12 +160,14 @@ class AcquisitionWorker(QThread):
                 self._flush(session, batch)
             except Exception as error:
                 failure = failure or str(error)
+                logger().exception("acquisition flush failed: %s", error)
                 self.acquisition_failed.emit(str(error))
         try:
             event = session.stop(clean=failure is None)
             self.status_changed.emit(event.message)
         except Exception as error:
             failure = failure or str(error)
+            logger().exception("acquisition stop failed: %s", error)
             self.acquisition_failed.emit(str(error))
         return failure
 
