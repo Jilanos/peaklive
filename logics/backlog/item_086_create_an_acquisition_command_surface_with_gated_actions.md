@@ -1,10 +1,10 @@
 ## item_086_create_an_acquisition_command_surface_with_gated_actions - Create an acquisition command surface with gated actions
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 63%
+> Progress: 100%
 > Complexity: Low
 > Theme: P2 lifecycle UX
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
