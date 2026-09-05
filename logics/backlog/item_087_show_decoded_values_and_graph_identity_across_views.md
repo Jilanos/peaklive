@@ -1,10 +1,10 @@
 ## item_087_show_decoded_values_and_graph_identity_across_views - Show decoded values and graph identity across views
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Low
 > Theme: P2 diagnostic legibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

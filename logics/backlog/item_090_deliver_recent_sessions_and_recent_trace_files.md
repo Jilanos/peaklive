@@ -1,10 +1,10 @@
 ## item_090_deliver_recent_sessions_and_recent_trace_files - Deliver recent sessions and recent trace files
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Low
 > Theme: P3 productivity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

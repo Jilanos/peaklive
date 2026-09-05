@@ -1,10 +1,10 @@
 ## item_092_add_bus_load_and_real_time_counters - Add bus load and real-time counters
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P3 diagnostics
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

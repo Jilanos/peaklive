@@ -1,10 +1,10 @@
 ## item_093_introduce_capture_writer_ports_and_reader_registry - Introduce capture-writer ports and reader registry
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P3 extensibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

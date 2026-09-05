@@ -1,10 +1,10 @@
 ## item_091_clarify_graph_cursors_and_trace_graph_linkage - Clarify graph cursors and trace graph linkage
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P3 graph workflow
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
