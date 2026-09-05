@@ -18,6 +18,29 @@ function Invoke-NativeStep {
     }
 }
 
+function Invoke-PyInstaller {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int] $TimeoutSeconds
+    )
+
+    # PyInstaller's default logging hides its progress. Keep the CI log useful
+    # when binary collection or archive creation is unexpectedly slow, and
+    # bound the process so a stuck runner cannot consume its whole job slot.
+    $arguments = @(
+        "run", "python", "-m", "PyInstaller", "--noconfirm", "--clean",
+        "--log-level", "INFO", "peaklive.spec"
+    )
+    $process = Start-Process -FilePath "uv" -ArgumentList $arguments -NoNewWindow -PassThru
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        $process.Kill($true)
+        throw "pyinstaller exceeded its $TimeoutSeconds-second limit and was terminated"
+    }
+    if ($process.ExitCode -ne 0) {
+        throw "pyinstaller failed with exit code $($process.ExitCode)"
+    }
+}
+
 # Bake the build tag into the package before packaging, so the identifier the
 # executable reports describes the executable itself rather than whatever
 # environment it is later run in. Set PEAKLIVE_BUILD_TAG to label a rebuild for
@@ -38,7 +61,7 @@ BUILD_TAG = "$buildTag"
 Invoke-NativeStep "uv sync" { uv sync --all-extras }
 Invoke-NativeStep "ruff" { uv run ruff check . }
 Invoke-NativeStep "pytest" { uv run python -m pytest }
-Invoke-NativeStep "pyinstaller" { uv run python -m PyInstaller --noconfirm --clean peaklive.spec }
+Invoke-PyInstaller -TimeoutSeconds 900
 
 $identifier = (uv run python -m peaklive.version).Trim()
 $exePath = Join-Path $PWD "dist/PeakLive.exe"

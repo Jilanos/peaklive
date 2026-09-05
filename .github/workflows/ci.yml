@@ -6,6 +6,9 @@ on:
 
 jobs:
   test:
+    # The Windows job includes packaging. A finite upper bound protects the
+    # hosted-runner queue if PyInstaller or an external scan becomes stuck.
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
