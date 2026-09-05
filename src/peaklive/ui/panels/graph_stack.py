@@ -159,6 +159,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
             widget = item.widget()
             if widget is not None:
                 widget.setParent(None)
+                widget.deleteLater()
         self._plots.clear()
         self._curves.clear()
         self._cursor_lines.clear()
