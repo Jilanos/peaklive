@@ -5,9 +5,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QLabel,
+    QMenu,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -70,6 +73,8 @@ class TraceViewPanel(QWidget):
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.table.currentCellChanged.connect(self._selection_changed)
         self.table.verticalScrollBar().valueChanged.connect(self._scrolled)
+        self.table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._context_menu)
         layout.addWidget(self.table, 1)
 
         self.tail_note = StateNote(translate("trace.tail_paused"))
@@ -242,6 +247,34 @@ class TraceViewPanel(QWidget):
             item = QTableWidgetItem(cell_text(record, column.key, column.value_format))
             item.setData(RECORD_INDEX_ROLE, record.index)
             self.table.setItem(row, index, item)
+
+    def _context_menu(self, position) -> None:
+        row = self.table.rowAt(position.y())
+        if row < 0:
+            return
+        record_index = self.table.item(row, 0).data(RECORD_INDEX_ROLE)
+        record = self._buffer.record(record_index) if self._buffer is not None else None
+        if record is None:
+            return
+        menu = QMenu(self.table)
+        copy_action = QAction("Copy row", menu)
+        copy_action.triggered.connect(
+            lambda: QApplication.clipboard().setText(
+                "\t".join(
+                    self.table.item(row, column).text()
+                    for column in range(self.table.columnCount())
+                )
+            )
+        )
+        menu.addAction(copy_action)
+        filter_action = QAction(f"Filter ID 0x{record.arbitration_id:X}", menu)
+        filter_action.triggered.connect(lambda: self._filter_identifier(record.arbitration_id))
+        menu.addAction(filter_action)
+        menu.exec(self.table.viewport().mapToGlobal(position))
+
+    def _filter_identifier(self, arbitration_id: int) -> None:
+        self.filter_bar.id_filter.setText(f"0x{arbitration_id:X}")
+        self._filters_debouncer.trigger()
 
     def set_follow_tail(self, enabled: bool) -> None:
         self.follow_tail = enabled
