@@ -267,6 +267,20 @@ class ReportRenderer:
                 f"  (per-ID tracking capped at {report.tracked_id_count} distinct IDs)"
             )
         self.lines.append("")
+        self.lines.append("Identifier diagnostics")
+        if not report.identifier_aggregates:
+            self.lines.append("  no identifier captured")
+        for row in report.identifier_aggregates:
+            latest = row.latest_frame
+            latest_text = "-" if latest is None else latest.data.hex(" ").upper()
+            period = "-" if row.mean_period is None else f"{row.mean_period:.6f}s"
+            delta = "-" if row.delta_t is None else f"{row.delta_t:.6f}s"
+            load = "-" if row.load_contribution is None else f"{row.load_contribution * 100:.2f}%"
+            self.lines.append(
+                f"  0x{row.arbitration_id:03X} latest={latest_text} count={row.count} "
+                f"mean-period={period} delta-t={delta} load={load} decode={row.decode_status}"
+            )
+        self.lines.append("")
         self.lines.append("Anomalies")
         if not report.anomalies:
             self.lines.append("  none recorded")
