@@ -174,6 +174,7 @@ class WorkspaceSession:
         replay_active = self._replay_worker is not None and self._replay_worker.isRunning()
         acquisition_active = self._worker is not None and self._worker.isRunning()
         self.start_action.setEnabled(not replay_active)
+        self.stop_action.setEnabled(acquisition_active)
         self.open_trace_action.setEnabled(not acquisition_active)
 
     def _choose_trace(self) -> None:
