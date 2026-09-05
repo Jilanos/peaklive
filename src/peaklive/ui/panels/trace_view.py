@@ -260,7 +260,7 @@ class TraceViewPanel(QWidget):
         copy_action = QAction("Copy row", menu)
         copy_action.triggered.connect(
             lambda: QApplication.clipboard().setText(
-                "\t".join(
+                chr(9).join(
                     self.table.item(row, column).text()
                     for column in range(self.table.columnCount())
                 )
