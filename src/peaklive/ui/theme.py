@@ -116,6 +116,15 @@ QFrame#instrument {{ background: {SURFACE}; border: 1px solid {BORDER}; border-r
 QFrame#busState {{ background: {SURFACE_DEEP}; border: 1px solid #334155; border-radius: 999px; }}
 QPushButton, QToolButton {{ background: {ACCENT}; border: none; border-radius: 5px; color: white;
                            font-weight: 700; min-height: 28px; padding: 0 10px; }}
+QPushButton:hover, QToolButton:hover {{
+    background: {CONTROL_HOVER}; border: 1px solid {FOCUS_RING};
+}}
+QPushButton:pressed, QToolButton:pressed {{
+    background: {SELECTION_BACKGROUND}; padding-top: 2px;
+}}
+QPushButton:checked, QToolButton:checked {{
+    background: {SELECTION_BACKGROUND}; border: 1px solid {FOCUS_RING};
+}}
 QToolButton#collapseButton {{ background: #202b3a; color: {TEXT_BODY}; min-width: 24px; }}
 QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18px; padding: 0; }}
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};
