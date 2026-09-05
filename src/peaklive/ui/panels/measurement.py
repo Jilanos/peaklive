@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QLabel,
     QTableWidget,
@@ -49,6 +51,8 @@ class MeasurementPanel(QWidget):
         self.table.setAccessibleName(translate("measure.accessible"))
         self.table.setHorizontalHeaderLabels([translate(key) for key in MEASURE_COLUMNS])
         self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.table.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
         # The plots are the workspace; the statistics read under them.
         self.table.setMaximumHeight(140)
         layout.addWidget(self.table)
@@ -93,8 +97,10 @@ class MeasurementPanel(QWidget):
             row = self.table.rowCount()
             self.table.insertRow(row)
             self.table.setItem(row, 0, QTableWidgetItem(signal_name))
+            self.table.item(row, 0).setTextAlignment(Qt.AlignmentFlag.AlignLeft)
             if series is None or not len(series):
                 self.table.setItem(row, 1, QTableWidgetItem(translate("measure.no_sample")))
+                self.table.item(row, 1).setTextAlignment(Qt.AlignmentFlag.AlignRight)
                 continue
             value_a = series.nearest(cursor_a) if cursor_a is not None else None
             value_b = series.nearest(cursor_b) if cursor_b is not None else None
@@ -106,6 +112,10 @@ class MeasurementPanel(QWidget):
                 else None
             )
             self.table.setItem(row, 3, QTableWidgetItem(_number_text(delta)))
+            for column in range(1, len(MEASURE_COLUMNS)):
+                item = self.table.item(row, column)
+                if item is not None:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             if cursor_range is None:
                 continue
             self._write_statistics(row, range_statistics(series, *cursor_range))
