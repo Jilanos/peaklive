@@ -1,7 +1,7 @@
 ## req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap - Close the September 2026 PeakLive audit and deliver its future-ready roadmap
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High

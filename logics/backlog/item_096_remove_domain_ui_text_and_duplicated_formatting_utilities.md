@@ -1,10 +1,10 @@
 ## item_096_remove_domain_ui_text_and_duplicated_formatting_utilities - Remove domain UI text and duplicated formatting utilities
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Low
 > Theme: P3 code coherence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

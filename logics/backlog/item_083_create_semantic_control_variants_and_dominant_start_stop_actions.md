@@ -1,10 +1,10 @@
 ## item_083_create_semantic_control_variants_and_dominant_start_stop_actions - Create semantic control variants and dominant Start Stop actions
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P2 command hierarchy
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

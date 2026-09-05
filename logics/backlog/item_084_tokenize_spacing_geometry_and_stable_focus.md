@@ -1,10 +1,10 @@
 ## item_084_tokenize_spacing_geometry_and_stable_focus - Tokenize spacing geometry and stable focus
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: Medium
 > Theme: P2 layout consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

@@ -1,10 +1,10 @@
 ## item_072_replace_the_trace_table_with_a_bounded_virtual_model - Replace the trace table with a bounded virtual model
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 64%
+> Progress: 100%
 > Complexity: High
 > Theme: P1 trace performance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
