@@ -12,6 +12,7 @@ from PySide6.QtCore import QThread, Signal
 from peaklive.analysis import iter_trace
 from peaklive.analysis.profiling import PROFILER, STAGE_DISPATCH, STAGE_PARSE
 from peaklive.analysis.replay import TraceCursor
+from peaklive.diagnostics import logger
 from peaklive.domain import BusEvent, CanFrame
 
 #: How many frames one presentation notification carries.
@@ -145,6 +146,7 @@ class ReplayWorker(QThread):
             self.progressed.emit(total, total)
             self._succeeded = True
         except Exception as error:
+            logger().exception("replay worker failed: %s", error)
             self.replay_failed.emit(str(error))
 
     def _reject_if_implausible(self, record_count: int, anomaly_count: int) -> None:
