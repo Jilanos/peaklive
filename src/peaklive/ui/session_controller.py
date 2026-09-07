@@ -200,12 +200,12 @@ class WorkspaceSession:
             previous.request_stop()
             abandon_worker(previous)
         self._clear_pending_replay_batches()
-        self._pending_replay_finish_generation = None
         generation = self._replay_generation + 1
         self._replay_generation = generation
         self._reset_session(path.name)
         self._replay_worker = ReplayWorker(path)
         self._pending_replay_batches = []
+        self._replay_source_completed_generation = None
         self._replay_worker.frames_received.connect(
             partial(self._replay_frames_for_generation, generation, self._replay_worker)
         )
@@ -214,6 +214,9 @@ class WorkspaceSession:
         )
         self._replay_worker.replay_failed.connect(
             partial(self._replay_failed_for_generation, generation)
+        )
+        self._replay_worker.replay_completed.connect(
+            partial(self._replay_completed_for_generation, generation)
         )
         self._replay_worker.progressed.connect(
             partial(self._replay_progressed, generation)
@@ -249,8 +252,7 @@ class WorkspaceSession:
         worker.batch_rendered()
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()
-        elif getattr(self, "_pending_replay_finish_generation", None) == generation:
-            self._pending_replay_finish_generation = None
+        elif getattr(self, "_replay_source_completed_generation", None) == generation:
             self._complete_replay(generation)
 
     def _clear_pending_replay_batches(self) -> None:
@@ -266,6 +268,14 @@ class WorkspaceSession:
         self.progress.setRange(0, total)
         self.progress.setValue(done)
 
+    def _replay_completed_for_generation(self, generation: int) -> None:
+        if generation != getattr(self, "_replay_generation", 0):
+            return
+        self._replay_source_completed_generation = generation
+        if self._pending_replay_batches or self._replay_presentation_timer.isActive():
+            return
+        self._complete_replay(generation)
+
     def _replay_failed_for_generation(self, generation: int, message: str) -> None:
         if generation != getattr(self, "_replay_generation", 0):
             return
@@ -274,7 +284,7 @@ class WorkspaceSession:
         self._replay_failed_generation = generation
         self._acquisition_failed(message)
         self._clear_pending_replay_batches()
-        self._pending_replay_finish_generation = None
+        self._replay_source_completed_generation = None
         self._replay_worker = None
         self._end_work()
         self._update_mode_availability()
@@ -289,11 +299,9 @@ class WorkspaceSession:
             self._replay_failed_generation = generation
             self._end_work()
             self._update_mode_availability()
-            return
-        if self._pending_replay_batches or self._replay_presentation_timer.isActive():
-            self._pending_replay_finish_generation = generation
-            return
-        self._complete_replay(generation)
+        # Successful replay completion is driven by ReplayWorker.replay_completed,
+        # not QThread.finished: on Windows, finished can be delivered before all
+        # queued frame batches have reached the UI object.
 
     def _complete_replay(self, generation: int) -> None:
         """Finalize only after the queued UI projection has consumed every batch."""
