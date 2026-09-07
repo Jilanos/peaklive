@@ -1,0 +1,310 @@
+{
+  "title": "Eliminate PeakLive second-pass integrity, identity, and recovery gaps",
+  "references": [
+    "logics/request/req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps.md",
+    "docs/audit-2026-09.md",
+    "src/peaklive/domain/models.py",
+    "src/peaklive/analysis/dbc.py",
+    "src/peaklive/analysis/export.py",
+    "src/peaklive/analysis/replay.py",
+    "src/peaklive/analysis/session.py",
+    "src/peaklive/analysis/trace.py",
+    "src/peaklive/recording/asc.py",
+    "src/peaklive/recording/naming.py",
+    "src/peaklive/services/acquisition.py",
+    "src/peaklive/services/export_worker.py",
+    "src/peaklive/services/profiles.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/services/worker.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/panels/signal_explorer.py",
+    "src/peaklive/ui/panels/trace_view.py",
+    "tests"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "End-to-end measurement integrity and recoverable workflows",
+    "needs": [
+      "Make every frame already accepted by an acquisition or replay reach its authoritative session state exactly once, including final batches, without allowing an unbounded live handoff or a false successful replay.",
+      "Make export and recording artifacts transactional and collision-safe so cancellation, failure, rotation, concurrent operation, or a pre-existing sidecar cannot destroy prior evidence or mislabel incomplete output as complete.",
+      "Preserve complete CAN record semantics across normalization, replay, decoding, trace, reports, plots, exports, and re-recording, including direction, declared remote-frame DLC, and distinct standard and extended identifier spaces.",
+      "Give every decoded signal a stable provenance-qualified identity so equally named definitions from different databases or identifiers never merge values, units, selections, favorites, plots, measurements, or exports.",
+      "Prevent stale concurrent profile saves from erasing another instance's completed change, keep recording iteration stable throughout one segmented acquisition, preserve frame/event source order, and make trace event context actions safe.",
+      "Use a deferred validation workflow for this delivery: do not execute tests during individual implementation steps. Complete all development first, then create or update the regression coverage and run targeted and full validation only in the final verification phase."
+    ],
+    "context": [
+      "The independent second-pass review in req_018 reproduced thirteen findings that were absent from the original September audit or appeared in its remediation. Five can silently lose frames or existing files, four can corrupt identity or grow work without a bound, and four break direction, segment naming, event interaction, or durable ordering.",
+      "Stopping acquisition currently clears the pending live frame handoff before asking the worker to stop. The worker can then flush a final batch into a generation the UI has already invalidated, leaving the durable capture and in-memory session facts inconsistent.",
+      "Replay backpressure currently treats failure to acquire a presentation permit as an end-of-input condition, retries one batch without checking the result, emits total progress, and marks the replay successful. A 2,000-frame reproduction delivered 1,024 frames and still reported success.",
+      "CSV and columnar export write directly to the selected destination, while cancellation cleanup unlinks that same path. Recording reservation does not include event sidecars in its collision domain, and clean finalization replaces a pre-existing sidecar.",
+      "The normalized frame model derives DLC from payload length and has no direction field. This loses non-zero remote-frame DLC and Tx direction. Remote frames matching a DBC message enter ordinary payload decoding and can raise before session facts are updated.",
+      "DBC decode lookup and session aggregates key only on the numeric identifier, ignoring standard-versus-extended identity. Signal selection and SeriesStore key only on message.signal, ignoring database and frame provenance, so unrelated values and units can merge.",
+      "Profile saves use unique temporary files but remain whole-file, last-writer-wins updates with no lock, revision, or merge. Recording rotation observes the already-incremented next-acquisition iteration. The trace context menu formats a missing arbitration identifier for event rows, raising at the Qt slot boundary.",
+      "The existing 520-test Linux/offscreen suite and lint pass, so each reproduced scenario requires new focused coverage. Windows and live hardware remain separate acceptance evidence rather than prerequisites for local implementation.",
+      "Development sequencing is operator-mandated: implementation waves must not run unit, UI, integration, performance, or full-suite tests. Test authoring and all test execution begin only after every implementation slice is complete; failures found then are handled inside the final verification phase."
+    ],
+    "acceptance_criteria": [
+      "AC1: A normal Stop drains every frame accepted by the active live generation into session facts, frame cache, trace, and selected series exactly once before retirement, including the worker's final partial batch; degraded timeout recovery remains generation-safe.",
+      "AC2: The live worker-to-session handoff has a documented bounded-memory and bounded-UI-work policy under sustained overload, without dropping authoritative facts or allowing one event-loop turn to grow without a deterministic limit.",
+      "AC3: Replay reaches success and 100 percent progress only after every parsed frame batch has been accepted and acknowledged. Backpressure timeout, cancellation, replacement, parser failure, and genuine completion have distinct, explicit outcomes.",
+      "AC4: CSV and columnar export use uniquely owned temporary artifacts and atomically publish only after success. Cancellation or failure preserves any pre-existing destination and removes only output owned by the current export.",
+      "AC5: Capture reservation and rotated segment allocation treat capture final, capture partial, reservation marker, event sidecar, and event-sidecar partial as one collision domain; allocation is bounded, concurrent-safe, and never overwrites existing evidence.",
+      "AC6: One acquisition retains its reserved iteration across every rotated segment, the persisted next iteration is used only by the next acquisition, and frame/event records remain in adapter delivery order across batch, error, reconnect, and finalization boundaries.",
+      "AC7: The frame model preserves direction and declared DLC independently of payload. Live and replay paths round-trip Rx, Tx, data, remote, standard, and extended frames through every applicable projection and output.",
+      "AC8: Remote frames bypass payload decoding, while short or otherwise undecodable data frames receive an explicit bounded decode result without escaping a UI slot or preventing their facts and raw identity from being retained.",
+      "AC9: DBC lookup, cache, conflict resolution, filtering, reporting, and identifier aggregation distinguish standard and extended frames that share the same numeric identifier.",
+      "AC10: Signal identity includes stable database and frame provenance. Same-named signals from different enabled definitions remain independently selectable, persisted, decoded, graphed, measured, and exported with their correct units.",
+      "AC11: Concurrent profile writers serialize, merge, or reject stale state explicitly; a stale whole-file save cannot silently erase a completed change made by another application instance.",
+      "AC12: Trace context menus operate on both frames and events, always offer safe record-appropriate actions, and never format or filter on a missing identifier.",
+      "AC13: No tests are executed during implementation waves. After all code changes are complete, focused regression coverage for every reproduced scenario is created or updated, then targeted tests, the full suite, lint, internationalization checks, and Logics validation run in the final verification phase."
+    ]
+  },
+  "product": {
+    "title": "PeakLive trustworthy measurement identity and recoverable local evidence",
+    "overview": "PeakLive preserves every accepted measurement record and its identity across live acquisition, replay, decoding, visualization, persistence, and local output, while failures remain explicit and prior evidence remains recoverable.",
+    "goals": [
+      "Keep durable capture, replay results, session facts, retained frames, decoded series, and operator-visible status mutually consistent.",
+      "Prevent cancellation, collision, rotation, or concurrent application instances from silently deleting or overwriting local evidence and configuration.",
+      "Represent CAN direction, remote DLC, identifier format, and decoded-signal provenance without ambiguity.",
+      "Bound live and replay handoffs without converting overload into silent loss or false success.",
+      "Deliver one end-of-development verification phase covering all integrity scenarios after implementation is complete."
+    ],
+    "non_goals": [
+      "Add new capture formats, new hardware adapters, frame transmission, cloud storage, or remote collaboration.",
+      "Change series, frame-cache, or trace retention capacities except where an upstream handoff requires an explicit bound.",
+      "Redesign unrelated graph controls, visual styling, workspace layout, or the active graph-legibility work.",
+      "Claim Windows or live-hardware certification from Linux/offscreen automated evidence.",
+      "Run tests repeatedly after each implementation slice; validation is intentionally deferred until all development slices are complete."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Drain live acquisition completely through a bounded authoritative handoff",
+      "priority": "High - current Stop behavior deterministically discards accepted frames, while sustained overload can grow the upstream queue and one UI turn without a bound.",
+      "complexity": "High",
+      "theme": "Lossless live ingestion and bounded responsiveness",
+      "request_acs": ["AC1", "AC2", "AC13"],
+      "problem": [
+        "Stop invalidates and clears the presentation generation before requesting worker shutdown, so queued frames and the final partial worker batch cannot reach authoritative session state.",
+        "The live handoff extends an unbounded list and drains all accumulated frames in one UI turn; downstream bounded stores do not constrain this upstream growth.",
+        "The capture can therefore contain frames omitted from facts, cache, trace, and plots, and overload can progress toward memory exhaustion or a frozen event loop."
+      ],
+      "scope_in": [
+        "Separate acceptance of authoritative live facts from bounded presentation work while preserving exactly-once generation semantics.",
+        "Define a bounded producer-consumer handoff or equivalent flow control whose overload outcome is explicit and does not silently falsify the session.",
+        "Change normal Stop and worker completion ordering so the active generation drains accepted frames, settles presentation, and only then retires.",
+        "Preserve bounded timeout recovery and stale-generation rejection without allowing an abandoned worker to contaminate a later session.",
+        "Prepare focused regression coverage but defer all test execution to the orchestration task's final verification phase."
+      ],
+      "scope_out": [
+        "Increasing every retention capacity or retaining an unlimited historical session in memory.",
+        "Changing raw capture formats, DBC decode semantics, or graph appearance.",
+        "Executing tests before all implementation slices are complete."
+      ],
+      "acceptance_criteria": [
+        "AC1: Normal Stop retains every accepted frame exactly once across facts, cache, trace, and selected series, including queued and final partial batches.",
+        "AC2: Sustained producer overload cannot grow memory or one UI event-loop turn beyond documented deterministic bounds, and any inability to preserve authoritative facts is surfaced as an integrity failure.",
+        "AC3: Timeout recovery and a subsequent generation cannot accept stale frames from the abandoned worker.",
+        "AC4: Regression tests for stop-time drain, final-batch delivery, overload bounds, and stale generations are executed only in the final verification phase."
+      ]
+    },
+    {
+      "title": "Make replay completion truthful under backpressure and cancellation",
+      "priority": "High - the current permit timeout truncates a supported trace and reports a false successful completion.",
+      "complexity": "Medium",
+      "theme": "Replay integrity and explicit terminal states",
+      "request_acs": ["AC3", "AC13"],
+      "problem": [
+        "A presentation-permit timeout is currently interpreted as an instruction to stop parsing rather than as bounded waiting, cancellation, or failure.",
+        "The final batch dispatch result is ignored and the worker unconditionally emits total progress and marks success.",
+        "The UI completion path announces success without proving complete acknowledged delivery."
+      ],
+      "scope_in": [
+        "Define explicit terminal results for completed, cancelled, replaced, backpressure-failed, and parser-failed replay.",
+        "Require successful dispatch and acknowledgement of every batch before success and total progress can be emitted.",
+        "Keep cancellation and stale-generation replacement bounded without leaking permits or retaining obsolete batches.",
+        "Prepare focused slow-consumer and cancellation regression coverage for final-phase execution only."
+      ],
+      "scope_out": [
+        "Adding binary replay formats or changing supported text grammar.",
+        "Replacing bounded replay with eager whole-file loading.",
+        "Executing replay tests during this implementation slice."
+      ],
+      "acceptance_criteria": [
+        "AC1: A slow consumer receives every source frame exactly once or an explicit non-success terminal result; it never receives a successful truncated session.",
+        "AC2: Success and 100 percent progress are emitted only after complete accepted delivery, while cancellation, replacement, parse failure, and backpressure failure remain distinguishable.",
+        "AC3: Pending permits and queued batches are settled without leaks across every terminal path.",
+        "AC4: All replay regressions are executed only after the complete repository implementation is finished."
+      ]
+    },
+    {
+      "title": "Publish exports and recording artifacts transactionally without collision",
+      "priority": "High - cancellation and sidecar collision can currently delete or replace pre-existing operator evidence.",
+      "complexity": "High",
+      "theme": "Transactional local output and ordered capture evidence",
+      "request_acs": ["AC4", "AC5", "AC6", "AC13"],
+      "problem": [
+        "Decoded export writes directly to its final destination and cancellation cleanup unlinks that destination, including a file that existed before the export began.",
+        "Recording reservation ignores event-sidecar artifacts, while finalization replaces them and rotated segments are allocated without the first segment's complete atomic collision contract.",
+        "The recorder observes the next-acquisition iteration after session start, and the worker can write a later bus event before earlier batched frames."
+      ],
+      "scope_in": [
+        "Write each decoded export to a unique owned temporary and atomically publish it only after successful completion.",
+        "Preserve any prior destination on cancellation or failure and clean only artifacts owned by the current operation.",
+        "Treat every capture and event-sidecar final, partial, and reservation marker as one atomic bounded allocation domain for first and rotated segments.",
+        "Snapshot the acquisition's reserved iteration for every segment while persisting the next iteration solely for the next acquisition.",
+        "Flush earlier frames before recording later adapter events or reconnect transitions so durable line order matches source order.",
+        "Prepare collision, cancellation, rotation, concurrency, and mixed frame/event regression coverage without executing it before the final gate."
+      ],
+      "scope_out": [
+        "Adding new output formats, network destinations, retention policies, or recovery of already overwritten historical files.",
+        "Changing decoded export values or user-selected ranges.",
+        "Running output tests after individual storage changes."
+      ],
+      "acceptance_criteria": [
+        "AC1: Successful export atomically replaces the selected destination; cancelled or failed export leaves a prior destination byte-for-byte unchanged and removes only its own temporary.",
+        "AC2: Capture allocation skips every conflicting capture or sidecar artifact and remains bounded and atomic for concurrent first and rotated segment creation.",
+        "AC3: All segments from one acquisition carry the same reserved iteration and monotonically increasing segment value; the next acquisition begins from the persisted next iteration.",
+        "AC4: Mixed frame/event and reconnect fixtures retain adapter delivery order in capture evidence.",
+        "AC5: The complete output regression matrix is executed only in the final verification phase."
+      ]
+    },
+    {
+      "title": "Preserve complete CAN frame identity and make decoding total",
+      "priority": "High - remote DLC, Tx direction, and standard-versus-extended identity are measurement facts that are currently lost or decoded incorrectly.",
+      "complexity": "High",
+      "theme": "Canonical CAN record semantics and safe decoding",
+      "request_acs": ["AC7", "AC8", "AC9", "AC13"],
+      "problem": [
+        "The frame model derives DLC from payload and carries no direction, making a non-zero remote DLC and replayed Tx record impossible to preserve.",
+        "Remote frames enter ordinary DBC payload decoding and can raise before facts or raw identity are retained.",
+        "DBC caches, conflict resolution, filters, and identifier reports use only the numeric identifier and merge standard and extended spaces."
+      ],
+      "scope_in": [
+        "Extend normalized frame identity with explicit direction and declared DLC while keeping backward-compatible construction defaults where safe.",
+        "Carry those fields through hardware normalization, text replay, trace, inspector, filters, reporting, capture writing, and relevant export surfaces.",
+        "Skip physical-signal decoding for remote frames and classify malformed or short data-frame decode failures explicitly without dropping the raw frame.",
+        "Use a standard-or-extended identifier key consistently in DBC lookup/cache/conflicts/resolutions and session identifier aggregation.",
+        "Prepare full frame-kind and equal-numeric-ID regression fixtures, deferring their execution until final verification."
+      ],
+      "scope_out": [
+        "Adding flexible-data-rate support, transmission controls, transport protocols, or new physical-value mathematics.",
+        "Changing the meaning of valid existing classic data-frame decoding.",
+        "Running model, parser, adapter, DBC, or UI tests during this slice."
+      ],
+      "acceptance_criteria": [
+        "AC1: Rx and Tx data and remote records round-trip direction, declared DLC, identifier format, channel, timestamp, and payload wherever applicable.",
+        "AC2: A remote frame with a matching DBC definition remains visible and counted without entering payload decode or raising from the ingestion slot.",
+        "AC3: A short or invalid payload receives an explicit decode status while its raw frame still reaches authoritative session state.",
+        "AC4: Standard and extended frames sharing a numeric identifier resolve, aggregate, filter, and report independently.",
+        "AC5: All new frame identity and decode tests run only after implementation across all dependent layers is complete."
+      ]
+    },
+    {
+      "title": "Qualify decoded signal identity across databases and identifiers",
+      "priority": "High - same-named definitions can currently merge unrelated values and units into one analytical series without warning.",
+      "complexity": "High",
+      "theme": "Stable decoded-signal provenance",
+      "request_acs": ["AC10", "AC13"],
+      "problem": [
+        "The selection key and series key are message.signal even though the explorer can display multiple database definitions containing that name.",
+        "Different frame identifiers, database hashes, units, and values can therefore share one favorite, one shown state, one SeriesStore entry, one graph, and one export stream.",
+        "Persisted profiles need a deterministic compatibility path from legacy unqualified names."
+      ],
+      "scope_in": [
+        "Define one stable provenance-qualified signal identifier covering database definition and CAN message identity independently of the human-readable label.",
+        "Use the identifier consistently in references, explorer actions, profile persistence, live decode, deferred decode, series, graph synchronization, measurements, and export.",
+        "Keep concise labels while exposing enough provenance to distinguish collisions to operators and assistive technology.",
+        "Provide a deterministic migration or explicit ambiguity outcome for legacy displayed and favorite signal names.",
+        "Prepare duplicate-name and profile-migration regression coverage for final-phase execution only."
+      ],
+      "scope_out": [
+        "Renaming source DBC messages or signals, changing decoded values, or forcing verbose provenance into every compact label.",
+        "Merging semantically similar signals automatically across different definitions.",
+        "Executing tests before cross-layer signal identity implementation is complete."
+      ],
+      "acceptance_criteria": [
+        "AC1: Same-named signals from different database definitions or frame identities remain distinct in selection, persistence, series, graphs, measurements, and export.",
+        "AC2: Each distinct signal retains its own decoded values and unit, and the operator can identify its provenance when names collide.",
+        "AC3: Legacy unqualified profile entries migrate deterministically when unique and produce an explicit safe outcome when ambiguous.",
+        "AC4: Duplicate-name, unit-isolation, deferred-decode, and persistence tests execute only at the final verification gate."
+      ]
+    },
+    {
+      "title": "Prevent stale concurrent profile writers from erasing setup changes",
+      "priority": "Medium - the loss requires multiple running instances, but it silently removes completed operator configuration.",
+      "complexity": "Medium",
+      "theme": "Concurrent profile consistency",
+      "request_acs": ["AC11", "AC13"],
+      "problem": [
+        "Unique temporary names and fsync make an individual save durable but do not coordinate two instances that loaded different historical snapshots.",
+        "The later whole-file replace silently erases fields or profiles saved by the first instance.",
+        "There is no revision token or operator-visible stale-write conflict."
+      ],
+      "scope_in": [
+        "Choose and document a local coordination contract: serialized lock, compare-and-swap revision, deterministic merge, or explicit stale-write rejection.",
+        "Keep atomic durable replacement and corrupt-store recovery while preventing lost updates and handling abandoned coordination artifacts safely.",
+        "Surface an actionable operator result if a concurrent change cannot be merged automatically.",
+        "Prepare two-instance, crash-recovery, and stale-write regression coverage for final execution only."
+      ],
+      "scope_out": [
+        "Cloud synchronization, multi-user accounts, remote merge, or collaborative editing.",
+        "Changing unrelated profile fields or measurement defaults.",
+        "Running profile tests during implementation."
+      ],
+      "acceptance_criteria": [
+        "AC1: Two instances saving independent changes cannot silently erase either completed change.",
+        "AC2: Conflicting changes resolve deterministically or reject the stale writer with actionable feedback while retaining a readable store.",
+        "AC3: Atomicity, durability, corrupt-store quarantine, and normal single-instance saves remain intact.",
+        "AC4: Concurrency and recovery tests run only in the final verification phase."
+      ]
+    },
+    {
+      "title": "Make trace context actions safe for frame and event records",
+      "priority": "Medium - every event-row context click currently raises and hides the safe copy workflow needed for diagnostics.",
+      "complexity": "Low",
+      "theme": "Record-aware trace interaction",
+      "request_acs": ["AC12", "AC13"],
+      "problem": [
+        "The trace menu builds an identifier-filter action for every record, including events whose arbitration identifier is absent.",
+        "Formatting the missing identifier raises before the menu opens, so Copy is also unavailable for diagnostic events.",
+        "The context action surface does not distinguish frame-only commands from commands valid for every record."
+      ],
+      "scope_in": [
+        "Build common context actions for every trace record and add identifier-dependent actions only for frames with a valid identifier.",
+        "Keep copy output useful for both frame and event rows and preserve retained-record lookup safety.",
+        "Prepare offscreen event/frame menu coverage, with execution deferred to final verification."
+      ],
+      "scope_out": [
+        "A general context-menu redesign, new graph commands, multi-row copy, or unrelated trace styling.",
+        "Running UI tests during this implementation slice."
+      ],
+      "acceptance_criteria": [
+        "AC1: Right-clicking frame and event rows opens a usable menu without an exception.",
+        "AC2: Copy is available for both record types, while identifier filtering appears only when a valid identifier exists.",
+        "AC3: Existing frame context behavior and retained-record safety remain unchanged.",
+        "AC4: Offscreen context-menu tests execute only during the final verification phase."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Implement every second-pass PeakLive integrity and recovery correction",
+    "plan": [
+      "Implementation wave 1: redesign the live acquisition handoff and Stop/finalization ordering so authoritative ingestion is complete, exactly once, generation-safe, and bounded. Do not run any tests in this wave.",
+      "Implementation wave 2: correct replay dispatch, acknowledgement, progress, and terminal-state semantics under slow consumption, cancellation, replacement, and failure. Do not run any tests in this wave.",
+      "Implementation wave 3: make decoded exports transactional and make capture/sidecar/rotation allocation collision-safe, iteration-stable, and source-ordered. Do not run any tests in this wave.",
+      "Implementation wave 4: extend the canonical frame model and every dependent layer with direction, declared DLC, safe remote/invalid-payload decoding, and distinct standard/extended identifier keys. Do not run any tests in this wave.",
+      "Implementation wave 5: introduce provenance-qualified signal identity with legacy-profile handling across explorer, decode, series, graphs, measurements, and export. Do not run any tests in this wave.",
+      "Implementation wave 6: add concurrent profile-write coordination and record-aware trace context actions, then perform a code-only integration review of all changed interfaces. Do not run tests, lint, benchmarks, or test collection yet.",
+      "Final verification phase only, after all implementation waves are complete: create or update focused regression tests for every acceptance criterion and reproduced failure. Test files may be prepared now; no test command was allowed earlier.",
+      "Still within the final verification phase: run the focused integrity suites, then the full Linux/offscreen test suite, lint, internationalization validation, and Logics validation. Fix any failures within this final phase and rerun affected checks plus the final full gate; record exact results and platform limitations before closeout.",
+      "Complete AC traceability and closeout only after the deferred final verification gate passes. Keep commits under operator control and leave unrelated external artifacts untouched."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_second_pass_integrity_recovery_delivery.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
