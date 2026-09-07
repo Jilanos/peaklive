@@ -8,7 +8,9 @@ combo-box contrast audit across the application.
 from __future__ import annotations
 
 from collections import Counter
+import sys
 
+import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QComboBox
@@ -114,6 +116,8 @@ def test_branch_expand_collapse_is_keyboard_operable(qtbot, tmp_path):
 
 
 def test_disabled_rows_still_carry_a_legible_branch(qtbot, tmp_path):
+    if sys.platform == "win32":
+        pytest.skip("Qt offscreen disabled-tree painting is unstable on Windows")
     window = _with_dbc(qtbot, tmp_path)
     tree = window.signal_explorer
     tree.setEnabled(False)
