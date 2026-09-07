@@ -1,0 +1,616 @@
+{
+  "budgets": {
+    "max_docs": 72,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff item_099_make_replay_completion_truthful_under_backpressure_and_cancellation item_100_publish_exports_and_recording_artifacts_transactionally_without_collision item_101_preserve_complete_can_frame_identity_and_make_decoding_total item_102_qualify_decoded_signal_identity_across_databases_and_identifiers item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes item_104_make_trace_context_actions_safe_for_frame_and_event_records task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+          "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+          "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+          "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+          "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+          "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+          "item_104_make_trace_context_actions_safe_for_frame_and_event_records"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/product/prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence.md",
+      "ref": "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence",
+      "sections": {
+        "Goals": [
+          "- Keep durable capture, replay results, session facts, retained frames, decoded series, and operator-visible status mutually consistent.",
+          "- Prevent cancellation, collision, rotation, or concurrent application instances from silently deleting or overwriting local evidence and configuration.",
+          "- Represent CAN direction, remote DLC, identifier format, and decoded-signal provenance without ambiguity.",
+          "- Bound live and replay handoffs without converting overload into silent loss or false success.",
+          "- Deliver one end-of-development verification phase covering all integrity scenarios after implementation is complete."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "PeakLive preserves every accepted measurement record and its identity across live acquisition, replay, decoding, visualization, persistence, and local output, while failures remain explicit and prior evidence remains recoverable."
+        ],
+        "References": [
+          "- Product back-reference: `req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps`",
+          "- Task back-reference: `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive trustworthy measurement identity and recoverable local evidence"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "eliminate, peaklive, second, pass, integrity, identity, recovery, gaps",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+          "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+          "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+          "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+          "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+          "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+          "item_104_make_trace_context_actions_safe_for_frame_and_event_records"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps",
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ]
+      },
+      "path": "logics/request/req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps.md",
+      "ref": "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A normal Stop drains every frame accepted by the active live generation into session facts, frame cache, trace, and selected series exactly once before retirement, including the worker's final partial batch; degraded timeout recovery remains generation-safe.",
+          "- AC2: The live worker-to-session handoff has a documented bounded-memory and bounded-UI-work policy under sustained overload, without dropping authoritative facts or allowing one event-loop turn to grow without a deterministic limit.",
+          "- AC3: Replay reaches success and 100 percent progress only after every parsed frame batch has been accepted and acknowledged. Backpressure timeout, cancellation, replacement, parser failure, and genuine completion have distinct, explicit outcomes.",
+          "- AC4: CSV and columnar export use uniquely owned temporary artifacts and atomically publish only after success. Cancellation or failure preserves any pre-existing destination and removes only output owned by the current export.",
+          "- AC5: Capture reservation and rotated segment allocation treat capture final, capture partial, reservation marker, event sidecar, and event-sidecar partial as one collision domain; allocation is bounded, concurrent-safe, and never overwrites existing evidence.",
+          "- AC6: One acquisition retains its reserved iteration across every rotated segment, the persisted next iteration is used only by the next acquisition, and frame/event records remain in adapter delivery order across batch, error, reconnect, and finalization boundaries."
+        ],
+        "Needs": [
+          "- Make every frame already accepted by an acquisition or replay reach its authoritative session state exactly once, including final batches, without allowing an unbounded live handoff or a false successful replay.",
+          "- Make export and recording artifacts transactional and collision-safe so cancellation, failure, rotation, concurrent operation, or a pre-existing sidecar cannot destroy prior evidence or mislabel incomplete output as complete.",
+          "- Preserve complete CAN record semantics across normalization, replay, decoding, trace, reports, plots, exports, and re-recording, including direction, declared remote-frame DLC, and distinct standard and extended identifier spaces.",
+          "- Give every decoded signal a stable provenance-qualified identity so equally named definitions from different databases or identifiers never merge values, units, selections, favorites, plots, measurements, or exports.",
+          "- Prevent stale concurrent profile saves from erasing another instance's completed change, keep recording iteration stable throughout one segmented acquisition, preserve frame/event source order, and make trace event context actions safe.",
+          "- Use a deferred validation workflow for this delivery: do not execute tests during individual implementation steps. Complete all development first, then create or update the regression coverage and run targeted and full validation only in the final verification phase."
+        ]
+      },
+      "status": "Draft",
+      "title": "Eliminate PeakLive second-pass integrity, identity, and recovery gaps"
+    },
+    {
+      "ai_context": {
+        "keywords": "second, pass, review, findings, integrity, identity, recovery, gaps",
+        "skip when": "Repeating the original September audit findings, completing the active graph-control task, or treating these candidates as already approved implementation work.",
+        "summary": "Captures independently reproduced gaps left after the September audit remediation: silent frame loss, destructive output paths, incomplete CAN identity, ambiguous signal keys, multi-instance profile loss, and an event-row UI exception.",
+        "use when": "Scoping follow-up work on acquisition stop integrity, replay backpressure, recording/export collision safety, CAN frame identity, DBC signal identity, profile concurrency, or trace event interactions."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "req": [
+          "req_009_audit_peaklive_performance_and_make_trace_signal_exploration_and_time_navigation_complete",
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit",
+          "req_012_make_peaklive_lossless_capture_export_and_workspace_controls_trustworthy",
+          "req_013_add_canalyzer_style_recording_configuration_and_collision_safe_acquisition_naming_to_peaklive",
+          "req_015_make_peaklive_graph_comparison_and_signal_controls_unmistakably_legible",
+          "req_017_close_the_september_2026_peaklive_audit_and_deliver_its_future_ready_roadmap",
+          "req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_016_implement_legible_peaklive_graph_comparison_and_signal_controls"
+        ]
+      },
+      "path": "logics/request/req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps.md",
+      "ref": "req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Stopping live acquisition drains every frame accepted by the active generation into facts, retained buffers, and selected series exactly once before retiring it; the handoff has an explicit bounded-memory/backpressure policy and remains responsive under sustained overload.",
+          "- AC2: Replay cannot reach its success path unless every parsed batch has been accepted and acknowledged; backpressure timeout, explicit cancellation, parser failure, and replacement each have distinct tested outcomes and never emit false 100% progress.",
+          "- AC3: CSV/Parquet export writes to a unique temporary artifact and atomically replaces the selected destination only after success; cancellation or failure preserves any pre-existing destination and removes only artifacts owned by that export.",
+          "- AC4: Capture reservation and every rotated-segment allocation treat capture, partial, marker, event sidecar, and sidecar partial as one collision domain. Existing evidence is never replaced, and segment allocation is bounded and atomic across concurrent instances.",
+          "- AC5: The normalized frame model preserves direction and declared DLC independently of payload, including remote frames; replay and live normalization round-trip them through trace, report, recording, and export where applicable.",
+          "- AC6: Remote frames never enter payload decoding, and short/malformed payload decode failures become an explicit per-frame decode status or bounded diagnostic rather than escaping the UI ingestion slot or dropping session facts."
+        ],
+        "Needs": [
+          "- Prevent acquisition Stop from discarding frames that the worker already received or records during finalization, and keep live ingestion memory and UI work explicitly bounded without falsifying session facts.",
+          "- Make replay backpressure terminate only as an explicit cancellation or failure; a timeout must never truncate the source and then report full progress and success.",
+          "- Make export and recording finalization transactional with respect to pre-existing artifacts, including event sidecars and cancelled exports.",
+          "- Preserve complete CAN record identity and semantics across hardware normalization, replay, decode, trace, reporting, and re-recording: direction, remote-frame DLC, and standard-versus-extended identifier space.",
+          "- Give decoded signals a catalog-stable identity so equally named messages/signals from different databases or frame IDs cannot merge into one plot, series, favorite, or export column.",
+          "- Prevent concurrent application instances from silently overwriting each other's profile changes, keep one acquisition iteration stable across all rotated segments, and make trace event context actions safe."
+        ]
+      },
+      "status": "Draft",
+      "title": "Second-pass review findings: integrity, identity, and recovery gaps"
+    },
+    {
+      "ai_context": {
+        "keywords": "drain, live, acquisition, completely, through, bounded, authoritative, handoff",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff.md",
+      "ref": "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Normal Stop retains every accepted frame exactly once across facts, cache, trace, and selected series, including queued and final partial batches.",
+          "- AC2: Sustained producer overload cannot grow memory or one UI event-loop turn beyond documented deterministic bounds, and any inability to preserve authoritative facts is surfaced as an integrity failure.",
+          "- AC3: Timeout recovery and a subsequent generation cannot accept stale frames from the abandoned worker.",
+          "- AC4: Regression tests for stop-time drain, final-batch delivery, overload bounds, and stale generations are executed only in the final verification phase."
+        ],
+        "Problem": [
+          "- Stop invalidates and clears the presentation generation before requesting worker shutdown, so queued frames and the final partial worker batch cannot reach authoritative session state.",
+          "- The live handoff extends an unbounded list and drains all accumulated frames in one UI turn; downstream bounded stores do not constrain this upstream growth.",
+          "- The capture can therefore contain frames omitted from facts, cache, trace, and plots, and overload can progress toward memory exhaustion or a frozen event loop."
+        ]
+      },
+      "status": "Ready",
+      "title": "Drain live acquisition completely through a bounded authoritative handoff"
+    },
+    {
+      "ai_context": {
+        "keywords": "replay, completion, truthful, under, backpressure, cancellation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_099_make_replay_completion_truthful_under_backpressure_and_cancellation.md",
+      "ref": "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A slow consumer receives every source frame exactly once or an explicit non-success terminal result; it never receives a successful truncated session.",
+          "- AC2: Success and 100 percent progress are emitted only after complete accepted delivery, while cancellation, replacement, parse failure, and backpressure failure remain distinguishable.",
+          "- AC3: Pending permits and queued batches are settled without leaks across every terminal path.",
+          "- AC4: All replay regressions are executed only after the complete repository implementation is finished."
+        ],
+        "Problem": [
+          "- A presentation-permit timeout is currently interpreted as an instruction to stop parsing rather than as bounded waiting, cancellation, or failure.",
+          "- The final batch dispatch result is ignored and the worker unconditionally emits total progress and marks success.",
+          "- The UI completion path announces success without proving complete acknowledged delivery."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make replay completion truthful under backpressure and cancellation"
+    },
+    {
+      "ai_context": {
+        "keywords": "publish, exports, recording, artifacts, transactionally, collision",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_100_publish_exports_and_recording_artifacts_transactionally_without_collision.md",
+      "ref": "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Successful export atomically replaces the selected destination; cancelled or failed export leaves a prior destination byte-for-byte unchanged and removes only its own temporary.",
+          "- AC2: Capture allocation skips every conflicting capture or sidecar artifact and remains bounded and atomic for concurrent first and rotated segment creation.",
+          "- AC3: All segments from one acquisition carry the same reserved iteration and monotonically increasing segment value; the next acquisition begins from the persisted next iteration.",
+          "- AC4: Mixed frame/event and reconnect fixtures retain adapter delivery order in capture evidence.",
+          "- AC5: The complete output regression matrix is executed only in the final verification phase."
+        ],
+        "Problem": [
+          "- Decoded export writes directly to its final destination and cancellation cleanup unlinks that destination, including a file that existed before the export began.",
+          "- Recording reservation ignores event-sidecar artifacts, while finalization replaces them and rotated segments are allocated without the first segment's complete atomic collision contract.",
+          "- The recorder observes the next-acquisition iteration after session start, and the worker can write a later bus event before earlier batched frames."
+        ]
+      },
+      "status": "Ready",
+      "title": "Publish exports and recording artifacts transactionally without collision"
+    },
+    {
+      "ai_context": {
+        "keywords": "preserve, complete, can, frame, identity, decoding, total",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_101_preserve_complete_can_frame_identity_and_make_decoding_total"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_101_preserve_complete_can_frame_identity_and_make_decoding_total.md",
+      "ref": "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Rx and Tx data and remote records round-trip direction, declared DLC, identifier format, channel, timestamp, and payload wherever applicable.",
+          "- AC2: A remote frame with a matching DBC definition remains visible and counted without entering payload decode or raising from the ingestion slot.",
+          "- AC3: A short or invalid payload receives an explicit decode status while its raw frame still reaches authoritative session state.",
+          "- AC4: Standard and extended frames sharing a numeric identifier resolve, aggregate, filter, and report independently.",
+          "- AC5: All new frame identity and decode tests run only after implementation across all dependent layers is complete."
+        ],
+        "Problem": [
+          "- The frame model derives DLC from payload and carries no direction, making a non-zero remote DLC and replayed Tx record impossible to preserve.",
+          "- Remote frames enter ordinary DBC payload decoding and can raise before facts or raw identity are retained.",
+          "- DBC caches, conflict resolution, filters, and identifier reports use only the numeric identifier and merge standard and extended spaces."
+        ]
+      },
+      "status": "Ready",
+      "title": "Preserve complete CAN frame identity and make decoding total"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, decoded, signal, identity, across, databases, identifiers",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_102_qualify_decoded_signal_identity_across_databases_and_identifiers.md",
+      "ref": "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Same-named signals from different database definitions or frame identities remain distinct in selection, persistence, series, graphs, measurements, and export.",
+          "- AC2: Each distinct signal retains its own decoded values and unit, and the operator can identify its provenance when names collide.",
+          "- AC3: Legacy unqualified profile entries migrate deterministically when unique and produce an explicit safe outcome when ambiguous.",
+          "- AC4: Duplicate-name, unit-isolation, deferred-decode, and persistence tests execute only at the final verification gate."
+        ],
+        "Problem": [
+          "- The selection key and series key are message.signal even though the explorer can display multiple database definitions containing that name.",
+          "- Different frame identifiers, database hashes, units, and values can therefore share one favorite, one shown state, one SeriesStore entry, one graph, and one export stream.",
+          "- Persisted profiles need a deterministic compatibility path from legacy unqualified names."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify decoded signal identity across databases and identifiers"
+    },
+    {
+      "ai_context": {
+        "keywords": "prevent, stale, concurrent, profile, writers, erasing, setup, changes",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes.md",
+      "ref": "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Two instances saving independent changes cannot silently erase either completed change.",
+          "- AC2: Conflicting changes resolve deterministically or reject the stale writer with actionable feedback while retaining a readable store.",
+          "- AC3: Atomicity, durability, corrupt-store quarantine, and normal single-instance saves remain intact.",
+          "- AC4: Concurrency and recovery tests run only in the final verification phase."
+        ],
+        "Problem": [
+          "- Unique temporary names and fsync make an individual save durable but do not coordinate two instances that loaded different historical snapshots.",
+          "- The later whole-file replace silently erases fields or profiles saved by the first instance.",
+          "- There is no revision token or operator-visible stale-write conflict."
+        ]
+      },
+      "status": "Ready",
+      "title": "Prevent stale concurrent profile writers from erasing setup changes"
+    },
+    {
+      "ai_context": {
+        "keywords": "implement, second, pass, peaklive, integrity, recovery, correction",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+          "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+          "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+          "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+          "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+          "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+          "item_104_make_trace_context_actions_safe_for_frame_and_event_records"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/tasks/task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction.md",
+      "ref": "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Implement every second-pass PeakLive integrity and recovery correction"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+          "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+          "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+          "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+          "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+          "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+          "item_104_make_trace_context_actions_safe_for_frame_and_event_records"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/product/prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence.md",
+      "ref": "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive trustworthy measurement identity and recoverable local evidence"
+    },
+    {
+      "ai_context": {
+        "keywords": "trace, context, actions, safe, frame, event, records",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_104_make_trace_context_actions_safe_for_frame_and_event_records"
+        ],
+        "prod": [
+          "prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence"
+        ],
+        "req": [
+          "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps"
+        ],
+        "task": [
+          "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+        ]
+      },
+      "path": "logics/backlog/item_104_make_trace_context_actions_safe_for_frame_and_event_records.md",
+      "ref": "item_104_make_trace_context_actions_safe_for_frame_and_event_records",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Right-clicking frame and event rows opens a usable menu without an exception.",
+          "- AC2: Copy is available for both record types, while identifier filtering appears only when a valid identifier exists.",
+          "- AC3: Existing frame context behavior and retained-record safety remain unchanged.",
+          "- AC4: Offscreen context-menu tests execute only during the final verification phase."
+        ],
+        "Problem": [
+          "- The trace menu builds an identifier-filter action for every record, including events whose arbitration identifier is absent.",
+          "- Formatting the missing identifier raises before the menu opens, so Copy is also unavailable for diagnostic events.",
+          "- The context action surface does not distinguish frame-only commands from commands valid for every record."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make trace context actions safe for frame and event records"
+    }
+  ],
+  "estimates": {
+    "char_count": 28546,
+    "companion_doc_count": 1,
+    "doc_count": 11
+  },
+  "generated_at": "2026-09-07T09:57:36Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps",
+      "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+      "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+      "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+      "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+      "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+      "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+      "item_104_make_trace_context_actions_safe_for_frame_and_event_records",
+      "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 308
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps,item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff,item_099_make_replay_completion_truthful_under_backpressure_and_cancellation,item_100_publish_exports_and_recording_artifacts_transactionally_without_collision,item_101_preserve_complete_can_frame_identity_and_make_decoding_total,item_102_qualify_decoded_signal_identity_across_databases_and_identifiers,item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes,item_104_make_trace_context_actions_safe_for_frame_and_event_records,task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction",
+  "refs": [
+    "req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps",
+    "item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff",
+    "item_099_make_replay_completion_truthful_under_backpressure_and_cancellation",
+    "item_100_publish_exports_and_recording_artifacts_transactionally_without_collision",
+    "item_101_preserve_complete_can_frame_identity_and_make_decoding_total",
+    "item_102_qualify_decoded_signal_identity_across_databases_and_identifiers",
+    "item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes",
+    "item_104_make_trace_context_actions_safe_for_frame_and_event_records",
+    "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction.md",
+      "ref": "task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction"
+    }
+  ]
+}
