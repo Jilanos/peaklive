@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import DbcSummary
@@ -252,7 +253,7 @@ class WorkspaceSession:
         worker.batch_rendered()
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()
-        elif getattr(self, "_replay_source_completed_generation", None) == generation:
+        elif self._replay_ready_to_complete(generation, worker):
             self._complete_replay(generation)
 
     def _clear_pending_replay_batches(self) -> None:
@@ -275,6 +276,15 @@ class WorkspaceSession:
         if self._pending_replay_batches or self._replay_presentation_timer.isActive():
             return
         self._complete_replay(generation)
+
+    def _replay_ready_to_complete(self, generation: int, worker: ReplayWorker) -> bool:
+        if generation != getattr(self, "_replay_generation", 0):
+            return False
+        if self._pending_replay_batches or self._replay_presentation_timer.isActive():
+            return False
+        if getattr(self, "_replay_source_completed_generation", None) == generation:
+            return True
+        return worker.succeeded and worker.pending_batch_count == 0
 
     def _replay_failed_for_generation(self, generation: int, message: str) -> None:
         if generation != getattr(self, "_replay_generation", 0):
@@ -299,9 +309,15 @@ class WorkspaceSession:
             self._replay_failed_generation = generation
             self._end_work()
             self._update_mode_availability()
+        elif worker is not None:
+            QTimer.singleShot(0, partial(self._complete_replay_if_ready, generation, worker))
         # Successful replay completion is driven by ReplayWorker.replay_completed,
         # not QThread.finished: on Windows, finished can be delivered before all
         # queued frame batches have reached the UI object.
+
+    def _complete_replay_if_ready(self, generation: int, worker: ReplayWorker) -> None:
+        if self._replay_ready_to_complete(generation, worker):
+            self._complete_replay(generation)
 
     def _complete_replay(self, generation: int) -> None:
         """Finalize only after the queued UI projection has consumed every batch."""
