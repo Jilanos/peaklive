@@ -115,6 +115,9 @@ class AcquisitionWorker(QThread):
                         batch = []
                     continue
                 if isinstance(record, BusEvent):
+                    if batch:
+                        self._flush(session, batch)
+                        batch = []
                     self._handle_event(session, record)
                     continue
                 self._consecutive_errors = 0

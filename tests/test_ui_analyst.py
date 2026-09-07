@@ -65,9 +65,13 @@ def _signal_item(window: MainWindow, key: str):
     for item in window.signal_explorer.findItems(
         "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
     ):
-        if item.data(0, SIGNAL_KEY_ROLE) == key:
+        if str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith(key):
             return item
     raise AssertionError(f"Signal item not found: {key}")
+
+
+def _signal_key(window: MainWindow, key: str) -> str:
+    return str(_signal_item(window, key).data(0, SIGNAL_KEY_ROLE))
 
 
 # --------------------------------------------------------------------------
@@ -245,7 +249,7 @@ def _measure_row(window: MainWindow, signal_name: str) -> list[str]:
     table = window.measure_table
     for row in range(table.rowCount()):
         item = table.item(row, 0)
-        if item is not None and item.text() == signal_name:
+        if item is not None and signal_name in item.text():
             return [
                 table.item(row, column).text() if table.item(row, column) else ""
                 for column in range(table.columnCount())
@@ -299,7 +303,7 @@ def test_measurement_table_reports_an_empty_range_rather_than_zero(qtbot, tmp_pa
 def test_measurement_table_shows_a_distribution_for_enumerated_signals(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
     window._load_dbc_path(_dbc(tmp_path, "door.dbc", DOOR_DBC))
-    series = window._series.ensure("BodyStatus.DoorState")
+    series = window._series.ensure(_signal_key(window, "BodyStatus.DoorState"))
     for timestamp, value in ((0.0, "Closed"), (1.0, "Open"), (2.0, "Closed")):
         series.append(timestamp, value)
     window.graph_panel.place_cursor("a", 0.0)
@@ -554,7 +558,9 @@ def test_export_dialog_defaults_to_the_shown_signals(qtbot, tmp_path):
     dialog = window._open_export_dialog()
     qtbot.addWidget(dialog)
 
-    assert dialog.selected_signals == ["VehicleStatus.Speed"]
+    assert [name.rsplit(":", 1)[-1] for name in dialog.selected_signals] == [
+        "VehicleStatus.Speed"
+    ]
 
 
 def test_export_writes_exactly_the_rows_in_each_scope(qtbot, tmp_path):
@@ -581,7 +587,8 @@ def test_export_writes_exactly_the_rows_in_each_scope(qtbot, tmp_path):
 
     header, *rows = (tmp_path / "all.csv").read_text(encoding="utf-8").strip().splitlines()
     assert header == "timestamp,message,signal,value,unit"
-    assert rows[0].startswith("0.0,VehicleStatus,Speed,10.0,km/h")
+    assert rows[0].startswith("0.0,VehicleStatus [")
+    assert rows[0].endswith(" 0x123],Speed,10.0,km/h")
 
 
 def test_export_produces_matching_csv_and_parquet_row_counts(qtbot, tmp_path):
@@ -615,7 +622,7 @@ def test_a_cancelled_export_leaves_no_file_and_says_so(qtbot, tmp_path):
     from peaklive.services.export_worker import ExportWorker
 
     worker = ExportWorker(
-        destination, export_rows(window._series, ["VehicleStatus.Speed"]), "csv"
+        destination, export_rows(window._series, window._series.names), "csv"
     )
     worker.request_stop()
     assert worker.execute() == -1
@@ -639,7 +646,7 @@ def test_export_reports_validation_and_write_failures_inline(qtbot, tmp_path):
     assert dialog.run_export(blocking=True) == -1
     assert "Choose a destination" in dialog.note.text()
 
-    dialog.set_destination(tmp_path / "missing-directory" / "out.csv")
+    dialog.set_destination(tmp_path)
     dialog.scope_selector.setCurrentIndex(dialog.scope_selector.findData(SCOPE_ALL))
     assert dialog.run_export(blocking=True) == -1
     assert "Export failed" in dialog.note.text()

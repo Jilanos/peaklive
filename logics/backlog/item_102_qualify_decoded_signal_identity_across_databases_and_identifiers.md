@@ -1,13 +1,14 @@
 ## item_102_qualify_decoded_signal_identity_across_databases_and_identifiers - Qualify decoded signal identity across databases and identifiers
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: High
 > Theme: Stable decoded-signal provenance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Replace human-name-only signal keys with stable database-and-frame-qualified identities across selection, persistence, decode, series, graphs, measurements, and export.

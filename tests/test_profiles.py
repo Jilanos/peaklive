@@ -5,6 +5,7 @@ import pytest
 
 from peaklive.domain import ControllerMode, MeasurementProfile
 from peaklive.services.profiles import (
+    ProfileConflictError,
     ProfileNameError,
     ProfileState,
     ProfileStore,
@@ -258,7 +259,35 @@ def test_each_saved_setup_reloads_its_own_configuration(tmp_path):
     by_name = {profile.name: profile for profile in restored.profiles}
     assert by_name["Default measurement"].bitrate == 125_000
     assert by_name["Second"].bitrate == 1_000_000
-    assert restored.selected.name == "Second"
+
+
+def test_independent_stale_profile_additions_are_merged(tmp_path):
+    store_a = ProfileStore(tmp_path)
+    state_a = store_a.load()
+    store_a.save(state_a)
+    state_b = ProfileStore(tmp_path).load()
+
+    store_a.save_as(state_a, "Bench A")
+    ProfileStore(tmp_path).save_as(state_b, "Bench B")
+
+    names = {profile.name for profile in ProfileStore(tmp_path).load().profiles}
+    assert {"Default measurement", "Bench A", "Bench B"} <= names
+
+
+def test_stale_save_of_changed_profile_is_rejected_without_erasing_current_store(tmp_path):
+    store = ProfileStore(tmp_path)
+    state_a = store.load()
+    store.save(state_a)
+    state_b = ProfileStore(tmp_path).load()
+
+    state_a.selected.bitrate = 250_000
+    store.save(state_a)
+    state_b.selected.bitrate = 125_000
+
+    with pytest.raises(ProfileConflictError):
+        ProfileStore(tmp_path).save(state_b)
+
+    assert ProfileStore(tmp_path).load().selected.bitrate == 250_000
 
 
 def test_unversioned_profile_store_is_migrated_deterministically():

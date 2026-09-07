@@ -1,13 +1,14 @@
 ## item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff - Drain live acquisition completely through a bounded authoritative handoff
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: High
 > Theme: Lossless live ingestion and bounded responsiveness
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Correct live Stop and overload handling so every worker-accepted frame reaches authoritative session state exactly once through a bounded handoff before its generation retires.

@@ -12,6 +12,7 @@ from datetime import datetime
 
 from PySide6.QtWidgets import QInputDialog
 
+from peaklive.analysis.dbc import frame_key_text
 from peaklive.diagnostics import logger
 from peaklive.domain import MeasurementProfile
 from peaklive.i18n import translate
@@ -193,7 +194,9 @@ class WorkspaceProfiles:
         profile.displayed_signals = sorted(
             name for name in self._selected_signal_names if not available or name in available
         )
-        profile.favorite_signals = sorted(self._favorite_signal_names)
+        profile.favorite_signals = sorted(
+            name for name in self._favorite_signal_names if not available or name in available
+        )
         self._schedule_save()
 
     def _persist_dbc_state(self) -> None:
@@ -204,7 +207,7 @@ class WorkspaceProfiles:
             if not self._catalog.is_enabled(definition.content_hash)
         ]
         profile.trace_filters["dbc_conflict_resolutions"] = {
-            str(arbitration_id): content_hash
-            for arbitration_id, content_hash in self._catalog.resolutions.items()
+            frame_key_text(frame_key): content_hash
+            for frame_key, content_hash in self._catalog.resolutions.items()
         }
         self._schedule_save()

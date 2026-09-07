@@ -46,7 +46,7 @@ def _signal_item(window: MainWindow, key: str):
     for item in window.signal_explorer.findItems(
         "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
     ):
-        if item.data(0, SIGNAL_KEY_ROLE) == key:
+        if str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith(key):
             return item
     raise AssertionError(f"Signal item not found: {key}")
 

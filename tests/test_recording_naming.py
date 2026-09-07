@@ -88,6 +88,20 @@ def test_reserve_skips_existing_final_and_partial_files(tmp_path):
     assert reservation.final_path.name == "capture_003.asc"
 
 
+def test_reserve_skips_existing_event_sidecar_files(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(tmp_path, filename_template="capture_{iteration:03d}", iteration=1)
+    (tmp_path / "capture_001.peaklive-events.jsonl").write_text("event\n", encoding="utf-8")
+    (tmp_path / "capture_002.peaklive-events.jsonl.partial").write_text(
+        "event\n", encoding="utf-8"
+    )
+
+    reservation = naming.reserve(settings, "Bench", now=datetime(2026, 9, 3, 9, 0, 0))
+
+    assert reservation.iteration == 3
+    assert reservation.final_path.name == "capture_003.asc"
+
+
 def test_reserve_skips_a_stale_reservation_marker_left_by_a_crash(tmp_path):
     naming = RecordingNaming()
     settings = _settings(tmp_path, filename_template="capture_{iteration:03d}", iteration=1)

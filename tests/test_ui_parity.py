@@ -58,9 +58,17 @@ def _signal_item(window, key: str):
         Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive,
         0,
     ):
-        if item.data(0, SIGNAL_KEY_ROLE) == key:
+        if str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith(key):
             return item
     raise AssertionError(f"Signal item not found: {key}")
+
+
+def _signal_key(window, key: str) -> str:
+    return str(_signal_item(window, key).data(0, SIGNAL_KEY_ROLE))
+
+
+def _legacy_label(key: str) -> str:
+    return key.rsplit(":", 1)[-1]
 
 
 def test_parity_multi_dbc_library_shows_state_and_supports_disable_and_remove(qtbot, tmp_path):
@@ -103,7 +111,7 @@ def test_parity_dbc_conflicts_are_explicit_and_resolution_persists(qtbot, tmp_pa
     )
     resolutions = store.load().selected.trace_filters["dbc_conflict_resolutions"]
 
-    assert "291" in resolutions
+    assert "s:291" in resolutions
 
 
 def test_parity_signal_explorer_groups_filters_and_favorites(qtbot, tmp_path):
@@ -120,8 +128,9 @@ def test_parity_signal_explorer_groups_filters_and_favorites(qtbot, tmp_path):
     door = _signal_item(window, "BodyStatus.DoorOpen")
     door.setCheckState(1, Qt.CheckState.Checked)
     door.setCheckState(2, Qt.CheckState.Checked)
-    assert "BodyStatus.DoorOpen" in window.selected_profile.displayed_signals
-    assert window.selected_profile.favorite_signals == ["BodyStatus.DoorOpen"]
+    door_key = str(door.data(0, SIGNAL_KEY_ROLE))
+    assert door_key in window.selected_profile.displayed_signals
+    assert window.selected_profile.favorite_signals == [door_key]
 
     window.signal_filter.setText("doorop")
     window._signal_explorer_debouncer.flush()
@@ -156,7 +165,8 @@ def test_parity_graph_stack_renders_one_plot_per_shown_signal_with_cursors(qtbot
     window._load_dbc_path(_write(tmp_path, "body.dbc", BODY_DBC))
     _signal_item(window, "BodyStatus.DoorOpen").setCheckState(1, Qt.CheckState.Checked)
 
-    assert set(window._plot_curves) == {"BodyStatus.DoorOpen", "VehicleStatus.Speed"}
+    curve_labels = {_legacy_label(key) for key in window._plot_curves}
+    assert curve_labels == {"BodyStatus.DoorOpen", "VehicleStatus.Speed"}
     for plot in window._plot_widgets.values():
         assert plot._peaklive_cursor_a is not None
         assert plot._peaklive_cursor_b is not None

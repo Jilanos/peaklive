@@ -15,6 +15,7 @@ from pathlib import Path
 from PySide6.QtWidgets import QFileDialog
 
 from peaklive.analysis import CatalogView
+from peaklive.analysis.dbc import parse_frame_key_text
 from peaklive.i18n import translate
 from peaklive.services.dbc_worker import (
     CatalogOperation,
@@ -121,11 +122,20 @@ class WorkspaceCatalog:
         does not: re-enabling it has to bring the operator's plots back, so a
         disabled database's selected signals are kept as they were.
         """
+        self._selected_signal_names = _migrate_signal_names(
+            self._selected_signal_names, outcome.view, include_disabled=True
+        )
+        self._favorite_signal_names = _migrate_signal_names(
+            self._favorite_signal_names, outcome.view, include_disabled=True
+        )
         kind = outcome.operation.kind
         if kind is CatalogOperationKind.REMOVE:
-            available = set(outcome.view.signal_names)
+            available = set(outcome.view.all_signal_names)
             self._selected_signal_names = {
                 name for name in self._selected_signal_names if name in available
+            }
+            self._favorite_signal_names = {
+                name for name in self._favorite_signal_names if name in available
             }
         elif kind is CatalogOperationKind.LOAD and not self._selected_signal_names:
             first_signal = next(iter(outcome.view.signal_names), None)
@@ -134,7 +144,7 @@ class WorkspaceCatalog:
 
     def _adopt_catalog_view(self, view: CatalogView) -> None:
         """Point every dependent panel and projection at one catalog view."""
-        self._persist_signal_state(view.signal_names)
+        self._persist_signal_state(view.all_signal_names)
         self._persist_dbc_state()
         self.dbc_panel.refresh(view)
         self.explorer_panel.refresh(
@@ -177,7 +187,11 @@ class WorkspaceCatalog:
             )
             self.status.showMessage(
                 translate("dbc.conflict_resolved").format(
-                    arbitration_id=operation.arbitration_id, name=name
+                    identifier=(
+                        f"0x{operation.arbitration_id:X}"
+                        f"{'x' if operation.is_extended_id else ''}"
+                    ),
+                    name=name,
                 )
             )
 
@@ -202,7 +216,7 @@ class WorkspaceCatalog:
                     str(value) for value in filters.get("disabled_dbc_hashes", [])
                 ),
                 resolutions=tuple(
-                    (int(raw_id), str(content_hash))
+                    (parse_frame_key_text(str(raw_id)), str(content_hash))
                     for raw_id, content_hash in dict(
                         filters.get("dbc_conflict_resolutions", {})
                     ).items()
@@ -264,11 +278,20 @@ class WorkspaceCatalog:
     def _remove_selected_dbc(self) -> None:
         self.dbc_panel._remove_current()
 
-    def _resolve_conflict(self, arbitration_id: int, content_hash: str) -> None:
+    def _resolve_conflict(
+        self,
+        arbitration_id: int,
+        is_extended_id: bool | str = False,
+        content_hash: str | None = None,
+    ) -> None:
+        if content_hash is None:
+            content_hash = str(is_extended_id)
+            is_extended_id = False
         self._queue_catalog_operation(
             CatalogOperation(
                 kind=CatalogOperationKind.RESOLVE,
                 arbitration_id=arbitration_id,
+                is_extended_id=bool(is_extended_id),
                 content_hash=content_hash,
             )
         )
@@ -329,3 +352,24 @@ def _operation_message(operation: CatalogOperation) -> str:
     if operation.kind in {CatalogOperationKind.LOAD, CatalogOperationKind.RESTORE}:
         return translate("dbc.loading").format(count=len(operation.paths))
     return translate(f"dbc.working_{operation.kind.value}")
+
+
+def _migrate_signal_names(
+    names: set[str], view: CatalogView, *, include_disabled: bool = False
+) -> set[str]:
+    """Convert legacy Message.Signal names only when the catalog makes them unique."""
+    by_display: dict[str, list[str]] = {}
+    references = view.all_references if include_disabled else view.references
+    signal_names = view.all_signal_names if include_disabled else view.signal_names
+    for reference in references:
+        by_display.setdefault(reference.display_name, []).append(reference.signal_key)
+    migrated: set[str] = set()
+    available = set(signal_names)
+    for name in names:
+        if name in available:
+            migrated.add(name)
+            continue
+        matches = by_display.get(name, [])
+        if len(matches) == 1:
+            migrated.add(matches[0])
+    return migrated

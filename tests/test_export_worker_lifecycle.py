@@ -13,8 +13,10 @@ from threading import Event
 from PySide6.QtWidgets import QMessageBox
 
 from peaklive.adapters import FakeCanAdapter
+from peaklive.analysis import ExportRow
 from peaklive.domain import CanFrame
 from peaklive.services import export_worker as export_worker_module
+from peaklive.services.export_worker import ExportWorker
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
 from peaklive.ui.dialogs.export import SCOPE_ALL
@@ -97,3 +99,33 @@ def test_forcing_close_during_an_export_never_destroys_the_running_thread(
     qtbot.waitUntil(lambda: worker not in _ABANDONED_WORKERS, timeout=5_000)
     # The stop request reached the stream before it wrote anything.
     assert not (tmp_path / "held.csv").exists()
+
+
+def test_cancelled_export_preserves_pre_existing_destination(tmp_path):
+    destination = tmp_path / "signals.csv"
+    destination.write_text("prior evidence\n", encoding="utf-8")
+    worker = ExportWorker(
+        destination,
+        [ExportRow(0.0, "Message", "Signal", 1, "V")],
+    )
+    worker.request_stop()
+
+    assert worker.execute() == -1
+    assert destination.read_text(encoding="utf-8") == "prior evidence\n"
+    assert not list(tmp_path.glob("*.partial"))
+
+
+def test_successful_export_atomically_publishes_rows(tmp_path):
+    destination = tmp_path / "signals.csv"
+    destination.write_text("old\n", encoding="utf-8")
+    worker = ExportWorker(
+        destination,
+        [ExportRow(0.0, "Message", "Signal", 1, "V")],
+    )
+
+    assert worker.execute() == 1
+
+    content = destination.read_text(encoding="utf-8")
+    assert "timestamp,message,signal,value,unit" in content
+    assert "old" not in content
+    assert not list(tmp_path.glob("*.partial"))

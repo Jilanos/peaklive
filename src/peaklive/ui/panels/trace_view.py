@@ -267,13 +267,15 @@ class TraceViewPanel(QWidget):
             )
         )
         menu.addAction(copy_action)
-        filter_action = QAction(f"Filter ID 0x{record.arbitration_id:X}", menu)
-        filter_action.triggered.connect(lambda: self._filter_identifier(record.arbitration_id))
-        menu.addAction(filter_action)
-        menu.exec(self.table.viewport().mapToGlobal(position))
+        if record.arbitration_id is not None:
+            label = cell_text(record, "id", "hex")
+            filter_action = QAction(f"Filter ID {label}", menu)
+            filter_action.triggered.connect(lambda: self._filter_identifier(label))
+            menu.addAction(filter_action)
+        menu.exec_(self.table.viewport().mapToGlobal(position))
 
-    def _filter_identifier(self, arbitration_id: int) -> None:
-        self.filter_bar.id_filter.setText(f"0x{arbitration_id:X}")
+    def _filter_identifier(self, arbitration_id: str) -> None:
+        self.filter_bar.id_filter.setText(arbitration_id)
         self._filters_debouncer.trigger()
 
     def set_follow_tail(self, enabled: bool) -> None:

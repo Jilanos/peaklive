@@ -23,6 +23,7 @@ from threading import Event
 from PySide6.QtCore import QThread, Signal
 
 from peaklive.analysis import CatalogView, DbcCatalog, DbcDefinition
+from peaklive.analysis.dbc import FrameKey
 
 
 class CatalogOperationKind(StrEnum):
@@ -42,8 +43,9 @@ class CatalogOperation:
     content_hash: str = ""
     enabled: bool = True
     arbitration_id: int = 0
+    is_extended_id: bool = False
     disabled_hashes: tuple[str, ...] = ()
-    resolutions: tuple[tuple[int, str], ...] = ()
+    resolutions: tuple[tuple[FrameKey, str], ...] = ()
 
     @property
     def cancellable(self) -> bool:
@@ -91,9 +93,9 @@ def apply_catalog_operation(
             prepared.set_enabled(
                 definition.content_hash, definition.content_hash not in operation.disabled_hashes
             )
-        for arbitration_id, content_hash in operation.resolutions:
+        for frame_key, content_hash in operation.resolutions:
             try:
-                prepared.resolve(arbitration_id, content_hash)
+                prepared.resolve(frame_key[0], content_hash, frame_key[1])
             except (KeyError, ValueError):
                 continue
         return CatalogOutcome(
@@ -107,7 +109,11 @@ def apply_catalog_operation(
         prepared.set_enabled(operation.content_hash, operation.enabled)
         return CatalogOutcome(operation, prepared.view())
     if operation.kind is CatalogOperationKind.RESOLVE:
-        prepared.resolve(operation.arbitration_id, operation.content_hash)
+        prepared.resolve(
+            operation.arbitration_id,
+            operation.content_hash,
+            operation.is_extended_id,
+        )
         return CatalogOutcome(operation, prepared.view())
     raise ValueError(f"Unknown catalog operation: {operation.kind}")
 

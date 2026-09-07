@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import SeriesStore
+from peaklive.analysis.dbc import signal_label
 from peaklive.i18n import translate
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
@@ -166,11 +167,19 @@ class GraphStackPanel(GraphNavigation, QWidget):
         anchor: pg.PlotWidget | None = None
         for index, signal_name in enumerate(wanted):
             colour = theme.TRACE_PALETTE[index % len(theme.TRACE_PALETTE)]
-            plot = pg.PlotWidget(objectName=f"livePlot_{signal_name.replace('.', '_')}")
+            object_name = (
+                signal_name.replace(".", "_")
+                .replace(":", "_")
+                .replace("[", "_")
+                .replace("]", "_")
+                .replace(" ", "_")
+            )
+            label = signal_label(signal_name)
+            plot = pg.PlotWidget(objectName=f"livePlot_{object_name}")
             plot.setAccessibleName(translate("graph.plot_accessible"))
             plot.setBackground(theme.PLOT_BACKGROUND)
             plot.showGrid(x=True, y=True, alpha=0.25)
-            plot.setLabel("left", signal_name)
+            plot.setLabel("left", label)
             plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
             # X is entirely ours to manage (follow-live, fit, zoom): pyqtgraph's
             # own default auto-range would otherwise autofit - and emit its own

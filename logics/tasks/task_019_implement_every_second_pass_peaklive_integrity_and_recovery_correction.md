@@ -1,13 +1,15 @@
 ## task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction - Implement every second-pass PeakLive integrity and recovery correction
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: Codex
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Orchestrate all thirteen second-pass corrections in six code-only implementation waves, then author and execute every regression and repository gate once in the final verification phase.

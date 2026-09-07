@@ -11,13 +11,13 @@ thousand batches in it still repaints on a timer rather than once per batch.
 from __future__ import annotations
 
 from functools import partial
-from threading import Lock
 
 from PySide6.QtCore import QTimer
 
 from peaklive.analysis import (
     DECODE_CONFLICT,
     DECODE_DECODED,
+    DECODE_INVALID,
     DECODE_UNKNOWN,
     AmbiguousMessageError,
     FrameCache,
@@ -40,6 +40,7 @@ from peaklive.services.signal_decode_worker import (
     SignalDecodeWorker,
     decode_series,
 )
+from peaklive.ui.live_handoff import LiveFrameHandoff
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
 # Replay delivers every frame - the trace, the series, and the report all have
@@ -58,7 +59,6 @@ GRAPH_REFRESH_INTERVAL_MS = 50
 #: is made authoritative again by one bounded refresh when ingestion settles.
 MAX_ROWS_PER_FLUSH = 256
 
-
 class WorkspaceIngest:
     """Turns worker batches into trace rows, series samples, and session facts."""
 
@@ -72,7 +72,7 @@ class WorkspaceIngest:
         self._signal_decode_queue: list[str] = []
         # A sustained conflict raises once per frame; the operator only needs
         # to see it once per arbitration ID for the session, not once per frame.
-        self._reported_dbc_conflicts: set[int] = set()
+        self._reported_dbc_conflicts: set[tuple[int, bool]] = set()
 
     # ---- on-demand signal decoding -------------------------------------
 
@@ -250,52 +250,22 @@ class WorkspaceIngest:
     # ---- presentation queue --------------------------------------------
 
     def _init_presentation_queue(self) -> None:
-        self._presentation_lock = Lock()
-        self._presentation_generation: int | None = None
-        self._pending_presentation_frames: list[CanFrame] = []
-        self._presentation_timer: QTimer | None = None
+        self._live_handoff = LiveFrameHandoff(self, self._render_frames)
 
     def _begin_presentation_generation(self, generation: int) -> None:
-        """Accept only the newest worker's coalesced visual projection."""
-        with self._presentation_lock:
-            self._presentation_generation = generation
-            self._pending_presentation_frames = []
-        if self._presentation_timer is None:
-            self._presentation_timer = QTimer(self)
-            self._presentation_timer.setInterval(16)
-            self._presentation_timer.timeout.connect(self._drain_presentation_frames)
-        self._presentation_timer.start()
+        self._live_handoff.begin(generation)
 
     def _invalidate_presentation_generation(self, generation: int) -> None:
-        """Discard stale rendering work so lifecycle signals are never queued behind it."""
-        with self._presentation_lock:
-            if self._presentation_generation != generation:
-                return
-            self._presentation_generation = None
-            self._pending_presentation_frames = []
-        if self._presentation_timer is not None:
-            self._presentation_timer.stop()
+        self._live_handoff.invalidate(generation)
 
     def _queue_acquisition_frames(self, generation: int, frames: list[CanFrame]) -> None:
-        """Queue every worker batch from the worker thread without posting Qt events.
+        self._live_handoff.queue(generation, frames)
 
-        Facts, the frame cache, the series store, and deferred decode must see
-        every ingested frame, so batches accumulate here rather than replace
-        one another; only the trace and graph projection that follows may
-        coalesce a backlog into fewer paints.
-        """
-        with self._presentation_lock:
-            if self._presentation_generation != generation:
-                return
-            self._pending_presentation_frames.extend(frames)
+    def _presentation_queue_pending(self) -> bool:
+        return self._live_handoff.pending()
 
     def _drain_presentation_frames(self) -> None:
-        """Render every queued frame at once, keeping live plots at the operator's tick."""
-        with self._presentation_lock:
-            frames = self._pending_presentation_frames
-            self._pending_presentation_frames = []
-        if frames:
-            self._render_frames(frames)
+        self._live_handoff.drain()
 
     def _ingest_frames(
         self, frames: list[CanFrame], *, coalesce: bool = False
@@ -326,7 +296,13 @@ class WorkspaceIngest:
                 self._facts.record_frame(frame, decoded=status == DECODE_DECODED)
             with PROFILER.stage(STAGE_SERIES_PROJECTION):
                 for signal in signals:
-                    key = f"{signal.message_name}.{signal.signal_name}"
+                    # Persisted selections are provenance-qualified.  Keep a
+                    # legacy display-name selection usable until the next
+                    # catalog reconciliation, rather than silently leaving a
+                    # live graph empty in an already-open workspace.
+                    key = signal.signal_key
+                    if key not in self._selected_signal_names:
+                        key = signal.display_name
                     if key in self._selected_signal_names:
                         self._series.append(key, frame.timestamp, signal.value, signal.unit)
                 if not self._selected_signal_names and frame.data:
@@ -384,10 +360,13 @@ class WorkspaceIngest:
             self._facts.record_anomaly("dbc_conflict")
             # A sustained conflict raises for every matching frame; the
             # restyle it drives is only worth showing once per identifier.
-            if frame.arbitration_id not in self._reported_dbc_conflicts:
-                self._reported_dbc_conflicts.add(frame.arbitration_id)
+            if frame.identifier_key not in self._reported_dbc_conflicts:
+                self._reported_dbc_conflicts.add(frame.identifier_key)
                 self.dbc_panel.show_error(str(error))
             return [], DECODE_CONFLICT
+        except (ValueError, TypeError, KeyError):
+            self._facts.record_anomaly("decode_invalid")
+            return [], DECODE_INVALID
         if not signals:
             return [], DECODE_UNKNOWN
         return signals, DECODE_DECODED

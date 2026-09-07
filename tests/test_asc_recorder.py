@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 
 from peaklive.domain import BusEvent, CanFrame, RecordingSettings
-from peaklive.recording import EMPTY_TEXT_COMPONENT, AscRecorder, RecordingStopped
+from peaklive.recording import EMPTY_TEXT_COMPONENT, AscRecorder, RecordingNaming, RecordingStopped
 
 
 def _settings(tmp_path, **overrides):
@@ -50,6 +50,28 @@ def test_recorder_writes_replayable_pcan_view_text_trc(tmp_path):
     assert "2) 100.000 Rx 18FEF100x r 0" in content
 
 
+def test_recorder_preserves_tx_remote_declared_dlc(tmp_path):
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    started = recorder.start(_settings(tmp_path), "Vehicle test", datetime(2026, 8, 22, 9, 30))
+    recorder.write_frame(
+        CanFrame(
+            10.0,
+            0x18FEF100,
+            b"",
+            "channel-2",
+            True,
+            True,
+            "tx",
+            8,
+        )
+    )
+    recorder.stop()
+
+    content = started.read_text(encoding="utf-8")
+    assert "18FEF100x" in content
+    assert "Tx   r 8" in content
+
+
 def test_recorder_rotates_without_overwrite(tmp_path):
     recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
     recorder.start(_settings(tmp_path, rotate_bytes=1), "Bench", datetime(2026, 8, 22, 9, 30))
@@ -59,6 +81,25 @@ def test_recorder_rotates_without_overwrite(tmp_path):
 
     assert len(result.segments) >= 2
     assert len({segment.name for segment in result.segments}) == len(result.segments)
+
+
+def test_rotated_segments_keep_the_reserved_iteration(tmp_path):
+    naming = RecordingNaming()
+    settings = _settings(
+        tmp_path,
+        filename_template="capture_{iteration:03d}_{segment:03d}",
+        rotate_bytes=1,
+    )
+    reservation = naming.reserve(settings, "Bench", now=datetime(2026, 8, 22, 9, 30))
+    settings.iteration = reservation.next_iteration
+    recorder = AscRecorder(free_space=lambda path: 20 * 1024**3)
+    recorder.start(settings, "Bench", datetime(2026, 8, 22, 9, 30), reservation=reservation)
+    recorder.write_frame(CanFrame(1.0, 0x123, b"\x00"))
+    recorder.write_frame(CanFrame(2.0, 0x123, b"\x01"))
+    result = recorder.stop()
+
+    assert len(result.segments) >= 2
+    assert all("_007_" in segment.name for segment in result.segments)
 
 
 def test_an_event_only_recording_still_rotates(tmp_path):

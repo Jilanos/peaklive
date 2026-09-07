@@ -12,6 +12,7 @@ from typing import Any
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from peaklive.analysis.dbc import split_signal_key
 from peaklive.analysis.series import SeriesStore
 
 
@@ -103,7 +104,7 @@ def _signal_rows(
     series = store.series(name)
     if series is None:
         return
-    message, _, signal = name.partition(".")
+    message, signal = split_signal_key(name)
     if start is None or end is None:
         times, values = series.times, series.values
     else:

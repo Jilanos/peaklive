@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from pathlib import Path
+from uuid import uuid4
 
 from PySide6.QtCore import QThread, Signal
 
@@ -41,6 +42,7 @@ class ExportWorker(QThread):
         self._format = value_format
         self._stop = False
         self.written = 0
+        self._owned_temporary: Path | None = None
 
     def request_stop(self) -> None:
         self._stop = True
@@ -51,8 +53,11 @@ class ExportWorker(QThread):
     def execute(self) -> int:
         """Run the export inline; returns the written row count, -1 if cancelled."""
         writer = export_parquet if self._format == "parquet" else export_csv
+        temporary = self._temporary_path()
+        self._owned_temporary = temporary
         try:
-            self.written = writer(self._path, self._counted(self._rows))
+            self.written = writer(temporary, self._counted(self._rows))
+            temporary.replace(self._path)
         except ExportCancelled:
             self._discard_partial()
             self.export_cancelled.emit()
@@ -76,8 +81,25 @@ class ExportWorker(QThread):
         self.progress.emit(count)
 
     def _discard_partial(self) -> None:
+        temporary = self._owned_temporary
+        if temporary is None:
+            return
         try:
-            self._path.unlink(missing_ok=True)
+            temporary.unlink(missing_ok=True)
         except OSError:
             # A file we cannot remove is reported by the caller's error message.
             pass
+
+    def _temporary_path(self) -> Path:
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        while True:
+            candidate = self._path.with_name(
+                f".{self._path.name}.{uuid4().hex}.partial"
+            )
+            try:
+                handle = candidate.open("x")
+            except FileExistsError:
+                continue
+            handle.close()
+            candidate.unlink()
+            return candidate

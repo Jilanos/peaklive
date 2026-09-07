@@ -113,19 +113,22 @@ class SignalExplorerPanel(QWidget):
         matched: list[DbcSignalReference] = []
         for reference in references:
             display_name = reference.display_name
+            signal_key = reference.signal_key
             haystack = " ".join(
                 (
                     reference.database_name,
                     reference.message_name,
                     reference.signal_name,
                     display_name,
+                    reference.frame_label,
+                    reference.database_hash[:8],
                 )
             ).casefold()
             if query and query not in haystack:
                 continue
-            if shown_only and display_name not in shown:
+            if shown_only and signal_key not in shown:
                 continue
-            if favorites_only and display_name not in favorites:
+            if favorites_only and signal_key not in favorites:
                 continue
             matched.append(reference)
         return matched
@@ -157,30 +160,34 @@ class SignalExplorerPanel(QWidget):
                 dbc_item.setExpanded(True)
                 dbc_items[reference.database_hash] = dbc_item
                 self.tree.addTopLevelItem(dbc_item)
-            message_key = (reference.database_hash, reference.message_name)
+            message_key = (reference.database_hash, reference.message_name, reference.frame_id)
             message_item = message_items.get(message_key)
             if message_item is None:
                 message_item = QTreeWidgetItem(
-                    dbc_item,
-                    [f"{reference.message_name} · 0x{reference.frame_id:03X}", "", ""],
+                    dbc_item, [f"{reference.message_name} · {reference.frame_label}", "", ""],
                 )
                 message_item.setExpanded(True)
                 message_items[message_key] = message_item
+            signal_key = reference.signal_key
             display_name = reference.display_name
             label = reference.signal_name + (f" [{reference.unit}]" if reference.unit else "")
             signal_item = QTreeWidgetItem(message_item, [label, "", ""])
-            signal_item.setData(0, SIGNAL_KEY_ROLE, display_name)
-            signal_item.setToolTip(0, display_name)
+            signal_item.setData(0, SIGNAL_KEY_ROLE, signal_key)
+            signal_item.setToolTip(
+                0,
+                f"{display_name} · {reference.database_name} "
+                f"[{reference.database_hash[:8]}] · {reference.frame_label}",
+            )
             signal_item.setCheckState(
                 SHOWN_COLUMN,
                 Qt.CheckState.Checked
-                if display_name in shown
+                if signal_key in shown
                 else Qt.CheckState.Unchecked,
             )
             signal_item.setCheckState(
                 FAVORITE_COLUMN,
                 Qt.CheckState.Checked
-                if display_name in favorites
+                if signal_key in favorites
                 else Qt.CheckState.Unchecked,
             )
             self._describe(signal_item)

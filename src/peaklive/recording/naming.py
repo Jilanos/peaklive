@@ -201,7 +201,18 @@ class RecordingNaming:
             final_path = directory / filename
             partial_path = final_path.with_suffix(final_path.suffix + ".partial")
             marker_path = final_path.with_suffix(final_path.suffix + ".reserved")
-            if final_path.exists() or partial_path.exists() or marker_path.exists():
+            event_final = final_path.with_suffix(".peaklive-events.jsonl")
+            event_partial = event_final.with_suffix(event_final.suffix + ".partial")
+            if any(
+                path.exists()
+                for path in (
+                    final_path,
+                    partial_path,
+                    marker_path,
+                    event_final,
+                    event_partial,
+                )
+            ):
                 iteration += 1
                 continue
             try:
@@ -210,12 +221,11 @@ class RecordingNaming:
                 iteration += 1
                 continue
             os.close(fd)
-            event_final = final_path.with_suffix(".peaklive-events.jsonl")
             return Reservation(
                 final_path=final_path,
                 partial_path=partial_path,
                 event_final_path=event_final,
-                event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
+                event_partial_path=event_partial,
                 marker_path=marker_path,
                 iteration=iteration,
                 next_iteration=iteration + 1,

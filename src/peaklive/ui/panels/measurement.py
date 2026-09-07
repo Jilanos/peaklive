@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import RangeStatistics, SeriesStore, range_statistics
+from peaklive.analysis.dbc import signal_label
 from peaklive.analysis.statistics import numeric_delta
 from peaklive.i18n import translate
 
@@ -96,7 +97,9 @@ class MeasurementPanel(QWidget):
             series = store.series(signal_name)
             row = self.table.rowCount()
             self.table.insertRow(row)
-            self.table.setItem(row, 0, QTableWidgetItem(signal_name))
+            name_item = QTableWidgetItem(signal_label(signal_name))
+            name_item.setToolTip(signal_name)
+            self.table.setItem(row, 0, name_item)
             self.table.item(row, 0).setTextAlignment(Qt.AlignmentFlag.AlignLeft)
             if series is None or not len(series):
                 self.table.setItem(row, 1, QTableWidgetItem(translate("measure.no_sample")))

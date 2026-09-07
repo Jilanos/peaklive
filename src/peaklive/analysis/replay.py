@@ -85,8 +85,17 @@ def _parse_asc_line(raw: str, *, base: int = 16) -> CanFrame | BusEvent | None:
         return BusEvent(timestamp, "bus_status", match.group(2))
     if len(tokens) < 5 or tokens[2] not in {"Rx", "Tx"}:
         return BusEvent(timestamp, "replay_anomaly", "Unsupported ASC record")
-    channel, identifier, _, kind, dlc_text, *payload = tokens
-    return _frame(timestamp, channel, identifier, kind, dlc_text, payload, base=base)
+    channel, identifier, direction, kind, dlc_text, *payload = tokens
+    return _frame(
+        timestamp,
+        channel,
+        identifier,
+        kind,
+        dlc_text,
+        payload,
+        base=base,
+        direction=direction,
+    )
 
 
 def _parse_trc_line(raw: str) -> CanFrame | BusEvent | None:
@@ -105,8 +114,10 @@ def _parse_trc_line(raw: str) -> CanFrame | BusEvent | None:
         return BusEvent(timestamp, "replay_anomaly", "Unsupported TRC record")
     # PCAN-View exports either ``Rx ID DLC data`` or ``Rx ID d DLC data``.
     if len(tokens) >= 4 and tokens[2].lower() in {"d", "r"}:
-        return _frame(timestamp, "1", tokens[1], tokens[2], tokens[3], tokens[4:])
-    return _frame(timestamp, "1", tokens[1], "d", tokens[2], tokens[3:])
+        return _frame(
+            timestamp, "1", tokens[1], tokens[2], tokens[3], tokens[4:], direction=tokens[0]
+        )
+    return _frame(timestamp, "1", tokens[1], "d", tokens[2], tokens[3:], direction=tokens[0])
 
 
 def _frame(
@@ -118,6 +129,7 @@ def _frame(
     payload: list[str],
     *,
     base: int = 16,
+    direction: str = "Rx",
 ) -> CanFrame | BusEvent:
     extended = identifier.endswith(("x", "X"))
     identifier = identifier[:-1] if extended else identifier
@@ -153,6 +165,8 @@ def _frame(
         channel,
         extended,
         kind.lower() == "r",
+        direction.casefold(),
+        dlc,
     )
 
 

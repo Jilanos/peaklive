@@ -223,20 +223,21 @@ def test_removing_drops_selected_signals_but_disabling_keeps_them(qtbot, tmp_pat
     vehicle = _write(tmp_path, "vehicle.dbc", VEHICLE_DBC)
     window._load_dbc_path(vehicle)
     content_hash = window._catalog.definitions[0].content_hash
-    window._selected_signal_names = {"VehicleStatus.Speed"}
+    speed_key = window._catalog.signal_names()[0]
+    window._selected_signal_names = {speed_key}
 
     window._dbc_enabled_changed(content_hash, False)
     qtbot.waitUntil(lambda: not window._catalog.is_enabled(content_hash))
 
     # Disabling is reversible, so the operator's plot selection survives it.
-    assert "VehicleStatus.Speed" in window._selected_signal_names
+    assert speed_key in window._selected_signal_names
 
     window._dbc_enabled_changed(content_hash, True)
     qtbot.waitUntil(lambda: window._catalog.is_enabled(content_hash))
     window._remove_dbc(content_hash)
     qtbot.waitUntil(lambda: not window._catalog.definitions)
 
-    assert "VehicleStatus.Speed" not in window._selected_signal_names
+    assert speed_key not in window._selected_signal_names
     assert window.selected_profile.displayed_signals == []
 
 
@@ -267,12 +268,12 @@ BO_ 291 VehicleStatus: 8 GW
     window._load_dbc_path(_write(tmp_path, "gateway.dbc", conflicting))
     content_hash = window._catalog.definitions[0].content_hash
 
-    window._resolve_conflict(291, content_hash)
-    qtbot.waitUntil(lambda: window._catalog.resolutions.get(291) == content_hash)
+    window._resolve_conflict(291, False, content_hash)
+    qtbot.waitUntil(lambda: window._catalog.resolutions.get((291, False)) == content_hash)
     qtbot.waitUntil(lambda: window._catalog_worker is None)
 
     assert window.selected_profile.trace_filters["dbc_conflict_resolutions"] == {
-        "291": content_hash
+        "s:291": content_hash
     }
 
 

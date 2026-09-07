@@ -157,5 +157,8 @@ def test_an_unavailable_dbc_is_reported_without_dropping_the_reference(
     assert Path(missing).name in restarted.dbc_panel.note.text()
     # The unreadable reference is kept, and the readable database still loaded.
     assert str(missing) in restarted.selected_profile.dbc_paths
-    assert "VehicleStatus.Speed" in restarted._catalog.signal_names()
+    assert any(
+        reference.display_name == "VehicleStatus.Speed"
+        for reference in restarted._catalog.signal_references()
+    )
     assert str(missing) in ProfileStore(tmp_path / "setups").load().selected.dbc_paths

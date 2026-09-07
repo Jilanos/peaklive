@@ -33,3 +33,17 @@ def test_session_facts_exposes_identifier_rows_without_changing_report_contract(
     assert row.count == 2
     assert row.mean_period == 0.5
     assert row.decode_status == "partial"
+
+
+def test_identifier_diagnostics_do_not_merge_standard_and_extended_frames():
+    diagnostics = IdentifierDiagnostics()
+    standard = diagnostics.update(frame(1.0, 0x123), decoded=True)
+    extended = diagnostics.update(
+        CanFrame(1.1, 0x123, b"\x01\x02", is_extended_id=True), decoded=True
+    )
+
+    assert standard is not extended
+    assert [(row.arbitration_id, row.is_extended_id) for row in diagnostics.rows()] == [
+        (0x123, False),
+        (0x123, True),
+    ]
