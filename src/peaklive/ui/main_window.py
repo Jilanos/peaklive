@@ -104,7 +104,7 @@ class MainWindow(
         # Creating one for every opened trace left inactive QObject timers
         # accumulating in long-running bench sessions.
         self._pending_replay_batches = []
-        self._pending_replay_finish_generation: int | None = None
+        self._replay_source_completed_generation: int | None = None
         self._replay_generation = 0
         self._replay_failed_generation: int | None = None
         self._replay_presentation_timer = QTimer(self)

@@ -66,6 +66,7 @@ class ReplayWorker(QThread):
     frames_received = Signal(list)
     event_received = Signal(object)
     replay_failed = Signal(str)
+    replay_completed = Signal()
     # done/total are source bytes, allowing truthful monotonic progress without
     # preloading or counting records.
     progressed = Signal(int, int)
@@ -149,6 +150,7 @@ class ReplayWorker(QThread):
                 self.event_received.emit(BusEvent(0.0, "replay_anomaly", message + suffix))
             self.progressed.emit(total, total)
             self._succeeded = True
+            self.replay_completed.emit()
         except Exception as error:
             logger().exception("replay worker failed: %s", error)
             self.replay_failed.emit(str(error))
