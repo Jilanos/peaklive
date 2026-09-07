@@ -1,14 +1,14 @@
 ## item_101_preserve_complete_can_frame_identity_and_make_decoding_total - Preserve complete CAN frame identity and make decoding total
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: High
 > Theme: Canonical CAN record semantics and safe decoding
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Carry CAN direction, declared DLC, remote/data kind, and standard/extended identifier identity through every layer while retaining undecodable raw frames safely.
@@ -59,3 +59,9 @@
 # Priority
 - Priority: High - remote DLC, Tx direction, and standard-versus-extended identity are measurement facts that are currently lost or decoded incorrectly.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.

@@ -1,14 +1,14 @@
 ## item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes - Prevent stale concurrent profile writers from erasing setup changes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Concurrent profile consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Add explicit local concurrency control to profile persistence so a stale application instance cannot silently replace another instance's completed setup change.
@@ -55,3 +55,9 @@
 # Priority
 - Priority: Medium - the loss requires multiple running instances, but it silently removes completed operator configuration.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.

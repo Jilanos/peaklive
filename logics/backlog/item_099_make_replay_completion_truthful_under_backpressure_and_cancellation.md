@@ -1,14 +1,14 @@
 ## item_099_make_replay_completion_truthful_under_backpressure_and_cancellation - Make replay completion truthful under backpressure and cancellation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Replay integrity and explicit terminal states
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Make replay success contingent on acknowledged delivery of every parsed frame and expose cancellation, replacement, parser failure, and backpressure failure as distinct outcomes.
@@ -55,3 +55,9 @@
 # Priority
 - Priority: High - the current permit timeout truncates a supported trace and reports a false successful completion.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.

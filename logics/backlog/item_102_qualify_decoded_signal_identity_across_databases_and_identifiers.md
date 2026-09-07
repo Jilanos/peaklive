@@ -1,14 +1,14 @@
 ## item_102_qualify_decoded_signal_identity_across_databases_and_identifiers - Qualify decoded signal identity across databases and identifiers
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: High
 > Theme: Stable decoded-signal provenance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Replace human-name-only signal keys with stable database-and-frame-qualified identities across selection, persistence, decode, series, graphs, measurements, and export.
@@ -56,3 +56,9 @@
 # Priority
 - Priority: High - same-named definitions can currently merge unrelated values and units into one analytical series without warning.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.
