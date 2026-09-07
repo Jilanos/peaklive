@@ -1,13 +1,14 @@
 ## item_101_preserve_complete_can_frame_identity_and_make_decoding_total - Preserve complete CAN frame identity and make decoding total
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: High
 > Theme: Canonical CAN record semantics and safe decoding
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Carry CAN direction, declared DLC, remote/data kind, and standard/extended identifier identity through every layer while retaining undecodable raw frames safely.

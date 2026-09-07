@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from datetime import datetime
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -16,10 +18,17 @@ from peaklive.diagnostics import logger
 from peaklive.domain import MeasurementProfile
 
 SCHEMA_VERSION = 1
+LOCK_STALE_AFTER_S = 30.0
+LOCK_WAIT_TIMEOUT_S = 5.0
+LOCK_POLL_S = 0.05
 
 
 class ProfileSchemaError(ValueError):
     """The profile store uses a schema version this build cannot read."""
+
+
+class ProfileConflictError(OSError):
+    """A stale profile save would overwrite another completed change."""
 
 
 def migrate_profile_store(raw: dict[str, Any]) -> dict[str, Any]:
@@ -51,6 +60,7 @@ class ProfileState:
     #: store and start from defaults; carries where the original file was
     #: moved so the shell can tell the operator.
     recovered_from: Path | None = None
+    store_revision: str = ""
 
     @property
     def selected(self) -> MeasurementProfile:
@@ -86,7 +96,8 @@ class ProfileStore:
             profile = MeasurementProfile(name="Default measurement")
             return ProfileState([profile], profile.identifier)
         try:
-            raw = migrate_profile_store(json.loads(self.path.read_text(encoding="utf-8")))
+            text = self.path.read_text(encoding="utf-8")
+            raw = migrate_profile_store(json.loads(text))
             profiles = [MeasurementProfile.from_dict(item) for item in raw.get("profiles", [])]
         except (json.JSONDecodeError, OSError, ValueError, TypeError, KeyError, AttributeError):
             backup_path = self._quarantine_corrupt_store()
@@ -106,7 +117,7 @@ class ProfileStore:
             (profile for profile in profiles if profile.identifier == requested),
             profiles[0],
         )
-        return ProfileState(profiles, selected.identifier)
+        return ProfileState(profiles, selected.identifier, store_revision=_revision(raw))
 
     def _quarantine_corrupt_store(self) -> Path:
         """Rename the unreadable store out of the way so it isn't overwritten."""
@@ -143,21 +154,97 @@ class ProfileStore:
         readable store is always left in place.
         """
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        raw: dict[str, Any] = {
-            "schema_version": SCHEMA_VERSION,
-            "last_profile_id": state.last_profile_id,
-            "profiles": [profile.to_dict() for profile in state.profiles],
-        }
-        payload = json.dumps(raw, indent=2, sort_keys=True) + "\n"
+        lock = self._acquire_lock()
         temporary = self.path.with_name(
             f"{self.path.name}.{os.getpid()}.{uuid4().hex[:8]}.tmp"
         )
         try:
+            raw = self._merge_if_needed(state)
+            payload = json.dumps(raw, indent=2, sort_keys=True) + "\n"
             with temporary.open("w", encoding="utf-8", newline="\n") as handle:
                 handle.write(payload)
                 handle.flush()
                 os.fsync(handle.fileno())
             temporary.replace(self.path)
+            state.store_revision = _revision(raw)
         except OSError:
             temporary.unlink(missing_ok=True)
             raise
+        finally:
+            self._release_lock(lock)
+
+    def _merge_if_needed(self, state: ProfileState) -> dict[str, Any]:
+        proposed = _raw_from_state(state)
+        if not self.path.exists():
+            return proposed
+        current = migrate_profile_store(json.loads(self.path.read_text(encoding="utf-8")))
+        current_revision = _revision(current)
+        if state.store_revision == current_revision:
+            return proposed
+        current_profiles = {
+            str(item.get("identifier", "")): item
+            for item in current.get("profiles", [])
+            if isinstance(item, dict)
+        }
+        proposed_profiles = {
+            profile.identifier: profile.to_dict() for profile in state.profiles
+        }
+        merged = dict(current)
+        for identifier, profile in proposed_profiles.items():
+            current_profile = current_profiles.get(identifier)
+            if current_profile is not None and current_profile != profile:
+                raise ProfileConflictError(
+                    "Measurement setup changed in another PeakLive instance; reload before saving."
+                )
+            current_profiles[identifier] = profile
+        merged["profiles"] = list(current_profiles.values())
+        merged["last_profile_id"] = (
+            state.last_profile_id
+            if state.last_profile_id in current_profiles
+            else str(current.get("last_profile_id", ""))
+        )
+        merged["schema_version"] = SCHEMA_VERSION
+        return merged
+
+    def _acquire_lock(self) -> Path:
+        lock = self.path.with_suffix(self.path.suffix + ".lock")
+        deadline = time.monotonic() + LOCK_WAIT_TIMEOUT_S
+        while True:
+            try:
+                fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError as error:
+                if self._lock_is_stale(lock):
+                    lock.unlink(missing_ok=True)
+                    continue
+                if time.monotonic() >= deadline:
+                    raise ProfileConflictError(
+                        "Measurement setup store is locked by another PeakLive instance."
+                    ) from error
+                time.sleep(LOCK_POLL_S)
+                continue
+            os.close(fd)
+            return lock
+
+    @staticmethod
+    def _lock_is_stale(lock: Path) -> bool:
+        try:
+            return time.time() - lock.stat().st_mtime > LOCK_STALE_AFTER_S
+        except OSError:
+            return False
+
+    @staticmethod
+    def _release_lock(lock: Path) -> None:
+        lock.unlink(missing_ok=True)
+
+
+def _raw_from_state(state: ProfileState) -> dict[str, Any]:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "last_profile_id": state.last_profile_id,
+        "profiles": [profile.to_dict() for profile in state.profiles],
+    }
+
+
+def _revision(raw: dict[str, Any]) -> str:
+    payload = json.dumps(raw, sort_keys=True, separators=(",", ":"))
+    return sha256(payload.encode("utf-8")).hexdigest()

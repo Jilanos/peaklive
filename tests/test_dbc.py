@@ -78,7 +78,7 @@ def test_repeated_decode_of_a_known_id_reuses_the_cached_lookup(tmp_path, monkey
         catalog.decode(frame)
 
     assert len(resolves) == 1
-    assert catalog._decode_cache[291][0] is catalog.definitions[0]
+    assert catalog._decode_cache[(291, False)][0] is catalog.definitions[0]
 
 
 def test_repeated_decode_of_an_unknown_id_avoids_rebuilding_candidates(tmp_path, monkeypatch):
@@ -93,7 +93,10 @@ def test_repeated_decode_of_an_unknown_id_avoids_rebuilding_candidates(tmp_path,
         DbcCatalog,
         "_has_message",
         staticmethod(
-            lambda database, arb_id: (has_message_calls.append(True), original(database, arb_id))[1]
+            lambda database, arb_id, extended: (
+                has_message_calls.append(True),
+                original(database, arb_id, extended),
+            )[1]
         ),
     )
 
@@ -102,7 +105,7 @@ def test_repeated_decode_of_an_unknown_id_avoids_rebuilding_candidates(tmp_path,
 
     # One membership check per loaded definition on the first call, none after.
     assert len(has_message_calls) == 1
-    assert catalog._decode_cache[0x7FF] is _UNRESOLVED
+    assert catalog._decode_cache[(0x7FF, False)] is _UNRESOLVED
 
 
 def test_a_sustained_conflict_still_raises_every_call_but_is_cached_between_them(
@@ -129,7 +132,7 @@ def test_a_sustained_conflict_still_raises_every_call_but_is_cached_between_them
     # The expensive candidate/fingerprint rebuild happened once; every call
     # still raised, satisfying callers that must see the conflict each time.
     assert len(resolves) == 1
-    assert isinstance(catalog._decode_cache[291], AmbiguousMessageError)
+    assert isinstance(catalog._decode_cache[(291, False)], AmbiguousMessageError)
 
 
 def test_loading_a_new_dbc_invalidates_a_cached_unknown_id(tmp_path):
@@ -183,3 +186,37 @@ def test_catalog_lists_signals_by_dbc_and_ignores_disabled_conflicts(tmp_path):
     assert catalog.is_enabled(first_definition.content_hash)
     assert not catalog.is_enabled(second_definition.content_hash)
     assert catalog.decode(CanFrame(1.0, 291, b"\xd2\x04" + b"\x00" * 6))[0].value == 123.4
+
+
+def test_remote_frames_skip_payload_decode_and_keep_raw_identity(tmp_path):
+    path = tmp_path / "vehicle.dbc"
+    path.write_text(DBC, encoding="utf-8")
+    catalog = DbcCatalog()
+    catalog.load(path)
+
+    assert catalog.decode(CanFrame(1.0, 291, b"", is_remote_frame=True, declared_dlc=8)) == []
+
+
+def test_standard_and_extended_same_numeric_identifier_are_independent(tmp_path):
+    standard = tmp_path / "standard.dbc"
+    extended = tmp_path / "extended.dbc"
+    standard.write_text(DBC, encoding="utf-8")
+    extended.write_text(
+        DBC.replace("BO_ 291 VehicleStatus", "BO_ 2147483939 ExtendedStatus").replace(
+            "Speed", "SpeedExt"
+        ),
+        encoding="utf-8",
+    )
+    catalog = DbcCatalog()
+    catalog.load(standard)
+    catalog.load(extended)
+
+    decoded_standard = catalog.decode(CanFrame(1.0, 291, b"\x01\x00" + b"\x00" * 6))
+    decoded_extended = catalog.decode(
+        CanFrame(1.0, 291, b"\x02\x00" + b"\x00" * 6, is_extended_id=True)
+    )
+
+    assert decoded_standard[0].message_name == "VehicleStatus"
+    assert decoded_extended[0].message_name == "ExtendedStatus"
+    assert decoded_standard[0].signal_key != decoded_extended[0].signal_key
+    assert catalog.conflicts() == ()

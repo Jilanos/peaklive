@@ -50,25 +50,23 @@ def decode_series(
     signal_name: str,
 ) -> tuple[tuple[float, Any], ...]:
     """Decode `signal_name` out of `frames`, skipping frames that lack it."""
-    message_name, _, plain_name = signal_name.partition(".")
     samples: list[tuple[float, Any]] = []
     for frame in frames:
         try:
             decoded = catalog.decode(frame)
-        except AmbiguousMessageError:
+        except (AmbiguousMessageError, ValueError, TypeError, KeyError):
             # An unresolved conflict is reported by the live decode path; a
             # backfill must not turn it into a second, duplicate complaint.
             continue
         for signal in decoded:
-            if signal.message_name == message_name and signal.signal_name == plain_name:
+            if signal.signal_key == signal_name or signal.display_name == signal_name:
                 samples.append((frame.timestamp, signal.value))
     return tuple(samples)
 
 
 def signal_unit(catalog: DbcCatalog, signal_name: str) -> str | None:
-    message_name, _, plain_name = signal_name.partition(".")
     for reference in catalog.signal_references():
-        if reference.message_name == message_name and reference.signal_name == plain_name:
+        if reference.signal_key == signal_name or reference.display_name == signal_name:
             return reference.unit
     return None
 

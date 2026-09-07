@@ -100,6 +100,8 @@ class PcanAdapter:
             channel=channel,
             is_extended_id=bool(message.is_extended_id),
             is_remote_frame=bool(message.is_remote_frame),
+            direction="rx" if bool(getattr(message, "is_rx", True)) else "tx",
+            declared_dlc=int(getattr(message, "dlc", len(bytes(message.data)))),
         )
 
     @staticmethod

@@ -21,7 +21,7 @@ def test_facts_summarize_volumes_coverage_and_anomalies():
     assert report.duration == 2.5
     assert report.frames_per_second == 1.2
     assert report.decode_coverage == 2 / 3
-    assert report.top_arbitration_ids == ((0x123, 2), (0x456, 1))
+    assert report.top_arbitration_ids == (((0x123, False), 2), ((0x456, False), 1))
     assert dict(report.anomalies) == {
         "dbc_conflict": 1,
         "replay_anomaly": 1,
@@ -68,3 +68,16 @@ def test_rendered_report_matches_the_collected_facts():
     assert "body.dbc [beef0001] disabled, 4 signals" in text
     assert "0x200  1" in text
     assert "Bus error frames: 1" in text
+
+
+def test_standard_and_extended_identifiers_are_reported_separately():
+    facts = SessionFacts()
+    facts.record_frame(CanFrame(0.0, 0x123, b"\x01"), decoded=True)
+    facts.record_frame(CanFrame(0.1, 0x123, b"\x02", is_extended_id=True), decoded=True)
+
+    report = facts.report()
+    text = ReportRenderer(report).render()
+
+    assert report.top_arbitration_ids == (((0x123, False), 1), ((0x123, True), 1))
+    assert "0x123  1" in text
+    assert "0x123x  1" in text

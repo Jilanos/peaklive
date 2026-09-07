@@ -36,7 +36,7 @@ def test_a_saturated_acquisition_stream_ingests_every_queued_frame(qtbot, tmp_pa
         window._queue_acquisition_frames(1, _synthetic_frames(64, start=index * 64))
     total_frames = batch_count * 64
 
-    window._drain_presentation_frames()
+    window._settle_acquisition_generation(1)
 
     assert window._facts.report().frame_count == total_frames
     assert window._frames.ingested == total_frames
@@ -53,7 +53,7 @@ def test_facts_and_cache_see_every_frame_even_when_the_trace_window_is_smaller(q
         window._queue_acquisition_frames(1, _synthetic_frames(64, start=index * 64))
     total_frames = batch_count * 64
 
-    window._drain_presentation_frames()
+    window._settle_acquisition_generation(1)
 
     # The retained window is bounded, but every frame still reached facts,
     # the frame cache, and the series projection that feeds deferred decode.
@@ -72,3 +72,15 @@ def test_a_generation_change_stops_accepting_the_old_generations_batches(qtbot, 
     window._drain_presentation_frames()
 
     assert window._facts.report().frame_count == 0
+
+
+def test_one_live_presentation_tick_has_a_deterministic_frame_bound(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window._begin_presentation_generation(1)
+    window._queue_acquisition_frames(1, _synthetic_frames(512))
+
+    window._drain_presentation_frames()
+
+    assert window._facts.report().frame_count == 256
+    window._settle_acquisition_generation(1)
+    assert window._facts.report().frame_count == 512

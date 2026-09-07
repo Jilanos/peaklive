@@ -89,9 +89,17 @@ def _signal_item(window: MainWindow, key: str):
     for item in window.signal_explorer.findItems(
         "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
     ):
-        if item.data(0, SIGNAL_KEY_ROLE) == key:
+        if str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith(key):
             return item
     raise AssertionError(f"Signal item not found: {key}")
+
+
+def _signal_key(window: MainWindow, key: str) -> str:
+    return str(_signal_item(window, key).data(0, SIGNAL_KEY_ROLE))
+
+
+def _legacy_label(key: str) -> str:
+    return key.rsplit(":", 1)[-1]
 
 
 def _relative_luminance(color: QColor) -> float:
@@ -171,15 +179,16 @@ def test_the_headers_still_name_the_two_actions(qtbot, tmp_path):
 def test_shown_and_favorite_toggle_independently(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     item = _signal_item(window, "VehicleStatus.Speed")
+    speed_key = str(item.data(0, SIGNAL_KEY_ROLE))
 
     item.setCheckState(SHOWN_COLUMN, Qt.CheckState.Checked)
-    assert "VehicleStatus.Speed" in window._selected_signal_names
-    assert "VehicleStatus.Speed" not in window._favorite_signal_names
+    assert speed_key in window._selected_signal_names
+    assert speed_key not in window._favorite_signal_names
 
     item.setCheckState(FAVORITE_COLUMN, Qt.CheckState.Checked)
     item.setCheckState(SHOWN_COLUMN, Qt.CheckState.Unchecked)
-    assert "VehicleStatus.Speed" not in window._selected_signal_names
-    assert "VehicleStatus.Speed" in window._favorite_signal_names
+    assert speed_key not in window._selected_signal_names
+    assert speed_key in window._favorite_signal_names
 
 
 def test_a_toggle_emits_exactly_one_change(qtbot, tmp_path):
@@ -190,7 +199,7 @@ def test_a_toggle_emits_exactly_one_change(qtbot, tmp_path):
 
     item.setCheckState(SHOWN_COLUMN, Qt.CheckState.Checked)
 
-    assert seen == [("VehicleStatus.Speed", True)]
+    assert seen == [(str(item.data(0, SIGNAL_KEY_ROLE)), True)]
 
 
 def test_the_keyboard_toggles_the_focused_action_cell(qtbot, tmp_path):
@@ -203,7 +212,7 @@ def test_the_keyboard_toggles_the_focused_action_cell(qtbot, tmp_path):
     qtbot.keyClick(tree, Qt.Key.Key_Space)
 
     assert item.checkState(SHOWN_COLUMN) == Qt.CheckState.Checked
-    assert "VehicleStatus.Speed" in window._selected_signal_names
+    assert str(item.data(0, SIGNAL_KEY_ROLE)) in window._selected_signal_names
 
 
 def test_activation_still_toggles_the_shown_state(qtbot, tmp_path):
@@ -299,7 +308,7 @@ def test_shown_and_favorite_selections_survive_a_restart(qtbot, tmp_path):
     # parsing completed during widget construction.
     qtbot.waitUntil(
         lambda: any(
-            item.data(0, SIGNAL_KEY_ROLE) == "VehicleStatus.Speed"
+            str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith("VehicleStatus.Speed")
             for item in restored.signal_explorer.findItems(
                 "", Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive, 0
             )
@@ -792,7 +801,12 @@ def test_the_plot_area_keeps_its_own_minimum_height(qtbot, tmp_path):
 
 def test_multiple_signals_share_one_compact_non_scrolling_time_surface(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path, size=(1280, 720))
-    window._selected_signal_names.update({"VehicleStatus.Speed", "VehicleStatus.Rpm"})
+    window._selected_signal_names.update(
+        {
+            _signal_key(window, "VehicleStatus.Speed"),
+            _signal_key(window, "VehicleStatus.Rpm"),
+        }
+    )
     window._sync_graphs()
     qtbot.wait(20)
 
@@ -874,7 +888,12 @@ def test_workspace_mode_selector_is_visible_and_fully_readable_in_every_mode(qtb
 
 def test_multi_signal_lanes_reserve_an_identical_left_axis_gutter(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path, size=(1280, 720))
-    window._selected_signal_names.update({"VehicleStatus.Speed", "VehicleStatus.Rpm"})
+    window._selected_signal_names.update(
+        {
+            _signal_key(window, "VehicleStatus.Speed"),
+            _signal_key(window, "VehicleStatus.Rpm"),
+        }
+    )
     window._sync_graphs()
     qtbot.wait(20)
 

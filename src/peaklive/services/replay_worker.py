@@ -121,7 +121,8 @@ class ReplayWorker(QThread):
             )
             for record in records:
                 if self._stop_requested.is_set():
-                    break
+                    self.replay_failed.emit("Replay cancelled")
+                    return
                 record_count += 1
                 if isinstance(record, BusEvent):
                     if record.kind == "replay_anomaly":
@@ -135,11 +136,14 @@ class ReplayWorker(QThread):
                 batch.append(record)
                 if len(batch) >= BATCH_SIZE:
                     if not self._dispatch(batch):
-                        break
+                        self.replay_failed.emit("Replay backpressure timeout")
+                        return
                     batch = []
                 self._emit_progress(total)
             if batch:
-                self._dispatch(batch)
+                if not self._dispatch(batch):
+                    self.replay_failed.emit("Replay backpressure timeout")
+                    return
             for message, count in anomalies.items():
                 suffix = f" ({count} occurrences)" if count > 1 else ""
                 self.event_received.emit(BusEvent(0.0, "replay_anomaly", message + suffix))

@@ -20,6 +20,7 @@ DEFAULT_TRACE_CAPACITY = 5_000
 DECODE_DECODED = "decoded"
 DECODE_UNKNOWN = "unknown"
 DECODE_CONFLICT = "conflict"
+DECODE_INVALID = "invalid"
 
 COLUMN_LABELS: dict[str, str] = {
     "time": "Time",
@@ -61,7 +62,7 @@ class TraceRecord:
         return self.frame.data if self.frame is not None else b""
 
     def signal_names(self) -> tuple[str, ...]:
-        return tuple(f"{signal.message_name}.{signal.signal_name}" for signal in self.signals)
+        return tuple(signal.signal_key for signal in self.signals)
 
 
 class TraceBuffer:
@@ -105,7 +106,7 @@ class TraceBuffer:
             index=self._take_index(),
             timestamp=frame.timestamp,
             kind="frame",
-            direction="RX",
+            direction=frame.direction_label,
             channel=frame.channel,
             frame=frame,
             message_name=message_name,
@@ -198,13 +199,20 @@ def _matches_arbitration_id(record: TraceRecord, query: str) -> bool:
     arbitration_id = record.arbitration_id
     if arbitration_id is None:
         return False
-    text = query.strip().casefold().removeprefix("0x")
+    text = query.strip().casefold()
     if not text:
         return True
+    wants_extended = text.endswith("x")
+    text = text.removesuffix("x").removeprefix("0x")
     try:
-        return arbitration_id == int(text, 16)
+        if arbitration_id != int(text, 16):
+            return False
+        return not wants_extended or (
+            record.frame is not None and record.frame.is_extended_id
+        )
     except ValueError:
-        return text in f"{arbitration_id:x}"
+        suffix = "x" if record.frame is not None and record.frame.is_extended_id else ""
+        return text in f"{arbitration_id:x}{suffix}"
 
 
 def cell_text(record: TraceRecord, column_key: str, value_format: str) -> str:

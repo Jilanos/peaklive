@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QListWidgetItem,
     QProgressBar,
     QPushButton,
     QVBoxLayout,
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import SeriesStore, export_rows
+from peaklive.analysis.dbc import signal_label
 from peaklive.i18n import translate
 from peaklive.services.export_worker import ExportWorker
 from peaklive.ui.widgets import StateNote
@@ -64,7 +66,9 @@ class ExportDialog(QDialog):
         self.signal_list.setAccessibleName(translate("export.signals"))
         self.signal_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         for name in signal_names:
-            self.signal_list.addItem(name)
+            item = QListWidgetItem(signal_label(name))
+            item.setData(Qt.ItemDataRole.UserRole, name)
+            self.signal_list.addItem(item)
         self.signal_list.selectAll()
         form.addRow(QLabel(translate("export.signals")), self.signal_list)
 
@@ -121,7 +125,10 @@ class ExportDialog(QDialog):
 
     @property
     def selected_signals(self) -> list[str]:
-        return [item.text() for item in self.signal_list.selectedItems()]
+        return [
+            str(item.data(Qt.ItemDataRole.UserRole) or item.text())
+            for item in self.signal_list.selectedItems()
+        ]
 
     @property
     def scope(self) -> str:

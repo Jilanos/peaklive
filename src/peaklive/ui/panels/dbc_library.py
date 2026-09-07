@@ -30,7 +30,7 @@ class DbcLibraryPanel(QWidget):
 
     enabled_changed = Signal(str, bool)
     remove_requested = Signal(str)
-    conflict_resolved = Signal(int, str)
+    conflict_resolved = Signal(int, bool, str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -126,9 +126,13 @@ class DbcLibraryPanel(QWidget):
             for definition in conflict.candidates:
                 self.conflict_selector.addItem(
                     translate("dbc.conflict_entry").format(
-                        arbitration_id=conflict.arbitration_id, name=definition.path.name
+                        identifier=(
+                            f"0x{conflict.arbitration_id:X}"
+                            f"{'x' if conflict.is_extended_id else ''}"
+                        ),
+                        name=definition.path.name,
                     ),
-                    (conflict.arbitration_id, definition.content_hash),
+                    (conflict.arbitration_id, conflict.is_extended_id, definition.content_hash),
                 )
         self.conflict_selector.blockSignals(False)
 
@@ -154,5 +158,5 @@ class DbcLibraryPanel(QWidget):
         data = self.conflict_selector.currentData()
         if data is None:
             return
-        arbitration_id, content_hash = data
-        self.conflict_resolved.emit(int(arbitration_id), str(content_hash))
+        arbitration_id, is_extended_id, content_hash = data
+        self.conflict_resolved.emit(int(arbitration_id), bool(is_extended_id), str(content_hash))

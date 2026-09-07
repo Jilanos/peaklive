@@ -105,7 +105,6 @@ class WorkspaceSession:
         if self._worker is None or not self._lifecycle.can_stop:
             return
         self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.STOPPING)
-        self._invalidate_presentation_generation(self._lifecycle.generation)
         self._show_lifecycle_phase()
         self._shutdown_timer.start(self._shutdown_timeout_ms)
         self._worker.request_stop()
@@ -126,6 +125,7 @@ class WorkspaceSession:
             return
         recovered = self._lifecycle.phase is AcquisitionPhase.TIMED_OUT
         self._shutdown_timer.stop()
+        self._settle_acquisition_generation(generation)
         self._invalidate_presentation_generation(generation)
         self._worker = None
         self._end_work()
@@ -163,6 +163,11 @@ class WorkspaceSession:
         elif phase is not AcquisitionPhase.RUNNING:
             self._end_work()
         self._update_mode_availability()
+
+    def _settle_acquisition_generation(self, generation: int) -> None:
+        del generation
+        while self._presentation_queue_pending():
+            self._drain_presentation_frames()
 
     def _update_mode_availability(self) -> None:
         """Grey out Start and Open Trace while the other session mode is running.
@@ -279,6 +284,12 @@ class WorkspaceSession:
             return
         if getattr(self, "_replay_failed_generation", None) == generation:
             return
+        worker = self._replay_worker
+        if worker is not None and not worker.succeeded:
+            self._replay_failed_generation = generation
+            self._end_work()
+            self._update_mode_availability()
+            return
         if self._pending_replay_batches or self._replay_presentation_timer.isActive():
             self._pending_replay_finish_generation = generation
             return
@@ -333,8 +344,8 @@ class WorkspaceSession:
         summaries = []
         for definition in self._catalog.definitions:
             resolved = tuple(
-                arbitration_id
-                for arbitration_id, content_hash in resolutions.items()
+                frame_key
+                for frame_key, content_hash in resolutions.items()
                 if content_hash == definition.content_hash
             )
             summaries.append(

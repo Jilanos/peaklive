@@ -76,7 +76,7 @@ def _signal_item(window: MainWindow, key: str):
         Qt.MatchFlag.MatchContains | Qt.MatchFlag.MatchRecursive,
         0,
     ):
-        if item.data(0, SIGNAL_KEY_ROLE) == key:
+        if str(item.data(0, SIGNAL_KEY_ROLE) or "").endswith(key):
             return item
     raise AssertionError(f"Signal item not found: {key}")
 
@@ -102,13 +102,16 @@ def test_main_window_manages_multi_dbc_signals_favorites_and_graphs(qtbot, tmp_p
     )
 
     assert window.dbc_library.topLevelItemCount() == 2
-    assert set(window.selected_profile.displayed_signals) == {
+    assert {name.rsplit(":", 1)[-1] for name in window.selected_profile.displayed_signals} == {
         "BodyStatus.DoorOpen",
         "VehicleStatus.Speed",
     }
-    assert window.selected_profile.favorite_signals == ["BodyStatus.DoorOpen"]
-    assert set(window._plot_curves) == {"BodyStatus.DoorOpen", "VehicleStatus.Speed"}
-    assert window._plot_curves["BodyStatus.DoorOpen"].getData()[1].tolist() == [1.0]
+    assert [name.rsplit(":", 1)[-1] for name in window.selected_profile.favorite_signals] == [
+        "BodyStatus.DoorOpen"
+    ]
+    curves = {name.rsplit(":", 1)[-1]: curve for name, curve in window._plot_curves.items()}
+    assert set(curves) == {"BodyStatus.DoorOpen", "VehicleStatus.Speed"}
+    assert curves["BodyStatus.DoorOpen"].getData()[1].tolist() == [1.0]
 
     window.shown_only_checkbox.setChecked(True)
     assert _signal_item(window, "BodyStatus.DoorOpen").text(0) == "DoorOpen"

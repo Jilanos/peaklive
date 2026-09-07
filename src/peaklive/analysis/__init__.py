@@ -33,6 +33,7 @@ from .statistics import RangeStatistics, cursor_value, numeric_delta, range_stat
 from .trace import (
     DECODE_CONFLICT,
     DECODE_DECODED,
+    DECODE_INVALID,
     DECODE_UNKNOWN,
     FilteredTrace,
     TraceBuffer,
@@ -49,6 +50,7 @@ __all__ = [
     "PROFILER",
     "STAGES",
     "DECODE_DECODED",
+    "DECODE_INVALID",
     "DECODE_UNKNOWN",
     "AmbiguousMessageError",
     "CaptureProfile",

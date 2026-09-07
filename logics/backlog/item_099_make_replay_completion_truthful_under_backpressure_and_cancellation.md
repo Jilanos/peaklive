@@ -1,13 +1,14 @@
 ## item_099_make_replay_completion_truthful_under_backpressure_and_cancellation - Make replay completion truthful under backpressure and cancellation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: Medium
 > Theme: Replay integrity and explicit terminal states
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Make replay success contingent on acknowledged delivery of every parsed frame and expose cancellation, replacement, parser failure, and backpressure failure as distinct outcomes.

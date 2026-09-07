@@ -61,7 +61,7 @@ def test_a_prepared_load_never_mutates_the_live_catalog(tmp_path):
 
     assert not catalog.definitions
     assert len(outcome.view.definitions) == 1
-    assert outcome.view.signal_names == ("VehicleStatus.Speed",)
+    assert outcome.view.signal_names[0].endswith(":VehicleStatus.Speed")
 
 
 def test_a_prepared_remove_never_mutates_the_live_catalog(tmp_path):
@@ -90,7 +90,7 @@ def test_a_malformed_file_does_not_abandon_the_rest_of_the_selection(tmp_path):
     failed_path, message = outcome.errors[0]
     assert failed_path == broken
     assert "DBC" in message
-    assert outcome.view.signal_names == ("BodyStatus.DoorOpen",)
+    assert outcome.view.signal_names[0].endswith(":BodyStatus.DoorOpen")
 
 
 def test_cancelling_before_commit_yields_nothing(tmp_path):

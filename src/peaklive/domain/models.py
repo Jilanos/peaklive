@@ -27,10 +27,20 @@ class CanFrame:
     channel: str = "channel-1"
     is_extended_id: bool = False
     is_remote_frame: bool = False
+    direction: str = "rx"
+    declared_dlc: int | None = None
 
     @property
     def dlc(self) -> int:
-        return len(self.data)
+        return len(self.data) if self.declared_dlc is None else self.declared_dlc
+
+    @property
+    def identifier_key(self) -> tuple[int, bool]:
+        return self.arbitration_id, self.is_extended_id
+
+    @property
+    def direction_label(self) -> str:
+        return "TX" if self.direction.casefold() == "tx" else "RX"
 
 
 @dataclass(frozen=True, slots=True)

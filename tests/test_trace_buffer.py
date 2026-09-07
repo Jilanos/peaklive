@@ -1,4 +1,6 @@
 import pytest
+from PySide6.QtCore import QPoint
+from PySide6.QtWidgets import QMenu
 
 from peaklive.analysis.dbc import DecodedSignal
 from peaklive.analysis.trace import (
@@ -10,6 +12,8 @@ from peaklive.analysis.trace import (
     matches,
 )
 from peaklive.domain import BusEvent, CanFrame, TraceFilterSettings
+from peaklive.domain.models import default_trace_columns
+from peaklive.ui.panels.trace_view import TraceViewPanel
 
 
 def _buffer() -> TraceBuffer:
@@ -125,3 +129,36 @@ def test_extended_identifiers_stay_visible_in_the_id_column():
 
     assert cell_text(record, "id", "hex") == "0x1ABCDEFx"
     assert matches(record, TraceFilterSettings(arbitration_id="1abcdef"))
+    assert matches(record, TraceFilterSettings(arbitration_id="1abcdefx"))
+
+
+def test_trace_uses_frame_direction_and_declared_remote_dlc():
+    buffer = TraceBuffer()
+    record = buffer.add_frame(
+        CanFrame(0.0, 0x123, b"", is_remote_frame=True, direction="tx", declared_dlc=8)
+    )
+
+    assert cell_text(record, "direction", "text") == "TX"
+    assert cell_text(record, "dlc", "dec") == "8"
+
+
+def test_trace_context_menu_is_record_aware_for_events(qtbot, monkeypatch):
+    buffer = TraceBuffer()
+    buffer.add_event(BusEvent(1.0, "reconnecting", "driver restart"))
+    panel = TraceViewPanel()
+    qtbot.addWidget(panel)
+    panel.set_buffer(buffer)
+    panel.apply_columns(default_trace_columns())
+    panel.show()
+    qtbot.waitExposed(panel)
+    actions: list[list[str]] = []
+
+    def capture_menu(menu, position):
+        del position
+        actions.append([action.text() for action in menu.actions()])
+
+    monkeypatch.setattr(QMenu, "exec_", capture_menu)
+
+    panel._context_menu(QPoint(1, max(1, panel.table.rowHeight(0) // 2)))
+
+    assert actions == [["Copy row"]]

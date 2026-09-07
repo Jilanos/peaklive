@@ -1,13 +1,14 @@
 ## item_100_publish_exports_and_recording_artifacts_transactionally_without_collision - Publish exports and recording artifacts transactionally without collision
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 75%
 > Complexity: High
 > Theme: Transactional local output and ordered capture evidence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 12:36:49
 
 # AI Context
 - Summary: Protect existing evidence with owned export temporaries, atomic publication, a complete capture/sidecar collision domain, stable acquisition iterations, and source-ordered recording.

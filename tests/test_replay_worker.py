@@ -22,3 +22,44 @@ def test_replay_worker_streams_frames_and_retains_anomalies(qtbot, tmp_path):
 
     assert len(frames) == 1
     assert events[0].kind == "replay_anomaly"
+
+
+def test_replay_preserves_tx_remote_declared_dlc_and_extended_identity(qtbot, tmp_path):
+    trace = tmp_path / "sample.asc"
+    trace.write_text("0.000000 1 18FEF100x Tx r 8\n", encoding="utf-8")
+    worker = ReplayWorker(trace)
+    frames: list = []
+    worker.frames_received.connect(frames.extend)
+
+    worker.start()
+    qtbot.waitUntil(lambda: len(frames) == 1)
+    worker.wait()
+
+    frame = frames[0]
+    assert frame.direction == "tx"
+    assert frame.direction_label == "TX"
+    assert frame.is_remote_frame is True
+    assert frame.is_extended_id is True
+    assert frame.dlc == 8
+    assert frame.data == b""
+
+
+def test_replay_backpressure_timeout_is_not_reported_as_success(tmp_path, qtbot):
+    trace = tmp_path / "large.asc"
+    trace.write_text(
+        "\n".join(f"{index / 1000:.6f} 1 123 Rx d 1 01" for index in range(2048)),
+        encoding="utf-8",
+    )
+    worker = ReplayWorker(trace)
+    failures: list[str] = []
+    progress: list[tuple[int, int]] = []
+    worker.replay_failed.connect(failures.append)
+    worker.progressed.connect(lambda done, total: progress.append((done, total)))
+
+    worker.start()
+    qtbot.waitUntil(lambda: bool(failures), timeout=5_000)
+    worker.wait()
+
+    assert worker.succeeded is False
+    assert "backpressure" in failures[-1].casefold()
+    assert not progress or progress[-1][0] < progress[-1][1]

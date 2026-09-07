@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 from collections.abc import Callable
@@ -53,6 +54,7 @@ class AscRecorder:
         self._started_at: datetime | None = None
         self._timestamp_origin: float | None = None
         self._segment_number = 0
+        self._reserved_iteration = 1
         self._segment: CaptureSegment | None = None
         self._reservation: Reservation | None = None
         self._asc: TextIO | None = None
@@ -89,7 +91,10 @@ class AscRecorder:
         self._started_at = now or datetime.now().astimezone()
         self._timestamp_origin = None
         self._segment_number = 0
+        self._reserved_iteration = settings.iteration
         self._reservation = reservation
+        if reservation is not None:
+            self._reserved_iteration = reservation.iteration
         self._result = CaptureResult()
         self._warnings.clear()
         self._warned_low_space = False
@@ -108,7 +113,7 @@ class AscRecorder:
             self._rotate_if_needed()
             return
         identifier = f"{frame.arbitration_id:X}{'x' if frame.is_extended_id else ''}"
-        direction = "Rx"
+        direction = frame.direction_label.title()
         kind = "r" if frame.is_remote_frame else "d"
         payload = ""
         if not frame.is_remote_frame:
@@ -185,7 +190,7 @@ class AscRecorder:
                 self._settings.filename_template,
                 profile_name=self._profile_name,
                 now=self._started_at,
-                iteration=self._settings.iteration,
+                iteration=self._reserved_iteration,
                 segment=self._segment_number,
                 capture_format=self._format,
                 text=self._settings.text,
@@ -198,8 +203,16 @@ class AscRecorder:
                 event_final_path=event_final,
                 event_partial_path=event_final.with_suffix(event_final.suffix + ".partial"),
             )
-        self._asc = self._segment.partial_path.open("w", encoding="utf-8", newline="\n")
-        self._events = self._segment.event_partial_path.open("w", encoding="utf-8", newline="\n")
+        self._asc = self._segment.partial_path.open("x", encoding="utf-8", newline="\n")
+        try:
+            self._events = self._segment.event_partial_path.open(
+                "x", encoding="utf-8", newline="\n"
+            )
+        except FileExistsError:
+            self._asc.close()
+            self._asc = None
+            self._segment.partial_path.unlink(missing_ok=True)
+            raise
         if self._segment_number == 1 and self._reservation is not None:
             # The partial file now exists, which alone is enough to keep a
             # future first-free search away from this target; the exclusive
@@ -225,8 +238,12 @@ class AscRecorder:
         self._asc.close()
         self._events.close()
         if clean:
-            self._segment.partial_path.replace(self._segment.final_path)
-            self._segment.event_partial_path.replace(self._segment.event_final_path)
+            self._publish_without_overwrite(
+                self._segment.event_partial_path, self._segment.event_final_path
+            )
+            self._publish_without_overwrite(
+                self._segment.partial_path, self._segment.final_path
+            )
             self._result.segments.append(self._segment.final_path)
         else:
             self._result.incomplete = True
@@ -278,19 +295,32 @@ class AscRecorder:
         if not frame.is_remote_frame:
             payload = " " + " ".join(f"{byte:02X}" for byte in frame.data)
         self._asc.write(
-            f"{self._asc_channel(frame.channel)}) {timestamp * 1000:.3f} Rx {identifier} "
+            f"{self._asc_channel(frame.channel)}) {timestamp * 1000:.3f} "
+            f"{frame.direction_label.title()} {identifier} "
             f"{kind} {frame.dlc}{payload}\n"
         )
 
     @staticmethod
     def _next_available_path(path: Path) -> Path:
-        if not path.exists() and not path.with_suffix(path.suffix + ".partial").exists():
+        def available(candidate: Path) -> bool:
+            event_final = candidate.with_suffix(".peaklive-events.jsonl")
+            event_partial = event_final.with_suffix(event_final.suffix + ".partial")
+            return not any(
+                probe.exists()
+                for probe in (
+                    candidate,
+                    candidate.with_suffix(candidate.suffix + ".partial"),
+                    event_final,
+                    event_partial,
+                )
+            )
+
+        if available(path):
             return path
         suffix = 1
         while True:
             candidate = path.with_stem(f"{path.stem}_{suffix:02d}")
-            candidate_partial = candidate.with_suffix(candidate.suffix + ".partial")
-            if not candidate.exists() and not candidate_partial.exists():
+            if available(candidate):
                 return candidate
             suffix += 1
 
@@ -302,6 +332,11 @@ class AscRecorder:
     @staticmethod
     def _default_free_space(path: Path) -> int:
         return shutil.disk_usage(path).free
+
+    @staticmethod
+    def _publish_without_overwrite(partial_path: Path, final_path: Path) -> None:
+        os.link(partial_path, final_path)
+        partial_path.unlink()
 
     def _require_active(self) -> None:
         if not self.active:
