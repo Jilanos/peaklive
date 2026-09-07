@@ -7,8 +7,8 @@ combo-box contrast audit across the application.
 
 from __future__ import annotations
 
-from collections import Counter
 import sys
+from collections import Counter
 
 import pytest
 from PySide6.QtCore import Qt
