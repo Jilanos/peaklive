@@ -223,6 +223,9 @@ def test_a_shutdown_that_overruns_becomes_an_actionable_degraded_state(qtbot, tm
     window.show()
     window._start_acquisition()
     qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.RUNNING)
+    # This scenario is about a driver stuck during disconnect, not about
+    # sustained frame creation while the test is waiting for the timeout.
+    adapter._remaining = 0
     adapter.disconnect_gate.clear()
     probe = EventLoopProbe()
 
