@@ -219,9 +219,7 @@ class WorkspaceSession:
         self._replay_worker.replay_completed.connect(
             partial(self._replay_completed_for_generation, generation)
         )
-        self._replay_worker.progressed.connect(
-            partial(self._replay_progressed, generation)
-        )
+        self._replay_worker.progressed.connect(partial(self._replay_progressed, generation))
         self._replay_worker.finished.connect(partial(self._replay_finished, generation))
         self._begin_work(translate("trace.opening").format(name=path.name))
         self._replay_worker.start()
@@ -248,8 +246,6 @@ class WorkspaceSession:
         if generation == getattr(self, "_replay_generation", 0):
             self._ingest_frames(frames, coalesce=True)
             self._mark_graphs_dirty()
-        # Acknowledge only after this batch was processed: this keeps at most
-        # MAX_PENDING_BATCHES in the worker/UI hand-off path.
         worker.batch_rendered()
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()
@@ -311,10 +307,6 @@ class WorkspaceSession:
             self._update_mode_availability()
         elif worker is not None:
             QTimer.singleShot(0, partial(self._complete_replay_if_ready, generation, worker))
-        # Successful replay completion is driven by ReplayWorker.replay_completed,
-        # not QThread.finished: on Windows, finished can be delivered before all
-        # queued frame batches have reached the UI object.
-
     def _complete_replay_if_ready(self, generation: int, worker: ReplayWorker) -> None:
         if self._replay_ready_to_complete(generation, worker):
             self._complete_replay(generation)
