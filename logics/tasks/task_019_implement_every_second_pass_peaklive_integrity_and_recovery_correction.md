@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: Codex
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:36
 
 # AI Context
 - Summary: Orchestrate all thirteen second-pass corrections in six code-only implementation waves, then author and execute every regression and repository gate once in the final verification phase.
@@ -50,25 +50,25 @@
 - [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # AC Traceability
-- request-AC1 -> `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`. Proof deferred to slice closeout.
-- request-AC2 -> `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`. Proof deferred to slice closeout.
-- request-AC13 -> `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`. Proof deferred to slice closeout.
-- request-AC3 -> `item_099_make_replay_completion_truthful_under_backpressure_and_cancellation`. Proof deferred to slice closeout.
-- request-AC13 -> `item_099_make_replay_completion_truthful_under_backpressure_and_cancellation`. Proof deferred to slice closeout.
-- request-AC4 -> `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`. Proof deferred to slice closeout.
-- request-AC5 -> `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`. Proof deferred to slice closeout.
-- request-AC6 -> `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`. Proof deferred to slice closeout.
-- request-AC13 -> `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`. Proof deferred to slice closeout.
-- request-AC7 -> `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`. Proof deferred to slice closeout.
-- request-AC8 -> `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`. Proof deferred to slice closeout.
-- request-AC9 -> `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`. Proof deferred to slice closeout.
-- request-AC13 -> `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`. Proof deferred to slice closeout.
-- request-AC10 -> `item_102_qualify_decoded_signal_identity_across_databases_and_identifiers`. Proof deferred to slice closeout.
-- request-AC13 -> `item_102_qualify_decoded_signal_identity_across_databases_and_identifiers`. Proof deferred to slice closeout.
-- request-AC11 -> `item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes`. Proof deferred to slice closeout.
-- request-AC13 -> `item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes`. Proof deferred to slice closeout.
-- request-AC12 -> `item_104_make_trace_context_actions_safe_for_frame_and_event_records`. Proof deferred to slice closeout.
-- request-AC13 -> `item_104_make_trace_context_actions_safe_for_frame_and_event_records`. Proof deferred to slice closeout.
+- request-AC1 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC2 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC3 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC4 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC5 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC6 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC7 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC8 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC9 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC10 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC11 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC12 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
+- request-AC13 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
 
 # Validation
 - (no validation recorded yet)
