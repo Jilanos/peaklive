@@ -117,7 +117,10 @@ def test_disabled_rows_still_carry_a_legible_branch(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     tree = window.signal_explorer
     tree.setEnabled(False)
-    qtbot.wait(10)
+    # A synchronous repaint is sufficient here and avoids entering a nested
+    # Windows Qt event loop while the tree is disabled (which can trigger a
+    # platform Qt access violation during teardown).
+    tree.viewport().repaint()
     assert _rendered_contrast(tree.viewport()) >= MINIMUM_CONTRAST
     tree.setEnabled(True)
 
