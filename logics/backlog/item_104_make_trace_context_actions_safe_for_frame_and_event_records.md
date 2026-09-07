@@ -1,14 +1,14 @@
 ## item_104_make_trace_context_actions_safe_for_frame_and_event_records - Make trace context actions safe for frame and event records
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: Low
 > Theme: Record-aware trace interaction
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Make trace context actions record-aware so both events and frames can be copied safely while identifier filtering is offered only for valid frame identifiers.
@@ -53,3 +53,9 @@
 # Priority
 - Priority: Medium - every event-row context click currently raises and hides the safe copy workflow needed for diagnostics.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.

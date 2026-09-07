@@ -1,15 +1,15 @@
 ## task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction - Implement every second-pass PeakLive integrity and recovery correction
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: Codex
-> Indicators reviewed: 2026-09-07 15:06:36
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Orchestrate all thirteen second-pass corrections in six code-only implementation waves, then author and execute every regression and repository gate once in the final verification phase.
@@ -21,18 +21,18 @@
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
 # Plan
-- [ ] 1. Implementation wave 1: redesign the live acquisition handoff and Stop/finalization ordering so authoritative ingestion is complete, exactly once, generation-safe, and bounded. Do not run any tests in this wave.
-- [ ] 2. Implementation wave 2: correct replay dispatch, acknowledgement, progress, and terminal-state semantics under slow consumption, cancellation, replacement, and failure. Do not run any tests in this wave.
-- [ ] 3. Implementation wave 3: make decoded exports transactional and make capture/sidecar/rotation allocation collision-safe, iteration-stable, and source-ordered. Do not run any tests in this wave.
-- [ ] 4. Implementation wave 4: extend the canonical frame model and every dependent layer with direction, declared DLC, safe remote/invalid-payload decoding, and distinct standard/extended identifier keys. Do not run any tests in this wave.
-- [ ] 5. Implementation wave 5: introduce provenance-qualified signal identity with legacy-profile handling across explorer, decode, series, graphs, measurements, and export. Do not run any tests in this wave.
-- [ ] 6. Implementation wave 6: add concurrent profile-write coordination and record-aware trace context actions, then perform a code-only integration review of all changed interfaces. Do not run tests, lint, benchmarks, or test collection yet.
-- [ ] 7. Final verification phase only, after all implementation waves are complete: create or update focused regression tests for every acceptance criterion and reproduced failure. Test files may be prepared now; no test command was allowed earlier.
-- [ ] 8. Still within the final verification phase: run the focused integrity suites, then the full Linux/offscreen test suite, lint, internationalization validation, and Logics validation. Fix any failures within this final phase and rerun affected checks plus the final full gate; record exact results and platform limitations before closeout.
-- [ ] 9. Complete AC traceability and closeout only after the deferred final verification gate passes. Keep commits under operator control and leave unrelated external artifacts untouched.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
-- [ ] Keep commit creation under operator control; do not force one commit per micro-step.
-- [ ] GATE: do not close until lint, audit, and scaffold validation pass.
+- [x] 1. Implementation wave 1: redesign the live acquisition handoff and Stop/finalization ordering so authoritative ingestion is complete, exactly once, generation-safe, and bounded. Do not run any tests in this wave.
+- [x] 2. Implementation wave 2: correct replay dispatch, acknowledgement, progress, and terminal-state semantics under slow consumption, cancellation, replacement, and failure. Do not run any tests in this wave.
+- [x] 3. Implementation wave 3: make decoded exports transactional and make capture/sidecar/rotation allocation collision-safe, iteration-stable, and source-ordered. Do not run any tests in this wave.
+- [x] 4. Implementation wave 4: extend the canonical frame model and every dependent layer with direction, declared DLC, safe remote/invalid-payload decoding, and distinct standard/extended identifier keys. Do not run any tests in this wave.
+- [x] 5. Implementation wave 5: introduce provenance-qualified signal identity with legacy-profile handling across explorer, decode, series, graphs, measurements, and export. Do not run any tests in this wave.
+- [x] 6. Implementation wave 6: add concurrent profile-write coordination and record-aware trace context actions, then perform a code-only integration review of all changed interfaces. Do not run tests, lint, benchmarks, or test collection yet.
+- [x] 7. Final verification phase only, after all implementation waves are complete: create or update focused regression tests for every acceptance criterion and reproduced failure. Test files may be prepared now; no test command was allowed earlier.
+- [x] 8. Still within the final verification phase: run the focused integrity suites, then the full Linux/offscreen test suite, lint, internationalization validation, and Logics validation. Fix any failures within this final phase and rerun affected checks plus the final full gate; record exact results and platform limitations before closeout.
+- [x] 9. Complete AC traceability and closeout only after the deferred final verification gate passes. Keep commits under operator control and leave unrelated external artifacts untouched.
+- [x] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
+- [x] Keep commit creation under operator control; do not force one commit per micro-step.
+- [x] GATE: do not close until lint, audit, and scaffold validation pass.
 
 # Backlog
 - `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`
@@ -44,10 +44,10 @@
 - `item_104_make_trace_context_actions_safe_for_frame_and_event_records`
 
 # Definition of Done (DoD)
-- [ ] Generated request, product, backlog, and task docs are present.
-- [ ] Context-pack handoff is available when requested.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] Generated request, product, backlog, and task docs are present.
+- [x] Context-pack handoff is available when requested.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # AC Traceability
 - request-AC1 -> This task. Proof: Implemented in 74fa5c9; validated with QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest, uv run --python 3.13 python -m ruff check ., logics-manager i18n validate, logics-manager lint --require-status, and logics-manager audit --group-by-doc. Source: `74fa5c9`
@@ -72,9 +72,20 @@
 
 # Validation
 - (no validation recorded yet)
+- 538 passed in 95.38s (0:01:35)
+- uv run --python 3.13 python -m ruff check . passed
+- logics-manager i18n validate passed
+- logics-manager lint --require-status passed
+- logics-manager audit --group-by-doc passed with 0 blocking issues and 22 expected deferred warnings
+- command: `QT_QPA_PLATFORM=offscreen uv run --python 3.13 python -m pytest` | result: passed | date: 2026-09-07
+- Finish workflow executed on 2026-09-07.
+- Linked backlog/request close verification passed.
 
 # Report
 - Not started.
+- Finished on 2026-09-07.
+- Linked backlog item(s): `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`, `item_099_make_replay_completion_truthful_under_backpressure_and_cancellation`, `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`, `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`, `item_102_qualify_decoded_signal_identity_across_databases_and_identifiers`, `item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes`, `item_104_make_trace_context_actions_safe_for_frame_and_event_records`
+- Related request(s): `req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps`
 
 # Links
 - Request: `req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps`

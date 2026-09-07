@@ -1,11 +1,12 @@
 ## prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence - PeakLive trustworthy measurement identity and recoverable local evidence
 > Date: 2026-09-07
-> Status: Proposed
+> Status: Settled
 > Related request: `req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps`
-> Related backlog: `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`, `item_099_make_replay_completion_truthful_under_backpressure_and_cancellation`, `item_100_publish_exports_and_recording_artifacts_transactionally_without_collision`, `item_101_preserve_complete_can_frame_identity_and_make_decoding_total`, `item_102_qualify_decoded_signal_identity_across_databases_and_identifiers`, `item_103_prevent_stale_concurrent_profile_writers_from_erasing_setup_changes`, `item_104_make_trace_context_actions_safe_for_frame_and_event_records`
+> Related backlog: `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`
 > Related task: `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # Overview
 PeakLive preserves every accepted measurement record and its identity across live acquisition, replay, decoding, visualization, persistence, and local output, while failures remain explicit and prior evidence remains recoverable.
@@ -57,5 +58,5 @@ flowchart LR
 - The final deferred regression matrix, full Linux/offscreen suite, lint, internationalization checks, and Logics validation pass after all implementation waves complete.
 
 # References
-- Product back-reference: `req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps`
+- Product back-reference: `item_098_drain_live_acquisition_completely_through_a_bounded_authoritative_handoff`
 - Task back-reference: `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`

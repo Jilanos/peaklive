@@ -1,14 +1,14 @@
 ## item_100_publish_exports_and_recording_artifacts_transactionally_without_collision - Publish exports and recording artifacts transactionally without collision
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 100%
 > Complexity: High
 > Theme: Transactional local output and ordered capture evidence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-07 12:36:49
+> Indicators reviewed: 2026-09-07 15:06:53
 
 # AI Context
 - Summary: Protect existing evidence with owned export temporaries, atomic publication, a complete capture/sidecar collision domain, stable acquisition iterations, and source-ordered recording.
@@ -60,3 +60,9 @@
 # Priority
 - Priority: High - cancellation and sidecar collision can currently delete or replace pre-existing operator evidence.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction`
+
+# Notes
+- Task `task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction` was finished via `logics-manager flow finish task` on 2026-09-07.
