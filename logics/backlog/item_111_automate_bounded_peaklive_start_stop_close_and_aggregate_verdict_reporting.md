@@ -1,13 +1,14 @@
 ## item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting - Automate bounded PeakLive start-stop-close and aggregate verdict reporting
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Windows UI automation and evidence verdict
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-08 16:18:31
 
 # AI Context
 - Summary: Replaces manual status entry with safe automation of PeakLive's passive lifecycle and a metric-derived terminal verdict.
@@ -59,3 +60,9 @@
 # Priority
 - Priority: High - application behaviour, not operator interaction, must control the test's lifecycle and produce a release decision.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp`
+
+# Notes
+- Task `task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp` was finished via `logics-manager flow finish task` on 2026-09-08.
