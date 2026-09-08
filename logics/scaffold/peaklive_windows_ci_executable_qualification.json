@@ -1,0 +1,194 @@
+{
+  "title": "Qualify the PeakLive CI Windows executable with a reproducible functional test battery",
+  "references": [
+    "docs/windows-ci-build-under-test.md",
+    "docs/build-identity.md",
+    "docs/windows-hardware-acceptance.md",
+    "README.md",
+    "scripts/build-windows.ps1",
+    "tests",
+    "artifacts/hardware-acceptance",
+    "logics/external",
+    "logics/runbook/run_001_capture_a_peaklive_freeze_with_local_diagnostics.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Windows packaged-executable qualification and release evidence",
+    "needs": [
+      "Turn the current manual hardware checklist into a repeatable Windows test battery for the CI-produced PeakLive.exe, with a clear split between automated release gates, guided UI checks, and bench-only CAN checks.",
+      "Test the executable as an installed-or-copied Windows artifact, using isolated test data and explicit evidence, rather than inferring Windows behaviour from the Python/offscreen suite.",
+      "Make every observation attributable to the supplied CI build: identifier 0.1.2+b202609071506 and SHA-256 E8E062387148A890AAB7FAE107D2A45F0F38269188CB36D789E7EF0FD28D4C21.",
+      "Provide a developer-owned PowerShell harness, fixtures, result schema, and failure-collection procedure that can be reused for each future CI executable."
+    ],
+    "context": [
+      "The deliverable beside this repository is PeakLive.exe with PeakLive.build.txt. It is a self-contained Windows x64 CI artifact, not a source-run validation target.",
+      "Existing proof covers a Linux/offscreen suite and limited PCAN passive runs on Windows 11 at 500 kbit/s. It does not constitute a complete fresh-executable, UI, reconnect, replay, export, profile, display-scale, or uninstall qualification.",
+      "PeakLive is receive-only at the application level. Tests must never introduce frame transmission; normal receive mode is allowed only where controller ACK is safe and passive listen-only is the default bench mode.",
+      "The repository contains representative ASC input, multiple DBCs, prior capture evidence, and the CI build metadata. The campaign must use copies of those assets and never mutate original evidence or a developer's production profile store.",
+      "Hardware, bus topology, active traffic, driver version, and display scaling vary by bench. The harness must report unavailable prerequisites as Not run, not as Pass."
+    ],
+    "acceptance_criteria": [
+      "AC1: A Windows qualification harness accepts an executable path, build-metadata path, isolated data root, artifact root, and optional hardware profile; it verifies the supplied CI build identifier and SHA-256 before any functional test starts.",
+      "AC2: The automated smoke lane proves on Windows 10/11 x64 that PeakLive.exe starts without a Python installation, stays alive long enough to expose its main window, uses the isolated PEAKLIVE_DATA_DIR, writes structured logs and screenshots on failure, and terminates cleanly.",
+      "AC3: A repeatable UI lane covers initial disconnected state, About/build identity, Help and keyboard shortcuts, window layouts at 1024x768, 1280x720, and 1600x900 at 100/125/150 percent scaling, menus, accessible names, and profile persistence/recovery without connecting to hardware.",
+      "AC4: A fixture lane copies test ASC/TRC and DBC files into its sandbox and verifies replay, filtering, trace/inspector interaction, signal selection/graphs, A/B measurements, report, CSV export, Parquet export, cancellation-safe output, and restart persistence against the packaged executable.",
+      "AC5: A guided PCAN lane validates passive connection at the known bitrate, live trace, recording, stop, adapter unplug/replug, degraded shutdown, recovered partial artifacts, and a sustained high-load recording. It records Windows version, driver version, adapter identity, bitrate, observed counters, and generated evidence paths.",
+      "AC6: The release lane defines explicit pass/fail/not-run rules, per-case timeouts, a machine-readable summary, a human-readable report, log/screenshot/dump collection, and an evidence manifest keyed by executable hash. A missing adapter, inactive bus, or insufficient disk space never yields a false Pass.",
+      "AC7: The implementation adds focused automated coverage for the harness itself and documents one operator command for automated lanes plus one command for the hardware lane. Existing application tests remain unchanged unless a reliable packaged-Windows regression requires a new fixture.",
+      "AC8: The final verification is performed on the supplied CI executable and records the exact completed, failed, skipped, and blocked cases. No release-ready claim is made unless every mandatory non-hardware gate passes and required bench cases have recorded evidence or an explicit operator waiver."
+    ]
+  },
+  "product": {
+    "title": "PeakLive Windows executable qualification kit",
+    "overview": "Each CI-built PeakLive Windows executable can be qualified on a clean, controlled bench through a repeatable mix of automated smoke/UI/fixture checks and safety-conscious PCAN hardware acceptance, producing local evidence that identifies the exact binary.",
+    "goals": [
+      "Make the executable, not merely source code, the system under test.",
+      "Allow a developer to run deterministic non-hardware tests from PowerShell with isolated data and reusable fixtures.",
+      "Make bench tests safe, observable, repeatable, and honest about unavailable preconditions.",
+      "Retain enough evidence to reproduce a reported release failure without collecting customer or production CAN data."
+    ],
+    "non_goals": [
+      "Automating physical bus generation, PCAN driver installation, Windows installation, or a real 60-minute high-load bus when the bench cannot supply it.",
+      "Adding transmit functionality, CAN FD, cloud reporting, telemetry, code signing, or installer technology.",
+      "Changing PeakLive functional behaviour solely to make UI automation easier.",
+      "Treating a test run made from source, Linux, or offscreen Qt as packaged-Windows acceptance evidence."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Create an isolated PowerShell qualification harness for a CI-built PeakLive executable",
+      "priority": "High - without a binary-first, isolated harness, results can be attributed to stale profiles, a different executable, or a source environment rather than the CI artifact.",
+      "complexity": "Medium",
+      "theme": "Reproducible executable preflight and evidence collection",
+      "request_acs": ["AC1", "AC2", "AC6", "AC7"],
+      "problem": [
+        "The build metadata and executable sit outside the repository and the existing smoke instructions are manual.",
+        "A bench run can accidentally use global application data, overwrite evidence, or report a stale executable without a hash-verified manifest.",
+        "Failure evidence is not standardized across launch, UI, replay, and hardware cases."
+      ],
+      "scope_in": [
+        "Implement a PowerShell entry point with explicit paths for executable, metadata, sandbox, artifacts, and test-lane selection.",
+        "Validate build metadata, file hash, free disk space, writable sandbox, and required fixtures before launch.",
+        "Create a unique artifact directory containing environment facts, structured case results, stdout/stderr where available, screenshots, and a final manifest.",
+        "Set PEAKLIVE_DATA_DIR only for the child executable and ensure cleanup never touches an operator profile directory.",
+        "Define stable case identifiers, timeout semantics, pass/fail/not-run/blocked status, and a non-zero exit code only for failed mandatory cases."
+      ],
+      "scope_out": [
+        "Installing drivers or changing Windows security policy.",
+        "Deleting historical acceptance artifacts or user data.",
+        "Embedding test-only diagnostics into production release code."
+      ],
+      "acceptance_criteria": [
+        "AC1: Given the supplied PeakLive.exe and PeakLive.build.txt, preflight rejects an identifier or SHA-256 mismatch before PeakLive launches.",
+        "AC2: Each run creates a unique evidence root and cannot write outside its declared sandbox/artifact roots.",
+        "AC3: The harness emits valid machine-readable summary and readable report even when a test times out or PowerShell encounters an exception.",
+        "AC4: Harness unit/contract tests exercise metadata parsing, unsafe-path rejection, status aggregation, and failure collection."
+      ]
+    },
+    {
+      "title": "Automate packaged Windows smoke, identity, UI, and persisted-workspace checks",
+      "priority": "High - the most basic release failures are launch, stale build identity, unusable layout, or profile corruption before CAN hardware is involved.",
+      "complexity": "High",
+      "theme": "Packaged application functional smoke",
+      "request_acs": ["AC2", "AC3", "AC6", "AC7"],
+      "problem": [
+        "Current coverage is predominantly source-run/offscreen and cannot prove that the packaged executable presents a working Windows desktop application.",
+        "Build identity and layout requirements are documented but not captured as executable-specific release evidence.",
+        "Profile persistence and corrupt-store recovery need verification with an isolated local Windows data directory."
+      ],
+      "scope_in": [
+        "Select a maintained Windows UI-automation mechanism compatible with the artifact and document the dependency/setup boundary.",
+        "Automate launch, visible main-window readiness, disconnected initial state, About identity, clean close, restart, and isolated profile persistence/recovery.",
+        "Exercise documented keyboard shortcuts and reachable command surfaces without requiring a CAN adapter.",
+        "Capture layout screenshots and minimum geometry/assertions at 1024x768, 1280x720, and 1600x900 at 100/125/150 percent scaling.",
+        "Record automation limitations explicitly and leave subjective readability decisions as guided checks with screenshot evidence."
+      ],
+      "scope_out": [
+        "Pixel-perfect visual regression across all GPUs/themes.",
+        "Automated verification of Windows accessibility tools beyond accessible-name/control discovery.",
+        "Live CAN acquisition or replay/export fixtures."
+      ],
+      "acceptance_criteria": [
+        "AC1: The packaged executable launches and closes cleanly under a fresh sandbox, with no Python interpreter dependency in the launch path.",
+        "AC2: The About dialog and status identity match the verified build metadata and identify packaged execution.",
+        "AC3: Each required viewport/scale produces a screenshot, and automation flags clipped, inaccessible, or unreachable mandatory controls.",
+        "AC4: A saved isolated profile survives restart; a deliberately corrupt test-only store follows the documented recovery behaviour without touching any real profile store."
+      ]
+    },
+    {
+      "title": "Qualify replay, DBC analysis, graph, report, and export flows in the packaged executable",
+      "priority": "High - replay and local analysis let the release prove most operator workflows deterministically without depending on a live bus.",
+      "complexity": "High",
+      "theme": "Fixture-driven end-to-end analysis",
+      "request_acs": ["AC4", "AC6", "AC7"],
+      "problem": [
+        "The repository has ASC and DBC inputs but no packaged-executable acceptance lane that proves a user can complete the core analysis workflow.",
+        "Exports, cancellation, graphs, filters, and report are sensitive cross-layer flows that should leave tangible artifacts and screenshots.",
+        "Fixtures must not be loaded or modified directly from the repository evidence directories."
+      ],
+      "scope_in": [
+        "Curate small deterministic ASC/TRC and DBC fixture copies, including at least one event record and decoded signal.",
+        "Automate or guide open/replay, DBC load, filter changes, trace and inspector selection, signal selection, graph navigation, cursors, measurements, and diagnostic report.",
+        "Export CSV and Parquet into the run sandbox; validate schema, row count, expected signal identity, and no unintended overwrite on cancellation/failure paths.",
+        "Create screenshots and evidence links for each workflow checkpoint and compare output only against fixture-derived expectations."
+      ],
+      "scope_out": [
+        "Benchmarking every possible DBC/capture size.",
+        "Changing decoder semantics, adding file formats, or testing unsupported captures.",
+        "Using production customer traces as committed test fixtures."
+      ],
+      "acceptance_criteria": [
+        "AC1: The packaged executable completes the representative replay-to-report workflow from copied fixtures without a crash or a modal dead end.",
+        "AC2: CSV and Parquet exports validate as readable outputs with the requested scope and do not replace a pre-existing sandbox sentinel during cancellation/failure tests.",
+        "AC3: Trace, inspector, signal explorer, graphs, cursors, measurements, filters, and report each have an observable assertion or guided checkpoint.",
+        "AC4: The lane records its fixture hashes, output hashes, screenshots, and expected-versus-observed result in the evidence manifest."
+      ]
+    },
+    {
+      "title": "Run safety-conscious PCAN live acquisition, recovery, and endurance acceptance",
+      "priority": "High - only a real Windows driver and active bus can validate connection, bounded shutdown, unplug/replug behaviour, recording order, and sustained capture.",
+      "complexity": "High",
+      "theme": "Bench hardware acceptance",
+      "request_acs": ["AC5", "AC6", "AC8"],
+      "problem": [
+        "Prior PCAN proof was limited and the documented 60-minute acceptance remains deferred.",
+        "Driver, bitrate, active traffic, USB disconnect, and disk constraints make hardware tests unsafe to infer from automation alone.",
+        "A simple pass/fail checklist cannot distinguish unavailable hardware from a functional regression."
+      ],
+      "scope_in": [
+        "Implement a hardware-lane preflight and guided checklist with passive listen-only as default; require an explicit operator acknowledgment before normal receive mode or USB disruption.",
+        "Capture Windows, PCAN driver, adapter, channel, bitrate, disk space, fixture/build identity, and bus-traffic facts into the evidence manifest.",
+        "Exercise connect, stop, repeated Start/Stop, unplug/replug, degraded shutdown, final/partial capture pairs, replay of captured output, and 60-minute high-load recording when the bench is available.",
+        "Define observable limits and evidence: UI interactivity, state text, frame/event counters, recorder high-water mark, driver errors, capture paths, and output integrity.",
+        "Mark unavailable prerequisites Not run and record the reason; enable an explicit operator waiver for deferred endurance only."
+      ],
+      "scope_out": [
+        "Transmission, fuzzing a vehicle bus, simulated driver faults that require unsupported tools, or unsupervised USB manipulation.",
+        "Treating no-traffic reception as a successful high-load test.",
+        "Automatically deleting captured bench evidence."
+      ],
+      "acceptance_criteria": [
+        "AC1: Passive PCAN acquisition at the declared known bitrate demonstrates live incoming frames and a clean Stop with recorded state/counter evidence.",
+        "AC2: Repeated Start/Stop and unplug/replug follow the documented recoverable or degraded state model without a frozen window or unsafe re-enable of Start.",
+        "AC3: A 60-minute active-bus run, when available, records load/counters, capture rotation/sidecars, driver errors, disk outcome, and replayability of resulting output.",
+        "AC4: Every skipped/blocked hardware case names the missing prerequisite and cannot be aggregated as a release pass without a recorded waiver."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver the PeakLive Windows CI executable qualification battery",
+    "plan": [
+      "Wave 1: implement the binary preflight, isolated sandbox, result schema, evidence manifest, and PowerShell orchestration contract; validate its path and metadata unit cases.",
+      "Wave 2: add the non-hardware packaged-executable smoke, identity, UI, viewport, keyboard, and profile-recovery lane using a documented Windows UI automation mechanism.",
+      "Wave 3: curate copied fixtures and add the replay, DBC, trace, graph, measurement, report, CSV, Parquet, and cancellation-output lane.",
+      "Wave 4: add the PCAN hardware preflight, guided safety prompts, live/recovery/endurance checklist, evidence capture, and Not-run/waiver workflow.",
+      "Wave 5: run the automated lanes against the supplied PeakLive CI executable, fix harness defects, rerun the full automated gate, then execute available hardware cases under operator supervision.",
+      "Close only after Logics validation passes and the report separates passed mandatory automated cases from failed, blocked, not-run, and waived hardware cases. Keep commits under operator control."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_windows_ci_executable_qualification.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
