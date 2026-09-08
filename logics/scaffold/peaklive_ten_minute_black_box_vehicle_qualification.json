@@ -1,0 +1,165 @@
+{
+  "title": "Automate a ten-minute black-box PeakLive vehicle-load qualification",
+  "references": [
+    "docs/windows-ci-build-under-test.md",
+    "docs/windows-qualification.md",
+    "docs/vehicle-test-10m.md",
+    "docs/windows-hardware-acceptance.md",
+    "scripts/qualify-windows.ps1",
+    "scripts/vehicle-test-10m.ps1",
+    "src/peaklive/diagnostics.py",
+    "src/peaklive/services/acquisition.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/recording/asc.py",
+    "artifacts/hardware-acceptance"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Objective packaged-application qualification under live CAN load",
+    "needs": [
+      "Qualify PeakLive itself under an active vehicle CAN bus without decoding, classifying, storing, or judging CAN payloads, identifiers, signals, or vehicle behaviour.",
+      "Replace operator-entered Pass/Fail judgements with one automated 600-second Windows run that measures application liveness, UI responsiveness, resource use, capture progress, controlled stop, and output finalization.",
+      "Use the vehicle bus only as an opaque, passive receive-only traffic source. The harness and application must never transmit, mutate vehicle state, or include raw frame content in evidence.",
+      "Produce one hash-keyed evidence bundle and deterministic verdict that clearly separates application failures, missing bench prerequisites, safety aborts, and traffic-not-present outcomes."
+    ],
+    "context": [
+      "The current PCAN passive probe on PCAN_USBBUS1 at 500 kbit/s received 18,644 frames in ten seconds. This confirms an available high-rate traffic source but does not prove PeakLive stays responsive or records correctly under the same load.",
+      "The existing ten-minute runner is a useful safety checklist, but it asks the operator to judge every phase. It cannot objectively prove fluidity or distinguish a UI stall from an attentive operator delay.",
+      "PeakLive is a receive-only product. Any test that calls a CAN send operation, enables a transmit control, or needs decoded vehicle semantics is outside scope and must fail closed.",
+      "The test must run against the packaged CI executable with a hash-matching build metadata file and an isolated PEAKLIVE_DATA_DIR. Evidence may contain aggregate counts, rates, durations, process metrics, application state, hashes, and file metadata, but no payload bytes, arbitration IDs, decoded values, or DBC-derived content.",
+      "A 600-second budget includes preflight, launch, passive connection, loaded observation, controlled Stop, artifact inspection, close, and report writing. A deadline breach is a failed run and triggers bounded cleanup."
+    ],
+    "acceptance_criteria": [
+      "AC1: One command runs a packaged-executable qualification with a hard 600-second monotonic deadline, explicit cleanup, and a hash/identifier preflight before PeakLive starts.",
+      "AC2: The harness opens only a passive receive-only PCAN channel and enforces a no-transmit policy. Its evidence and logs contain only aggregate traffic statistics, never CAN payloads, arbitration identifiers, signal names, decoded values, or DBC content.",
+      "AC3: During a configurable loaded-observation window, the harness samples PeakLive process liveness, CPU, working set, handle count where available, window/UI responsiveness, application acquisition state, capture-file growth, and aggregate ingress/capture counters at bounded intervals.",
+      "AC4: The verdict uses documented thresholds for unexpected process exit, UI response timeout, missing/non-growing capture, excessive sustained resource growth, driver errors, traffic absence, and deadline breach. It distinguishes Fail, Blocked, NotRun, and Pass without operator-entered case status.",
+      "AC5: The harness performs and verifies one controlled Stop and close, then checks that only final or explicitly recoverable partial capture artifacts exist, without opening, parsing, or exposing CAN frame contents.",
+      "AC6: Each run emits a machine-readable aggregate report, readable summary, build hash, Windows/driver/adapter facts, sampled metrics, screenshots or UI diagnostics on failure, and redacts forbidden CAN content by construction.",
+      "AC7: The MVP has deterministic automated tests for deadline enforcement, no-transmit guard, redaction, verdict thresholds, artifact-state classification, and missing-hardware behaviour; no active vehicle is required for those tests.",
+      "AC8: The final Windows bench run against the supplied CI binary records an objective verdict for the 10-minute scenario. It does not claim vehicle or CAN-protocol correctness."
+    ]
+  },
+  "product": {
+    "title": "PeakLive ten-minute black-box vehicle-load qualification",
+    "overview": "PeakLive can be objectively qualified under real active-vehicle traffic in ten minutes, treating the CAN bus as an opaque passive load source and judging only the packaged application's health, responsiveness, recording lifecycle, and recoverable local output.",
+    "goals": [
+      "Make the qualification verdict derived from measured application facts rather than operator judgement of high-rate traffic.",
+      "Keep vehicle interaction passive, receive-only, and payload-blind.",
+      "Bound every run and its cleanup to ten minutes.",
+      "Create portable, privacy-conscious evidence for the exact CI executable."
+    ],
+    "non_goals": [
+      "Validate CAN message semantics, identifiers, payloads, DBC decoding, signals, vehicle subsystems, or bus-protocol compliance.",
+      "Transmit frames, acknowledge a safety-critical bus, change vehicle configuration, or test while driving.",
+      "Replace long-duration endurance qualification; this is a short release-smoke/load gate.",
+      "Collect raw vehicle traffic in the harness report or upload evidence to a cloud service."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Build a deadline-bound passive vehicle-load observer for the packaged executable",
+      "priority": "High - without a bounded observer, a short vehicle test cannot distinguish a frozen application from an operator delay or an unbounded test process.",
+      "complexity": "High",
+      "theme": "Black-box Windows process and UI observability",
+      "request_acs": ["AC1", "AC3", "AC4", "AC6", "AC7"],
+      "problem": [
+        "The existing runner can launch PeakLive and ask human questions, but it does not enforce phase timing or produce a verdict from liveness and responsiveness samples.",
+        "A loaded UI can appear responsive between occasional manual interactions while its event loop is already stalling or its resource usage is growing unsafely."
+      ],
+      "scope_in": [
+        "Implement a monotonic 600-second runner with bounded phase budgets and guaranteed bounded process cleanup.",
+        "Sample PeakLive process liveness, CPU, working set, handle count where Windows exposes it, and a bounded UI/window responsiveness probe at a documented cadence.",
+        "Acquire app-visible acquisition state and capture progress through stable diagnostics or UI automation, without reading CAN content.",
+        "Write timestamped aggregate samples and a threshold-based verdict to JSON and Markdown.",
+        "Provide deterministic fake-process and fake-clock tests for timeout, stall, exit, and resource-growth rules."
+      ],
+      "scope_out": [
+        "Using screenshot pixels as the sole health signal.",
+        "Adding cloud telemetry, collecting raw trace rows, or modifying vehicle traffic.",
+        "Extending the test beyond ten minutes."
+      ],
+      "acceptance_criteria": [
+        "AC1: The observer kills or cleanly closes its owned PeakLive process by the 600-second deadline and records the terminal reason.",
+        "AC2: Samples are bounded in memory and contain only aggregate application/process facts.",
+        "AC3: Defined UI stall, process-exit, deadline, and sustained-resource-growth fixtures produce deterministic Fail verdicts.",
+        "AC4: A missing adapter, unavailable active traffic, or denied UI automation produces Blocked/NotRun rather than Pass."
+      ]
+    },
+    {
+      "title": "Add a payload-blind passive PCAN traffic and capture-progress oracle",
+      "priority": "High - the test needs to prove that PeakLive is receiving and recording a live load without inspecting the vehicle's messages.",
+      "complexity": "Medium",
+      "theme": "Privacy-preserving load and recording evidence",
+      "request_acs": ["AC2", "AC3", "AC4", "AC5", "AC6", "AC7"],
+      "problem": [
+        "An active bus can be silent at the selected bitrate, while a capture file can exist yet stop growing under backpressure or a stalled worker.",
+        "Raw trace inspection would expose unnecessary vehicle data and is not needed to qualify PeakLive runtime behaviour."
+      ],
+      "scope_in": [
+        "Open one explicitly passive PCAN receive channel and collect count, rate, first/last monotonic receive time, and driver-error aggregate only.",
+        "Prohibit CAN send APIs and verify the selected configuration is receive-only before sampling.",
+        "Track capture and sidecar artifact existence, size growth, final/partial state, and final hash/size without parsing frame lines.",
+        "Define configurable minimum-traffic and minimum-growth thresholds based on aggregate counts rather than identifiers or payload values.",
+        "Test redaction and no-transmit guard with fake PCAN adapters."
+      ],
+      "scope_out": [
+        "Persisting raw bus frames, frame IDs, payloads, signal values, DBC files, or event text in the qualification evidence.",
+        "Comparing protocol semantics between independent adapters.",
+        "Sending a probe, remote request, or any frame to the vehicle."
+      ],
+      "acceptance_criteria": [
+        "AC1: The oracle can prove active aggregate traffic or report traffic-absent without recording a single raw frame attribute.",
+        "AC2: Attempts to invoke a send operation fail closed and leave no transmitted traffic path in the MVP.",
+        "AC3: Capture progress is considered healthy only when the owned artifact grows across configured observation samples and finalizes/recoverably partializes after Stop.",
+        "AC4: JSON/Markdown reports cannot contain payload, arbitration-ID, signal, or DBC fields by schema or tests."
+      ]
+    },
+    {
+      "title": "Automate bounded PeakLive start-stop-close and aggregate verdict reporting",
+      "priority": "High - application behaviour, not operator interaction, must control the test's lifecycle and produce a release decision.",
+      "complexity": "High",
+      "theme": "Windows UI automation and evidence verdict",
+      "request_acs": ["AC1", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": [
+        "The current interactive script requires an operator to navigate the application and type a status, which makes duration and outcome subjective.",
+        "PeakLive must be commanded through stable accessible controls or a dedicated diagnostics-safe test surface to prove Start, Stop, and Close under actual load."
+      ],
+      "scope_in": [
+        "Choose a maintained Windows UI Automation approach and use stable accessible names or test-safe app diagnostics to select passive mode, Start, Stop, and Close.",
+        "Fail safely when the intended passive configuration or required controls cannot be proven, never falling back to an unsafe mode.",
+        "Run a six-minute loaded observation and bounded Stop/close within the overall ten-minute deadline.",
+        "Aggregate process, UI, PCAN, and artifact observations into documented Pass/Fail/Blocked/NotRun thresholds.",
+        "Capture failure screenshots/UI tree diagnostics only when they cannot include trace content; otherwise record a redacted control-state snapshot."
+      ],
+      "scope_out": [
+        "Visual pixel-perfect regression, DBC navigation, graph assessment, replay content validation, or export semantics.",
+        "Auto-answering Windows security, driver, or vehicle safety prompts.",
+        "Treating UI automation success as a statement about vehicle correctness."
+      ],
+      "acceptance_criteria": [
+        "AC1: The MVP starts PeakLive only after identity, passive-mode, adapter, and bitrate preconditions are proven.",
+        "AC2: It requests Start, observes loaded acquisition, requests Stop, and closes PeakLive without a human status entry.",
+        "AC3: The final verdict is produced from recorded thresholds and contains a precise terminal reason.",
+        "AC4: A supervised bench run completes within 600 seconds and reports only app-load evidence, not CAN semantics."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver the ten-minute automated black-box PeakLive vehicle-load MVP",
+    "plan": [
+      "Wave 1: define the privacy/redaction schema, deadline controller, process/UI health sampler, thresholds, and fake-driven tests. Do not touch CAN semantics or send paths.",
+      "Wave 2: implement the passive PCAN aggregate oracle and capture-progress classifier, including no-transmit guards and redaction tests.",
+      "Wave 3: automate passive PeakLive Start/Stop/Close through stable Windows controls or an approved diagnostics-safe interface, then compose the aggregate verdict/report.",
+      "Wave 4: execute deterministic automated tests and the packaged Windows smoke. Run one supervised active-vehicle test only when the approved bench is connected; record Blocked/NotRun honestly if it is unavailable.",
+      "Close only after the 600-second deadline, no-transmit, redaction, lifecycle, and verdict rules have focused coverage; keep vehicle/CAN semantic correctness explicitly out of the claim.",
+      "ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repository commit-ready without forcing commits."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_ten_minute_black_box_vehicle_qualification.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

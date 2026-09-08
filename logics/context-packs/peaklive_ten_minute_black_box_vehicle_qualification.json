@@ -1,0 +1,373 @@
+{
+  "budgets": {
+    "max_docs": 40,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+          "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+          "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md",
+      "ref": "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification",
+      "sections": {
+        "Goals": [
+          "- Make the qualification verdict derived from measured application facts rather than operator judgement of high-rate traffic.",
+          "- Keep vehicle interaction passive, receive-only, and payload-blind.",
+          "- Bound every run and its cleanup to ten minutes.",
+          "- Create portable, privacy-conscious evidence for the exact CI executable."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "PeakLive can be objectively qualified under real active-vehicle traffic in ten minutes, treating the CAN bus as an opaque passive load source and judging only the packaged application's health, responsiveness, recording lifecycle, and recoverable local output."
+        ],
+        "References": [
+          "- Product back-reference: `req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification`",
+          "- Task back-reference: `task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive ten-minute black-box vehicle-load qualification"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "automate, ten, minute, black, box, peaklive, vehicle, load, qualification",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+          "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+          "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ]
+      },
+      "path": "logics/request/req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification.md",
+      "ref": "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: One command runs a packaged-executable qualification with a hard 600-second monotonic deadline, explicit cleanup, and a hash/identifier preflight before PeakLive starts.",
+          "- AC2: The harness opens only a passive receive-only PCAN channel and enforces a no-transmit policy. Its evidence and logs contain only aggregate traffic statistics, never CAN payloads, arbitration identifiers, signal names, decoded values, or DBC content.",
+          "- AC3: During a configurable loaded-observation window, the harness samples PeakLive process liveness, CPU, working set, handle count where available, window/UI responsiveness, application acquisition state, capture-file growth, and aggregate ingress/capture counters at bounded intervals.",
+          "- AC4: The verdict uses documented thresholds for unexpected process exit, UI response timeout, missing/non-growing capture, excessive sustained resource growth, driver errors, traffic absence, and deadline breach. It distinguishes Fail, Blocked, NotRun, and Pass without operator-entered case status.",
+          "- AC5: The harness performs and verifies one controlled Stop and close, then checks that only final or explicitly recoverable partial capture artifacts exist, without opening, parsing, or exposing CAN frame contents.",
+          "- AC6: Each run emits a machine-readable aggregate report, readable summary, build hash, Windows/driver/adapter facts, sampled metrics, screenshots or UI diagnostics on failure, and redacts forbidden CAN content by construction."
+        ],
+        "Needs": [
+          "- Qualify PeakLive itself under an active vehicle CAN bus without decoding, classifying, storing, or judging CAN payloads, identifiers, signals, or vehicle behaviour.",
+          "- Replace operator-entered Pass/Fail judgements with one automated 600-second Windows run that measures application liveness, UI responsiveness, resource use, capture progress, controlled stop, and output finalization.",
+          "- Use the vehicle bus only as an opaque, passive receive-only traffic source. The harness and application must never transmit, mutate vehicle state, or include raw frame content in evidence.",
+          "- Produce one hash-keyed evidence bundle and deterministic verdict that clearly separates application failures, missing bench prerequisites, safety aborts, and traffic-not-present outcomes."
+        ]
+      },
+      "status": "Draft",
+      "title": "Automate a ten-minute black-box PeakLive vehicle-load qualification"
+    },
+    {
+      "ai_context": {
+        "keywords": "build, deadline, bound, passive, vehicle, load, observer, packaged, executable",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable.md",
+      "ref": "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The observer kills or cleanly closes its owned PeakLive process by the 600-second deadline and records the terminal reason.",
+          "- AC2: Samples are bounded in memory and contain only aggregate application/process facts.",
+          "- AC3: Defined UI stall, process-exit, deadline, and sustained-resource-growth fixtures produce deterministic Fail verdicts.",
+          "- AC4: A missing adapter, unavailable active traffic, or denied UI automation produces Blocked/NotRun rather than Pass."
+        ],
+        "Problem": [
+          "- The existing runner can launch PeakLive and ask human questions, but it does not enforce phase timing or produce a verdict from liveness and responsiveness samples.",
+          "- A loaded UI can appear responsive between occasional manual interactions while its event loop is already stalling or its resource usage is growing unsafely."
+        ]
+      },
+      "status": "Ready",
+      "title": "Build a deadline-bound passive vehicle-load observer for the packaged executable"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, payload, blind, passive, pcan, traffic, capture, progress, oracle",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle.md",
+      "ref": "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The oracle can prove active aggregate traffic or report traffic-absent without recording a single raw frame attribute.",
+          "- AC2: Attempts to invoke a send operation fail closed and leave no transmitted traffic path in the MVP.",
+          "- AC3: Capture progress is considered healthy only when the owned artifact grows across configured observation samples and finalizes/recoverably partializes after Stop.",
+          "- AC4: JSON/Markdown reports cannot contain payload, arbitration-ID, signal, or DBC fields by schema or tests."
+        ],
+        "Problem": [
+          "- An active bus can be silent at the selected bitrate, while a capture file can exist yet stop growing under backpressure or a stalled worker.",
+          "- Raw trace inspection would expose unnecessary vehicle data and is not needed to qualify PeakLive runtime behaviour."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add a payload-blind passive PCAN traffic and capture-progress oracle"
+    },
+    {
+      "ai_context": {
+        "keywords": "automate, bounded, peaklive, start, close, aggregate, verdict, reporting",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/backlog/item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting.md",
+      "ref": "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The MVP starts PeakLive only after identity, passive-mode, adapter, and bitrate preconditions are proven.",
+          "- AC2: It requests Start, observes loaded acquisition, requests Stop, and closes PeakLive without a human status entry.",
+          "- AC3: The final verdict is produced from recorded thresholds and contains a precise terminal reason.",
+          "- AC4: A supervised bench run completes within 600 seconds and reports only app-load evidence, not CAN semantics."
+        ],
+        "Problem": [
+          "- The current interactive script requires an operator to navigate the application and type a status, which makes duration and outcome subjective.",
+          "- PeakLive must be commanded through stable accessible controls or a dedicated diagnostics-safe test surface to prove Start, Stop, and Close under actual load."
+        ]
+      },
+      "status": "Ready",
+      "title": "Automate bounded PeakLive start-stop-close and aggregate verdict reporting"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+          "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+          "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md",
+      "ref": "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive ten-minute black-box vehicle-load qualification"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, ten, minute, automated, black, box, peaklive, vehicle, load, mvp",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+          "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+          "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting"
+        ],
+        "prod": [
+          "prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification"
+        ],
+        "req": [
+          "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification"
+        ],
+        "task": [
+          "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+        ]
+      },
+      "path": "logics/tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md",
+      "ref": "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver the ten-minute automated black-box PeakLive vehicle-load MVP"
+    }
+  ],
+  "estimates": {
+    "char_count": 13015,
+    "companion_doc_count": 1,
+    "doc_count": 6
+  },
+  "generated_at": "2026-09-08T13:57:18Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification",
+      "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+      "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+      "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting",
+      "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 308
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification,item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable,item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle,item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting,task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp",
+  "refs": [
+    "req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification",
+    "item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable",
+    "item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle",
+    "item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting",
+    "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md",
+      "ref": "task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp"
+    }
+  ]
+}
