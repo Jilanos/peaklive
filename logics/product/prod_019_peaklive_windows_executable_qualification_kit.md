@@ -1,11 +1,12 @@
 ## prod_019_peaklive_windows_executable_qualification_kit - PeakLive Windows executable qualification kit
 > Date: 2026-09-08
-> Status: Proposed
+> Status: Settled
 > Related request: `req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery`
-> Related backlog: `item_105_create_an_isolated_powershell_qualification_harness_for_a_ci_built_peaklive_executable`, `item_106_automate_packaged_windows_smoke_identity_ui_and_persisted_workspace_checks`, `item_107_qualify_replay_dbc_analysis_graph_report_and_export_flows_in_the_packaged_executable`, `item_108_run_safety_conscious_pcan_live_acquisition_recovery_and_endurance_acceptance`
+> Related backlog: `item_105_create_an_isolated_powershell_qualification_harness_for_a_ci_built_peaklive_executable`
 > Related task: `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-08 14:14:11
 
 # Overview
 Each CI-built PeakLive Windows executable can be qualified on a clean, controlled bench through a repeatable mix of automated smoke/UI/fixture checks and safety-conscious PCAN hardware acceptance, producing local evidence that identifies the exact binary.
@@ -45,5 +46,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery`
+- Product back-reference: `item_105_create_an_isolated_powershell_qualification_harness_for_a_ci_built_peaklive_executable`
 - Task back-reference: `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery`

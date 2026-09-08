@@ -1,12 +1,13 @@
 ## req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery - Qualify the PeakLive CI Windows executable with a reproducible functional test battery
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Windows packaged-executable qualification and release evidence
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-09-08 14:14:11
 
 # AI Context
 - Summary: Defines the binary-first Windows qualification required to turn a CI executable into traceable release evidence without conflating automated local checks and bench-only CAN proof.
