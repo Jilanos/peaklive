@@ -11,6 +11,7 @@ from PySide6.QtCore import QThread, Signal
 from peaklive.adapters.base import CanAdapter
 from peaklive.diagnostics import logger
 from peaklive.domain import BusEvent, CanFrame, MeasurementProfile
+from peaklive.qualification import metrics_for_environment
 from peaklive.recording import AscRecorder
 from peaklive.services.acquisition import AcquisitionSession
 from peaklive.services.lifecycle import AcquisitionPhase
@@ -80,6 +81,7 @@ class AcquisitionWorker(QThread):
         self._consecutive_errors = 0
         self._last_error_signature: tuple[str, str] | None = None
         self._last_error_emitted_at = 0.0
+        self._qualification_metrics = metrics_for_environment()
 
     @property
     def generation(self) -> int:
@@ -98,6 +100,8 @@ class AcquisitionWorker(QThread):
         failure: str | None = None
         batch: list[CanFrame] = []
         self.phase_changed.emit(AcquisitionPhase.STARTING)
+        if self._qualification_metrics is not None:
+            self._qualification_metrics.record(state="starting", force=True)
         try:
             event = session.start(self._profile, stop_requested=self._stop_requested.is_set)
             if self._profile.recording.enabled:
@@ -107,6 +111,8 @@ class AcquisitionWorker(QThread):
                 self.recording_reserved.emit(self._profile.recording.iteration)
             self.status_changed.emit(event.message)
             self.phase_changed.emit(AcquisitionPhase.RUNNING)
+            if self._qualification_metrics is not None:
+                self._qualification_metrics.record(state="running", force=True)
             while not self._stop_requested.is_set():
                 record = self._adapter.receive(timeout=0.1)
                 if record is None:
@@ -139,6 +145,8 @@ class AcquisitionWorker(QThread):
             self.phase_changed.emit(
                 AcquisitionPhase.FAILED if failure else AcquisitionPhase.STOPPED
             )
+            if self._qualification_metrics is not None:
+                self._qualification_metrics.close("failed" if failure else "stopped")
 
     def _shut_down(
         self,
@@ -177,6 +185,8 @@ class AcquisitionWorker(QThread):
     def _flush(self, session: AcquisitionSession, batch: list[CanFrame]) -> None:
         """Emit one batch, then surface any recording notice it produced."""
         captured = session.ingest(batch)
+        if self._qualification_metrics is not None:
+            self._qualification_metrics.record(frames=len(captured))
         if self._presentation_sink is None:
             self.frames_received.emit(captured)
         else:
@@ -227,6 +237,11 @@ class AcquisitionWorker(QThread):
         session.record_event(record)
         self.event_received.emit(record)
         self.status_changed.emit(record.message)
+        if self._qualification_metrics is not None:
+            self._qualification_metrics.record(
+                events=1,
+                errors=int(record.kind in ERROR_EVENT_KINDS),
+            )
 
     def _reconnect_or_raise(self, session: AcquisitionSession) -> None:
         """Cycle the adapter up to `MAX_RECONNECT_ATTEMPTS` times, alerting on each.

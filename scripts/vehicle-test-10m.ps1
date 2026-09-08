@@ -15,6 +15,7 @@ $runId = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
 $artifactFull = [IO.Path]::GetFullPath($ArtifactRoot)
 $runRoot = Join-Path $artifactFull $runId
 $sandbox = Join-Path $runRoot 'sandbox'
+$metricsPath = Join-Path $runRoot 'peaklive-metrics.jsonl'
 $results = [System.Collections.Generic.List[object]]::new()
 $process = $null
 
@@ -50,9 +51,10 @@ try {
     if ($hash -ne $metadata.sha256.ToUpperInvariant()) { throw "SHA-256 mismatch: expected $($metadata.sha256), got $hash" }
     $deadline=(Get-Date).Add($duration)
     $env:PEAKLIVE_DATA_DIR=$sandbox
+    $env:PEAKLIVE_QUALIFICATION_METRICS=$metricsPath
     Set-Content -LiteralPath (Join-Path $runRoot 'environment.txt') -Value @(
         "run_id=$runId", "identifier=$($metadata.identifier)", "sha256=$hash", "bitrate_kbit=$Bitrate",
-        "deadline_local=$deadline", "safety=receive-only; passive listen-only; no transmit"
+        "deadline_local=$deadline", "metrics=$metricsPath", "safety=receive-only; passive listen-only; no transmit"
     )
     Add-Result 'V10-001' 'Build/hash and vehicle safety preflight' 'Pass' "identifier=$($metadata.identifier); sha256=$hash; bitrate=$Bitrate; hard deadline=$deadline"
     if ($Mode -eq 'plan') {
@@ -82,5 +84,6 @@ try {
 } finally {
     if ($process -and -not $process.HasExited) { $process.CloseMainWindow() | Out-Null; if (-not $process.WaitForExit(5000)) { $process.Kill(); $process.WaitForExit() } }
     Remove-Item Env:PEAKLIVE_DATA_DIR -ErrorAction SilentlyContinue
+    Remove-Item Env:PEAKLIVE_QUALIFICATION_METRICS -ErrorAction SilentlyContinue
     Write-Host "Vehicle test evidence: $runRoot"
 }

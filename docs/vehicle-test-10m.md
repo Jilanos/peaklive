@@ -36,4 +36,6 @@ la température, la sécurité du véhicule ou la connexion USB devient douteuse
 Chaque étape demande `Pass`, `Fail` ou `NotRun`. Une absence de trafic, un
 adaptateur absent ou une étape non terminée reste `NotRun`; elle ne devient pas
 un succès. Conserver le dossier affiché par le runner et transmettre
-`summary.json`, `report.md`, les logs, captures, et les fichiers `.partial`.
+`summary.json`, `report.md`, `peaklive-metrics.jsonl`, les logs, captures, et les
+fichiers `.partial`. Le fichier de métriques ne contient que l'état et des
+compteurs agrégés (aucun ID, payload, signal ou contenu DBC).

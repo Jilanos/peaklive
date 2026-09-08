@@ -1,11 +1,12 @@
 ## prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification - PeakLive ten-minute black-box vehicle-load qualification
 > Date: 2026-09-08
-> Status: Proposed
+> Status: Settled
 > Related request: `req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification`
-> Related backlog: `item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable`, `item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle`, `item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting`
+> Related backlog: `item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable`
 > Related task: `task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-08 16:18:31
 
 # Overview
 PeakLive can be objectively qualified under real active-vehicle traffic in ten minutes, treating the CAN bus as an opaque passive load source and judging only the packaged application's health, responsiveness, recording lifecycle, and recoverable local output.
@@ -43,5 +44,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification`
+- Product back-reference: `item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable`
 - Task back-reference: `task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp`
