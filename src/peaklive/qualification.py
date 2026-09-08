@@ -70,4 +70,3 @@ class QualificationMetrics:
 def metrics_for_environment() -> QualificationMetrics | None:
     """Return the optional writer used by worker code and tests."""
     return QualificationMetrics.from_environment()
-
