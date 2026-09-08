@@ -27,6 +27,7 @@ _None_
 | [prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap](product/prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap.md) | PeakLive audit closure and future-ready CAN workstation roadmap | Settled |  |  | product/prod_017_peaklive_audit_closure_and_future_ready_can_workstation_roadmap.md |
 | [prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence](product/prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence.md) | PeakLive trustworthy measurement identity and recoverable local evidence | Settled |  |  | product/prod_018_peaklive_trustworthy_measurement_identity_and_recoverable_local_evidence.md |
 | [prod_019_peaklive_windows_executable_qualification_kit](product/prod_019_peaklive_windows_executable_qualification_kit.md) | PeakLive Windows executable qualification kit | Settled |  |  | product/prod_019_peaklive_windows_executable_qualification_kit.md |
+| [prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification](product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md) | PeakLive ten-minute black-box vehicle-load qualification | Proposed |  |  | product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md |
 
 ## Roadmaps
 
@@ -57,6 +58,7 @@ _None_
 | [req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps](request/req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps.md) | Second-pass review findings: integrity, identity, and recovery gaps | Draft |  |  | request/req_018_second_pass_review_findings_integrity_identity_and_recovery_gaps.md |
 | [req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps](request/req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps.md) | Eliminate PeakLive second-pass integrity, identity, and recovery gaps | Done |  |  | request/req_019_eliminate_peaklive_second_pass_integrity_identity_and_recovery_gaps.md |
 | [req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery](request/req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery.md) | Qualify the PeakLive CI Windows executable with a reproducible functional test battery | Done |  |  | request/req_020_qualify_the_peaklive_ci_windows_executable_with_a_reproducible_functional_test_battery.md |
+| [req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification](request/req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification.md) | Automate a ten-minute black-box PeakLive vehicle-load qualification | Draft |  |  | request/req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification.md |
 
 ## Backlog
 
@@ -170,6 +172,9 @@ _None_
 | [item_106_automate_packaged_windows_smoke_identity_ui_and_persisted_workspace_checks](backlog/item_106_automate_packaged_windows_smoke_identity_ui_and_persisted_workspace_checks.md) | Automate packaged Windows smoke, identity, UI, and persisted-workspace checks | Done |  | 100% | backlog/item_106_automate_packaged_windows_smoke_identity_ui_and_persisted_workspace_checks.md |
 | [item_107_qualify_replay_dbc_analysis_graph_report_and_export_flows_in_the_packaged_executable](backlog/item_107_qualify_replay_dbc_analysis_graph_report_and_export_flows_in_the_packaged_executable.md) | Qualify replay, DBC analysis, graph, report, and export flows in the packaged executable | Done |  | 100% | backlog/item_107_qualify_replay_dbc_analysis_graph_report_and_export_flows_in_the_packaged_executable.md |
 | [item_108_run_safety_conscious_pcan_live_acquisition_recovery_and_endurance_acceptance](backlog/item_108_run_safety_conscious_pcan_live_acquisition_recovery_and_endurance_acceptance.md) | Run safety-conscious PCAN live acquisition, recovery, and endurance acceptance | Done |  | 100% | backlog/item_108_run_safety_conscious_pcan_live_acquisition_recovery_and_endurance_acceptance.md |
+| [item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable](backlog/item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable.md) | Build a deadline-bound passive vehicle-load observer for the packaged executable | Ready |  | 0% | backlog/item_109_build_a_deadline_bound_passive_vehicle_load_observer_for_the_packaged_executable.md |
+| [item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle](backlog/item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle.md) | Add a payload-blind passive PCAN traffic and capture-progress oracle | Ready |  | 0% | backlog/item_110_add_a_payload_blind_passive_pcan_traffic_and_capture_progress_oracle.md |
+| [item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting](backlog/item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting.md) | Automate bounded PeakLive start-stop-close and aggregate verdict reporting | Ready |  | 0% | backlog/item_111_automate_bounded_peaklive_start_stop_close_and_aggregate_verdict_reporting.md |
 
 ## Tasks
 
@@ -195,6 +200,7 @@ _None_
 | [task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone](tasks/task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone.md) | Deliver every September 2026 audit correction and future roadmap milestone | Done | paul.mondou@circle-mobility.com | 100% | tasks/task_018_deliver_every_september_2026_audit_correction_and_future_roadmap_milestone.md |
 | [task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction](tasks/task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction.md) | Implement every second-pass PeakLive integrity and recovery correction | Done | Codex | 100% | tasks/task_019_implement_every_second_pass_peaklive_integrity_and_recovery_correction.md |
 | [task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery](tasks/task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery.md) | Deliver the PeakLive Windows CI executable qualification battery | Done | Codex | 100% | tasks/task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery.md |
+| [task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp](tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md) | Deliver the ten-minute automated black-box PeakLive vehicle-load MVP | Ready |  | 0% | tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md |
 
 ## Runbooks
 
