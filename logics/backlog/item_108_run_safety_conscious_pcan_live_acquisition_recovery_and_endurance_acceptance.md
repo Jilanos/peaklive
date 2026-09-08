@@ -1,13 +1,14 @@
 ## item_108_run_safety_conscious_pcan_live_acquisition_recovery_and_endurance_acceptance - Run safety-conscious PCAN live acquisition, recovery, and endurance acceptance
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Bench hardware acceptance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-08 14:14:11
 
 # AI Context
 - Summary: Defines operator-supervised PCAN evidence for the live behaviours that cannot be simulated faithfully by the packaged offline lanes.
@@ -56,3 +57,9 @@
 # Priority
 - Priority: High - only a real Windows driver and active bus can validate connection, bounded shutdown, unplug/replug behaviour, recording order, and sustained capture.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery`
+
+# Notes
+- Task `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery` was finished via `logics-manager flow finish task` on 2026-09-08.

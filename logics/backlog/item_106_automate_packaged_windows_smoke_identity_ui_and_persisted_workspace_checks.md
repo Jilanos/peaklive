@@ -1,13 +1,14 @@
 ## item_106_automate_packaged_windows_smoke_identity_ui_and_persisted_workspace_checks - Automate packaged Windows smoke, identity, UI, and persisted-workspace checks
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Packaged application functional smoke
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-08 14:14:11
 
 # AI Context
 - Summary: Proves that the delivered desktop executable starts, identifies itself, exposes usable controls, and safely persists only isolated test profiles.
@@ -57,3 +58,9 @@
 # Priority
 - Priority: High - the most basic release failures are launch, stale build identity, unusable layout, or profile corruption before CAN hardware is involved.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery`
+
+# Notes
+- Task `task_020_deliver_the_peaklive_windows_ci_executable_qualification_battery` was finished via `logics-manager flow finish task` on 2026-09-08.
