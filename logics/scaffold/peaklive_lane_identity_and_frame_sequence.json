@@ -1,0 +1,135 @@
+{
+  "title": "Make PeakLive graph lanes self-identifying and received frames globally numbered",
+  "references": [
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/theme.py",
+    "src/peaklive/analysis/dbc.py",
+    "src/peaklive/analysis/trace.py",
+    "src/peaklive/ui/panels/trace_view.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/domain/models.py",
+    "tests/test_ui_workspace_refinement.py",
+    "tests/test_trace_buffer.py",
+    "tests/test_ui_analyst.py"
+  ],
+  "request": {
+    "complexity": "Medium",
+    "theme": "Graph-lane readability and frame provenance",
+    "needs": [
+      "Make every shown graph lane readable at a glance with a horizontal, curve-coloured signal title rather than a rotated technical Y-axis title.",
+      "Add a restrained visual separator between adjacent graph lanes so their Y axes and data regions do not visually run together.",
+      "Show each received CAN frame a monotonic frame number from the beginning of the acquisition, independent of the 5,000-record display buffer.",
+      "Keep technical DBC provenance available without exposing hashes and identifier keys as the default graph title or hover text.",
+      "Complete all product tests only after implementation is finished; after the local CI gate passes, push and follow the remote CI to its final verdict."
+    ],
+    "context": [
+      "GraphStackPanel creates one pyqtgraph PlotWidget per shown signal. It currently puts signal_label(signal_key) on the left AxisItem, which pyqtgraph renders vertically.",
+      "signal_label deliberately includes message/signal plus DBC hash and CAN identifier to disambiguate sources. PlotWidget also receives a tooltip containing the complete technical signal key and trace colour.",
+      "The graph container has zero spacing and lanes may shrink because each plot has a zero minimum height. The desired operator presentation is a compact scope-style lane: a horizontal coloured title at its top-left and a subtle separator between lanes.",
+      "TraceBuffer has a stable record index but it counts both CAN frames and bus events. The requested visible frame number must count CAN frames only, start at 1 for a new acquisition, stay monotonic after old display records age out, and leave event rows unnumbered.",
+      "The 5,000-record TraceBuffer remains a bounded display projection. Recording and session ingestion must remain lossless on their existing paths; the new frame number must not imply that all historical rows remain in memory.",
+      "The existing workspace intentionally allows a dense, non-scrolling graph surface. Operators may remove shown signals when a chosen set becomes too dense; this delivery must not impose a new arbitrary lane limit."
+    ],
+    "acceptance_criteria": [
+      "AC1: Each shown signal lane displays a concise horizontal title at the top-left using the exact colour of its curve. The title defaults to the operator-facing signal name, optionally followed by its unit, and is readable at 1024x768, 1280x720, and 1600x900.",
+      "AC2: Left Y axes retain readable numeric ticks but no rotated technical signal title. Adjacent lanes have a subtle, theme-derived horizontal separator so axes and traces are visually distinct without reducing the plot area materially.",
+      "AC3: The graph's default hover text never exposes the full DBC hash/identifier signal key. Full provenance remains available through an intentional detail surface with an accessible non-colour-only identity.",
+      "AC4: The Trace table has a visible frame-number column. It begins at 1 for each acquisition or replay session, increments only for received CAN frame records, remains monotonic after the 5,000-record trace window rotates, and is blank for bus-event rows.",
+      "AC5: Trace filters, selection, copying, paging, recording, replay, decoding, exports, session facts, graph navigation, and bounded-memory guarantees retain their current semantics.",
+      "AC6: No product tests are run until all implementation changes are complete. Then the complete relevant test suite and local CI gate pass; only after that gate passes is the implementation pushed, and the remote CI is monitored to a recorded final pass/fail verdict.",
+      "AC7: All changed user-facing text uses the i18n catalog, and no CAN transmit, payload interpretation, acquisition behaviour, or DBC decoding semantics are introduced or changed."
+    ]
+  },
+  "product": {
+    "title": "PeakLive self-identifying graph lanes and durable frame sequence",
+    "overview": "A focused operator-readability refinement for the existing diagnostic workspace. It makes each graph lane identifiable without technical noise, separates dense lanes visually, and exposes an acquisition-wide CAN-frame sequence in the bounded Trace table.",
+    "goals": [
+      "Let an operator identify a lane by its coloured horizontal signal title without rotating their reading or relying on a hover popup.",
+      "Preserve technical signal provenance without making hashes and frame identifiers the primary visual identity.",
+      "Let an operator see where a retained frame sits in the complete session even after the visible trace window has rotated.",
+      "Preserve the existing dense non-scrolling graph workspace and bounded-memory behaviour."
+    ],
+    "non_goals": [
+      "Change CAN acquisition, transmission, bus configuration, recording format, replay ordering, or decoding outcomes.",
+      "Retain every received frame in UI memory or change the 5,000-record TraceBuffer policy.",
+      "Add manual curve-colour configuration, a new graphing library, or a scrolling graph-card layout.",
+      "Use technical DBC hashes as a default graph title."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Render concise coloured graph-lane titles with subtle lane separation",
+      "priority": "High - unreadable vertical technical labels prevent an operator from identifying active signals during live diagnosis.",
+      "complexity": "Medium",
+      "theme": "Graph lane readability",
+      "request_acs": ["AC1", "AC2", "AC3", "AC5", "AC7"],
+      "problem": [
+        "Each PlotWidget assigns a long provenance-qualified signal label to its left Y AxisItem, which pyqtgraph rotates vertically and which becomes illegible when several lanes are compacted.",
+        "The PlotWidget-wide tooltip exposes an internal DBC hash, frame identifier, and signal key when the operator hovers the axis region.",
+        "Zero spacing between stacked plots leaves no quiet visual boundary between adjacent axes and traces."
+      ],
+      "scope_in": [
+        "Replace the left-axis title with a compact horizontal lane header rendered inside or immediately above each plot lane.",
+        "Derive the visible header from the operator-facing signal name and optional unit; colour it with the lane's deterministic curve colour.",
+        "Keep Y tick labels and shared X navigation intact, while applying a subtle theme-derived separator between adjacent lanes.",
+        "Replace the broad technical PlotWidget tooltip with a concise operator tooltip and preserve full signal provenance in an intentional accessible detail surface.",
+        "Cover title text, title/curve colour equality, separator geometry, hidden bottom axes, compact viewport behaviour, and preservation of navigation/cursor semantics after implementation is complete."
+      ],
+      "scope_out": [
+        "Manual trace-colour assignment or per-profile curve palettes.",
+        "Changing decoded values, units, sample retention, cursor calculations, or axis fitting semantics.",
+        "Adding a vertical scroll area or restricting the number of simultaneously shown lanes."
+      ],
+      "acceptance_criteria": [
+        "AC1: A shown lane has one horizontal, curve-coloured title containing its concise operator identity and optional unit; no rotated technical title is rendered on the left axis.",
+        "AC2: Adjacent lanes have a visible but restrained separator and retain legible Y ticks at the supported workspace sizes.",
+        "AC3: Hovering the graph does not disclose a raw DBC hash or identifier key by default; detailed provenance remains intentionally reachable and accessible.",
+        "AC4: Shared X links, follow-live, fit actions, A/B lines, measurements, downsampling, and plot accessibility retain their current behaviour."
+      ]
+    },
+    {
+      "title": "Expose an acquisition-wide received-frame sequence in Trace",
+      "priority": "High - the current retained-row count does not tell an operator where a displayed frame falls within a live session.",
+      "complexity": "Medium",
+      "theme": "Trace provenance",
+      "request_acs": ["AC4", "AC5", "AC6", "AC7"],
+      "problem": [
+        "The TraceBuffer's 5,000-row retention bound means a row position is not a session-wide frame number.",
+        "Its internal record index is not suitable as the requested frame number because it includes bus-event rows as well as CAN frames.",
+        "An operator needs a stable frame sequence for the received CAN records retained in the current display window."
+      ],
+      "scope_in": [
+        "Add a frame-only monotonic session sequence at ingestion, starting at 1 for every new live or replay session.",
+        "Expose it as an optional-by-default or default-visible Trace column with a concise i18n label and sensible width.",
+        "Leave event records blank in this column while retaining their existing stable record selection identity.",
+        "Ensure the number remains global after trace retention removes older rows, and document that it is sequence/provenance rather than the number of rows currently retained.",
+        "Add final regression coverage for live and replay sessions, interleaved events, buffer rotation, filtering, selection, copying, column persistence, and no change to recording or decode paths."
+      ],
+      "scope_out": [
+        "Increasing the TraceBuffer capacity or storing all session frames in memory.",
+        "Changing ASC/TRC file formats, assigning a CAN identifier, or changing physical CAN frame order.",
+        "Renumbering historical recordings when they are reopened."
+      ],
+      "acceptance_criteria": [
+        "AC1: Received CAN frames show the sequence 1, 2, 3 and so on from session start; event rows are blank and do not consume a sequence value.",
+        "AC2: After more than 5,000 trace records, the retained tail displays its original global frame numbers rather than a local X/5000 count.",
+        "AC3: The sequence survives trace filtering and does not disrupt selection, copy-row actions, display-only filtering, recording, replay, or session reports.",
+        "AC4: The column label and explanatory text are translated and make clear that trace retention remains bounded."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver readable graph lanes and a global received-frame sequence",
+    "plan": [
+      "Implement the lane-header and separator presentation, replacing the rotated Y-axis technical label while preserving all existing plot navigation and provenance access.",
+      "Implement the frame-only session sequence and Trace column without changing the bounded buffer, recording, replay, or event-selection contracts.",
+      "Do not run product tests during either implementation wave. Once every code and i18n change is complete, add or finalize regression coverage and run the complete relevant test suite, lint, i18n validation, and local CI gate together.",
+      "Only after the local CI gate passes, commit and push the implementation. Monitor remote CI to its terminal result, record the run URL and verdict in closeout evidence, and do not mark the task complete if remote CI fails or is cancelled."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_lane_identity_and_frame_sequence.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
