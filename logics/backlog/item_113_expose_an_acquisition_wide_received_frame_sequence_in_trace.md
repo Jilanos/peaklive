@@ -1,19 +1,20 @@
 ## item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace - Expose an acquisition-wide received-frame sequence in Trace
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Trace provenance
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-09 18:47:28
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Adds a CAN-frame-only, session-monotonic sequence number to TraceRecord/TraceBuffer and a default-visible, translated Trace "Frame #" column, so a displayed row's place in the whole acquisition survives the bounded 5,000-row retention window.
 - Keywords: expose, acquisition, wide, received, frame, sequence, trace
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Changing how a Trace row's global position is numbered or explained, or auditing that the sequence stays frame-only, monotonic, and unaffected by filtering/rotation.
+- Skip when: Changing the TraceBuffer's retention bound, ASC/TRC file formats, arbitration-ID assignment, or physical CAN frame ordering.
 
 # Problem
 - The TraceBuffer's 5,000-row retention bound means a row position is not a session-wide frame number.

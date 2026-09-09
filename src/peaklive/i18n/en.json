@@ -202,6 +202,8 @@
     "summary": "{shown} of {total} row(s) · buffer {capacity}",
     "follow_tail": "Follow the live tail",
     "tail_paused": "Live tail paused — showing an older window.",
+    "column_frame": "Frame #",
+    "column_frame_help": "Sequential number of received CAN frames since the session started. Event rows are blank. The trace display still shows only the last {capacity} row(s); the frame number reflects the frame's place in the full acquisition, not what is currently retained.",
     "column_time": "Time",
     "column_id": "ID",
     "column_dlc": "DLC",

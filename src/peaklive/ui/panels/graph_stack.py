@@ -13,10 +13,10 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import SeriesStore
-from peaklive.analysis.dbc import signal_label
 from peaklive.i18n import translate
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
+from peaklive.ui.panels.graph_lane_header import build_lane, lane_identity
 from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
@@ -62,6 +62,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         # a follow-live or fit update is never mistaken for a manual zoom.
         self._applying_range = False
         self._plots: dict[str, pg.PlotWidget] = {}
+        self._lane_headers: dict[str, QLabel] = {}
         self._curves: dict[str, pg.PlotDataItem] = {}
         self._cursor_lines: dict[str, tuple[pg.InfiniteLine, pg.InfiniteLine]] = {}
         self._store: SeriesStore | None = None
@@ -151,6 +152,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def signal_names(self) -> tuple[str, ...]:
         return tuple(self._plots)
 
+    @property
+    def lane_headers(self) -> dict[str, QLabel]:
+        return self._lane_headers
+
     def sync(self, store: SeriesStore, shown: set[str]) -> None:
         """Rebuild one plot per shown signal, keeping the cursors where they are."""
         self._store = store
@@ -162,6 +167,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
                 widget.setParent(None)
                 widget.deleteLater()
         self._plots.clear()
+        self._lane_headers.clear()
         self._curves.clear()
         self._cursor_lines.clear()
         anchor: pg.PlotWidget | None = None
@@ -174,24 +180,22 @@ class GraphStackPanel(GraphNavigation, QWidget):
                 .replace("]", "_")
                 .replace(" ", "_")
             )
-            label = signal_label(signal_name)
+            title, detail = lane_identity(self._store, signal_name)
             plot = pg.PlotWidget(objectName=f"livePlot_{object_name}")
             plot.setAccessibleName(translate("graph.plot_accessible"))
             plot.setBackground(theme.PLOT_BACKGROUND)
             plot.showGrid(x=True, y=True, alpha=0.25)
-            plot.setLabel("left", label)
+            # No rotated left-axis title: build_lane's coloured header below
+            # replaces it and keeps the full technical identity in its tooltip.
             plot.getAxis("left").setWidth(SHARED_LEFT_AXIS_WIDTH)
             # X is entirely ours to manage (follow-live, fit, zoom): pyqtgraph's
             # own default auto-range would otherwise autofit - and emit its own
             # sigXRangeChanged - the instant `setData` lands the first sample,
             # disabling follow-live before a session ever really begins.
             plot.getViewBox().enableAutoRange(x=False)
-            # The colour is a convenience, not the identity: the axis label
-            # text (and this tooltip naming the colour) is what an operator
-            # who cannot rely on colour reads instead.
-            plot.setToolTip(
-                translate("graph.trace_colour").format(signal=signal_name, colour=colour)
-            )
+            # The colour is a convenience: this tooltip and the lane header
+            # text name it for an operator who cannot rely on colour alone.
+            plot.setToolTip(translate("graph.trace_colour").format(signal=title, colour=colour))
             plot.setMinimumHeight(0)
             plot.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             curve = plot.plot(pen=pg.mkPen(colour, width=2))
@@ -202,12 +206,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
             # without discarding a single retained sample.
             curve.setClipToView(True)
             curve.setDownsampling(auto=True, method="peak")
-            line_a = pg.InfiniteLine(
-                pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_A)
-            )
-            line_b = pg.InfiniteLine(
-                pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_B)
-            )
+            line_a = pg.InfiniteLine(pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_A))
+            line_b = pg.InfiniteLine(pos=0.0, angle=90, movable=True, pen=pg.mkPen(theme.CURSOR_B))
             plot.addItem(line_a)
             plot.addItem(line_b)
             line_a.sigPositionChanged.connect(lambda line: self._cursor_dragged("a", line))
@@ -220,8 +220,17 @@ class GraphStackPanel(GraphNavigation, QWidget):
             else:
                 plot.setXLink(anchor)
             plot.getViewBox().sigXRangeChanged.connect(self._x_range_changed)
-            self.container_layout.addWidget(plot, 1)
+            lane, header = build_lane(
+                object_name=object_name,
+                colour=colour,
+                title=title,
+                detail=detail,
+                plot=plot,
+                is_last=index == len(wanted) - 1,
+            )
+            self.container_layout.addWidget(lane, 1)
             self._plots[signal_name] = plot
+            self._lane_headers[signal_name] = header
             self._curves[signal_name] = curve
             self._cursor_lines[signal_name] = (line_a, line_b)
         # One time axis is enough when all lanes are X-linked. Hiding every

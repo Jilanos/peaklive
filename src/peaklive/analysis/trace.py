@@ -23,6 +23,7 @@ DECODE_CONFLICT = "conflict"
 DECODE_INVALID = "invalid"
 
 COLUMN_LABELS: dict[str, str] = {
+    "frame": "Frame #",
     "time": "Time",
     "id": "ID",
     "dlc": "DLC",
@@ -48,6 +49,11 @@ class TraceRecord:
     message_name: str = ""
     decode_status: str = DECODE_UNKNOWN
     signals: tuple[DecodedSignal, ...] = ()
+    #: The session-wide, CAN-frame-only sequence number (item_113): 1 for the
+    #: first received frame, monotonic thereafter, and never assigned to an
+    #: event row. Distinct from `index`, which also counts events and is only
+    #: a stable lookup key into the bounded buffer, not an operator-facing count.
+    frame_number: int | None = None
 
     @property
     def is_frame(self) -> bool:
@@ -79,6 +85,7 @@ class TraceBuffer:
         self._capacity = capacity
         self._records: deque[TraceRecord] = deque(maxlen=capacity)
         self._next_index = 0
+        self._next_frame_number = 1
 
     @property
     def capacity(self) -> int:
@@ -93,6 +100,7 @@ class TraceBuffer:
     def clear(self) -> None:
         self._records.clear()
         self._next_index = 0
+        self._next_frame_number = 1
 
     def add_frame(
         self,
@@ -112,6 +120,7 @@ class TraceBuffer:
             message_name=message_name,
             decode_status=decode_status,
             signals=tuple(signals),
+            frame_number=self._take_frame_number(),
         )
         self._records.append(record)
         return record
@@ -146,6 +155,11 @@ class TraceBuffer:
         index = self._next_index
         self._next_index += 1
         return index
+
+    def _take_frame_number(self) -> int:
+        frame_number = self._next_frame_number
+        self._next_frame_number += 1
+        return frame_number
 
 
 @dataclass(slots=True)
@@ -217,6 +231,8 @@ def _matches_arbitration_id(record: TraceRecord, query: str) -> bool:
 
 def cell_text(record: TraceRecord, column_key: str, value_format: str) -> str:
     """Render one trace cell in the operator's chosen format."""
+    if column_key == "frame":
+        return "" if record.frame_number is None else str(record.frame_number)
     if column_key == "time":
         return f"{record.timestamp:.6f}" if value_format == "time" else f"{record.timestamp:g}"
     if column_key == "id":

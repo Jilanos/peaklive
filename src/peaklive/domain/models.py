@@ -237,6 +237,7 @@ class TraceColumn:
 
 
 TRACE_COLUMN_DEFAULTS: tuple[TraceColumn, ...] = (
+    TraceColumn("frame", width=70),
     TraceColumn("time", value_format="time", width=110),
     TraceColumn("id", value_format="hex", width=80),
     TraceColumn("dlc", value_format="dec", width=50),
@@ -248,6 +249,7 @@ TRACE_COLUMN_DEFAULTS: tuple[TraceColumn, ...] = (
 )
 
 TRACE_COLUMN_FORMATS: dict[str, tuple[str, ...]] = {
+    "frame": ("text",),
     "time": ("time", "dec"),
     "id": ("hex", "dec"),
     "dlc": ("dec", "hex"),
