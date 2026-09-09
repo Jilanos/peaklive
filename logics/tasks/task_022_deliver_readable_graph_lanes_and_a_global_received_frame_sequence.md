@@ -54,7 +54,8 @@
 - `ruff check .`: all checks passed, 2026-09-09.
 - `logics-manager i18n validate`: valid, 2026-09-09.
 - `logics-manager lint --require-status` / `logics-manager audit --group-by-doc`: OK (0 blocking issues), 2026-09-09.
-- Remote CI: pending push (see Plan item 4).
+- Pushed as commit d4841d3, 2026-09-09.
+- Remote CI run https://github.com/Jilanos/peaklive/actions/runs/34382484865: ubuntu-latest passed (pytest+ruff, ~4.5min); windows-latest was CANCELLED after hitting the job's 25-minute timeout mid-`pytest` (ruff passed first). No test failure surfaced before the timeout, and the same suite passed locally and on ubuntu, so this reads as hosted-runner slowness rather than a defect in this change - but per plan item 4 the task is not complete until a remote CI run reaches a clean terminal verdict.
 
 # Report
 - Not started.
