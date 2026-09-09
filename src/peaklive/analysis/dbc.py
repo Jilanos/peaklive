@@ -511,6 +511,18 @@ def signal_label(name: str) -> str:
     return f"{legacy} [{database_hash[:8]} 0x{int(frame_id, 16):03X}{suffix}]"
 
 
+def signal_display_title(name: str) -> str:
+    """The operator-facing "Message.Signal" identity, with no DBC hash or frame id.
+
+    Unlike `signal_label`, this never leaks the technical provenance suffix, so
+    it is safe to show by default (a graph lane title, a concise tooltip);
+    `signal_label` remains the place to reach for the full technical identity.
+    """
+    if name.count(":") < 3:
+        return name
+    return name.split(":", 3)[3]
+
+
 def _message_is_extended(message: Any) -> bool:
     return bool(getattr(message, "is_extended_frame", False))
 

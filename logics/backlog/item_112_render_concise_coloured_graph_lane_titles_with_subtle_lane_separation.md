@@ -1,19 +1,20 @@
 ## item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation - Render concise coloured graph-lane titles with subtle lane separation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Graph lane readability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-09 18:47:28
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Replaces the rotated, hash-qualified left-axis plot title with a concise, curve-coloured horizontal lane header and a subtle inter-lane separator, keeping the full DBC identity reachable only through the header's own tooltip/accessible name.
 - Keywords: render, concise, coloured, graph, lane, titles, subtle, separation
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Changing how a graph lane's identity, colour, or separator is presented, or auditing that the plot's default hover text never leaks DBC provenance.
+- Skip when: Changing decoded values, curve colours themselves, axis fitting/navigation semantics, or the number of lanes a workspace may show.
 
 # Problem
 - Each PlotWidget assigns a long provenance-qualified signal label to its left Y AxisItem, which pyqtgraph rotates vertically and which becomes illegible when several lanes are compacted.

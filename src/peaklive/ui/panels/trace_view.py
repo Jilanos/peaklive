@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import TraceBuffer, TraceRecord, filter_records, matches
-from peaklive.analysis.trace import cell_text
+from peaklive.analysis.trace import DEFAULT_TRACE_CAPACITY, cell_text
 from peaklive.domain import TraceColumn, TraceFilterSettings
 from peaklive.i18n import translate
 from peaklive.ui.debounce import INTERACTIVE_DEBOUNCE_MS, Debouncer
@@ -176,8 +176,15 @@ class TraceViewPanel(QWidget):
         self.table.setHorizontalHeaderLabels(
             [translate(f"trace.column_{column.key}") for column in visible]
         )
+        capacity = self._buffer.capacity if self._buffer is not None else DEFAULT_TRACE_CAPACITY
         for index, column in enumerate(visible):
             self.table.setColumnWidth(index, column.width)
+            if column.key == "frame":
+                header_item = self.table.horizontalHeaderItem(index)
+                if header_item is not None:
+                    header_item.setToolTip(
+                        translate("trace.column_frame_help").format(capacity=capacity)
+                    )
         self.refresh()
 
     # ---- rendering ----------------------------------------------------

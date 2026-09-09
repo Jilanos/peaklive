@@ -142,6 +142,88 @@ def test_trace_uses_frame_direction_and_declared_remote_dlc():
     assert cell_text(record, "dlc", "dec") == "8"
 
 
+# --------------------------------------------------------------------------
+# item_113 - acquisition-wide, CAN-frame-only received sequence
+# --------------------------------------------------------------------------
+
+
+def test_received_frames_get_a_monotonic_session_sequence_and_events_stay_blank():
+    buffer = _buffer()
+    records = list(buffer)
+
+    assert records[0].frame_number == 1
+    assert records[1].frame_number == 2
+    assert records[2].frame_number is None  # the BusEvent row
+    assert cell_text(records[0], "frame", "text") == "1"
+    assert cell_text(records[2], "frame", "text") == ""
+
+
+def test_the_frame_sequence_survives_buffer_rotation_and_stays_global():
+    buffer = TraceBuffer(capacity=3)
+    for index in range(5):
+        buffer.add_frame(CanFrame(float(index), 0x100 + index, b"\x00"))
+
+    retained = [record.frame_number for record in buffer]
+    assert retained == [3, 4, 5]
+
+
+def test_a_new_session_restarts_the_frame_sequence_at_one():
+    buffer = TraceBuffer(capacity=3)
+    buffer.add_frame(CanFrame(0.0, 0x100, b"\x00"))
+    buffer.add_frame(CanFrame(1.0, 0x101, b"\x00"))
+
+    buffer.clear()
+    record = buffer.add_frame(CanFrame(2.0, 0x102, b"\x00"))
+
+    assert record.frame_number == 1
+
+
+def test_the_frame_sequence_ignores_interleaved_events():
+    buffer = TraceBuffer()
+    buffer.add_event(BusEvent(0.0, "reconnecting", "driver restart"))
+    first = buffer.add_frame(CanFrame(1.0, 0x100, b"\x00"))
+    buffer.add_event(BusEvent(2.0, "error_frame", "bus error"))
+    second = buffer.add_frame(CanFrame(3.0, 0x101, b"\x00"))
+
+    assert (first.frame_number, second.frame_number) == (1, 2)
+
+
+def test_default_trace_columns_show_the_frame_sequence_first():
+    columns = default_trace_columns()
+
+    assert columns[0].key == "frame"
+    assert columns[0].visible is True
+
+
+def test_the_frame_column_header_explains_that_retention_stays_bounded(qtbot):
+    buffer = TraceBuffer(capacity=25)
+    buffer.add_frame(CanFrame(0.0, 0x123, b"\x01"))
+    panel = TraceViewPanel()
+    qtbot.addWidget(panel)
+    panel.set_buffer(buffer)
+    panel.apply_columns(default_trace_columns())
+
+    header_item = panel.table.horizontalHeaderItem(0)
+
+    assert panel.table.horizontalHeaderItem(0).text()
+    assert "25" in header_item.toolTip()
+    assert panel.table.item(0, 0).text() == "1"
+
+
+def test_the_frame_column_survives_filtering_and_selection(qtbot):
+    buffer = _buffer()
+    panel = TraceViewPanel()
+    qtbot.addWidget(panel)
+    panel.set_buffer(buffer)
+    panel.apply_columns(default_trace_columns())
+    panel.apply_settings(TraceFilterSettings(show_events=False))
+
+    assert panel.table.rowCount() == 2
+    assert [panel.table.item(row, 0).text() for row in range(2)] == ["1", "2"]
+    assert panel.select_record(0)
+    assert panel.selected_index() == 0
+
+
 def test_trace_context_menu_is_record_aware_for_events(qtbot, monkeypatch):
     buffer = TraceBuffer()
     buffer.add_event(BusEvent(1.0, "reconnecting", "driver restart"))

@@ -461,23 +461,24 @@ def test_column_visibility_order_width_and_format_take_effect(qtbot, tmp_path):
     qtbot.addWidget(dialog)
 
     dialog.findChild(QCheckBox, "columnVisible_channel").setChecked(False)
-    assert window.trace_table.columnCount() == 7
+    assert window.trace_table.columnCount() == 8
 
     dialog.findChild(QSpinBox, "columnWidth_id").setValue(140)
-    assert window.trace_table.columnWidth(1) == 140
+    assert window.trace_table.columnWidth(2) == 140
 
     data_format = dialog.findChild(QComboBox, "columnFormat_data")
     data_format.setCurrentIndex(data_format.findData("bin"))
-    assert window.trace_table.item(0, 3).text() == "00000001 00000010"
+    assert window.trace_table.item(0, 4).text() == "00000001 00000010"
 
     data_format.setCurrentIndex(data_format.findData("dec"))
-    assert window.trace_table.item(0, 3).text() == "1 2"
+    assert window.trace_table.item(0, 4).text() == "1 2"
 
     keys_before = [column.key for column in window.selected_profile.trace_columns]
+    time_index = keys_before.index("time")
     dialog.findChild(QAbstractButton, "columnDown_time").click()
     keys_after = [column.key for column in window.selected_profile.trace_columns]
-    assert keys_after[0] == keys_before[1]
-    assert keys_after[1] == keys_before[0]
+    assert keys_after[time_index] == keys_before[time_index + 1]
+    assert keys_after[time_index + 1] == keys_before[time_index]
 
 
 def test_column_configuration_persists_across_a_restart(qtbot, tmp_path):
@@ -497,7 +498,7 @@ def test_column_configuration_persists_across_a_restart(qtbot, tmp_path):
 
     assert not restored_column.visible
     assert restored_column.width == 44
-    assert restored.trace_table.columnCount() == 7
+    assert restored.trace_table.columnCount() == 8
 
 
 def test_sustained_ingestion_stays_bounded_without_per_row_removal(qtbot, tmp_path):

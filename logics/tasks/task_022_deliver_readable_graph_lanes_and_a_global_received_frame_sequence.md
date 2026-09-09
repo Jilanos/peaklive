@@ -1,41 +1,42 @@
 ## task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence - Deliver readable graph lanes and a global received-frame sequence
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Indicators reviewed: 2026-09-09 19:21:41
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Delivery task orchestrating item_112 (coloured lane headers, no rotated axis title) and item_113 (a global, frame-only Trace sequence column), gated on a single post-implementation test/lint/i18n/CI pass.
 - Keywords: deliver, readable, graph, lanes, global, received, frame, sequence
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Coordinating or reviewing the combined graph-lane and Trace-sequence delivery, or checking whether both backlog slices and the CI gate closed together.
+- Skip when: Changing only one of the two backlog slices in isolation, or working on unrelated graph/trace features such as measurement statistics or recording formats.
 
 # Context
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
 # Plan
-- [ ] 1. Implement the lane-header and separator presentation, replacing the rotated Y-axis technical label while preserving all existing plot navigation and provenance access.
-- [ ] 2. Implement the frame-only session sequence and Trace column without changing the bounded buffer, recording, replay, or event-selection contracts.
-- [ ] 3. Do not run product tests during either implementation wave. Once every code and i18n change is complete, add or finalize regression coverage and run the complete relevant test suite, lint, i18n validation, and local CI gate together.
+- [x] 1. Implement the lane-header and separator presentation, replacing the rotated Y-axis technical label while preserving all existing plot navigation and provenance access.
+- [x] 2. Implement the frame-only session sequence and Trace column without changing the bounded buffer, recording, replay, or event-selection contracts.
+- [x] 3. Do not run product tests during either implementation wave. Once every code and i18n change is complete, add or finalize regression coverage and run the complete relevant test suite, lint, i18n validation, and local CI gate together.
 - [ ] 4. Only after the local CI gate passes, commit and push the implementation. Monitor remote CI to its terminal result, record the run URL and verdict in closeout evidence, and do not mark the task complete if remote CI fails or is cancelled.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
-- [ ] Keep commit creation under operator control; do not force one commit per micro-step.
-- [ ] GATE: do not close until lint, audit, and scaffold validation pass.
+- [x] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
+- [x] Keep commit creation under operator control; do not force one commit per micro-step.
+- [x] GATE: do not close until lint, audit, and scaffold validation pass.
 
 # Backlog
 - `item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation`
 - `item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace`
 
 # Definition of Done (DoD)
-- [ ] Generated request, product, backlog, and task docs are present.
-- [ ] Context-pack handoff is available when requested.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] Generated request, product, backlog, and task docs are present.
+- [x] Context-pack handoff is available when requested.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # AC Traceability
 - request-AC1 -> `item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation`. Proof deferred to slice closeout.
@@ -49,7 +50,11 @@
 - request-AC7 -> `item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace`. Proof deferred to slice closeout.
 
 # Validation
-- (no validation recorded yet)
+- `pytest -q` (full suite, split into two batches to stay within local memory limits): all passed, 2026-09-09.
+- `ruff check .`: all checks passed, 2026-09-09.
+- `logics-manager i18n validate`: valid, 2026-09-09.
+- `logics-manager lint --require-status` / `logics-manager audit --group-by-doc`: OK (0 blocking issues), 2026-09-09.
+- Remote CI: pending push (see Plan item 4).
 
 # Report
 - Not started.

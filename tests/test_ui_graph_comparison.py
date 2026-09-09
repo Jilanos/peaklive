@@ -61,6 +61,58 @@ def test_the_curve_colour_is_named_outside_colour_alone(qtbot, tmp_path):
 
 
 # --------------------------------------------------------------------------
+# item_112 - concise, coloured lane headers with a subtle lane separator
+# --------------------------------------------------------------------------
+
+
+def test_a_shown_lane_gets_a_horizontal_curve_coloured_header_not_a_rotated_axis_title(
+    qtbot, tmp_path
+):
+    window = _with_dbc(qtbot, tmp_path)
+    window._signal_shown_changed("VehicleStatus.Rpm", True)
+    panel = window.graph_panel
+
+    for signal_name, plot in panel.plots.items():
+        assert plot.getAxis("left").labelText == ""
+        header = panel.lane_headers[signal_name]
+        assert header.text() == "VehicleStatus.Rpm"
+        assert header.text().count(":") == 0
+        curve_colour = panel.curves[signal_name].opts["pen"].color().name()
+        assert curve_colour in header.styleSheet()
+
+
+def test_adjacent_lanes_have_a_subtle_separator_and_keep_readable_y_ticks(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path)
+    window._signal_shown_changed("VehicleStatus.Speed", True)
+    window._signal_shown_changed("VehicleStatus.Rpm", True)
+    panel = window.graph_panel
+
+    lanes = [panel.lane_headers[name].parentWidget() for name in panel.plots]
+    assert len(lanes) >= 2
+    # Every lane but the last carries the separator; the last does not, so the
+    # panel's own outer edge never grows an extra, redundant boundary line.
+    assert [lane.styleSheet() != "" for lane in lanes] == [True] * (len(lanes) - 1) + [False]
+    for plot in panel.plots.values():
+        assert plot.getAxis("left").style["showValues"] is not False
+
+
+def test_hovering_the_plot_never_leaks_the_dbc_hash_but_the_lane_header_reaches_it(
+    qtbot, tmp_path
+):
+    window = _with_dbc(qtbot, tmp_path)
+    window._signal_shown_changed("VehicleStatus.Speed", True)
+    panel = window.graph_panel
+    signal_name = next(iter(panel.plots))
+    plot = panel.plots[signal_name]
+    header = panel.lane_headers[signal_name]
+
+    database_hash = signal_name.split(":", 1)[0]
+    assert database_hash not in plot.toolTip()
+    assert database_hash[:8] in header.toolTip()
+    assert database_hash[:8] in header.accessibleName()
+
+
+# --------------------------------------------------------------------------
 # AC7 - explicit fit X+Y and fit-Y-only
 # --------------------------------------------------------------------------
 
