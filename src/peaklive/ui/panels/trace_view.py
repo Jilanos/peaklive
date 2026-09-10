@@ -226,10 +226,10 @@ class TraceViewPanel(QWidget):
         self.table.blockSignals(True)
         self.table.setUpdatesEnabled(False)
         try:
-            for record in matched:
-                row = self.table.rowCount()
-                self.table.insertRow(row)
-                self._write_row(row, record)
+            first_row = self.table.rowCount()
+            self.table.setRowCount(first_row + len(matched))
+            for offset, record in enumerate(matched):
+                self._write_row(first_row + offset, record)
             if self._selected_record is not None and buffer.record(self._selected_record) is None:
                 self._clear_selection()
             overflow = self.table.rowCount() - buffer.capacity
