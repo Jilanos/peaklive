@@ -1,14 +1,15 @@
 ## task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay - Deliver recoverable bounded backpressure for large trace replay
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 16:45:17
+> Indicators reviewed: 2026-09-10 17:06:41
+> Owner: Codex
 
 # AI Context
 - Summary: Implement and validate recoverable bounded replay handoff for large traces.

@@ -1,14 +1,14 @@
 ## item_116_make_bounded_replay_backpressure_recoverable_and_truthful - Make bounded replay backpressure recoverable and truthful
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: High
 > Theme: Replay reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-10 16:45:17
+> Indicators reviewed: 2026-09-10 17:06:41
 
 # AI Context
 - Summary: Make bounded replay backpressure tolerate legitimate UI slowness without dropping frames or reporting a false acquisition failure.
