@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from peaklive.analysis import SeriesStore
+from peaklive.analysis import HistoricalSignalStore, SeriesStore
 from peaklive.i18n import translate
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
@@ -66,6 +66,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._curves: dict[str, pg.PlotDataItem] = {}
         self._cursor_lines: dict[str, tuple[pg.InfiniteLine, pg.InfiniteLine]] = {}
         self._store: SeriesStore | None = None
+        self._history: HistoricalSignalStore | None = None
         self._updating_cursors = False
         # A live-streaming refresh tick and a cursor drag can each ask for a
         # measurement recompute far faster than the documented cadence below;
@@ -75,6 +76,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._measurement_refresh_timer = QTimer(self)
         self._measurement_refresh_timer.setInterval(MEASUREMENT_REFRESH_INTERVAL_MS)
         self._measurement_refresh_timer.timeout.connect(self._flush_measurements)
+        self._view_refresh_timer = QTimer(self)
+        self._view_refresh_timer.setSingleShot(True)
+        self._view_refresh_timer.setInterval(75)
+        self._view_refresh_timer.timeout.connect(self.refresh_data)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -246,6 +251,14 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._apply_cursor_lines()
         self.refresh_data()
 
+    def set_history(self, history: HistoricalSignalStore | None) -> None:
+        """Attach the complete, session-scoped source behind bounded series."""
+        self._history = history
+
+    def request_view_refresh(self) -> None:
+        """Debounce range-driven source queries during wheel/pan gestures."""
+        self._view_refresh_timer.start()
+
     # ---- data ---------------------------------------------------------
 
     def refresh_data(self) -> None:
@@ -254,14 +267,49 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if store is None:
             return
         has_sample = False
+        extent = self._history.bounds() if self._history is not None else self.global_extent()
+        if extent is None:
+            extent = self.global_extent()
+        visible = (self.visible_window() if self._window_chosen else None) or extent
+        full_span = None if extent is None else max(0.0, extent[1] - extent[0])
+        visible_span = None if visible is None else max(0.0, visible[1] - visible[0])
+        exact = bool(
+            self._history is not None
+            and visible is not None
+            and full_span is not None
+            and full_span > 0
+            and visible_span is not None
+            and visible_span / full_span <= 0.08
+        )
         for signal_name, curve in self._curves.items():
             series = store.series(signal_name)
+            points = None
+            if self._history is not None and visible is not None:
+                points = (
+                    self._history.exact(signal_name, *visible, limit=20_000)
+                    if exact
+                    else self._history.overview(signal_name, *visible, max_points=4_000)
+                )
+            if points:
+                times = [timestamp for timestamp, _ in points]
+                values = [value for _, value in points]
+                curve.setData(
+                    times,
+                    [
+                        float(value)
+                        if isinstance(value, int | float) and not isinstance(value, bool)
+                        else 0.0
+                        for value in values
+                    ],
+                )
+                has_sample = True
+                continue
             if series is None or not len(series):
                 curve.setData([], [])
                 continue
             has_sample = True
             curve.setData(series.times, series.numeric_values)
-        bounds = store.bounds()
+        bounds = extent or store.bounds()
         if bounds is not None:
             self._seed_cursors(bounds)
         extent = self.global_extent()

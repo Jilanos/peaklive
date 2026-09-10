@@ -81,6 +81,7 @@ class WorkspaceCenter:
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")
         self.graph_panel.cursors_changed.connect(self._persist_layout)
+        self.graph_panel.view_changed.connect(self.graph_panel.request_view_refresh)
         self.graph_panel.measurement_visibility_changed.connect(
             self._persist_measurement_visibility
         )
