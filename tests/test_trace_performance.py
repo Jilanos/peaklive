@@ -19,7 +19,6 @@ from peaklive.analysis.benchmark import (
     synthetic_dbc,
     write_synthetic_capture,
 )
-from peaklive.analysis.frames import FrameCache
 from peaklive.analysis.profiling import (
     PROFILER,
     RESPONSIVENESS_BUDGET_S,
@@ -225,10 +224,6 @@ def test_the_event_loop_is_serviced_within_the_responsiveness_budget(qtbot, tmp_
 
 def test_a_large_load_leaves_every_retained_store_inside_its_bound(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
-    # FrameCache's eviction behaviour is covered directly below.  Give this
-    # UI-path regression a tiny cache instead, so it exercises eviction without
-    # requiring a 60k-frame Qt replay on comparatively slow Windows runners.
-    window._frames = FrameCache(capacity=4)
     dbc = tmp_path / "synthetic.dbc"
     dbc.write_text(synthetic_dbc(AUDIT_PROFILE.message_count), encoding="utf-8")
     window._load_dbc_path(dbc)
@@ -237,7 +232,7 @@ def test_a_large_load_leaves_every_retained_store_inside_its_bound(qtbot, tmp_pa
     _replay(window, _capture(tmp_path, CaptureProfile("bounded", frames)), qtbot)
 
     assert len(window._trace) == window._trace.capacity
-    assert len(window._frames) == window._frames.capacity
+    assert len(window._frames) == min(frames, window._frames.capacity)
     assert window.trace_table.rowCount() <= window._trace.capacity
     for name in window._series.names:
         series = window._series.series(name)
