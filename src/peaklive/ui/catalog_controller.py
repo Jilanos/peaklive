@@ -345,6 +345,9 @@ class WorkspaceCatalog:
         self._persist_signal_state()
 
     def _sync_graphs(self) -> None:
+        self.graph_panel.set_history(
+            self._history if self._historical_view_ready else None
+        )
         self.graph_panel.sync(self._series, self._selected_signal_names)
 
 

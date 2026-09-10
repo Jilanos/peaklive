@@ -21,6 +21,7 @@ from peaklive.analysis import (
     DECODE_UNKNOWN,
     AmbiguousMessageError,
     FrameCache,
+    HistoricalSignalStore,
     SeriesStore,
     SessionFacts,
     TraceBuffer,
@@ -66,6 +67,8 @@ class WorkspaceIngest:
         self._series = SeriesStore()
         self._trace = TraceBuffer()
         self._frames = FrameCache()
+        self._history = HistoricalSignalStore()
+        self._historical_view_ready = False
         self._facts = SessionFacts()
         self._signal_decode_worker: SignalDecodeWorker | None = None
         self._signal_decode_generation = 0
@@ -280,6 +283,7 @@ class WorkspaceIngest:
         if frames:
             self.acquisition_bar.set_bus_state("running")
         added = []
+        historical: list[tuple[str, float, object, str | None]] = []
         for frame in frames:
             with PROFILER.stage(STAGE_DECODE):
                 signals, status = self._decode(frame)
@@ -305,9 +309,11 @@ class WorkspaceIngest:
                         key = signal.display_name
                     if key in self._selected_signal_names:
                         self._series.append(key, frame.timestamp, signal.value, signal.unit)
+                        historical.append((key, frame.timestamp, signal.value, signal.unit))
                 if not self._selected_signal_names and frame.data:
                     self._series.append(RAW_PREVIEW, frame.timestamp, float(frame.data[0]))
         self._frames.extend(frames)
+        self._history.append_many(historical)
         if coalesce:
             self._pending_trace_records.extend(added)
         else:

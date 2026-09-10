@@ -18,6 +18,7 @@ from .dbc import (
 )
 from .export import ExportRow, export_csv, export_parquet, export_rows
 from .frames import DEFAULT_FRAME_CACHE_CAPACITY, FrameCache
+from .history import HistoricalSignalStore
 from .profiling import PROFILER, STAGES, StageProfile, StageProfiler
 from .replay import TraceCursor, iter_trace
 from .series import SeriesStore, SignalSeries
@@ -65,6 +66,7 @@ __all__ = [
     "DecodedSignal",
     "ExportRow",
     "FrameCache",
+    "HistoricalSignalStore",
     "FilteredTrace",
     "RangeStatistics",
     "ReportRenderer",
