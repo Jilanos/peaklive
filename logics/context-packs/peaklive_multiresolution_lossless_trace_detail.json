@@ -1,0 +1,332 @@
+{
+  "budgets": {
+    "max_docs": 32,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview item_115_deliver_cancellable_viewport_driven_exact_graph_detail task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md",
+      "ref": "prod_022_peaklive_multiresolution_lossless_historical_trace_detail",
+      "sections": {
+        "Goals": [
+          "- Keep complete historical signal evidence reachable from a loaded trace without keeping every raw or decoded sample in RAM.",
+          "- Provide an automatic, viewport-driven transition from representative overview data to exact source-derived detail.",
+          "- Preserve visual extrema, timestamp fidelity, UI responsiveness, lifecycle safety, and operator trust.",
+          "- Make approximation and exactness explicit in the graph experience and in downstream analytical actions."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A bounded-memory trace-analysis capability that renders a fast truthful overview when zoomed out and retrieves exact decoded signal samples from the capture source when an analyst zooms in."
+        ],
+        "References": [
+          "- Product back-reference: `req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail`",
+          "- Task back-reference: `task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive multiresolution lossless historical trace detail"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "deliver, multiresolution, trace, graphs, precise, demand, zoom, detail",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ]
+      },
+      "path": "logics/request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md",
+      "ref": "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: For a completed supported trace, every selected supported signal can be represented across the full source time span even when its raw sample count exceeds the current per-series retention limit; no early interval is silently omitted from the overview.",
+          "- AC2: At a full-capture or otherwise broad viewport, each graph renders a bounded multiresolution downsampled overview whose sample count scales with the viewport budget rather than source-frame count and that preserves visible min/max excursions per bucket.",
+          "- AC3: After a pan, wheel zoom, cursor-driven range action, or fit action makes an interval sufficiently narrow, PeakLive asynchronously obtains and displays the exact decoded samples for the visible range plus a documented guard band. The result is generation-safe, cancellable, and never blocks the UI event loop beyond the documented responsiveness budget.",
+          "- AC4: Exact-detail samples are decoded from the authoritative capture source and active DBC definitions, retain their original timestamps and values, and are not fabricated by interpolation or derived from the overview buckets.",
+          "- AC5: Switching between overview and exact detail is visibly and accessibly communicated. While exact detail is loading or unavailable, the last valid overview remains usable and the operator receives an actionable, non-modal explanation.",
+          "- AC6: Memory, worker queues, disk-index size, decode work, and graph point counts have explicit bounds. Repeated navigation across a long high-rate trace neither accumulates unbounded state nor applies stale detail results after trace replacement, signal deselection, or a newer viewport request."
+        ],
+        "Needs": [
+          "- An analyst must be able to inspect the entire duration of a large recorded trace without silently losing early high-rate signal values.",
+          "- When the visible time range is broad, graph rendering must use a bounded downsampled representation that preserves meaningful extrema and keeps interaction responsive.",
+          "- When the analyst zooms into a smaller range, the graph must replace the overview with exact decoded source samples for that visible interval, without reopening the session or corrupting measurements.",
+          "- The application must make the current overview-versus-exact detail state understandable and must never present approximated values as exact samples."
+        ]
+      },
+      "status": "Draft",
+      "title": "Deliver multiresolution trace graphs with precise on-demand zoom detail"
+    },
+    {
+      "ai_context": {
+        "keywords": "create, bounded, indexed, historical, signal, source, complete, trace, overview",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/backlog/item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview.md",
+      "ref": "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A long high-rate replay has a full-span overview for a selected signal even when its raw sample total exceeds 20,000.",
+          "- AC2: Overview point count follows the documented resolution budget and each bucket preserves its source time coverage and visible extrema.",
+          "- AC4: Overview provenance identifies source-derived versus representative data and does not invent values or timestamps.",
+          "- AC6: Source/index and overview memory/disk use are bounded and reset safely with the replay session.",
+          "- AC8: Fixture-driven tests cover source indexing, complete coverage, extrema, retention bounds, and source integrity failures."
+        ],
+        "Problem": [
+          "- The 20,000-sample SignalSeries and 50,000-frame FrameCache are deliberately bounded, but they make early high-rate decoded values unreachable after a long replay.",
+          "- Plot-library downsampling only operates on retained values and therefore cannot represent the whole capture truthfully once the beginning has been discarded.",
+          "- A complete-history solution must enable range reads without turning trace loading into an eager, unbounded memory allocation."
+        ]
+      },
+      "status": "Ready",
+      "title": "Create a bounded indexed historical signal source for complete trace overview"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, cancellable, viewport, driven, exact, graph, detail",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/backlog/item_115_deliver_cancellable_viewport_driven_exact_graph_detail.md",
+      "ref": "item_115_deliver_cancellable_viewport_driven_exact_graph_detail",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC3: Zooming to a range below the policy threshold installs exact source-decoded samples for that range without freezing the UI and rejects stale requests safely.",
+          "- AC4: Exact graph points match the source capture and active DBC decode values and timestamps exactly.",
+          "- AC5: The operator can distinguish overview, exact, loading, and unavailable states through visible and accessible UI feedback.",
+          "- AC6: Debouncing, workers, caches, and graph point counts remain bounded under repeated navigation.",
+          "- AC7: Measurements and cursors either operate on exact requested data or clearly state their limitation; existing replay and acquisition contracts remain valid.",
+          "- AC8: Automated tests prove accurate range detail, cancellation, lifecycle replacement, responsiveness, and no regression in graph navigation."
+        ],
+        "Problem": [
+          "- Graph navigation changes the visible range but has no source-backed request path for exact samples outside bounded retained series.",
+          "- Rapid pan and zoom gestures can create obsolete background work; accepting its result would display data for the wrong viewport or wrong session.",
+          "- Operators need an explicit distinction between an overview curve, an exact curve, a loading state, and unavailable exact detail."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver cancellable viewport-driven exact graph detail"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md",
+      "ref": "prod_022_peaklive_multiresolution_lossless_historical_trace_detail",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive multiresolution lossless historical trace detail"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, bounded, multiresolution, overview, exact, zoom, detail, historical, traces",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md",
+      "ref": "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver bounded multiresolution overview and exact zoom detail for historical traces"
+    }
+  ],
+  "estimates": {
+    "char_count": 11761,
+    "companion_doc_count": 1,
+    "doc_count": 5
+  },
+  "generated_at": "2026-09-10T10:32:42Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+      "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+      "item_115_deliver_cancellable_viewport_driven_exact_graph_detail",
+      "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 310
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail,item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview,item_115_deliver_cancellable_viewport_driven_exact_graph_detail,task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces",
+  "refs": [
+    "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+    "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+    "item_115_deliver_cancellable_viewport_driven_exact_graph_detail",
+    "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md",
+      "ref": "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+    }
+  ]
+}
