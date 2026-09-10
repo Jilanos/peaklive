@@ -1,0 +1,373 @@
+{
+  "budgets": {
+    "max_docs": 24,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts item_116_make_bounded_replay_backpressure_recoverable_and_truthful task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_116_make_bounded_replay_backpressure_recoverable_and_truthful"
+        ],
+        "prod": [
+          "prod_023_reliable_large_trace_replay_and_presentation_backpressure"
+        ],
+        "req": [
+          "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts"
+        ],
+        "task": [
+          "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+        ]
+      },
+      "path": "logics/product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md",
+      "ref": "prod_023_reliable_large_trace_replay_and_presentation_backpressure",
+      "sections": {
+        "Goals": [
+          "- Finish valid large-trace replays despite transient UI presentation delays.",
+          "- Retain a hard bound on queued presentation work and a bounded shutdown path.",
+          "- Preserve lossless analysis projections and truthful progress and lifecycle states.",
+          "- Make backpressure behavior observable and regression-tested under realistic DBC and historical-store workloads."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "Make large ASC/TRC replay resilient when bounded UI presentation temporarily falls behind parsing, without unbounded memory, silent frame loss, false acquisition errors, or dishonest completion progress."
+        ],
+        "References": [
+          "- Product back-reference: `req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts`",
+          "- Task back-reference: `task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "Reliable large-trace replay and presentation backpressure"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/product/prod_011_peaklive_freeze_free_and_self_diagnosing_workstation.md",
+      "ref": "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation",
+      "sections": {
+        "Goals": [
+          "- Guarantee that the Qt event loop is never stopped without a bound, on any operator-reachable path.",
+          "- Guarantee that every state the application can enter has an operator action that leaves it.",
+          "- Make a freeze or a half-applied state diagnosable after the fact, from the operator's machine, without reproducing it.",
+          "- Make the ingestion and input bounds the design already intends hold in practice, and assert them by count rather than by wall time.",
+          "- Remove the cross-thread data races and worker ownership gaps that turn a slow path into a crash."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A reliability enhancement that closes the remaining gaps between PeakLive's responsive-ingestion design and its runtime behaviour: no unbounded wait on the UI thread, no application state without an exit, no failure without a trace, and no continuous input paying for disk or statistics work.",
+          "```mermaid",
+          "flowchart LR",
+          "  Input[Pointer and keyboard input] --> Coalesce[Coalescing window]",
+          "  Coalesce --> Project[Bounded projection and one profile write]",
+          "  Driver[CAN driver and DBC parse] --> Workers[Bounded worker threads]"
+        ],
+        "References": [
+          "- Product back-reference: `item_040_give_the_application_a_diagnostic_voice_before_changing_its_behaviour`",
+          "- Task back-reference: `task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime`"
+        ]
+      },
+      "status": "Settled",
+      "title": "PeakLive freeze-free and self-diagnosing workstation"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "prevent, long, trace, replay, aborting, false, backpressure, timeouts",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+          "item_116_make_bounded_replay_backpressure_recoverable_and_truthful"
+        ],
+        "prod": [
+          "prod_023_reliable_large_trace_replay_and_presentation_backpressure"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_audit",
+          "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts"
+        ]
+      },
+      "path": "logics/request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md",
+      "ref": "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A deterministic large-trace replay whose UI presentation is slower than parsing completes successfully without emitting Replay backpressure timeout, while the number of dispatched but unrendered batches never exceeds the documented bound.",
+          "- AC2: Every parsed frame still reaches the trace buffer, frame cache, series store, session facts, and historical signal store according to the existing replay contract; no silent frame dropping is introduced to hide backpressure.",
+          "- AC3: Replay cancellation and window shutdown remain bounded and cannot wait forever for a presentation acknowledgement; abandoned generations cannot release permits or deliver stale batches into a newer session.",
+          "- AC4: Progress is monotonic and reaches the source size only after the final batch has been acknowledged; replay completion is announced only after all queued presentation work has been consumed.",
+          "- AC5: A genuine parser or decode failure remains visible as a failure with its original cause, while a recoverable presentation delay is not mislabeled as an acquisition or bus error.",
+          "- AC6: Headless tests cover a deliberately slow UI, a large capture with selected DBC signals and historical persistence, cancellation during backlog, exact permit accounting, frame-count integrity, progress monotonicity, and successful completion; existing intentional no-ack timeout coverage is updated to distinguish unrecoverable abandonment from recoverable slowness."
+        ],
+        "Needs": [
+          "- Allow a large ASC or TRC trace to finish loading when UI ingestion temporarily falls behind parsing.",
+          "- Keep replay memory and event-loop work bounded without treating a transient presentation delay as a fatal acquisition error.",
+          "- Preserve every parsed frame and keep progress, completion, cancellation, and failure states truthful."
+        ]
+      },
+      "status": "Draft",
+      "title": "Prevent long trace replay from aborting on false backpressure timeouts"
+    },
+    {
+      "ai_context": {
+        "keywords": "replay, ingestion, bounds, hold, practice",
+        "skip when": "Allowing a frame to skip the trace buffer, series store, frame cache or session facts, or changing the retention capacities and coalescing intervals that already hold.",
+        "summary": "Fixes the replay semaphore permit accounting that silently disables MAX_PENDING_BATCHES, bounds decode cost per event-loop turn, and reuses one replay presentation timer instead of one per opened trace.",
+        "use when": "Working on replay dispatch, backpressure, the ingest path's per-turn cost, or the timers and threads a replay session owns."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice"
+        ],
+        "prod": [
+          "prod_011_peaklive_freeze_free_and_self_diagnosing_workstation"
+        ],
+        "req": [
+          "req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_thread_audit"
+        ],
+        "task": [
+          "task_012_deliver_a_freeze_free_self_diagnosing_peaklive_runtime"
+        ]
+      },
+      "path": "logics/backlog/item_043_make_the_replay_and_ingestion_bounds_hold_in_practice.md",
+      "ref": "item_043_make_the_replay_and_ingestion_bounds_hold_in_practice",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: With the UI deliberately slowed below the parse rate for a whole replay, the number of dispatched but unrendered batches never exceeds the documented bound, asserted directly rather than inferred from wall time.",
+          "- AC2: The permit accounting is exact: after a completed replay and after a stopped replay, the semaphore holds exactly its initial count.",
+          "- AC3: One event-loop turn of ingestion stays inside the documented responsiveness budget for both replay and acquisition, and the existing per-stage budgets in analysis/profiling.py remain met.",
+          "- AC4: Every frame still reaches the trace buffer, the series store, the frame cache, and the session facts; existing replay, anomaly, and report coverage remains valid.",
+          "- AC5: Repeated trace opens leave a stable count of timers, threads, and connections."
+        ],
+        "Problem": [
+          "- services/replay_worker.py:107 ignores the result of acquire(timeout=0.25) and dispatches anyway, while the UI releases a permit for that batch through batch_rendered(), so the semaphore gains a permit permanently on every timeout and MAX_PENDING_BATCHES stops bounding anything. request_stop() releases a further MAX_PENDING_BATCHES permits with no accounting.",
+          "- ui/ingest_controller.py:303-343 runs decode, trace projection, series projection and session facts entirely on the UI thread, one whole batch per tick, so a tick is not preemptible and the floor on click latency is the cost of a batch: measured at about 15 ms per 512-frame replay batch before real DBC decode.",
+          "- ui/session_controller.py:168 creates a new QTimer per opened trace and never destroys the previous one, so a component whose every other retention is bounded grows for the session."
+        ]
+      },
+      "status": "Done",
+      "title": "Make the replay and ingestion bounds hold in practice"
+    },
+    {
+      "ai_context": {
+        "keywords": "bounded, replay, backpressure, recoverable, truthful",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_116_make_bounded_replay_backpressure_recoverable_and_truthful"
+        ],
+        "prod": [
+          "prod_023_reliable_large_trace_replay_and_presentation_backpressure"
+        ],
+        "req": [
+          "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts"
+        ],
+        "task": [
+          "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+        ]
+      },
+      "path": "logics/backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md",
+      "ref": "item_116_make_bounded_replay_backpressure_recoverable_and_truthful",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A slow-but-progressing UI can complete a large replay without Replay backpressure timeout and without exceeding MAX_PENDING_BATCHES outstanding batches.",
+          "- AC2: Frame counts and all existing projections agree before and after the stress replay; no frame is hidden by the recovery policy.",
+          "- AC3: Stop, cancellation, and stale-generation abandonment release only permits actually held and finish within the documented bound.",
+          "- AC4: Progress remains monotonic, reaches 100% only after presentation drains, and the UI reports replay complete exactly once.",
+          "- AC5: Parser exceptions and explicit cancellation retain distinct, actionable messages and do not report success.",
+          "- AC6: Focused regression tests and the full CI-equivalent suite pass headlessly; packaging still succeeds."
+        ],
+        "Problem": [
+          "- ReplayWorker treats one 250 ms presentation acknowledgement delay as a terminal Replay backpressure timeout, even when the UI is still progressing through valid work.",
+          "- The UI performs decoding, projections, and historical persistence synchronously, so a legitimate batch can exceed the acknowledgement deadline under a large trace and populated DBC catalog.",
+          "- The resulting message is surfaced through the acquisition-error path, making a presentation throughput mismatch look like a bus or capture failure and leaving the session partially loaded."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make bounded replay backpressure recoverable and truthful"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_116_make_bounded_replay_backpressure_recoverable_and_truthful"
+        ],
+        "prod": [
+          "prod_023_reliable_large_trace_replay_and_presentation_backpressure"
+        ],
+        "req": [
+          "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts"
+        ],
+        "task": [
+          "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+        ]
+      },
+      "path": "logics/product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md",
+      "ref": "prod_023_reliable_large_trace_replay_and_presentation_backpressure",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "Reliable large-trace replay and presentation backpressure"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, recoverable, bounded, backpressure, large, trace, replay",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_116_make_bounded_replay_backpressure_recoverable_and_truthful"
+        ],
+        "prod": [
+          "prod_023_reliable_large_trace_replay_and_presentation_backpressure"
+        ],
+        "req": [
+          "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts"
+        ],
+        "task": [
+          "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+        ]
+      },
+      "path": "logics/tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md",
+      "ref": "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver recoverable bounded backpressure for large trace replay"
+    }
+  ],
+  "estimates": {
+    "char_count": 13870,
+    "companion_doc_count": 2,
+    "doc_count": 5
+  },
+  "generated_at": "2026-09-10T14:43:08Z",
+  "handoff": {
+    "companion_doc_count": 2,
+    "enabled": true,
+    "source_refs": [
+      "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts",
+      "item_116_make_bounded_replay_backpressure_recoverable_and_truthful",
+      "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 310
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts,item_116_make_bounded_replay_backpressure_recoverable_and_truthful,task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay",
+  "refs": [
+    "req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts",
+    "item_116_make_bounded_replay_backpressure_recoverable_and_truthful",
+    "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md",
+      "ref": "task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay"
+    }
+  ]
+}
