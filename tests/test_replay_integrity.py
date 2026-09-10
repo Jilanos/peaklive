@@ -9,8 +9,10 @@ those is now bounded or visibly rejected instead.
 from __future__ import annotations
 
 from pathlib import Path
+from time import sleep
 
 from peaklive.adapters import FakeCanAdapter
+from peaklive.analysis.benchmark import CaptureProfile, synthetic_dbc, write_synthetic_capture
 from peaklive.analysis.replay import TraceCursor, iter_trace
 from peaklive.domain import BusEvent
 from peaklive.services import replay_worker as replay_worker_module
@@ -156,3 +158,26 @@ def test_a_rejected_trace_never_shows_replay_done(qtbot, tmp_path):
     assert not window.progress.isVisible()
     assert "complete" not in window.status.currentMessage().lower()
     assert window.acquisition_bar.bus_state == "stopped"
+
+
+def test_a_slow_but_progressing_ui_completes_replay_with_historical_signals(
+    qtbot, tmp_path, monkeypatch
+):
+    window = _window(qtbot, tmp_path)
+    dbc = tmp_path / "synthetic.dbc"
+    dbc.write_text(synthetic_dbc(1), encoding="utf-8")
+    window._load_dbc_path(dbc)
+    capture = write_synthetic_capture(tmp_path / "slow-ui.asc", CaptureProfile("slow-ui", 2_048))
+    ingest = window._ingest_frames
+
+    def slow_ingest(frames, *, coalesce=False):
+        sleep(0.35)
+        return ingest(frames, coalesce=coalesce)
+
+    monkeypatch.setattr(window, "_ingest_frames", slow_ingest)
+    window._open_trace(capture)
+    qtbot.waitUntil(lambda: window._replay_worker is None, timeout=15_000)
+
+    assert window.status.currentMessage() == "Trace replay complete"
+    assert len(window._trace) == 2_048
+    assert window._history.bounds() is not None
