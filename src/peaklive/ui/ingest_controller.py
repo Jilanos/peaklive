@@ -187,6 +187,10 @@ class WorkspaceIngest:
             translate("signals.unavailable").format(signal=signal_name), "info"
         )
 
+    def _set_historical_view_ready(self, ready: bool) -> None:
+        self._historical_view_ready = ready
+        self._sync_graphs()
+
     # ---- coalesced graph refresh ---------------------------------------
 
     def _init_graph_refresh(self) -> None:

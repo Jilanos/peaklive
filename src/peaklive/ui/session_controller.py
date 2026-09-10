@@ -321,9 +321,7 @@ class WorkspaceSession:
         self._end_work()
         self._update_mode_availability()
         self._settle_presentation()
-        # A finished capture is read as a whole, not as its last few seconds.
-        self._historical_view_ready = True
-        self._sync_graphs()
+        self._set_historical_view_ready(True)
         self.graph_panel.show_full_extent()
         self._refresh_report()
 
@@ -342,7 +340,7 @@ class WorkspaceSession:
         self._trace.clear()
         self._frames.clear()
         self._history.clear()
-        self._historical_view_ready = False
+        self._set_historical_view_ready(False)
         self._facts.reset(source)
         self.inspector.clear()
         self.trace_panel.refresh()
