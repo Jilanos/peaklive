@@ -1,0 +1,137 @@
+{
+  "title": "Deliver multiresolution trace graphs with precise on-demand zoom detail",
+  "references": [
+    "src/peaklive/analysis/replay.py",
+    "src/peaklive/analysis/frames.py",
+    "src/peaklive/analysis/series.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/services/signal_decode_worker.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "tests/test_lazy_signals.py",
+    "tests/test_graph_performance.py",
+    "tests/test_replay_worker.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Multiresolution historical signal exploration",
+    "needs": [
+      "An analyst must be able to inspect the entire duration of a large recorded trace without silently losing early high-rate signal values.",
+      "When the visible time range is broad, graph rendering must use a bounded downsampled representation that preserves meaningful extrema and keeps interaction responsive.",
+      "When the analyst zooms into a smaller range, the graph must replace the overview with exact decoded source samples for that visible interval, without reopening the session or corrupting measurements.",
+      "The application must make the current overview-versus-exact detail state understandable and must never present approximated values as exact samples."
+    ],
+    "context": [
+      "The current SignalSeries has a fixed 20,000-sample retention bound. In a 944-second trace where Ecran1 and DCDC messages arrive at about 100 Hz, it drops their history before approximately 744 seconds even though the source trace contains those frames.",
+      "The current FrameCache retains only the last 50,000 raw frames, so a signal selected after replay can be decoded only from the final portion of a high-volume capture.",
+      "The replay parser already streams ASC and text TRC records, supports progress and cancellation, and the graph stack already clips and downsample-renders its retained curve. Those display optimizations cannot recover samples discarded by bounded session retention.",
+      "The delivered design must retain bounded RAM usage. The authoritative historical source may remain the selected trace file plus a compact, validated, seekable index; it must not become an unbounded in-memory raw-frame or decoded-series cache.",
+      "Replay replacement, trace deletion or modification, DBC conflicts, deferred signal selection, graph cursors, measurements, export, and session cancellation already have defined lifecycle semantics that the new detail loader must respect."
+    ],
+    "acceptance_criteria": [
+      "AC1: For a completed supported trace, every selected supported signal can be represented across the full source time span even when its raw sample count exceeds the current per-series retention limit; no early interval is silently omitted from the overview.",
+      "AC2: At a full-capture or otherwise broad viewport, each graph renders a bounded multiresolution downsampled overview whose sample count scales with the viewport budget rather than source-frame count and that preserves visible min/max excursions per bucket.",
+      "AC3: After a pan, wheel zoom, cursor-driven range action, or fit action makes an interval sufficiently narrow, PeakLive asynchronously obtains and displays the exact decoded samples for the visible range plus a documented guard band. The result is generation-safe, cancellable, and never blocks the UI event loop beyond the documented responsiveness budget.",
+      "AC4: Exact-detail samples are decoded from the authoritative capture source and active DBC definitions, retain their original timestamps and values, and are not fabricated by interpolation or derived from the overview buckets.",
+      "AC5: Switching between overview and exact detail is visibly and accessibly communicated. While exact detail is loading or unavailable, the last valid overview remains usable and the operator receives an actionable, non-modal explanation.",
+      "AC6: Memory, worker queues, disk-index size, decode work, and graph point counts have explicit bounds. Repeated navigation across a long high-rate trace neither accumulates unbounded state nor applies stale detail results after trace replacement, signal deselection, or a newer viewport request.",
+      "AC7: Cursors, measurements, trace table, exports, existing live acquisition behavior, DBC conflict handling, and replay cancellation retain documented semantics. Any calculation labelled exact uses exact samples for its requested range or explicitly reports that exact detail is unavailable.",
+      "AC8: Deterministic synthetic and sanitized replay fixtures prove complete-history overview, extremum preservation, exact zoomed values and timestamps, viewport-driven cancellation, source-change failure handling, retention bounds, and responsive offscreen UI behavior on Windows and Linux CI."
+    ]
+  },
+  "product": {
+    "title": "PeakLive multiresolution lossless historical trace detail",
+    "overview": "A bounded-memory trace-analysis capability that renders a fast truthful overview when zoomed out and retrieves exact decoded signal samples from the capture source when an analyst zooms in.",
+    "goals": [
+      "Keep complete historical signal evidence reachable from a loaded trace without keeping every raw or decoded sample in RAM.",
+      "Provide an automatic, viewport-driven transition from representative overview data to exact source-derived detail.",
+      "Preserve visual extrema, timestamp fidelity, UI responsiveness, lifecycle safety, and operator trust.",
+      "Make approximation and exactness explicit in the graph experience and in downstream analytical actions."
+    ],
+    "non_goals": [
+      "Change CAN payload interpretation, DBC semantics, source recording, or supported capture formats.",
+      "Promise exact detail when the source file is unavailable, modified, unsupported, or cannot be decoded with the active DBC set.",
+      "Retain an unlimited decoded sample set, all raw frames, or one full in-memory copy per selected signal.",
+      "Add playback simulation, trace editing, cloud storage, or hardware acquisition changes."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Create a bounded indexed historical signal source for complete trace overview",
+      "priority": "High - high-rate signals currently lose most of their historical evidence after loading a real diagnostic capture.",
+      "complexity": "High",
+      "theme": "Indexed replay source and multiresolution overview",
+      "request_acs": ["AC1", "AC2", "AC4", "AC6", "AC8"],
+      "problem": [
+        "The 20,000-sample SignalSeries and 50,000-frame FrameCache are deliberately bounded, but they make early high-rate decoded values unreachable after a long replay.",
+        "Plot-library downsampling only operates on retained values and therefore cannot represent the whole capture truthfully once the beginning has been discarded.",
+        "A complete-history solution must enable range reads without turning trace loading into an eager, unbounded memory allocation."
+      ],
+      "scope_in": [
+        "Define and implement a validated, temporary or session-scoped seek/index contract for supported replay files, including timestamp-to-source-range lookup and source identity checks.",
+        "Build bounded, deterministic multiresolution signal overview data while replaying or through indexed background work, preserving per-bucket extrema and source time coverage.",
+        "Expose a source-backed signal-series interface that distinguishes overview samples from exact samples and retains explicit capacity and cleanup rules.",
+        "Cover ASC and text TRC source indexing, malformed records, source replacement, file modification or disappearance, DBC decode failures, and cleanup on session reset."
+      ],
+      "scope_out": [
+        "Unbounded in-memory source-frame retention or persistent user-visible cache files without an explicit lifecycle policy.",
+        "Changing DBC loading, CAN decoding meanings, recording output, or live acquisition data retention."
+      ],
+      "acceptance_criteria": [
+        "AC1: A long high-rate replay has a full-span overview for a selected signal even when its raw sample total exceeds 20,000.",
+        "AC2: Overview point count follows the documented resolution budget and each bucket preserves its source time coverage and visible extrema.",
+        "AC4: Overview provenance identifies source-derived versus representative data and does not invent values or timestamps.",
+        "AC6: Source/index and overview memory/disk use are bounded and reset safely with the replay session.",
+        "AC8: Fixture-driven tests cover source indexing, complete coverage, extrema, retention bounds, and source integrity failures."
+      ]
+    },
+    {
+      "title": "Deliver cancellable viewport-driven exact graph detail",
+      "priority": "High - analysts need real values, not an overview approximation, when investigating a short time interval.",
+      "complexity": "High",
+      "theme": "Zoom detail scheduling and analytical truthfulness",
+      "request_acs": ["AC3", "AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": [
+        "Graph navigation changes the visible range but has no source-backed request path for exact samples outside bounded retained series.",
+        "Rapid pan and zoom gestures can create obsolete background work; accepting its result would display data for the wrong viewport or wrong session.",
+        "Operators need an explicit distinction between an overview curve, an exact curve, a loading state, and unavailable exact detail."
+      ],
+      "scope_in": [
+        "Define an automatic viewport policy: use an overview above the documented samples-per-pixel threshold and request exact detail below it, with a configurable or documented guard band to avoid request thrash.",
+        "Implement debounced, generation-safe, cancellable background range decoding and atomic graph replacement for each selected signal.",
+        "Add translated, accessible overview/exact/loading/unavailable states without hiding existing graph navigation or cursor controls.",
+        "Make cursor and measurement consumers request or require exact range data where their result is presented as exact; preserve existing export and trace-table semantics unless an explicit exact-data contract is added.",
+        "Test rapid viewport changes, signal toggles, replay replacement, worker shutdown, DBC/source failures, sparse and dense signals, and supported screen widths."
+      ],
+      "scope_out": [
+        "A manual-only mode switch as the sole way to obtain precision.",
+        "Blocking full-file reparse on the UI thread, fabricated interpolated detail, or silent fallback from requested exact data to approximation."
+      ],
+      "acceptance_criteria": [
+        "AC3: Zooming to a range below the policy threshold installs exact source-decoded samples for that range without freezing the UI and rejects stale requests safely.",
+        "AC4: Exact graph points match the source capture and active DBC decode values and timestamps exactly.",
+        "AC5: The operator can distinguish overview, exact, loading, and unavailable states through visible and accessible UI feedback.",
+        "AC6: Debouncing, workers, caches, and graph point counts remain bounded under repeated navigation.",
+        "AC7: Measurements and cursors either operate on exact requested data or clearly state their limitation; existing replay and acquisition contracts remain valid.",
+        "AC8: Automated tests prove accurate range detail, cancellation, lifecycle replacement, responsiveness, and no regression in graph navigation."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver bounded multiresolution overview and exact zoom detail for historical traces",
+    "plan": [
+      "Baseline the high-rate long-trace loss case with sanitized deterministic fixtures, including the existing 20,000-sample and 50,000-frame boundaries, graph responsiveness, and exact decoded reference values.",
+      "Design and implement the authoritative replay-source index and bounded multiresolution overview representation, with integrity checks and cleanup on reset or replacement.",
+      "Connect viewport changes to a debounced, cancellable, generation-safe exact-range decoder and make graph state and analytical consumers explicit about overview versus exact evidence.",
+      "Exercise dense and sparse signals, complete-history overview, extrema, exact zoom values, rapid navigation, cancellation, source mutation, DBC errors, replay replacement, and retention budgets in unit and offscreen UI tests.",
+      "Run the focused suites, full project checks, Logics validation, and platform-relevant CI checks; record acceptance-criterion evidence and hand off the implemented task only when every required behavior is proven."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_multiresolution_lossless_trace_detail.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
