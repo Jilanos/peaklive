@@ -1,3 +1,5 @@
+from PySide6.QtCore import QTimer
+
 from peaklive.services.replay_worker import ReplayWorker
 
 
@@ -63,3 +65,29 @@ def test_replay_backpressure_timeout_is_not_reported_as_success(tmp_path, qtbot)
     assert worker.succeeded is False
     assert "backpressure" in failures[-1].casefold()
     assert not progress or progress[-1][0] < progress[-1][1]
+
+
+def test_replay_recovers_when_presentation_acknowledgement_is_slow(tmp_path, qtbot):
+    trace = tmp_path / "slow-ui.asc"
+    trace.write_text(
+        "\n".join(f"{index / 1000:.6f} 1 123 Rx d 1 01" for index in range(2048)),
+        encoding="utf-8",
+    )
+    worker = ReplayWorker(trace)
+    failures: list[str] = []
+    batches: list[list] = []
+    worker.replay_failed.connect(failures.append)
+
+    def acknowledge_later(batch: list) -> None:
+        batches.append(batch)
+        QTimer.singleShot(400, worker.batch_rendered)
+
+    worker.frames_received.connect(acknowledge_later)
+
+    with qtbot.waitSignal(worker.replay_completed, timeout=10_000):
+        worker.start()
+    worker.wait()
+
+    assert failures == []
+    assert worker.succeeded is True
+    assert sum(len(batch) for batch in batches) == 2048

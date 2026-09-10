@@ -33,9 +33,15 @@ PROGRESS_INTERVAL_S = 0.05
 MAX_PENDING_BATCHES = 4
 
 #: How long the parser waits for the UI to acknowledge before checking whether
-#: it has been asked to stop. A worker whose generation was abandoned never
-#: receives another acknowledgement, so the wait must never be unbounded.
+#: it has been asked to stop. This is only one polling interval: a legitimate
+#: slow UI may need several intervals to finish a batch.
 ACKNOWLEDGEMENT_TIMEOUT_S = 0.25
+
+#: Maximum continuous presentation stall before a replay is failed. The parser
+#: may wait through several acknowledgement intervals while the UI is making
+#: progress, but a vanished or abandoned presentation consumer must still
+#: produce a bounded failure rather than wait forever.
+BACKPRESSURE_STALL_TIMEOUT_S = 2.0
 
 #: A defensive cap on distinct anomaly messages tracked per replay. Every
 #: anomaly source in `iter_trace` uses a small, static vocabulary, so this
@@ -178,9 +184,21 @@ class ReplayWorker(QThread):
         back by the display is the display's cost, and attributing it to
         dispatch would hide the stage that actually caused it.
         """
-        if not self._pending_batches.acquire(timeout=ACKNOWLEDGEMENT_TIMEOUT_S):
-            # Never emit a batch without a permit: doing so turns its eventual
-            # acknowledgement into a new permit and removes the bound.
+        # A single acknowledgement interval is a polling quantum, not a
+        # terminal error. A batch can legitimately take longer than 250 ms on
+        # a busy Windows UI while the presentation queue is still draining.
+        # Keep polling until the bounded continuous-stall budget is exhausted
+        # or cancellation is requested.
+        stalled_since = perf_counter()
+        while not self._stop_requested.is_set():
+            if self._pending_batches.acquire(timeout=ACKNOWLEDGEMENT_TIMEOUT_S):
+                break
+            if perf_counter() - stalled_since >= BACKPRESSURE_STALL_TIMEOUT_S:
+                # Never emit a batch without a permit: doing so turns its
+                # eventual acknowledgement into a new permit and removes the
+                # bound.
+                return False
+        else:
             return False
         with self._permit_lock:
             self._held_permits += 1
