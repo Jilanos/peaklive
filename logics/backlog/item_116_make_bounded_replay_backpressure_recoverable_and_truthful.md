@@ -1,14 +1,14 @@
 ## item_116_make_bounded_replay_backpressure_recoverable_and_truthful - Make bounded replay backpressure recoverable and truthful
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 90%
+> Progress: 100%
 > Complexity: High
 > Theme: Replay reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-10 17:06:41
+> Indicators reviewed: 2026-09-10 17:58:37
 
 # AI Context
 - Summary: Make bounded replay backpressure tolerate legitimate UI slowness without dropping frames or reporting a false acquisition failure.
@@ -64,3 +64,9 @@
 # Priority
 - Priority: High - valid large traces currently stop part-way through loading and are reported as acquisition failures.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay`
+
+# Notes
+- Task `task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay` was finished via `logics-manager flow finish task` on 2026-09-10.
