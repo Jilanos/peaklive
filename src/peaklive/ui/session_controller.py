@@ -340,7 +340,7 @@ class WorkspaceSession:
         self._trace.clear()
         self._frames.clear()
         self._history.clear()
-        self._set_historical_view_ready(False)
+        self._historical_view_ready = False
         self._facts.reset(source)
         self.inspector.clear()
         self.trace_panel.refresh()
