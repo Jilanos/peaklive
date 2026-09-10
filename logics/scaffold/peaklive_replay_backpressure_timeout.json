@@ -1,0 +1,106 @@
+{
+  "title": "Prevent long trace replay from aborting on false backpressure timeouts",
+  "references": [
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/analysis/history.py",
+    "tests/test_replay_worker.py",
+    "tests/test_replay_integrity.py",
+    "tests/test_trace_performance.py",
+    "logics/backlog/item_043_make_the_replay_and_ingestion_bounds_hold_in_practice.md",
+    "logics/request/req_011_eliminate_the_remaining_peaklive_freezes_dead_ends_and_silent_failures_found_by_the_ui_audit.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Reliable bounded trace replay",
+    "needs": [
+      "Allow a large ASC or TRC trace to finish loading when UI ingestion temporarily falls behind parsing.",
+      "Keep replay memory and event-loop work bounded without treating a transient presentation delay as a fatal acquisition error.",
+      "Preserve every parsed frame and keep progress, completion, cancellation, and failure states truthful."
+    ],
+    "context": [
+      "Opening the existing large trace can stop after about 36.7 seconds with 'Acquisition error: Replay backpressure timeout'.",
+      "ReplayWorker dispatches batches of 256 frames and permits only MAX_PENDING_BATCHES (currently four) outstanding batches.",
+      "The worker waits ACKNOWLEDGEMENT_TIMEOUT_S (currently 0.25 seconds) for the UI to acknowledge a batch; failure emits Replay backpressure timeout and returns before replay completion.",
+      "The UI drains one replay batch per timer turn and performs DBC decoding, trace projection, series projection, session facts, and historical SQLite writes on the UI thread.",
+      "A 182 MB trace is present in the external fixtures and can expose the mismatch between parser throughput and UI ingestion cost; the existing focused regression test intentionally verifies timeout when acknowledgements never arrive.",
+      "The previous bounded-ingestion work fixed permit accounting and event-loop bounds, but its finite acknowledgement timeout remains too strict for a legitimate slow batch and currently surfaces as a generic acquisition failure."
+    ],
+    "acceptance_criteria": [
+      "AC1: A deterministic large-trace replay whose UI presentation is slower than parsing completes successfully without emitting Replay backpressure timeout, while the number of dispatched but unrendered batches never exceeds the documented bound.",
+      "AC2: Every parsed frame still reaches the trace buffer, frame cache, series store, session facts, and historical signal store according to the existing replay contract; no silent frame dropping is introduced to hide backpressure.",
+      "AC3: Replay cancellation and window shutdown remain bounded and cannot wait forever for a presentation acknowledgement; abandoned generations cannot release permits or deliver stale batches into a newer session.",
+      "AC4: Progress is monotonic and reaches the source size only after the final batch has been acknowledged; replay completion is announced only after all queued presentation work has been consumed.",
+      "AC5: A genuine parser or decode failure remains visible as a failure with its original cause, while a recoverable presentation delay is not mislabeled as an acquisition or bus error.",
+      "AC6: Headless tests cover a deliberately slow UI, a large capture with selected DBC signals and historical persistence, cancellation during backlog, exact permit accounting, frame-count integrity, progress monotonicity, and successful completion; existing intentional no-ack timeout coverage is updated to distinguish unrecoverable abandonment from recoverable slowness.",
+      "AC7: Ruff and the complete CI test suite pass under QT_QPA_PLATFORM=offscreen, and the Windows packaging path remains valid."
+    ]
+  },
+  "product": {
+    "title": "Reliable large-trace replay and presentation backpressure",
+    "overview": "Make large ASC/TRC replay resilient when bounded UI presentation temporarily falls behind parsing, without unbounded memory, silent frame loss, false acquisition errors, or dishonest completion progress.",
+    "goals": [
+      "Finish valid large-trace replays despite transient UI presentation delays.",
+      "Retain a hard bound on queued presentation work and a bounded shutdown path.",
+      "Preserve lossless analysis projections and truthful progress and lifecycle states.",
+      "Make backpressure behavior observable and regression-tested under realistic DBC and historical-store workloads."
+    ],
+    "non_goals": [
+      "Dropping parsed frames, weakening trace or signal retention guarantees, or bypassing the historical store.",
+      "Adding CAN transmission, changing adapter behavior, or redesigning the graph navigation feature.",
+      "Removing all backpressure bounds or making replay wait forever during shutdown.",
+      "Changing the ASC/TRC formats or requiring connected hardware for validation."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Make bounded replay backpressure recoverable and truthful",
+      "priority": "High - valid large traces currently stop part-way through loading and are reported as acquisition failures.",
+      "complexity": "High",
+      "theme": "Replay reliability",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7"],
+      "problem": [
+        "ReplayWorker treats one 250 ms presentation acknowledgement delay as a terminal Replay backpressure timeout, even when the UI is still progressing through valid work.",
+        "The UI performs decoding, projections, and historical persistence synchronously, so a legitimate batch can exceed the acknowledgement deadline under a large trace and populated DBC catalog.",
+        "The resulting message is surfaced through the acquisition-error path, making a presentation throughput mismatch look like a bus or capture failure and leaving the session partially loaded."
+      ],
+      "scope_in": [
+        "Define and implement a recoverable bounded handoff policy for replay batches, including explicit stop/cancel escape behavior.",
+        "Keep permit accounting exact across normal completion, recoverable waiting, cancellation, stale generations, and shutdown.",
+        "Ensure progress and replay completion are ordered after final presentation acknowledgement.",
+        "Expose sufficient diagnostics to distinguish parser failure, cancellation, and exhausted presentation capacity.",
+        "Add deterministic stress fixtures and headless tests for large replay, DBC decode, historical persistence, slow presentation, and cancellation."
+      ],
+      "scope_out": [
+        "Dropping or sampling frames from the trace, series, frame cache, facts, or historical store.",
+        "Changing retention capacities or graph downsampling semantics unrelated to the handoff.",
+        "Adding hardware-only acceptance gates or changing CAN adapter contracts."
+      ],
+      "acceptance_criteria": [
+        "AC1: A slow-but-progressing UI can complete a large replay without Replay backpressure timeout and without exceeding MAX_PENDING_BATCHES outstanding batches.",
+        "AC2: Frame counts and all existing projections agree before and after the stress replay; no frame is hidden by the recovery policy.",
+        "AC3: Stop, cancellation, and stale-generation abandonment release only permits actually held and finish within the documented bound.",
+        "AC4: Progress remains monotonic, reaches 100% only after presentation drains, and the UI reports replay complete exactly once.",
+        "AC5: Parser exceptions and explicit cancellation retain distinct, actionable messages and do not report success.",
+        "AC6: Focused regression tests and the full CI-equivalent suite pass headlessly; packaging still succeeds."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver recoverable bounded backpressure for large trace replay",
+    "plan": [
+      "Reproduce the 36.7-second failure with a deterministic large capture and a controlled slow presentation path; record queue depth, acknowledgement latency, parsed frame count, and the lifecycle message.",
+      "Map the replay state machine and choose a bounded handoff policy that tolerates legitimate progress while retaining an explicit cancellation and shutdown escape hatch.",
+      "Implement exact permit ownership and generation-safe acknowledgement handling, then keep parsing, decoding, historical persistence, and presentation projections lossless.",
+      "Make progress and completion ordering truthful and preserve distinct diagnostics for parser failure, cancellation, and exhausted backpressure.",
+      "Add focused regression coverage for slow presentation, selected-signal historical writes, cancellation, stale generations, frame-count integrity, and the no-ack safety case.",
+      "Run Ruff, the full headless test suite, the trace performance checks, and the Windows packaging validation; record evidence and close the task only after all acceptance criteria pass."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_replay_backpressure_timeout.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
