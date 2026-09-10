@@ -288,9 +288,6 @@ class WorkspaceSession:
         # Recorded before the worker's own `finished` lands, so the completion
         # path below never overwrites this failure with a false "done".
         self._replay_failed_generation = generation
-        # Replay failures are not CAN-bus failures. Keep the cause visible in
-        # the status line, but do not mislead the operator with a bus-error
-        # state when the parser or presentation handoff stopped the replay.
         self.acquisition_bar.set_bus_state("stopped")
         self.status.showMessage(translate("trace.replay_failed").format(message=message))
         self._clear_pending_replay_batches()
@@ -298,7 +295,6 @@ class WorkspaceSession:
         self._replay_worker = None
         self._end_work()
         self._update_mode_availability()
-
     def _replay_finished(self, generation: int) -> None:
         if generation != getattr(self, "_replay_generation", 0):
             return
