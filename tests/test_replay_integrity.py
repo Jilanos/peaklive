@@ -155,4 +155,4 @@ def test_a_rejected_trace_never_shows_replay_done(qtbot, tmp_path):
 
     assert not window.progress.isVisible()
     assert "complete" not in window.status.currentMessage().lower()
-    assert window.acquisition_bar.bus_state == "bus_error"
+    assert window.acquisition_bar.bus_state == "stopped"

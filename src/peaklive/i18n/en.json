@@ -179,6 +179,7 @@
     "opening": "Opening trace: {name}",
     "open_blocked_by_acquisition": "Cannot open a trace while acquisition is running. Stop acquisition first.",
     "replay_done": "Trace replay complete",
+    "replay_failed": "Trace replay stopped: {message}",
     "replay_event": "Replay {kind}: {message}",
     "filters": "Filters",
     "more_filters": "More filters",
