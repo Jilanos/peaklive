@@ -1,12 +1,12 @@
 ## prod_023_reliable_large_trace_replay_and_presentation_backpressure - Reliable large-trace replay and presentation backpressure
 > Date: 2026-09-10
-> Status: Proposed
+> Status: Settled
 > Related request: `req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts`
 > Related backlog: `item_116_make_bounded_replay_backpressure_recoverable_and_truthful`
 > Related task: `task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-10 16:45:16
+> Indicators reviewed: 2026-09-10 17:58:37
 
 # Overview
 Make large ASC/TRC replay resilient when bounded UI presentation temporarily falls behind parsing, without unbounded memory, silent frame loss, false acquisition errors, or dishonest completion progress.
@@ -46,5 +46,5 @@ flowchart LR
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts`
+- Product back-reference: `item_116_make_bounded_replay_backpressure_recoverable_and_truthful`
 - Task back-reference: `task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay`

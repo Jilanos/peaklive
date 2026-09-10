@@ -30,7 +30,7 @@ _None_
 | [prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification](product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md) | PeakLive ten-minute black-box vehicle-load qualification | Settled |  |  | product/prod_020_peaklive_ten_minute_black_box_vehicle_load_qualification.md |
 | [prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence](product/prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence.md) | PeakLive self-identifying graph lanes and durable frame sequence | Proposed |  |  | product/prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence.md |
 | [prod_022_peaklive_multiresolution_lossless_historical_trace_detail](product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md) | PeakLive multiresolution lossless historical trace detail | Settled |  |  | product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md |
-| [prod_023_reliable_large_trace_replay_and_presentation_backpressure](product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md) | Reliable large-trace replay and presentation backpressure | Proposed |  |  | product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md |
+| [prod_023_reliable_large_trace_replay_and_presentation_backpressure](product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md) | Reliable large-trace replay and presentation backpressure | Settled |  |  | product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md |
 
 ## Roadmaps
 
@@ -64,7 +64,7 @@ _None_
 | [req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification](request/req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification.md) | Automate a ten-minute black-box PeakLive vehicle-load qualification | Done |  |  | request/req_021_automate_a_ten_minute_black_box_peaklive_vehicle_load_qualification.md |
 | [req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered](request/req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered.md) | Make PeakLive graph lanes self-identifying and received frames globally numbered | Draft |  |  | request/req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered.md |
 | [req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail](request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md) | Deliver multiresolution trace graphs with precise on-demand zoom detail | Done |  |  | request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md |
-| [req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts](request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md) | Prevent long trace replay from aborting on false backpressure timeouts | Draft |  |  | request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md |
+| [req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts](request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md) | Prevent long trace replay from aborting on false backpressure timeouts | Done |  |  | request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md |
 
 ## Backlog
 
@@ -185,7 +185,7 @@ _None_
 | [item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace](backlog/item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace.md) | Expose an acquisition-wide received-frame sequence in Trace | In progress |  | 90% | backlog/item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace.md |
 | [item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview](backlog/item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview.md) | Create a bounded indexed historical signal source for complete trace overview | Done |  | 100% | backlog/item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview.md |
 | [item_115_deliver_cancellable_viewport_driven_exact_graph_detail](backlog/item_115_deliver_cancellable_viewport_driven_exact_graph_detail.md) | Deliver cancellable viewport-driven exact graph detail | Done |  | 100% | backlog/item_115_deliver_cancellable_viewport_driven_exact_graph_detail.md |
-| [item_116_make_bounded_replay_backpressure_recoverable_and_truthful](backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md) | Make bounded replay backpressure recoverable and truthful | Ready |  | 0% | backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md |
+| [item_116_make_bounded_replay_backpressure_recoverable_and_truthful](backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md) | Make bounded replay backpressure recoverable and truthful | Done |  | 100% | backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md |
 
 ## Tasks
 
@@ -214,7 +214,7 @@ _None_
 | [task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp](tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md) | Deliver the ten-minute automated black-box PeakLive vehicle-load MVP | Done | Codex | 100% | tasks/task_021_deliver_the_ten_minute_automated_black_box_peaklive_vehicle_load_mvp.md |
 | [task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence](tasks/task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence.md) | Deliver readable graph lanes and a global received-frame sequence | In progress |  | 90% | tasks/task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence.md |
 | [task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces](tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md) | Deliver bounded multiresolution overview and exact zoom detail for historical traces | Done | Codex | 100% | tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md |
-| [task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay](tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md) | Deliver recoverable bounded backpressure for large trace replay | Ready |  | 0% | tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md |
+| [task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay](tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md) | Deliver recoverable bounded backpressure for large trace replay | Done | Codex | 100% | tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md |
 
 ## Runbooks
 

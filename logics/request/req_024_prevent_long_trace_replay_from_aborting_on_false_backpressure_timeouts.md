@@ -1,13 +1,13 @@
 ## req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts - Prevent long trace replay from aborting on false backpressure timeouts
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Reliable bounded trace replay
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-10 16:44:40
+> Indicators reviewed: 2026-09-10 17:58:36
 
 # AI Context
 - Summary: Make replay presentation backpressure recoverable for valid large traces while keeping queue bounds, cancellation, and frame integrity explicit.
