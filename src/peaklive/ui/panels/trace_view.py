@@ -224,20 +224,21 @@ class TraceViewPanel(QWidget):
             return
         matched = [record for record in records if matches(record, self.settings)]
         self.table.blockSignals(True)
-        for record in matched:
-            row = self.table.rowCount()
-            self.table.insertRow(row)
-            self._write_row(row, record)
-        if self._selected_record is not None and buffer.record(self._selected_record) is None:
-            self._clear_selection()
-        overflow = self.table.rowCount() - buffer.capacity
-        if overflow > 0:
-            # Drop the aged-out head through the model in one operation. Moving
-            # the surviving cells up by hand instead costs one take/set pair per
-            # retained cell on every ingested batch, which is the whole visible
-            # window rewritten hundreds of times during a large replay.
-            self.table.model().removeRows(0, overflow)
-        self.table.blockSignals(False)
+        self.table.setUpdatesEnabled(False)
+        try:
+            for record in matched:
+                row = self.table.rowCount()
+                self.table.insertRow(row)
+                self._write_row(row, record)
+            if self._selected_record is not None and buffer.record(self._selected_record) is None:
+                self._clear_selection()
+            overflow = self.table.rowCount() - buffer.capacity
+            if overflow > 0:
+                # Drop the aged-out head through the model in one operation.
+                self.table.model().removeRows(0, overflow)
+        finally:
+            self.table.setUpdatesEnabled(True)
+            self.table.blockSignals(False)
         filtered_total = len(buffer)
         self._refresh_state(
             filtered_total,
