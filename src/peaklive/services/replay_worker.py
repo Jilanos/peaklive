@@ -143,13 +143,19 @@ class ReplayWorker(QThread):
                 batch.append(record)
                 if len(batch) >= BATCH_SIZE:
                     if not self._dispatch(batch):
-                        self.replay_failed.emit("Replay backpressure timeout")
+                        self.replay_failed.emit(
+                            "Replay backpressure timeout after "
+                            f"{BACKPRESSURE_STALL_TIMEOUT_S:.1f}s"
+                        )
                         return
                     batch = []
                 self._emit_progress(total)
             if batch:
                 if not self._dispatch(batch):
-                    self.replay_failed.emit("Replay backpressure timeout")
+                    self.replay_failed.emit(
+                        "Replay backpressure timeout after "
+                        f"{BACKPRESSURE_STALL_TIMEOUT_S:.1f}s"
+                    )
                     return
             for message, count in anomalies.items():
                 suffix = f" ({count} occurrences)" if count > 1 else ""
