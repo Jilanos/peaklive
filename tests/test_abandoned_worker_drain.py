@@ -9,6 +9,8 @@ down.
 
 from __future__ import annotations
 
+from weakref import ref
+
 from peaklive.ui.worker_lifecycle import (
     _ABANDONED_WORKERS,
     abandon_worker,
@@ -43,6 +45,17 @@ class _FakeWorker:
 
     def wait(self, timeout_ms: int) -> bool:
         return not self._running
+
+
+def test_finished_subscription_does_not_keep_the_worker_alive():
+    worker = _FakeWorker(running=False)
+    reference = ref(worker)
+    abandon_worker(worker)
+    # Keep the connected callback alive, as Qt can do for queued signals.
+    callback = worker.finished._callback
+    del worker
+    assert reference() is None
+    callback()
 
 
 class _RaceySignal:

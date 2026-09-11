@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from peaklive.analysis import HistoricalSignalStore, SeriesStore
+from peaklive.analysis.history import historical_points as historical_points
 
 
 def historical_extent(
@@ -20,25 +21,6 @@ def viewport(
 ) -> tuple[tuple[float, float] | None, tuple[float, float] | None]:
     extent = historical_extent(history, fallback) or fallback
     return extent, (current if chosen else None) or extent
-
-
-def historical_points(
-    history: HistoricalSignalStore | None,
-    signal: str,
-    extent: tuple[float, float] | None,
-    visible: tuple[float, float] | None,
-    *,
-    exact_threshold: float = 0.08,
-) -> tuple[tuple[float, object], ...] | None:
-    if history is None or extent is None or visible is None:
-        return None
-    full_span = max(0.0, extent[1] - extent[0])
-    visible_span = max(0.0, visible[1] - visible[0])
-    if full_span > 0 and visible_span / full_span <= exact_threshold:
-        exact = history.exact(signal, *visible, limit=20_000)
-        if exact:
-            return exact
-    return history.overview(signal, *visible, max_points=4_000)
 
 
 def curve_points(
