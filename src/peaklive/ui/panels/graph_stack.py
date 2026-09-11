@@ -457,8 +457,19 @@ class GraphStackPanel(GraphNavigation, QWidget):
         return min(self.cursor_a, self.cursor_b), max(self.cursor_a, self.cursor_b)
 
     def refresh_measurements(self) -> None:
+        store = self._store
+        if self._history is not None and self.cursor_a is not None and self.cursor_b is not None:
+            exact_store = SeriesStore()
+            for signal_name in self._plots:
+                points = self._history.exact(
+                    signal_name, self.cursor_a, self.cursor_b, limit=20_000
+                )
+                if points:
+                    exact_store.replace(signal_name, points)
+            if any(exact_store.series(name) for name in self._plots):
+                store = exact_store
         self.measurement.refresh(
-            self._store, tuple(self._plots), self.cursor_a, self.cursor_b
+            store, tuple(self._plots), self.cursor_a, self.cursor_b
         )
 
     def _mark_measurements_dirty(self) -> None:
