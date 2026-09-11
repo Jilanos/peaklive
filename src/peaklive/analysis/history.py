@@ -120,7 +120,8 @@ class HistoricalSignalStore:
                     max_ts, max_value = timestamp, encoded
                 self._connection.execute(
                     "UPDATE summary SET first_ts=?, first_value=?, last_ts=?, last_value=?, "
-                    "min_ts=?, min_value=?, max_ts=?, max_value=? WHERE signal=? AND level=? AND bucket=?",
+                    "min_ts=?, min_value=?, max_ts=?, max_value=? "
+                    "WHERE signal=? AND level=? AND bucket=?",
                     (
                         first_ts,
                         first_value,
