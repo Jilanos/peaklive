@@ -45,6 +45,17 @@ def test_every_curve_enables_clip_to_view_and_peak_downsampling(panel):
         assert curve.opts["downsampleMethod"] == "peak"
 
 
+def test_viewport_refresh_requests_are_debounced(panel, qtbot):
+    calls: list[bool] = []
+    panel.refresh_data = lambda: calls.append(True)  # type: ignore[method-assign]
+
+    for _ in range(30):
+        panel.request_view_refresh()
+    qtbot.wait(120)
+
+    assert calls == [True]
+
+
 def test_eight_signals_each_get_the_same_viewport_policy(qtbot, tmp_path):
     panel = GraphStackPanel()
     qtbot.addWidget(panel)

@@ -43,8 +43,13 @@ class GraphNavigation:
         drops its oldest samples as it fills, and letting the axis follow that
         would silently rewrite how much history the operator appears to have.
         """
+        history = getattr(self, "_history", None)
         store = self._store
-        bounds = None if store is None else store.bounds()
+        bounds = (
+            history.bounds()
+            if history is not None
+            else (None if store is None else store.bounds())
+        )
         if self._axis_mode is not AXIS_LIVE:
             return bounds
         if bounds is None:
@@ -168,4 +173,3 @@ class GraphNavigation:
             self.set_follow_live(False)
             self._window_chosen = True
         self.view_changed.emit()
-
