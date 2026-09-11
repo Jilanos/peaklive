@@ -79,7 +79,12 @@ class HistoricalSignalStore:
         # Invalidation is transactional with the append so a worker can never
         # install a summary built from a partial write.
         self._connection.execute("DELETE FROM overview_cache")
-        for signal, timestamp, value, _unit in rows_to_summary(rows):
+        # Large ingest batches are already indexed by samples_signal_time;
+        # maintaining seven summary levels row-by-row would make ingestion
+        # quadratic in SQLite round trips. Build summaries lazily on the first
+        # viewport request for those batches.
+        summary_rows = rows if len(rows) <= 32 else ()
+        for signal, timestamp, value, _unit in rows_to_summary(summary_rows):
             encoded = json.dumps(value)
             numeric = isinstance(value, int | float) and not isinstance(value, bool)
             for level, width in enumerate((0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)):
