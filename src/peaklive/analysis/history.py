@@ -40,6 +40,12 @@ class HistoricalSignalStore:
             "CREATE INDEX IF NOT EXISTS samples_signal_time "
             "ON samples(signal, timestamp)"
         )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS overview_cache ("
+            "signal TEXT NOT NULL, start REAL NOT NULL, end REAL NOT NULL, "
+            "max_points INTEGER NOT NULL, payload TEXT NOT NULL, "
+            "PRIMARY KEY(signal, start, end, max_points))"
+        )
         self._connection.commit()
 
     @property
@@ -57,6 +63,10 @@ class HistoricalSignalStore:
             rows.append((signal, float(timestamp), json.dumps(value), numeric, unit))
         if not rows:
             return 0
+        # Cached summaries are immutable views of the previous data revision.
+        # Invalidation is transactional with the append so a worker can never
+        # install a summary built from a partial write.
+        self._connection.execute("DELETE FROM overview_cache")
         self._connection.executemany(
             "INSERT INTO samples(signal, timestamp, value, numeric, unit) VALUES (?, ?, ?, ?, ?)",
             rows,
@@ -104,6 +114,13 @@ class HistoricalSignalStore:
             start, end = end, start
         if max_points < 2 or end <= start:
             return self.exact(signal, start, end, limit=max_points)
+        cached = self._connection.execute(
+            "SELECT payload FROM overview_cache WHERE signal = ? AND start = ? "
+            "AND end = ? AND max_points = ?",
+            (signal, float(start), float(end), int(max_points)),
+        ).fetchone()
+        if cached is not None:
+            return tuple((float(timestamp), value) for timestamp, value in json.loads(cached[0]))
         # Four source samples per bucket (first, last, minimum, maximum) keep
         # extrema and both edges without ever requiring a global slice.  The
         # previous implementation used half as many buckets and then sliced
@@ -143,7 +160,14 @@ class HistoricalSignalStore:
                 if marker not in seen:
                     points.append((timestamp, value))
                     seen.add(marker)
-        return tuple(points)
+        result = tuple(points)
+        self._connection.execute(
+            "INSERT OR REPLACE INTO overview_cache(signal, start, end, max_points, payload) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (signal, float(start), float(end), int(max_points), json.dumps(result)),
+        )
+        self._connection.commit()
+        return result
 
     def clear(self) -> None:
         self._connection.execute("DELETE FROM samples")
