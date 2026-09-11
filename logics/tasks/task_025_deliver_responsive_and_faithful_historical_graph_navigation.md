@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 80%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -72,6 +72,7 @@
 - Implemented and committed scheduler debounce and chronological bounded overview correction in 90d87e1. Focused validation passed: PYTHONPATH=src .venv-win/Scripts/python.exe -m pytest tests/test_history.py tests/test_graph_navigation.py tests/test_graph_performance.py (25 passed); Ruff passed. Full pytest was started and reached 63% without reported failures, then was stopped after a long silent integration test. Remaining task scope: worker-owned asynchronous historical queries, indexed multiresolution hierarchy, historical measurement truthfulness, and packaged Windows latency qualification.
 - Added HistoryViewportWorker with worker-owned SQLite connection, generation checks and cancellation; historical refresh now runs off GUI thread and session reset/close cancels it. Commit c8671a8 plus lifecycle follow-up pending. Focused history/performance tests and Ruff pass. Full graph_navigation integration reaches the long live acquisition case but does not complete within the bounded command window; packaged Windows latency qualification remains outstanding.
 - Validation checkpoint: 50 focused tests passed in 92.96s across graph navigation, graph performance, history, trace performance, UI graph comparison and replay worker. Ruff passed. Added bounded 64,000-point viewport result cache with session invalidation in commits ce78204/c9f6fd2. AC2 worker ownership, debounce, generation cancellation and lifecycle cleanup are implemented. AC4 envelope ordering/late extrema is covered by deterministic tests. AC3 broad-view precomputed SQLite resolution hierarchy, AC5 historical exact measurement contract, and AC1/AC7 packaged Windows latency qualification remain explicitly open; task must not close until those are implemented and evidenced.
+- Added SQLite overview_cache materialization with transactional invalidation on append (commit 4b2f330). This removes repeated scans for identical historical viewports while preserving source samples. Full focused regression command passed: 50 tests across navigation, performance, history, trace performance, UI graph comparison and replay worker. Ruff and Logics lint pass. Remaining evidence gap is explicit: no 1/4/8-lane packaged Windows latency qualification and A/B historical exact measurement consumer; these must be implemented or the task cannot be closed.
 
 # Links
 - Request: `req_025_restore_responsive_and_faithful_historical_graph_navigation`
