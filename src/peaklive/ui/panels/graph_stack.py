@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 
 from peaklive.analysis import HistoricalSignalStore, SeriesStore
 from peaklive.i18n import translate
+from peaklive.services.history_worker import HistoryViewportWorker
 from peaklive.ui import theme
 from peaklive.ui.panels.graph_controls import GraphControlsBar
 from peaklive.ui.panels.graph_history import curve_points, viewport
@@ -84,6 +85,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._viewport_refresh_timer.setSingleShot(True)
         self._viewport_refresh_timer.setInterval(75)
         self._viewport_refresh_timer.timeout.connect(self.refresh_data)
+        self._history_worker: HistoryViewportWorker | None = None
+        self._history_generation = 0
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -256,10 +259,34 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.refresh_data()
     def request_view_refresh(self) -> None:
         self._viewport_refresh_timer.start()
+
+    def cancel_history_refresh(self) -> None:
+        self._history_generation += 1
+        worker = self._history_worker
+        if worker is not None and worker.isRunning():
+            worker.request_cancel()
+        self._history_worker = None
     def refresh_data(self) -> None:
         """Push the retained samples into the curves without moving the cursors."""
         store = self._store
         if store is None:
+            return
+        if self._history is not None:
+            self._history_generation += 1
+            generation = self._history_generation
+            old = self._history_worker
+            if old is not None and old.isRunning():
+                old.request_cancel()
+            extent, visible = viewport(
+                self._history, self.global_extent(), self._window_chosen, self.visible_window()
+            )
+            if extent is not None and visible is not None:
+                worker = HistoryViewportWorker(
+                    self._history.path, tuple(self._curves), extent, visible, generation
+                )
+                worker.completed.connect(self._historical_refresh_completed)
+                self._history_worker = worker
+                worker.start()
             return
         has_sample = False
         extent, visible = viewport(
@@ -283,6 +310,31 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if not has_sample:
             self.note.show_message(translate("graph.empty"), "info")
             self.empty_state_label.setText(translate("graph.empty"))
+        self._mark_measurements_dirty()
+
+    def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
+        if generation != self._history_generation or self._history is None:
+            return
+        for signal_name, curve in self._curves.items():
+            points = points_by_signal.get(signal_name)
+            if not points:
+                curve.setData([], [])
+                continue
+            curve.setData(
+                [timestamp for timestamp, _ in points],
+                [
+                    float(value)
+                    if isinstance(value, int | float) and not isinstance(value, bool)
+                    else 0.0
+                    for _, value in points
+                ],
+            )
+        self._history_worker = None
+        bounds = self.global_extent()
+        if bounds is not None:
+            self._seed_cursors(bounds)
+        self.note.setVisible(not any(points_by_signal.values()))
+        self.empty_state_label.setVisible(not any(points_by_signal.values()))
         self._mark_measurements_dirty()
     def _seed_cursors(self, bounds: tuple[float, float]) -> None:
         """Seed unplaced cursors once; never re-pin a cursor the operator moved."""

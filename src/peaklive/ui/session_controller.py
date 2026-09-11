@@ -333,6 +333,7 @@ class WorkspaceSession:
         and grows with the session.
         """
         self.session_note.clear_message()
+        self.graph_panel.cancel_history_refresh()
         self.graph_panel.begin_session(live=not source)
         self._cancel_signal_backfill()
         self._reported_dbc_conflicts.clear()
