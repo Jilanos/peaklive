@@ -224,7 +224,15 @@ class HistoricalSignalStore:
                         ((min_ts, json.loads(min_value)), (max_ts, json.loads(max_value)))
                     )
                 points.extend(values)
-            result = tuple(sorted(set(points), key=lambda item: item[0]))[:max_points]
+            ordered = sorted(points, key=lambda item: item[0])
+            seen = set()
+            unique = []
+            for point in ordered:
+                marker = (point[0], json.dumps(point[1], sort_keys=True))
+                if marker not in seen:
+                    seen.add(marker)
+                    unique.append(point)
+            result = tuple(unique[:max_points])
             self._connection.execute(
                 "INSERT OR REPLACE INTO overview_cache VALUES (?, ?, ?, ?, ?)",
                 (signal, float(start), float(end), int(max_points), json.dumps(result)),
