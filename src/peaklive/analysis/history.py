@@ -17,15 +17,18 @@ from pathlib import Path
 from typing import Any
 
 
+def rows_to_summary(rows):
+    for signal, timestamp, encoded, _numeric, unit in rows:
+        yield signal, timestamp, json.loads(encoded), unit
+
+
 class HistoricalSignalStore:
     """A temporary, indexed store of decoded signal samples."""
 
     def __init__(self, path: Path | None = None) -> None:
         self._owned_path = path is None
         if path is None:
-            self._path = Path(
-                tempfile.mkstemp(prefix="peaklive-history-", suffix=".sqlite3")[1]
-            )
+            self._path = Path(tempfile.mkstemp(prefix="peaklive-history-", suffix=".sqlite3")[1])
         else:
             self._path = path
         self._connection = sqlite3.connect(self._path)
@@ -37,8 +40,17 @@ class HistoricalSignalStore:
             ")"
         )
         self._connection.execute(
-            "CREATE INDEX IF NOT EXISTS samples_signal_time "
-            "ON samples(signal, timestamp)"
+            "CREATE TABLE IF NOT EXISTS summary ("
+            "signal TEXT NOT NULL, level INTEGER NOT NULL, bucket INTEGER NOT NULL, "
+            "first_ts REAL NOT NULL, first_value TEXT NOT NULL, last_ts REAL NOT NULL, "
+            "last_value TEXT NOT NULL, min_ts REAL, min_value TEXT, max_ts REAL, "
+            "max_value TEXT, PRIMARY KEY(signal, level, bucket))"
+        )
+        self._connection.execute(
+            "CREATE INDEX IF NOT EXISTS summary_lookup ON summary(signal, level, bucket)"
+        )
+        self._connection.execute(
+            "CREATE INDEX IF NOT EXISTS samples_signal_time ON samples(signal, timestamp)"
         )
         self._connection.execute(
             "CREATE TABLE IF NOT EXISTS overview_cache ("
@@ -67,6 +79,62 @@ class HistoricalSignalStore:
         # Invalidation is transactional with the append so a worker can never
         # install a summary built from a partial write.
         self._connection.execute("DELETE FROM overview_cache")
+        for signal, timestamp, value, _unit in rows_to_summary(rows):
+            encoded = json.dumps(value)
+            numeric = isinstance(value, int | float) and not isinstance(value, bool)
+            for level, width in enumerate((0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)):
+                bucket = int(float(timestamp) // width)
+                existing = self._connection.execute(
+                    "SELECT first_ts, first_value, last_ts, last_value, min_ts, min_value, "
+                    "max_ts, max_value FROM summary WHERE signal=? AND level=? AND bucket=?",
+                    (signal, level, bucket),
+                ).fetchone()
+                if existing is None:
+                    self._connection.execute(
+                        "INSERT INTO summary VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            signal,
+                            level,
+                            bucket,
+                            timestamp,
+                            encoded,
+                            timestamp,
+                            encoded,
+                            timestamp if numeric else None,
+                            encoded if numeric else None,
+                            timestamp if numeric else None,
+                            encoded if numeric else None,
+                        ),
+                    )
+                    continue
+                first_ts, first_value, last_ts, last_value, min_ts, min_value, max_ts, max_value = (
+                    existing
+                )
+                if timestamp < first_ts:
+                    first_ts, first_value = timestamp, encoded
+                if timestamp >= last_ts:
+                    last_ts, last_value = timestamp, encoded
+                if numeric and (min_ts is None or float(value) < json.loads(min_value)):
+                    min_ts, min_value = timestamp, encoded
+                if numeric and (max_ts is None or float(value) > json.loads(max_value)):
+                    max_ts, max_value = timestamp, encoded
+                self._connection.execute(
+                    "UPDATE summary SET first_ts=?, first_value=?, last_ts=?, last_value=?, "
+                    "min_ts=?, min_value=?, max_ts=?, max_value=? WHERE signal=? AND level=? AND bucket=?",
+                    (
+                        first_ts,
+                        first_value,
+                        last_ts,
+                        last_value,
+                        min_ts,
+                        min_value,
+                        max_ts,
+                        max_value,
+                        signal,
+                        level,
+                        bucket,
+                    ),
+                )
         self._connection.executemany(
             "INSERT INTO samples(signal, timestamp, value, numeric, unit) VALUES (?, ?, ?, ?, ?)",
             rows,
@@ -121,6 +189,42 @@ class HistoricalSignalStore:
         ).fetchone()
         if cached is not None:
             return tuple((float(timestamp), value) for timestamp, value in json.loads(cached[0]))
+        span = end - start
+        widths = (0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
+        level = next(
+            (
+                candidate
+                for candidate, width in enumerate(widths)
+                if span / width <= max_points // 4
+            ),
+            4,
+        )
+        width = widths[level]
+        summaries = self._connection.execute(
+            "SELECT first_ts, first_value, last_ts, last_value, min_ts, min_value, "
+            "max_ts, max_value FROM summary WHERE signal=? AND level=? "
+            "AND bucket BETWEEN ? AND ? ORDER BY bucket",
+            (signal, level, int(start // width), int(end // width)),
+        ).fetchall()
+        if summaries:
+            points = []
+            for row in summaries:
+                first_ts, first_value, last_ts, last_value, min_ts, min_value, max_ts, max_value = (
+                    row
+                )
+                values = [(first_ts, json.loads(first_value)), (last_ts, json.loads(last_value))]
+                if min_ts is not None:
+                    values.extend(
+                        ((min_ts, json.loads(min_value)), (max_ts, json.loads(max_value)))
+                    )
+                points.extend(values)
+            result = tuple(sorted(set(points), key=lambda item: item[0]))[:max_points]
+            self._connection.execute(
+                "INSERT OR REPLACE INTO overview_cache VALUES (?, ?, ?, ?, ?)",
+                (signal, float(start), float(end), int(max_points), json.dumps(result)),
+            )
+            self._connection.commit()
+            return result
         # Four source samples per bucket (first, last, minimum, maximum) keep
         # extrema and both edges without ever requiring a global slice.  The
         # previous implementation used half as many buckets and then sliced
