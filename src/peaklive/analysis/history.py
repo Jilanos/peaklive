@@ -104,7 +104,13 @@ class HistoricalSignalStore:
             start, end = end, start
         if max_points < 2 or end <= start:
             return self.exact(signal, start, end, limit=max_points)
-        bucket_width = (end - start) / max(1, max_points // 2)
+        # Four source samples per bucket (first, last, minimum, maximum) keep
+        # extrema and both edges without ever requiring a global slice.  The
+        # previous implementation used half as many buckets and then sliced
+        # the concatenated result, which discarded late intervals and could
+        # leave points out of chronological order.
+        bucket_count = max(1, max_points // 4)
+        bucket_width = (end - start) / bucket_count
         buckets: dict[int, list[tuple[float, Any, float | None]]] = {}
         cursor = self._connection.execute(
             "SELECT timestamp, value, numeric FROM samples "
@@ -112,7 +118,7 @@ class HistoricalSignalStore:
             (signal, float(start), float(end)),
         )
         for timestamp, encoded, numeric in cursor:
-            bucket = min(int((float(timestamp) - start) / bucket_width), max_points // 2 - 1)
+            bucket = min(int((float(timestamp) - start) / bucket_width), bucket_count - 1)
             slot = buckets.setdefault(bucket, [])
             value = json.loads(encoded)
             sample = (float(timestamp), value, numeric)
@@ -122,27 +128,22 @@ class HistoricalSignalStore:
             first = slot[0]
             last = sample
             if numeric is None or slot[0][2] is None:
+                # Non-numeric values have no extrema; retain edge changes.
                 slot[:] = [first, last]
                 continue
-            minimum = min((slot[-1], sample), key=lambda item: item[2])
-            maximum = max((slot[-1], sample), key=lambda item: item[2])
-            # slot is [first, last, min, max].  Keeping four records makes
-            # memory independent of the source sample count while retaining
-            # real timestamps for both extrema.
-            if len(slot) >= 3:
-                minimum = min((slot[2], sample), key=lambda item: item[2])
-            if len(slot) >= 4:
-                maximum = max((slot[3], sample), key=lambda item: item[2])
+            minimum = min((slot[2] if len(slot) >= 3 else first, sample), key=lambda item: item[2])
+            maximum = max((slot[3] if len(slot) >= 4 else first, sample), key=lambda item: item[2])
             slot[:] = [first, last, minimum, maximum]
         points: list[tuple[float, Any]] = []
         for bucket in sorted(buckets):
             seen: set[tuple[float, str]] = set()
-            for timestamp, value, _ in buckets[bucket]:
+            candidates = sorted(buckets[bucket], key=lambda item: item[0])
+            for timestamp, value, _ in candidates:
                 marker = (timestamp, json.dumps(value, sort_keys=True))
                 if marker not in seen:
                     points.append((timestamp, value))
                     seen.add(marker)
-        return tuple(points[:max_points])
+        return tuple(points)
 
     def clear(self) -> None:
         self._connection.execute("DELETE FROM samples")

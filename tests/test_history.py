@@ -27,3 +27,19 @@ def test_history_exact_query_refuses_unbounded_range(tmp_path):
     history.append_many(("speed", float(i), i, None) for i in range(101))
 
     assert history.exact("speed", 0.0, 100.0, limit=100) == ()
+
+
+def test_history_overview_preserves_late_extrema_and_chronological_order(tmp_path):
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    history.append_many(
+        ("signal", float(i), (100.0 if i % 4 == 0 else -100.0 if i % 4 == 1 else 0.0), None)
+        for i in range(400)
+    )
+
+    overview = history.overview("signal", 0.0, 399.0, max_points=100)
+
+    assert len(overview) <= 100
+    assert overview[0][0] == 0.0
+    assert overview[-1][0] == 399.0
+    assert all(a[0] <= b[0] for a, b in zip(overview, overview[1:], strict=False))
+    assert any(timestamp >= 300 and value == -100.0 for timestamp, value in overview)

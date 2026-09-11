@@ -77,6 +77,13 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._measurement_refresh_timer = QTimer(self)
         self._measurement_refresh_timer.setInterval(MEASUREMENT_REFRESH_INTERVAL_MS)
         self._measurement_refresh_timer.timeout.connect(self._flush_measurements)
+        # Navigation can emit several linked-axis notifications for one user
+        # gesture. Keep a single restartable timer so only the settled range is
+        # prepared and uploaded to the curves.
+        self._viewport_refresh_timer = QTimer(self)
+        self._viewport_refresh_timer.setSingleShot(True)
+        self._viewport_refresh_timer.setInterval(75)
+        self._viewport_refresh_timer.timeout.connect(self.refresh_data)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -248,7 +255,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._apply_cursor_lines()
         self.refresh_data()
     def request_view_refresh(self) -> None:
-        QTimer.singleShot(75, self.refresh_data)
+        self._viewport_refresh_timer.start()
     def refresh_data(self) -> None:
         """Push the retained samples into the curves without moving the cursors."""
         store = self._store
