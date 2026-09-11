@@ -9,6 +9,7 @@ somewhere, plus the one further, bounded chance it gets at process exit.
 from __future__ import annotations
 
 from time import monotonic
+from weakref import ref
 
 from PySide6.QtCore import QThread
 
@@ -35,7 +36,11 @@ def abandon_worker(worker: QThread | None) -> None:
     if worker is None:
         return
     _ABANDONED_WORKERS.add(worker)
-    worker.finished.connect(lambda: _ABANDONED_WORKERS.discard(worker))
+    # A strong closure here creates worker -> signal -> callback -> worker.
+    # Collecting that Qt/Python cycle later, during another active replay,
+    # can block in Qt destruction while Python holds the GIL.
+    reference = ref(worker)
+    worker.finished.connect(lambda: _ABANDONED_WORKERS.discard(reference()))
     if worker.isFinished():
         _ABANDONED_WORKERS.discard(worker)
 

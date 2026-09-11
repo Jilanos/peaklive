@@ -74,6 +74,7 @@ class WorkspaceShutdown:
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self._replay_worker.request_stop()
             settle(self._replay_worker)
+        self.graph_panel.cancel_history_refresh()
         self.graph_panel._history = None
         self._history.close()
         for worker in running_exports:

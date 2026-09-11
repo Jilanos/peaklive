@@ -8,6 +8,7 @@ every machine, whereas a stopwatch is not.
 
 from __future__ import annotations
 
+import gc
 import sys
 from pathlib import Path
 
@@ -208,6 +209,10 @@ def test_the_event_loop_is_serviced_within_the_responsiveness_budget(qtbot, tmp_
     # a user action waits behind ingestion, not how long the shell takes to
     # come up.
     QCoreApplication.processEvents()
+    # Release widgets/callback cycles left by earlier tests before starting
+    # a new worker. Otherwise their Qt destructors can run inside the timed
+    # processEvents call and block on an unrelated thread's Python callback.
+    gc.collect()
 
     window._open_trace(capture)
     passes: list[float] = []

@@ -10,6 +10,7 @@ samples for a narrow viewport without retaining every sample in Python.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import tempfile
 from collections.abc import Iterable
@@ -22,15 +23,45 @@ def rows_to_summary(rows):
         yield signal, timestamp, json.loads(encoded), unit
 
 
+def historical_points(
+    history: HistoricalSignalStore | None,
+    signal: str,
+    extent: tuple[float, float] | None,
+    visible: tuple[float, float] | None,
+    *,
+    exact_threshold: float = 0.08,
+) -> tuple[tuple[float, object], ...] | None:
+    """Resolve a viewport without depending on the UI or importing Qt."""
+    if history is None or extent is None or visible is None:
+        return None
+    full_span = max(0.0, extent[1] - extent[0])
+    visible_span = max(0.0, visible[1] - visible[0])
+    if full_span > 0 and visible_span / full_span <= exact_threshold:
+        exact = history.exact(signal, *visible, limit=20_000)
+        if exact:
+            return exact
+    return history.overview(signal, *visible, max_points=4_000)
+
+
 class HistoricalSignalStore:
     """A temporary, indexed store of decoded signal samples."""
 
-    def __init__(self, path: Path | None = None) -> None:
+    def __init__(self, path: Path | None = None, *, read_only: bool = False) -> None:
+        if read_only and path is None:
+            raise ValueError("A read-only history requires an existing path")
+        self._read_only = read_only
         self._owned_path = path is None
         if path is None:
-            self._path = Path(tempfile.mkstemp(prefix="peaklive-history-", suffix=".sqlite3")[1])
+            descriptor, name = tempfile.mkstemp(prefix="peaklive-history-", suffix=".sqlite3")
+            os.close(descriptor)
+            self._path = Path(name)
         else:
             self._path = path
+        if read_only:
+            # Never recreate a session file already removed by its owner, or
+            # write schema/cache data from a background viewport reader.
+            self._connection = sqlite3.connect(self._path.resolve().as_uri() + "?mode=ro", uri=True)
+            return
         self._connection = sqlite3.connect(self._path)
         self._connection.execute(
             "CREATE TABLE IF NOT EXISTS samples ("
@@ -183,18 +214,15 @@ class HistoricalSignalStore:
     def _cache_overview(
         self, signal: str, start: float, end: float, max_points: int, result: tuple
     ) -> None:
-        """Best-effort cache write for readers racing session teardown."""
-        try:
-            self._connection.execute(
-                "INSERT OR REPLACE INTO overview_cache(signal, start, end, max_points, payload) "
-                "VALUES (?, ?, ?, ?, ?)",
-                (signal, float(start), float(end), int(max_points), json.dumps(result)),
-            )
-            self._connection.commit()
-        except sqlite3.OperationalError:
-            # A background viewport can outlive the UI-owned temporary file;
-            # the queried samples remain valid even when its cache is gone.
-            pass
+        """Only the session owner may persist overview cache entries."""
+        if self._read_only:
+            return
+        self._connection.execute(
+            "INSERT OR REPLACE INTO overview_cache(signal, start, end, max_points, payload) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (signal, float(start), float(end), int(max_points), json.dumps(result)),
+        )
+        self._connection.commit()
 
     def overview(
         self, signal: str, start: float, end: float, *, max_points: int = 2_000
