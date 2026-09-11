@@ -1,0 +1,223 @@
+{
+  "title": "Restore responsive and faithful historical graph navigation",
+  "references": [
+    "logics/analysis/historical_zoom_diagnosis.md",
+    "logics/analysis/zoom_diagnostic.py",
+    "logics/request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md",
+    "logics/tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md",
+    "src/peaklive/analysis/history.py",
+    "src/peaklive/ui/panels/graph_history.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/measurement.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/window_shutdown.py",
+    "tests/test_history.py",
+    "tests/test_graph_performance.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Historical navigation responsiveness and fidelity",
+    "needs": [
+      "Restore usable zoom, pan and fit on large completed captures while retaining complete historical evidence.",
+      "Stay within Python/PySide6/pyqtgraph and the existing SQLite history store; provide a measured, implementable correction.",
+      "Correct overview coverage defects together with the scheduler and query costs so faster curves remain trustworthy."
+    ],
+    "context": [
+      "The private 195753923-byte capture contains 1755746 parsed CAN frames across 944.788905 seconds and 40 identifiers. Frequent identifiers each have about 94493 frames.",
+      "On the local source checkout, an isolated raw-byte series with real capture timestamps requires 926.732-974.733 ms to build a 4000-point overview from 94493 rows. This is not a DBC reproduction of the operator's exact graph setup or a timing of the packaged executable.",
+      "Thirty request_view_refresh calls produce thirty Qt callbacks, not one. history.overview scans and JSON-decodes all selected rows synchronously; bounds performs a covering-index scan.",
+      "A 400-sample oscillating fixture with a 100-point budget ends at timestamp 193 instead of 399 and produces unsorted timestamps.",
+      "The earlier multiresolution request is marked Done but the inspected code still lacks an asynchronous historical viewport worker and precomputed resolution hierarchy. This is a corrective follow-up, not permission to rewrite past proof.",
+      "Scope and reproducible evidence, tradeoffs and proposed budgets are defined in logics/analysis/historical_zoom_diagnosis.md. The private capture is kept outside versioned documentation."
+    ],
+    "acceptance_criteria": [
+      "AC1: With completed historical data and 1, 4 and 8 linked lanes, 100 mixed wheel/pan/fit gestures meet a 20 ms heartbeat p95 lateness <= 50 ms and maximum <= 150 ms on the recorded Windows reference machine. Warm final viewport latency <= 250 ms and cold indexed-query latency <= 1 s after settling; index construction is separately reported.",
+      "AC2: Navigation has one owned restartable 75 ms timer, at most one active and one replaceable pending history request; duplicate linked-axis notifications coalesce. No historical SQL, full-history scan or JSON reduction executes on the GUI thread. Obsolete work cancels and stale results cannot install.",
+      "AC3: Broad views use indexed precomputed resolution levels and cached bounds. Returned overview points per lane <= min(4000, max(256, 4 * viewport_width_px)); raw exact points <= 20000. Instrumented rows visited scale with viewport budget and hierarchy depth rather than raw-range sample count.",
+      "AC4: Every overview preserves full interval coverage, first/last samples and per-bucket extrema including late spikes, emits stable chronological timestamps/sample identities, and never truncates later buckets to meet its budget. Exact results match original decoded samples and distinguish overflow, empty, missing, error and cancelled states.",
+      "AC5: Fit, follow and range selection use one authoritative historical extent; density-aware exact selection replaces the fixed 8-percent duration heuristic. Overview/exact/loading/unavailable states are visible and accessible; previous valid data remains usable while waiting. Historical A/B results are exact for their requested range or explicitly unavailable/partial.",
+      "AC6: Session, source/DBC revision, data revision, signal selection and viewport generation isolate caches and workers. Historical viewport caches are capped at 64 MiB total; queues and index resources have explicit bounds and cleanup. Replacement, cancellation, deselection, disk errors and shutdown cannot apply stale data or block the GUI.",
+      "AC7: Deterministic long dense/irregular/oscillating fixtures, 10x source-length scaling, real event-loop measurements and an identifiable packaged Windows replay prove the correction. Existing live capture, replay backpressure, trace retention, exports and decode semantics retain their documented behavior; no raw history is discarded to achieve speed."
+    ]
+  },
+  "product": {
+    "title": "PeakLive responsive and faithful historical navigation correction",
+    "overview": "Repair the delivered historical navigation regression with bounded asynchronous queries and truthful multiresolution rendering on the existing native desktop stack.",
+    "goals": [
+      "Make graph navigation responsive independently of total capture length after index construction.",
+      "Keep complete capture coverage and exact local detail trustworthy.",
+      "Qualify the actual interactive Windows delivery with measurable responsiveness and lifecycle evidence."
+    ],
+    "non_goals": [
+      "Rewrite the application in C++, a browser UI or a different rendering framework.",
+      "Increase the live frame/series retention limits or load all history into RAM.",
+      "Implement arbitrary post-load full-file decoding for previously unselected signals; expose missing historical coverage honestly.",
+      "Redesign recording, CAN transport, DBC meanings, export formats or replay backpressure.",
+      "Promise immediate full-detail rendering before indexing completes."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Coalesce historical viewport requests and own cancellable background reads",
+      "priority": "High - each zoom currently queues synchronous work that can freeze input for seconds.",
+      "complexity": "High",
+      "theme": "Qt scheduling and historical worker lifecycle",
+      "request_acs": [
+        "AC1",
+        "AC2",
+        "AC6",
+        "AC7"
+      ],
+      "problem": [
+        "Static singleShot callbacks accumulate; linked lanes repeat the same full-panel refresh.",
+        "Historical queries run synchronously in the GUI and share its SQLite connection."
+      ],
+      "scope_in": [
+        "Replace static per-event timers with one parent-owned restartable single-shot timer and canonical anchor viewport deduplication including fit, wheel, pan and resize.",
+        "Introduce a worker-owned SQLite read connection and immutable bounded result contract; retain all widget updates in the GUI thread. Do not use check_same_thread=False as the ownership design.",
+        "Keep one active request and one replaceable pending request. Include session generation, DBC/source and data revisions, signal selection, range and resolution in request keys. Cancel active SQL/chunked preparation, not only result installation.",
+        "Keep the last valid curve while pending, update only changed curves, and retire pending timers/readers before session teardown without GUI joins or lock waits.",
+        "Cache global/signal bounds by data revision. Instrument request count, queue depth, cancellation latency, GUI apply cost and query thread identity."
+      ],
+      "scope_out": [
+        "Claiming that threading alone removes the O(raw samples) overview cost.",
+        "Changing acquisition transport or discarding raw samples."
+      ],
+      "acceptance_criteria": [
+        "AC1: Navigation enqueue/apply operations respect the event-loop budget; full acceptance follows summary integration.",
+        "AC2: A burst of 30 identical refresh requests yields one latest-viewport execution; linked lane duplicates do not multiply executions. SQL never runs on the GUI thread.",
+        "AC6: Queue depth never exceeds one active plus one pending; old-session results and callbacks are rejected after reset, replacement, deselection and shutdown.",
+        "AC7: Deterministic tests exercise cancellation during actual work, not just completion-generation checks, and preserve live navigation and replay completion behavior."
+      ]
+    },
+    {
+      "title": "Serve bounded chronological multiresolution history summaries",
+      "priority": "High - broad-view scans dominate latency and the existing envelope can lose late data.",
+      "complexity": "High",
+      "theme": "SQLite resolution hierarchy and exact-query policy",
+      "request_acs": [
+        "AC1",
+        "AC3",
+        "AC4",
+        "AC6",
+        "AC7"
+      ],
+      "problem": [
+        "The overview scans every raw sample for every query; its output cap does not bound CPU or database reads.",
+        "Four-point buckets followed by a global slice lose later intervals and produce nonchronological x values."
+      ],
+      "scope_in": [
+        "Define and implement disk-backed hierarchical first/min/max/last summaries, counts and stable sample identities with indexed signal/level/bucket keys and incrementally maintained global/per-signal bounds.",
+        "Build summaries in bounded background batches with progress/cancellation; preserve exact historical rows. Specify transaction ownership and committed-read semantics; introduce WAL only if concurrent write/read needs it, with size/checkpoint policy.",
+        "Select a level using viewport pixels and density estimates. Query a bounded set of summary buckets plus bounded edges; raw full-range rescans and raw SQL GROUP BY are not the final interactive path.",
+        "Budget up to four slots per bucket before emitting; deduplicate by sample identity and sort chronologically. Preserve full interval endpoints, late extrema, duplicate timestamp ordering and gaps.",
+        "Distinguish exact overflow, empty, missing, error and cancellation. Retain 20000 exact cap; use density/pixel policy and hysteresis rather than a fixed duration fraction.",
+        "Cache immutable viewport results within 64 MiB total with explicit invalidation. Record index footprint, temporary-disk quota/failure behavior and scaling."
+      ],
+      "scope_out": [
+        "Database migration or GPU rendering as prerequisite.",
+        "Replacing original samples with summaries or silently reducing analytical precision."
+      ],
+      "acceptance_criteria": [
+        "AC1: Integrated warm/cold navigation meets the documented budgets with 1/4/8 lanes.",
+        "AC3: Instrumentation proves broad queries read bounded summary rows as fixture duration grows 10x; overview and exact point caps hold independently of raw volume.",
+        "AC4: Oscillating 400-sample and late-spike fixtures preserve end timestamp and all required bucket extrema within the cap, ordered by timestamp/sample identity; exact values match the oracle.",
+        "AC6: Cache bytes, construction batches and temporary index resources obey explicit limits; cancellation and disk-full failures leave the source and last valid display intact.",
+        "AC7: Include at least 1 million aggregate samples, sparse/nonnumeric/irregular/duplicate cases and repeat-navigation memory checks."
+      ]
+    },
+    {
+      "title": "Align historical navigation extents and measurement truthfulness",
+      "priority": "High - a responsive plot must not misrepresent capture coverage or exact measurements.",
+      "complexity": "Medium",
+      "theme": "Historical graph and analytical consumer contracts",
+      "request_acs": [
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "problem": [
+        "Fit/global_extent reads bounded live series while curve loading uses historical bounds.",
+        "Measurements still use the retained tail, and historical empty/overflow states are ambiguous."
+      ],
+      "scope_in": [
+        "Use a single cached historical extent for fit, follow, initial capture display and viewport selection; preserve live zero-based semantics.",
+        "Expose accessible overview/exact/loading/unavailable states through existing UI and translation conventions, with no modal navigation blocker.",
+        "For historical A/B ranges outside complete retained coverage, obtain exact source-backed results asynchronously where supported or explicitly mark partial/unavailable values; never calculate exact statistics from overview points.",
+        "Avoid measurement recomputation for unchanged cursors/data and while the values panel is hidden; refresh once on reveal when dirty.",
+        "Distinguish missing history after late signal selection from a genuinely empty visible interval. Document this limitation instead of claiming full-file backfill.",
+        "Define nonnumeric/gap plotting behavior without inventing numeric zero samples; invalidate view and measurement results on relevant session/DBC changes."
+      ],
+      "scope_out": [
+        "A general export or measurement architecture rewrite.",
+        "Building a new full-file decoder for arbitrary signals selected after replay."
+      ],
+      "acceptance_criteria": [
+        "AC4: Displayed range coverage is complete and enum/gap handling cannot fabricate exact numeric evidence.",
+        "AC5: Fit returns to actual full history after tail truncation; accessible state tracks pending/exact/overview/failure, and partial historical A/B values are never presented as exact full-range results.",
+        "AC6: Late results cannot overwrite a new DBC/session or update hidden/deselected curves.",
+        "AC7: Cursor persistence, follow disable on manual zoom, export retained-buffer semantics and live acquisition remain covered by existing regressions."
+      ]
+    },
+    {
+      "title": "Qualify large capture navigation with event loop and packaged Windows evidence",
+      "priority": "High - current option-level tests passed while the delivered interaction freezes.",
+      "complexity": "Medium",
+      "theme": "Reproducible navigation regression qualification",
+      "request_acs": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "problem": [
+        "Existing graph tests mostly inspect pyqtgraph flags or bounded small series; they do not measure historical GUI blocking.",
+        "The private capture reproduces the regression but cannot be the sole CI fixture or expose payloads."
+      ],
+      "scope_in": [
+        "Turn the diagnostic cases into deterministic synthetic correctness and structural regression tests; retain the standalone probe for optional private capture evidence.",
+        "Build a GUI heartbeat harness driven by real Qt navigation with 1/4/8 linked lanes, 100 mixed gestures, widths 1024/1280/1600 and 1000-gesture cache endurance.",
+        "Report timing distributions, warm/cold and index-construction phases separately, row visits, point counts, active/pending requests, cancellation/stale counts, cache bytes and disk footprint.",
+        "Use at least 1 million historical samples with 100 Hz/1 kHz and irregular series, a 10x-duration complexity comparison, late extrema and independent exact-value oracles.",
+        "Qualify the identifiable packaged Windows executable after replay settles, with representative selected DBC signals. Record machine/build identity; re-run the private capture locally when available, without committing it.",
+        "Run focused historical/navigation/measurement/lifecycle tests plus required repository checks. Associate behavioral evidence with each request AC and explicitly identify unavailable platform/capture checks."
+      ],
+      "scope_out": [
+        "Closing on total pytest runtime or option flags alone.",
+        "Hardware CAN transmission tests or public redistribution of the private capture."
+      ],
+      "acceptance_criteria": [
+        "AC1: With completed historical data and 1, 4 and 8 linked lanes, 100 mixed wheel/pan/fit gestures meet a 20 ms heartbeat p95 lateness <= 50 ms and maximum <= 150 ms on the recorded Windows reference machine. Warm final viewport latency <= 250 ms and cold indexed-query latency <= 1 s after settling; index construction is separately reported.",
+        "AC2: Navigation has one owned restartable 75 ms timer, at most one active and one replaceable pending history request; duplicate linked-axis notifications coalesce. No historical SQL, full-history scan or JSON reduction executes on the GUI thread. Obsolete work cancels and stale results cannot install.",
+        "AC3: Broad views use indexed precomputed resolution levels and cached bounds. Returned overview points per lane <= min(4000, max(256, 4 * viewport_width_px)); raw exact points <= 20000. Instrumented rows visited scale with viewport budget and hierarchy depth rather than raw-range sample count.",
+        "AC4: Every overview preserves full interval coverage, first/last samples and per-bucket extrema including late spikes, emits stable chronological timestamps/sample identities, and never truncates later buckets to meet its budget. Exact results match original decoded samples and distinguish overflow, empty, missing, error and cancelled states.",
+        "AC5: Fit, follow and range selection use one authoritative historical extent; density-aware exact selection replaces the fixed 8-percent duration heuristic. Overview/exact/loading/unavailable states are visible and accessible; previous valid data remains usable while waiting. Historical A/B results are exact for their requested range or explicitly unavailable/partial.",
+        "AC6: Session, source/DBC revision, data revision, signal selection and viewport generation isolate caches and workers. Historical viewport caches are capped at 64 MiB total; queues and index resources have explicit bounds and cleanup. Replacement, cancellation, deselection, disk errors and shutdown cannot apply stale data or block the GUI.",
+        "AC7: Deterministic long dense/irregular/oscillating fixtures, 10x source-length scaling, real event-loop measurements and an identifiable packaged Windows replay prove the correction. Existing live capture, replay backpressure, trace retention, exports and decode semantics retain their documented behavior; no raw history is discarded to achieve speed."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver responsive and faithful historical graph navigation",
+    "plan": [
+      "Record the supplied source-level diagnosis and baseline; capture build identity, machine characteristics and actual selected-signal configuration for executable qualification.",
+      "Implement the request scheduler and worker ownership first, proving coalescing and lifecycle safety while clearly retaining the unresolved raw-scan cost.",
+      "Implement and integrate indexed resolution summaries, cached extents and bounded exact queries; prove late-interval coverage and stable chronological extrema before performance claims.",
+      "Align fit/follow, UI detail states, missing historical coverage and A/B truthfulness. Avoid unrelated acquisition/export changes.",
+      "Run deterministic structural/correctness tests and real event-loop navigation with 1/4/8 lanes, scaling and cache endurance; measure separately cold-index construction and indexed-query readiness.",
+      "Qualify an identifiable Windows executable and the private capture when available; record AC-by-AC evidence, Logics validation and outstanding limitations before closeout."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_historical_zoom_responsiveness.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

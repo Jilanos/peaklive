@@ -1,0 +1,455 @@
+{
+  "budgets": {
+    "max_docs": 48,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_025_restore_responsive_and_faithful_historical_graph_navigation task_025_deliver_responsive_and_faithful_historical_graph_navigation item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads item_118_serve_bounded_chronological_multiresolution_history_summaries item_119_align_historical_navigation_extents_and_measurement_truthfulness item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence --mode full --profile deep",
+  "companion_docs": [],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "restore, responsive, faithful, historical, graph, navigation",
+        "skip when": "Changing CAN transport, export formats or arbitrary late-selected signal decoding.",
+        "summary": "Repair the measured synchronous historical scan and callback accumulation exposed by a 1.75-million-frame capture.",
+        "use when": "Planning the cross-layer historical zoom regression correction and its evidence."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+          "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+          "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+          "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/request/req_025_restore_responsive_and_faithful_historical_graph_navigation.md",
+      "ref": "req_025_restore_responsive_and_faithful_historical_graph_navigation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: With completed historical data and 1, 4 and 8 linked lanes, 100 mixed wheel/pan/fit gestures meet a 20 ms heartbeat p95 lateness <= 50 ms and maximum <= 150 ms on the recorded Windows reference machine. Warm final viewport latency <= 250 ms and cold indexed-query latency <= 1 s after settling; index construction is separately reported.",
+          "- AC2: Navigation has one owned restartable 75 ms timer, at most one active and one replaceable pending history request; duplicate linked-axis notifications coalesce. No historical SQL, full-history scan or JSON reduction executes on the GUI thread. Obsolete work cancels and stale results cannot install.",
+          "- AC3: Broad views use indexed precomputed resolution levels and cached bounds. Returned overview points per lane <= min(4000, max(256, 4 * viewport_width_px)); raw exact points <= 20000. Instrumented rows visited scale with viewport budget and hierarchy depth rather than raw-range sample count.",
+          "- AC4: Every overview preserves full interval coverage, first/last samples and per-bucket extrema including late spikes, emits stable chronological timestamps/sample identities, and never truncates later buckets to meet its budget. Exact results match original decoded samples and distinguish overflow, empty, missing, error and cancelled states.",
+          "- AC5: Fit, follow and range selection use one authoritative historical extent; density-aware exact selection replaces the fixed 8-percent duration heuristic. Overview/exact/loading/unavailable states are visible and accessible; previous valid data remains usable while waiting. Historical A/B results are exact for their requested range or explicitly unavailable/partial.",
+          "- AC6: Session, source/DBC revision, data revision, signal selection and viewport generation isolate caches and workers. Historical viewport caches are capped at 64 MiB total; queues and index resources have explicit bounds and cleanup. Replacement, cancellation, deselection, disk errors and shutdown cannot apply stale data or block the GUI."
+        ],
+        "Needs": [
+          "- Restore usable zoom, pan and fit on large completed captures while retaining complete historical evidence.",
+          "- Stay within Python/PySide6/pyqtgraph and the existing SQLite history store; provide a measured, implementable correction.",
+          "- Correct overview coverage defects together with the scheduler and query costs so faster curves remain trustworthy."
+        ]
+      },
+      "status": "Draft",
+      "title": "Restore responsive and faithful historical graph navigation"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, multiresolution, trace, graphs, precise, demand, zoom, detail",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ]
+      },
+      "path": "logics/request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md",
+      "ref": "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: For a completed supported trace, every selected supported signal can be represented across the full source time span even when its raw sample count exceeds the current per-series retention limit; no early interval is silently omitted from the overview.",
+          "- AC2: At a full-capture or otherwise broad viewport, each graph renders a bounded multiresolution downsampled overview whose sample count scales with the viewport budget rather than source-frame count and that preserves visible min/max excursions per bucket.",
+          "- AC3: After a pan, wheel zoom, cursor-driven range action, or fit action makes an interval sufficiently narrow, PeakLive asynchronously obtains and displays the exact decoded samples for the visible range plus a documented guard band. The result is generation-safe, cancellable, and never blocks the UI event loop beyond the documented responsiveness budget.",
+          "- AC4: Exact-detail samples are decoded from the authoritative capture source and active DBC definitions, retain their original timestamps and values, and are not fabricated by interpolation or derived from the overview buckets.",
+          "- AC5: Switching between overview and exact detail is visibly and accessibly communicated. While exact detail is loading or unavailable, the last valid overview remains usable and the operator receives an actionable, non-modal explanation.",
+          "- AC6: Memory, worker queues, disk-index size, decode work, and graph point counts have explicit bounds. Repeated navigation across a long high-rate trace neither accumulates unbounded state nor applies stale detail results after trace replacement, signal deselection, or a newer viewport request."
+        ],
+        "Needs": [
+          "- An analyst must be able to inspect the entire duration of a large recorded trace without silently losing early high-rate signal values.",
+          "- When the visible time range is broad, graph rendering must use a bounded downsampled representation that preserves meaningful extrema and keeps interaction responsive.",
+          "- When the analyst zooms into a smaller range, the graph must replace the overview with exact decoded source samples for that visible interval, without reopening the session or corrupting measurements.",
+          "- The application must make the current overview-versus-exact detail state understandable and must never present approximated values as exact samples."
+        ]
+      },
+      "status": "Done",
+      "title": "Deliver multiresolution trace graphs with precise on-demand zoom detail"
+    },
+    {
+      "ai_context": {
+        "keywords": "coalesce, historical, viewport, requests, own, cancellable, background, reads",
+        "skip when": "Choosing the summary hierarchy; that follows in the bounded summaries slice.",
+        "summary": "Replace accumulated GUI callbacks with one latest-viewport scheduler and owned cancellable history reads.",
+        "use when": "Fixing event amplification, SQLite thread ownership, stale results and lifecycle teardown."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/backlog/item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads.md",
+      "ref": "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Navigation enqueue/apply operations respect the event-loop budget; full acceptance follows summary integration.",
+          "- AC2: A burst of 30 identical refresh requests yields one latest-viewport execution; linked lane duplicates do not multiply executions. SQL never runs on the GUI thread.",
+          "- AC6: Queue depth never exceeds one active plus one pending; old-session results and callbacks are rejected after reset, replacement, deselection and shutdown.",
+          "- AC7: Deterministic tests exercise cancellation during actual work, not just completion-generation checks, and preserve live navigation and replay completion behavior."
+        ],
+        "Problem": [
+          "- Static singleShot callbacks accumulate; linked lanes repeat the same full-panel refresh.",
+          "- Historical queries run synchronously in the GUI and share its SQLite connection."
+        ]
+      },
+      "status": "Ready",
+      "title": "Coalesce historical viewport requests and own cancellable background reads"
+    },
+    {
+      "ai_context": {
+        "keywords": "serve, bounded, chronological, multiresolution, history, summaries",
+        "skip when": "Claiming that raw SQL aggregation or moving the Python scan to a thread meets the final complexity target.",
+        "summary": "Eliminate raw-range rescans while preserving chronological extrema and late capture coverage within an explicit point budget.",
+        "use when": "Building indexed resolution levels, density-aware exact selection and bounded result caching."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_118_serve_bounded_chronological_multiresolution_history_summaries"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/backlog/item_118_serve_bounded_chronological_multiresolution_history_summaries.md",
+      "ref": "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Integrated warm/cold navigation meets the documented budgets with 1/4/8 lanes.",
+          "- AC3: Instrumentation proves broad queries read bounded summary rows as fixture duration grows 10x; overview and exact point caps hold independently of raw volume.",
+          "- AC4: Oscillating 400-sample and late-spike fixtures preserve end timestamp and all required bucket extrema within the cap, ordered by timestamp/sample identity; exact values match the oracle.",
+          "- AC6: Cache bytes, construction batches and temporary index resources obey explicit limits; cancellation and disk-full failures leave the source and last valid display intact.",
+          "- AC7: Include at least 1 million aggregate samples, sparse/nonnumeric/irregular/duplicate cases and repeat-navigation memory checks."
+        ],
+        "Problem": [
+          "- The overview scans every raw sample for every query; its output cap does not bound CPU or database reads.",
+          "- Four-point buckets followed by a global slice lose later intervals and produce nonchronological x values."
+        ]
+      },
+      "status": "Ready",
+      "title": "Serve bounded chronological multiresolution history summaries"
+    },
+    {
+      "ai_context": {
+        "keywords": "align, historical, navigation, extents, measurement, truthfulness",
+        "skip when": "Adding full-file backfill for arbitrary newly selected signals or redesigning exports.",
+        "summary": "Make fit and historical A/B semantics agree with full source coverage and current detail readiness.",
+        "use when": "Integrating authoritative extents, accessible detail states and partial or unavailable historical measurements."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_119_align_historical_navigation_extents_and_measurement_truthfulness"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/backlog/item_119_align_historical_navigation_extents_and_measurement_truthfulness.md",
+      "ref": "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC4: Displayed range coverage is complete and enum/gap handling cannot fabricate exact numeric evidence.",
+          "- AC5: Fit returns to actual full history after tail truncation; accessible state tracks pending/exact/overview/failure, and partial historical A/B values are never presented as exact full-range results.",
+          "- AC6: Late results cannot overwrite a new DBC/session or update hidden/deselected curves.",
+          "- AC7: Cursor persistence, follow disable on manual zoom, export retained-buffer semantics and live acquisition remain covered by existing regressions."
+        ],
+        "Problem": [
+          "- Fit/global_extent reads bounded live series while curve loading uses historical bounds.",
+          "- Measurements still use the retained tail, and historical empty/overflow states are ambiguous."
+        ]
+      },
+      "status": "Ready",
+      "title": "Align historical navigation extents and measurement truthfulness"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, large, capture, navigation, event, loop, packaged, windows, evidence",
+        "skip when": "Using pyqtgraph option flags or total test runtime as a responsiveness verdict.",
+        "summary": "Prove interactive responsiveness and waveform fidelity using real event-loop measurements and an identifiable Windows executable.",
+        "use when": "Qualifying 1/4/8 lanes, scaling, cache endurance and the private-capture regression."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/backlog/item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence.md",
+      "ref": "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: With completed historical data and 1, 4 and 8 linked lanes, 100 mixed wheel/pan/fit gestures meet a 20 ms heartbeat p95 lateness <= 50 ms and maximum <= 150 ms on the recorded Windows reference machine. Warm final viewport latency <= 250 ms and cold indexed-query latency <= 1 s after settling; index construction is separately reported.",
+          "- AC2: Navigation has one owned restartable 75 ms timer, at most one active and one replaceable pending history request; duplicate linked-axis notifications coalesce. No historical SQL, full-history scan or JSON reduction executes on the GUI thread. Obsolete work cancels and stale results cannot install.",
+          "- AC3: Broad views use indexed precomputed resolution levels and cached bounds. Returned overview points per lane <= min(4000, max(256, 4 * viewport_width_px)); raw exact points <= 20000. Instrumented rows visited scale with viewport budget and hierarchy depth rather than raw-range sample count.",
+          "- AC4: Every overview preserves full interval coverage, first/last samples and per-bucket extrema including late spikes, emits stable chronological timestamps/sample identities, and never truncates later buckets to meet its budget. Exact results match original decoded samples and distinguish overflow, empty, missing, error and cancelled states.",
+          "- AC5: Fit, follow and range selection use one authoritative historical extent; density-aware exact selection replaces the fixed 8-percent duration heuristic. Overview/exact/loading/unavailable states are visible and accessible; previous valid data remains usable while waiting. Historical A/B results are exact for their requested range or explicitly unavailable/partial.",
+          "- AC6: Session, source/DBC revision, data revision, signal selection and viewport generation isolate caches and workers. Historical viewport caches are capped at 64 MiB total; queues and index resources have explicit bounds and cleanup. Replacement, cancellation, deselection, disk errors and shutdown cannot apply stale data or block the GUI."
+        ],
+        "Problem": [
+          "- Existing graph tests mostly inspect pyqtgraph flags or bounded small series; they do not measure historical GUI blocking.",
+          "- The private capture reproduces the regression but cannot be the sole CI fixture or expose payloads."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify large capture navigation with event loop and packaged Windows evidence"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, bounded, multiresolution, overview, exact, zoom, detail, historical, traces",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview",
+          "item_115_deliver_cancellable_viewport_driven_exact_graph_detail"
+        ],
+        "prod": [
+          "prod_022_peaklive_multiresolution_lossless_historical_trace_detail"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md",
+      "ref": "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)",
+          "- command: `ruff check src tests; .venv\\\\Scripts\\\\python.exe -m pytest tests/test_history.py tests/test_graph_navigation.py tests/test_trace_performance.py tests/test_ui_structure.py tests/test_worker.py -q` | result: passed | date: 2026-09-10",
+          "- Finish workflow executed on 2026-09-10.",
+          "- Linked backlog/request close verification passed."
+        ]
+      },
+      "status": "Done",
+      "title": "Deliver bounded multiresolution overview and exact zoom detail for historical traces"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+          "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+          "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+          "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/product/prod_024_peaklive_responsive_and_faithful_historical_navigation_correction.md",
+      "ref": "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive responsive and faithful historical navigation correction"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, responsive, faithful, historical, graph, navigation",
+        "skip when": "Closing on small-series tests or treating the current documentation as implementation proof.",
+        "summary": "Sequence scheduler ownership, bounded history summaries, analytical truthfulness and Windows navigation qualification.",
+        "use when": "Implementing this measured regression end to end; begin with the diagnosis and preserve prior request evidence."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+          "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+          "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+          "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/tasks/task_025_deliver_responsive_and_faithful_historical_graph_navigation.md",
+      "ref": "task_025_deliver_responsive_and_faithful_historical_graph_navigation",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver responsive and faithful historical graph navigation"
+    }
+  ],
+  "estimates": {
+    "char_count": 21051,
+    "companion_doc_count": 0,
+    "doc_count": 9
+  },
+  "generated_at": "2026-09-11T13:38:17Z",
+  "handoff": {
+    "companion_doc_count": 0,
+    "enabled": false,
+    "source_refs": [
+      "req_025_restore_responsive_and_faithful_historical_graph_navigation",
+      "task_025_deliver_responsive_and_faithful_historical_graph_navigation",
+      "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+      "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+      "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+      "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+    ],
+    "validation_summary_count": 0
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 311
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_025_restore_responsive_and_faithful_historical_graph_navigation,task_025_deliver_responsive_and_faithful_historical_graph_navigation,item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads,item_118_serve_bounded_chronological_multiresolution_history_summaries,item_119_align_historical_navigation_extents_and_measurement_truthfulness,item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence",
+  "refs": [
+    "req_025_restore_responsive_and_faithful_historical_graph_navigation",
+    "task_025_deliver_responsive_and_faithful_historical_graph_navigation",
+    "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+    "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+    "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+    "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": []
+}
