@@ -180,6 +180,22 @@ class HistoricalSignalStore:
             return ()
         return tuple((float(timestamp), json.loads(value)) for timestamp, value in rows)
 
+    def _cache_overview(
+        self, signal: str, start: float, end: float, max_points: int, result: tuple
+    ) -> None:
+        """Best-effort cache write for readers racing session teardown."""
+        try:
+            self._connection.execute(
+                "INSERT OR REPLACE INTO overview_cache(signal, start, end, max_points, payload) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (signal, float(start), float(end), int(max_points), json.dumps(result)),
+            )
+            self._connection.commit()
+        except sqlite3.OperationalError:
+            # A background viewport can outlive the UI-owned temporary file;
+            # the queried samples remain valid even when its cache is gone.
+            pass
+
     def overview(
         self, signal: str, start: float, end: float, *, max_points: int = 2_000
     ) -> tuple[tuple[float, Any], ...]:
@@ -233,11 +249,7 @@ class HistoricalSignalStore:
                     seen.add(marker)
                     unique.append(point)
             result = tuple(unique[:max_points])
-            self._connection.execute(
-                "INSERT OR REPLACE INTO overview_cache VALUES (?, ?, ?, ?, ?)",
-                (signal, float(start), float(end), int(max_points), json.dumps(result)),
-            )
-            self._connection.commit()
+            self._cache_overview(signal, start, end, max_points, result)
             return result
         # Four source samples per bucket (first, last, minimum, maximum) keep
         # extrema and both edges without ever requiring a global slice.  The
@@ -279,12 +291,7 @@ class HistoricalSignalStore:
                     points.append((timestamp, value))
                     seen.add(marker)
         result = tuple(points)
-        self._connection.execute(
-            "INSERT OR REPLACE INTO overview_cache(signal, start, end, max_points, payload) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (signal, float(start), float(end), int(max_points), json.dumps(result)),
-        )
-        self._connection.commit()
+        self._cache_overview(signal, start, end, max_points, result)
         return result
 
     def clear(self) -> None:
