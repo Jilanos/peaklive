@@ -335,13 +335,20 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
         if generation != self._history_generation or self._history is None:
             return
-        key = (str(self._history.path), tuple(self._curves), self.global_extent(), self.visible_window())
+        key = (
+            str(self._history.path), tuple(self._curves),
+            self.global_extent(), self.visible_window()
+        )
         self._history_result_cache[key] = points_by_signal
         self._history_result_cache.move_to_end(key)
-        self._history_result_cache_points += sum(len(points or ()) for points in points_by_signal.values())
+        self._history_result_cache_points += sum(
+            len(points or ()) for points in points_by_signal.values()
+        )
         while self._history_result_cache_points > self._history_result_cache_limit:
             _, removed = self._history_result_cache.popitem(last=False)
-            self._history_result_cache_points -= sum(len(points or ()) for points in removed.values())
+            self._history_result_cache_points -= sum(
+                len(points or ()) for points in removed.values()
+            )
         for signal_name, curve in self._curves.items():
             points = points_by_signal.get(signal_name)
             if not points:
