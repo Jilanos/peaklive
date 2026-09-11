@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections import OrderedDict
+
 import pyqtgraph as pg
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import (
@@ -88,6 +90,9 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._viewport_refresh_timer.timeout.connect(self.refresh_data)
         self._history_worker: HistoryViewportWorker | None = None
         self._history_generation = 0
+        self._history_result_cache: OrderedDict[tuple, dict] = OrderedDict()
+        self._history_result_cache_points = 0
+        self._history_result_cache_limit = 64_000
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -267,6 +272,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
 
     def cancel_history_refresh(self) -> None:
         self._history_generation += 1
+        self._history_result_cache.clear()
+        self._history_result_cache_points = 0
         worker = self._history_worker
         if worker is not None and worker.isRunning():
             worker.request_cancel()
@@ -278,15 +285,21 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if store is None:
             return
         if self._history is not None:
-            self._history_generation += 1
-            generation = self._history_generation
-            old = self._history_worker
-            if old is not None and old.isRunning():
-                old.request_cancel()
             extent, visible = viewport(
                 self._history, self.global_extent(), self._window_chosen, self.visible_window()
             )
             if extent is not None and visible is not None:
+                key = (str(self._history.path), tuple(self._curves), extent, visible)
+                cached = self._history_result_cache.get(key)
+                if cached is not None:
+                    self._history_result_cache.move_to_end(key)
+                    self._historical_refresh_completed(cached, self._history_generation)
+                    return
+                self._history_generation += 1
+                generation = self._history_generation
+                old = self._history_worker
+                if old is not None and old.isRunning():
+                    old.request_cancel()
                 worker = HistoryViewportWorker(
                     self._history.path, tuple(self._curves), extent, visible, generation
                 )
@@ -322,6 +335,13 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
         if generation != self._history_generation or self._history is None:
             return
+        key = (str(self._history.path), tuple(self._curves), self.global_extent(), self.visible_window())
+        self._history_result_cache[key] = points_by_signal
+        self._history_result_cache.move_to_end(key)
+        self._history_result_cache_points += sum(len(points or ()) for points in points_by_signal.values())
+        while self._history_result_cache_points > self._history_result_cache_limit:
+            _, removed = self._history_result_cache.popitem(last=False)
+            self._history_result_cache_points -= sum(len(points or ()) for points in removed.values())
         for signal_name, curve in self._curves.items():
             points = points_by_signal.get(signal_name)
             if not points:
