@@ -22,6 +22,7 @@ from peaklive.ui.panels.graph_lane_header import build_lane, lane_identity
 from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
+from peaklive.ui.worker_lifecycle import abandon_worker
 
 RAW_PREVIEW = "Raw byte 0"
 
@@ -257,6 +258,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.anchor_plot = anchor
         self._apply_cursor_lines()
         self.refresh_data()
+
+    def closeEvent(self, event) -> None:  # type: ignore[no-untyped-def]
+        self.cancel_history_refresh()
+        super().closeEvent(event)
     def request_view_refresh(self) -> None:
         self._viewport_refresh_timer.start()
 
@@ -265,6 +270,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         worker = self._history_worker
         if worker is not None and worker.isRunning():
             worker.request_cancel()
+            abandon_worker(worker)
         self._history_worker = None
     def refresh_data(self) -> None:
         """Push the retained samples into the curves without moving the cursors."""
@@ -285,6 +291,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
                     self._history.path, tuple(self._curves), extent, visible, generation
                 )
                 worker.completed.connect(self._historical_refresh_completed)
+                worker.finished.connect(self._history_worker_finished)
                 self._history_worker = worker
                 worker.start()
             return
@@ -329,13 +336,17 @@ class GraphStackPanel(GraphNavigation, QWidget):
                     for _, value in points
                 ],
             )
-        self._history_worker = None
         bounds = self.global_extent()
         if bounds is not None:
             self._seed_cursors(bounds)
         self.note.setVisible(not any(points_by_signal.values()))
         self.empty_state_label.setVisible(not any(points_by_signal.values()))
         self._mark_measurements_dirty()
+
+    def _history_worker_finished(self) -> None:
+        worker = self._history_worker
+        if worker is not None and not worker.isRunning():
+            self._history_worker = None
     def _seed_cursors(self, bounds: tuple[float, float]) -> None:
         """Seed unplaced cursors once; never re-pin a cursor the operator moved."""
         changed = False
