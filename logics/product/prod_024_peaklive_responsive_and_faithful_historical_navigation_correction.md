@@ -1,12 +1,12 @@
 ## prod_024_peaklive_responsive_and_faithful_historical_navigation_correction - PeakLive responsive and faithful historical navigation correction
 > Date: 2026-09-11
-> Status: Proposed
+> Status: Settled
 > Related request: `req_025_restore_responsive_and_faithful_historical_graph_navigation`
-> Related backlog: `item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads`, `item_118_serve_bounded_chronological_multiresolution_history_summaries`, `item_119_align_historical_navigation_extents_and_measurement_truthfulness`, `item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence`
+> Related backlog: `item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads`
 > Related task: `task_025_deliver_responsive_and_faithful_historical_graph_navigation`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-11 15:37:57
+> Indicators reviewed: 2026-09-11 17:26:50
 
 # Overview
 Repair the delivered historical navigation regression with bounded asynchronous queries and truthful multiresolution rendering on the existing native desktop stack.
@@ -52,5 +52,5 @@ flowchart LR
 - An identifiable packaged Windows replay verifies the complete interaction, supported by deterministic CI fixtures and lifecycle tests.
 
 # References
-- Product back-reference: `req_025_restore_responsive_and_faithful_historical_graph_navigation`
+- Product back-reference: `item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads`
 - Task back-reference: `task_025_deliver_responsive_and_faithful_historical_graph_navigation`

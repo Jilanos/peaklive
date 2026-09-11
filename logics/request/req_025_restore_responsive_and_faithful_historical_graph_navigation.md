@@ -1,13 +1,13 @@
 ## req_025_restore_responsive_and_faithful_historical_graph_navigation - Restore responsive and faithful historical graph navigation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Historical navigation responsiveness and fidelity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-11 15:38:13
+> Indicators reviewed: 2026-09-11 17:26:50
 
 # AI Context
 - Summary: Repair the measured synchronous historical scan and callback accumulation exposed by a 1.75-million-frame capture.

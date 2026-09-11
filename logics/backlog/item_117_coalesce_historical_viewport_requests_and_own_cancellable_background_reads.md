@@ -1,14 +1,14 @@
 ## item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads - Coalesce historical viewport requests and own cancellable background reads
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: High
 > Theme: Qt scheduling and historical worker lifecycle
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-11 16:00:33
+> Indicators reviewed: 2026-09-11 17:26:50
 
 # AI Context
 - Summary: Replace accumulated GUI callbacks with one latest-viewport scheduler and owned cancellable history reads.
@@ -56,3 +56,9 @@
 # Priority
 - Priority: High - each zoom currently queues synchronous work that can freeze input for seconds.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_025_deliver_responsive_and_faithful_historical_graph_navigation`
+
+# Notes
+- Task `task_025_deliver_responsive_and_faithful_historical_graph_navigation` was finished via `logics-manager flow finish task` on 2026-09-11.
