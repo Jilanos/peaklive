@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 40%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -69,7 +69,7 @@
 - (no validation recorded yet)
 
 # Report
-- Not started.
+- Implemented and committed scheduler debounce and chronological bounded overview correction in 90d87e1. Focused validation passed: PYTHONPATH=src .venv-win/Scripts/python.exe -m pytest tests/test_history.py tests/test_graph_navigation.py tests/test_graph_performance.py (25 passed); Ruff passed. Full pytest was started and reached 63% without reported failures, then was stopped after a long silent integration test. Remaining task scope: worker-owned asynchronous historical queries, indexed multiresolution hierarchy, historical measurement truthfulness, and packaged Windows latency qualification.
 
 # Links
 - Request: `req_025_restore_responsive_and_faithful_historical_graph_navigation`
