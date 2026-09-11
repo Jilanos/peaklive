@@ -18,4 +18,7 @@ def test_historical_summary_and_worker_budget_scales_to_eight_lanes(qtbot, tmp_p
     qtbot.wait(150)
     assert panel._viewport_refresh_timer.isActive() is False
     assert panel._history_result_cache_points <= panel._history_result_cache_limit
+    worker = panel._history_worker
     panel.cancel_history_refresh()
+    if worker is not None:
+        worker.wait(5000)
