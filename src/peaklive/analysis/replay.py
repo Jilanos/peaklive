@@ -81,9 +81,9 @@ def _parse_asc_line(raw: str, *, base: int = 16) -> CanFrame | BusEvent | None:
     tokens = match.group(2).split()
     if len(tokens) >= 2 and tokens[1].lower().startswith("errorframe"):
         return BusEvent(timestamp, "error_frame", "ErrorFrame", tokens[0])
-    if "status" in raw.lower():
-        return BusEvent(timestamp, "bus_status", match.group(2))
     if len(tokens) < 5 or tokens[2] not in {"Rx", "Tx"}:
+        if "status" in match.group(2).lower():
+            return BusEvent(timestamp, "bus_status", match.group(2))
         return BusEvent(timestamp, "replay_anomaly", "Unsupported ASC record")
     channel, identifier, direction, kind, dlc_text, *payload = tokens
     return _frame(
