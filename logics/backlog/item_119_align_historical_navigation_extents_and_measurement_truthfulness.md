@@ -1,14 +1,14 @@
 ## item_119_align_historical_navigation_extents_and_measurement_truthfulness - Align historical navigation extents and measurement truthfulness
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Historical graph and analytical consumer contracts
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-11 16:00:33
+> Indicators reviewed: 2026-09-11 17:26:50
 
 # AI Context
 - Summary: Make fit and historical A/B semantics agree with full source coverage and current detail readiness.
@@ -57,3 +57,9 @@
 # Priority
 - Priority: High - a responsive plot must not misrepresent capture coverage or exact measurements.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_025_deliver_responsive_and_faithful_historical_graph_navigation`
+
+# Notes
+- Task `task_025_deliver_responsive_and_faithful_historical_graph_navigation` was finished via `logics-manager flow finish task` on 2026-09-11.

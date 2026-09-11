@@ -1,14 +1,14 @@
 ## item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence - Qualify large capture navigation with event loop and packaged Windows evidence
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Reproducible navigation regression qualification
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-11 16:00:33
+> Indicators reviewed: 2026-09-11 17:26:50
 
 # AI Context
 - Summary: Prove interactive responsiveness and waveform fidelity using real event-loop measurements and an identifiable Windows executable.
@@ -63,3 +63,9 @@
 # Priority
 - Priority: High - current option-level tests passed while the delivered interaction freezes.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_025_deliver_responsive_and_faithful_historical_graph_navigation`
+
+# Notes
+- Task `task_025_deliver_responsive_and_faithful_historical_graph_navigation` was finished via `logics-manager flow finish task` on 2026-09-11.

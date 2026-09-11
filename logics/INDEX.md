@@ -31,6 +31,7 @@ _None_
 | [prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence](product/prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence.md) | PeakLive self-identifying graph lanes and durable frame sequence | Proposed |  |  | product/prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence.md |
 | [prod_022_peaklive_multiresolution_lossless_historical_trace_detail](product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md) | PeakLive multiresolution lossless historical trace detail | Settled |  |  | product/prod_022_peaklive_multiresolution_lossless_historical_trace_detail.md |
 | [prod_023_reliable_large_trace_replay_and_presentation_backpressure](product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md) | Reliable large-trace replay and presentation backpressure | Settled |  |  | product/prod_023_reliable_large_trace_replay_and_presentation_backpressure.md |
+| [prod_024_peaklive_responsive_and_faithful_historical_navigation_correction](product/prod_024_peaklive_responsive_and_faithful_historical_navigation_correction.md) | PeakLive responsive and faithful historical navigation correction | Proposed |  |  | product/prod_024_peaklive_responsive_and_faithful_historical_navigation_correction.md |
 
 ## Roadmaps
 
@@ -65,6 +66,7 @@ _None_
 | [req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered](request/req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered.md) | Make PeakLive graph lanes self-identifying and received frames globally numbered | Draft |  |  | request/req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered.md |
 | [req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail](request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md) | Deliver multiresolution trace graphs with precise on-demand zoom detail | Done |  |  | request/req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail.md |
 | [req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts](request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md) | Prevent long trace replay from aborting on false backpressure timeouts | Done |  |  | request/req_024_prevent_long_trace_replay_from_aborting_on_false_backpressure_timeouts.md |
+| [req_025_restore_responsive_and_faithful_historical_graph_navigation](request/req_025_restore_responsive_and_faithful_historical_graph_navigation.md) | Restore responsive and faithful historical graph navigation | Draft |  |  | request/req_025_restore_responsive_and_faithful_historical_graph_navigation.md |
 
 ## Backlog
 
@@ -186,6 +188,10 @@ _None_
 | [item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview](backlog/item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview.md) | Create a bounded indexed historical signal source for complete trace overview | Done |  | 100% | backlog/item_114_create_a_bounded_indexed_historical_signal_source_for_complete_trace_overview.md |
 | [item_115_deliver_cancellable_viewport_driven_exact_graph_detail](backlog/item_115_deliver_cancellable_viewport_driven_exact_graph_detail.md) | Deliver cancellable viewport-driven exact graph detail | Done |  | 100% | backlog/item_115_deliver_cancellable_viewport_driven_exact_graph_detail.md |
 | [item_116_make_bounded_replay_backpressure_recoverable_and_truthful](backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md) | Make bounded replay backpressure recoverable and truthful | Done |  | 100% | backlog/item_116_make_bounded_replay_backpressure_recoverable_and_truthful.md |
+| [item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads](backlog/item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads.md) | Coalesce historical viewport requests and own cancellable background reads | Ready |  | 0% | backlog/item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads.md |
+| [item_118_serve_bounded_chronological_multiresolution_history_summaries](backlog/item_118_serve_bounded_chronological_multiresolution_history_summaries.md) | Serve bounded chronological multiresolution history summaries | Ready |  | 0% | backlog/item_118_serve_bounded_chronological_multiresolution_history_summaries.md |
+| [item_119_align_historical_navigation_extents_and_measurement_truthfulness](backlog/item_119_align_historical_navigation_extents_and_measurement_truthfulness.md) | Align historical navigation extents and measurement truthfulness | Ready |  | 0% | backlog/item_119_align_historical_navigation_extents_and_measurement_truthfulness.md |
+| [item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence](backlog/item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence.md) | Qualify large capture navigation with event loop and packaged Windows evidence | Ready |  | 0% | backlog/item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence.md |
 
 ## Tasks
 
@@ -215,6 +221,7 @@ _None_
 | [task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence](tasks/task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence.md) | Deliver readable graph lanes and a global received-frame sequence | In progress |  | 90% | tasks/task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence.md |
 | [task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces](tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md) | Deliver bounded multiresolution overview and exact zoom detail for historical traces | Done | Codex | 100% | tasks/task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces.md |
 | [task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay](tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md) | Deliver recoverable bounded backpressure for large trace replay | Done | Codex | 100% | tasks/task_024_deliver_recoverable_bounded_backpressure_for_large_trace_replay.md |
+| [task_025_deliver_responsive_and_faithful_historical_graph_navigation](tasks/task_025_deliver_responsive_and_faithful_historical_graph_navigation.md) | Deliver responsive and faithful historical graph navigation | Ready |  | 0% | tasks/task_025_deliver_responsive_and_faithful_historical_graph_navigation.md |
 
 ## Runbooks
 
