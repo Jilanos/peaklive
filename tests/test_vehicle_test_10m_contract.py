@@ -8,6 +8,9 @@ def test_vehicle_runner_is_hard_limited_and_receive_only() -> None:
     assert "FromMinutes(10)" in text
     assert "duration_limit_seconds=600" in text
     assert "passive listen-only; no transmit" in text
+    assert "Measure-LiveHealth" in text
+    assert "Process.Responding" in text
+    assert "frames_delta" in text
     assert "V10-009" in text
 
 

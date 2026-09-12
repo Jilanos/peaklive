@@ -42,6 +42,32 @@ function Ask-Checkpoint([string]$Id, [string]$Title, [string]$Instructions, [int
     $mapped=@{ P='Pass'; F='Fail'; N='NotRun' }[$status]
     Add-Result $Id $Title $mapped "budget=${BudgetSeconds}s; remaining=${remaining}s; $Instructions"
 }
+function Measure-LiveHealth([Diagnostics.Process]$Process, [string]$MetricsPath, [int]$BudgetSeconds, [DateTime]$Deadline) {
+    $started = Get-Date
+    $initialFrames = $null; $lastFrames = $null
+    $responsiveSamples = 0; $unresponsiveSamples = 0; $runningSamples = 0
+    while (((Get-Date) - $started).TotalSeconds -lt $BudgetSeconds) {
+        Check-Time $Deadline 'automated live-health observation' | Out-Null
+        $Process.Refresh()
+        if ($Process.HasExited) { throw 'PeakLive exited during automated live-health observation.' }
+        # Windows' GUI responsiveness probe; it never reads CAN content.
+        if ($Process.Responding) { $responsiveSamples += 1 } else { $unresponsiveSamples += 1 }
+        if (Test-Path -LiteralPath $MetricsPath) {
+            $line = Get-Content -LiteralPath $MetricsPath -Tail 1
+            if ($line) {
+                $sample = $line | ConvertFrom-Json
+                if ($sample.state -eq 'running') { $runningSamples += 1 }
+                $frames = [long]$sample.frames
+                if ($null -eq $initialFrames) { $initialFrames = $frames }
+                $lastFrames = $frames
+            }
+        }
+        Start-Sleep -Seconds 2
+    }
+    $frameGrowth = if ($null -eq $initialFrames -or $null -eq $lastFrames) { 0 } else { $lastFrames - $initialFrames }
+    $status = if ($responsiveSamples -gt 0 -and $unresponsiveSamples -eq 0 -and $runningSamples -gt 0 -and $frameGrowth -gt 0) { 'Pass' } else { 'Fail' }
+    Add-Result 'V10-004' 'Automated active-traffic and UI health' $status "responsive_samples=$responsiveSamples; unresponsive_samples=$unresponsiveSamples; frames_delta=$frameGrowth; running_samples=$runningSamples"
+}
 
 try {
     New-Item -ItemType Directory -Force -Path $artifactFull,$runRoot,$sandbox | Out-Null
@@ -64,7 +90,11 @@ try {
         Add-Result 'V10-002' 'Packaged executable launch' 'Pass' "pid=$($process.Id); sandbox=$sandbox"
     }
     Ask-Checkpoint 'V10-003' 'Connect passively' 'Secure the vehicle, select the adapter/channel and declared bitrate, choose passive listen-only, and verify the bus indicator reaches Running. Do not transmit.' 60 $deadline
-    Ask-Checkpoint 'V10-004' 'Capture active traffic' 'Observe incoming frames and counters for two minutes. Start recording if safe; note frame rate, errors, and capture path.' 120 $deadline
+    if ($Mode -eq 'plan') {
+        Add-Result 'V10-004' 'Automated active-traffic and UI health' 'NotRun' 'Planned: 120-second GUI responsiveness and aggregate-metrics observation.'
+    } else {
+        Measure-LiveHealth $process $metricsPath 120 $deadline
+    }
     Ask-Checkpoint 'V10-005' 'Stop and preserve evidence' 'Press Stop. Confirm the window remains responsive, state reaches Stopped (or documented degraded), and ASC plus event sidecar/partial files exist.' 60 $deadline
     Ask-Checkpoint 'V10-006' 'Replay captured output' 'Open the just-created ASC/TRC copy, replay it, and confirm frame count/order is plausible. Do not overwrite the live capture.' 120 $deadline
     Ask-Checkpoint 'V10-007' 'Load DBC and inspect signals' 'Load one approved DBC, select a decoded signal, inspect a frame and graph, and record decode status/unit.' 90 $deadline
