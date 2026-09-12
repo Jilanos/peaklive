@@ -227,6 +227,9 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self._history, self.global_extent(), self._window_chosen, self.visible_window()
         )
         for signal_name, curve in self._curves.items():
+            # Live samples are raw and unreduced: the automatic peak reducer
+            # is pyqtgraph's only display-time reduction here, so it stays on.
+            curve.setDownsampling(auto=True, method="peak")
             points = curve_points(self._history, store, signal_name, extent, visible)
             if points is not None:
                 curve.setData(*points)
@@ -263,6 +266,12 @@ class GraphStackPanel(GraphNavigation, QWidget):
                 len(points or ()) for points in removed.values()
             )
         for signal_name, curve in self._curves.items():
+            # Historical envelopes/exact ranges are already reduced to a
+            # pixel-aware budget upstream (HistoricalSignalStore.overview);
+            # pyqtgraph's own automatic peak reducer must not run a second
+            # time on this prepared result, or it can erase a nonempty sparse
+            # envelope entirely (factor > point count => zero display points).
+            curve.setDownsampling(auto=False)
             points = points_by_signal.get(signal_name)
             if not points:
                 curve.setData([], [])

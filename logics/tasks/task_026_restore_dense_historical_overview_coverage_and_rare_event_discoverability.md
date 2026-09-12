@@ -1,14 +1,15 @@
 ## task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability - Restore dense historical overview coverage and rare event discoverability
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 15%
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:42:25
+> Indicators reviewed: 2026-09-12 17:10:01
+> Owner: paul.mondou@circle-mobility.com
 
 # AI Context
 - Summary: Sequence summary correctness, single-pass rendering, event fidelity and packaged qualification.
@@ -28,8 +29,7 @@
 - [ ] 4. Complete the bounded request scheduler, revision/cache identity and nonmodal state/measurement guardrails; measure both returned data and actual display output.
 - [ ] 5. Implement the small independent copyable-build label item after the High-priority correctness design, in time for final artifact qualification.
 - [ ] 6. Run synthetic scaling and rare-event tests, Linux/Windows CI and packaging; reproduce the private trace's exact wheel-zoom sequence in the identified Windows executable and record every AC's evidence before closeout.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
-- [ ] Keep commit creation under operator control; do not force one commit per micro-step.
+- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave, then commit the wave (code, tests, and docs together) with a clear message. Operator has authorized regular per-wave commits; do not batch every micro-step into one commit, but do not leave a finished wave uncommitted either.
 - [ ] GATE: do not close until lint, audit, and scaffold validation pass.
 
 # Backlog
@@ -77,6 +77,7 @@
 
 # Validation
 - Corpus preparation only (2026-09-12): request flow validation has zero findings; Ruff and Logics lint pass; repository audit has zero blockers and one pre-existing prod_021 missing-diagram warning. The synthetic probe reproduces partial summary coverage, zero rendered points after automatic reduction, stale overview after clear, and loss of a non-extreme 100 ms analog dip. Implementation and packaged acceptance remain outstanding; task progress stays 0%.
+- Wave 1 (2026-09-12): item_121 correctness fixes landed — `HistoricalSignalStore.append_many` now builds complete first/min/max/last summaries for every batch size (grouped in Python, one SQL upsert per touched bucket instead of per sample), with deterministic timestamp-based tie-breaking so coverage no longer depends on how raw rows are split across append calls; `clear()` now wipes `summary` and `overview_cache` alongside `samples`. item_122's proven double-reduction defect is fixed — `GraphStackPanel` now disables pyqtgraph's automatic peak downsampling on historical (already-reduced) results and re-enables it for live samples. New regression tests: `tests/test_history.py::test_history_overview_coverage_is_independent_of_append_batching`, `::test_history_overview_coverage_is_independent_of_mixed_signal_batching`, `::test_history_clear_invalidates_summary_and_overview_cache`; `tests/test_graph_stack_downsampling.py` (both new tests, verified to fail without the fix and pass with it). Full `uv run python -m pytest tests/` is green. Re-ran `logics/analysis/dense_overview_probe.py`: `bulk_plus_tail` coverage is now consistent across tail=0/1/16; `clear` case no longer returns stale overview data. Still outstanding and unfixed: `sparse_summary_wide_view` disabled-auto case (item_122 rare-event anchors, not yet implemented) and `nonextreme_short_dip` (180 A event still lost — needs run-boundary/local-extremum anchors, out of scope for this wave). item_123 (viewport scheduler/cache budget), item_124 (packaged Windows qualification — requires the operator's private trace and a Windows executable, cannot be performed from this environment) and item_125 (copyable build label) are untouched.
 
 # Report
 - Additional operator screenshot: selection after loading stays blank with 1705746 dropped frames, matching the capture census minus the 50000-frame cache. Tail-only decoding updates SeriesStore but not HistoricalSignalStore. See the diagnosis for this second failure path. Operator subsequently accepted full-file background reconstruction with preparation latency; it is now mandatory scope under AC6.
