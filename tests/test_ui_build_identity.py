@@ -1,4 +1,12 @@
-"""item_032 - the build identifier is visible, subtle, and consistent."""
+"""item_032 - the build identifier is visible, subtle, and consistent.
+
+item_125 extends it: the label must be selectable and copyable with mouse and
+keyboard, without becoming editable, so an operator's qualification report
+never depends on retyping it by eye (see the diagnosed `v0.1.2 + b20269111856`
+transcription risk in logics/analysis/dense_overview_diagnosis.md).
+"""
+
+from PySide6.QtCore import Qt
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.services.profiles import ProfileStore
@@ -21,6 +29,17 @@ def test_the_identifier_is_visible_in_the_normal_application_chrome(qtbot, tmp_p
     assert build_identifier() in window.build.text()
     assert window.build.accessibleName() == "Application build identifier"
     assert build_identifier() in window.build.toolTip()
+
+
+def test_the_identifier_is_selectable_and_copyable_but_read_only(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    flags = window.build.textInteractionFlags()
+    assert flags & Qt.TextInteractionFlag.TextSelectableByMouse
+    assert flags & Qt.TextInteractionFlag.TextSelectableByKeyboard
+    assert not flags & Qt.TextInteractionFlag.TextEditable
+    # Exact text, matching build_info().identifier byte for byte.
+    assert window.build.text() == f"v{build_identifier()}"
 
 
 def test_the_identifier_does_not_obstruct_the_workspace(qtbot, tmp_path):

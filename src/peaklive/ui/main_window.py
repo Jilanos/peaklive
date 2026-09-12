@@ -206,6 +206,14 @@ class MainWindow(
         self.build.setText(translate("app.build_label").format(identifier=identifier))
         self.build.setAccessibleName(translate("app.build_accessible"))
         self.build.setToolTip(translate("app.build_tooltip").format(identifier=identifier))
+        # Read-only, but selectable/copyable with mouse and keyboard so a
+        # qualification report never depends on transcribing this by eye.
+        self.build.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+            | Qt.TextInteractionFlag.TextSelectableByKeyboard
+        )
+        self.build.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+        self.build.setCursor(Qt.CursorShape.IBeamCursor)
         self.status = QStatusBar(self)
         self.status.addPermanentWidget(self.build)
         self.status.addPermanentWidget(self.progress)
