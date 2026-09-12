@@ -116,6 +116,30 @@ def test_a_subsequent_success_clears_a_previous_error_note(qtbot, tmp_path, pane
     assert history is not None
 
 
+def test_repeated_cache_hits_on_one_viewport_do_not_inflate_the_point_budget(
+    qtbot, tmp_path, panel
+):
+    """Revisiting one viewport must not grow `_history_result_cache_points`:
+    an unbounded counter eventually evicts other still-valid cache entries
+    even though nothing new was ever cached.
+    """
+    _seeded_panel(panel, tmp_path)
+    panel.anchor_plot.getViewBox().setXRange(0, 99, padding=0)
+    panel._window_chosen = True
+
+    panel.refresh_data()
+    qtbot.waitUntil(lambda: panel._history_worker is None, timeout=5_000)
+    after_first = panel._history_result_cache_points
+    assert after_first > 0
+
+    for _ in range(4):
+        panel.refresh_data()
+        qtbot.waitUntil(lambda: panel._history_worker is None, timeout=5_000)
+
+    assert panel._history_result_cache_points == after_first
+    assert len(panel._history_result_cache) == 1
+
+
 def test_a_completed_result_caches_under_the_viewport_it_was_requested_for(qtbot, tmp_path, panel):
     history = _seeded_panel(panel, tmp_path)
     panel.anchor_plot.getViewBox().setXRange(0, 49, padding=0)
