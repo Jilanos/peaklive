@@ -89,6 +89,26 @@ class HistoricalSignalStore:
             "max_points INTEGER NOT NULL, payload TEXT NOT NULL, "
             "PRIMARY KEY(signal, start, end, max_points))"
         )
+        # A "run" is a maximal span of consecutive (in time) samples that share
+        # one exact value. `events` anchors the first and last timestamp of
+        # every run transition, so a short plateau excursion (a four-frame
+        # assertion after 50,000 quiet frames, a 250 A to 180 A dip lasting
+        # 100 ms) stays discoverable even when it is not the bucket extremum
+        # that the summary hierarchy would otherwise keep. `signal_run_state`
+        # carries the open run across append_many() calls so a batch split
+        # never fabricates a spurious transition at its boundary.
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS events ("
+            "signal TEXT NOT NULL, timestamp REAL NOT NULL, PRIMARY KEY(signal, timestamp))"
+        )
+        self._connection.execute(
+            "CREATE INDEX IF NOT EXISTS events_signal_time ON events(signal, timestamp)"
+        )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS signal_run_state ("
+            "signal TEXT PRIMARY KEY, run_start_ts REAL NOT NULL, run_start_value TEXT NOT NULL, "
+            "last_ts REAL NOT NULL, last_value TEXT NOT NULL)"
+        )
         self._connection.commit()
 
     @property
@@ -239,8 +259,71 @@ class HistoricalSignalStore:
             "INSERT INTO samples(signal, timestamp, value, numeric, unit) VALUES (?, ?, ?, ?, ?)",
             rows,
         )
+        self._record_run_events(rows)
         self._connection.commit()
         return len(rows)
+
+    def _record_run_events(
+        self, rows: list[tuple[str, float, str, float | None, str | None]]
+    ) -> None:
+        by_signal: dict[str, list[tuple[float, str]]] = {}
+        for signal, timestamp, encoded, _numeric, _unit in rows:
+            by_signal.setdefault(signal, []).append((timestamp, encoded))
+        for signal, entries in by_signal.items():
+            entries.sort(key=lambda item: item[0])
+            state = self._connection.execute(
+                "SELECT run_start_ts, run_start_value, last_ts, last_value "
+                "FROM signal_run_state WHERE signal = ?",
+                (signal,),
+            ).fetchone()
+            run_start_ts, run_start_value, last_ts, last_value = (
+                state if state is not None else (None, None, None, None)
+            )
+            new_events: list[tuple[str, float]] = []
+            for timestamp, encoded in entries:
+                if last_value is None:
+                    run_start_ts, run_start_value = timestamp, encoded
+                    new_events.append((signal, timestamp))
+                elif encoded != last_value:
+                    new_events.append((signal, last_ts))
+                    run_start_ts, run_start_value = timestamp, encoded
+                    new_events.append((signal, timestamp))
+                last_ts, last_value = timestamp, encoded
+            if new_events:
+                self._connection.executemany(
+                    "INSERT OR IGNORE INTO events(signal, timestamp) VALUES (?, ?)", new_events
+                )
+            self._connection.execute(
+                "INSERT INTO signal_run_state(signal, run_start_ts, run_start_value, "
+                "last_ts, last_value) VALUES (?, ?, ?, ?, ?) "
+                "ON CONFLICT(signal) DO UPDATE SET run_start_ts=excluded.run_start_ts, "
+                "run_start_value=excluded.run_start_value, last_ts=excluded.last_ts, "
+                "last_value=excluded.last_value",
+                (signal, run_start_ts, run_start_value, last_ts, last_value),
+            )
+
+    def _event_anchors(
+        self, signal: str, start: float, end: float, *, limit: int
+    ) -> tuple[tuple[float, Any], ...]:
+        """Run-boundary samples in range, or empty if there are too many to
+        list individually. Listing a partial, arbitrarily truncated subset
+        would misrepresent which events survive; an explicit clustered
+        marker for the excess is future scope (see item_122 rare-event
+        anchors), so this stays silent rather than fabricate a boundary.
+        """
+        if limit <= 0:
+            return ()
+        rows = self._connection.execute(
+            "SELECT samples.timestamp, samples.value FROM events "
+            "JOIN samples ON samples.signal = events.signal "
+            "AND samples.timestamp = events.timestamp "
+            "WHERE events.signal = ? AND events.timestamp BETWEEN ? AND ? "
+            "ORDER BY samples.timestamp LIMIT ?",
+            (signal, float(start), float(end), int(limit) + 1),
+        ).fetchall()
+        if len(rows) > limit:
+            return ()
+        return tuple((float(timestamp), json.loads(value)) for timestamp, value in rows)
 
     def bounds(self) -> tuple[float, float] | None:
         row = self._connection.execute(
@@ -331,6 +414,13 @@ class HistoricalSignalStore:
                         ((min_ts, json.loads(min_value)), (max_ts, json.loads(max_value)))
                     )
                 points.extend(values)
+            # Reserve room for rare-event anchors before truncating: a bucket
+            # extremum alone can miss a short plateau excursion (a two-frame
+            # error, a 250 A to 180 A dip) that is neither the bucket's min
+            # nor its max. Anchors are added to the same pool so they compete
+            # for the budget honestly instead of being appended after the cut.
+            anchor_budget = max(4, max_points // 4)
+            points.extend(self._event_anchors(signal, start, end, limit=anchor_budget))
             ordered = sorted(points, key=lambda item: item[0])
             seen = set()
             unique = []
@@ -373,15 +463,22 @@ class HistoricalSignalStore:
             maximum = max((slot[3] if len(slot) >= 4 else first, sample), key=lambda item: item[2])
             slot[:] = [first, last, minimum, maximum]
         points: list[tuple[float, Any]] = []
+        seen: set[tuple[float, str]] = set()
         for bucket in sorted(buckets):
-            seen: set[tuple[float, str]] = set()
             candidates = sorted(buckets[bucket], key=lambda item: item[0])
             for timestamp, value, _ in candidates:
                 marker = (timestamp, json.dumps(value, sort_keys=True))
                 if marker not in seen:
                     points.append((timestamp, value))
                     seen.add(marker)
-        result = tuple(points)
+        anchor_budget = max(4, max_points // 4)
+        for timestamp, value in self._event_anchors(signal, start, end, limit=anchor_budget):
+            marker = (timestamp, json.dumps(value, sort_keys=True))
+            if marker not in seen:
+                points.append((timestamp, value))
+                seen.add(marker)
+        points.sort(key=lambda item: item[0])
+        result = tuple(points[:max_points])
         self._cache_overview(signal, start, end, max_points, result)
         return result
 
@@ -392,6 +489,8 @@ class HistoricalSignalStore:
         self._connection.execute("DELETE FROM samples")
         self._connection.execute("DELETE FROM summary")
         self._connection.execute("DELETE FROM overview_cache")
+        self._connection.execute("DELETE FROM events")
+        self._connection.execute("DELETE FROM signal_run_state")
         self._connection.commit()
 
     def close(self) -> None:
