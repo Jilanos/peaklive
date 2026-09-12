@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-12 17:10:01
+> Indicators reviewed: 2026-09-12 18:28:52
 > Owner: paul.mondou@circle-mobility.com
 
 # AI Context
@@ -86,6 +86,9 @@
 
 # Report
 - Additional operator screenshot: selection after loading stays blank with 1705746 dropped frames, matching the capture census minus the 50000-frame cache. Tail-only decoding updates SeriesStore but not HistoricalSignalStore. See the diagnosis for this second failure path. Operator subsequently accepted full-file background reconstruction with preparation latency; it is now mandatory scope under AC6.
+- Session pause (2026-09-12, progress 48%): operator asked to stop after wave 6 pending further instruction. Six waves landed, each with a real, independently reproduced defect, a regression test confirmed to fail without its fix, and a green full `uv run python -m pytest tests/` plus `ruff check` at the end of the wave — see the per-wave notes above (`item_121` batch-independent summaries and atomic reset; `item_122` double-reduction fix and rare-event anchors; `item_125` copyable build label; `item_123` cache-hit/in-flight race, request-key cache poisoning, worker-failure presentation, and cache point-budget double counting). No AC is claimed closed: `item_121`/`item_122`/`item_123` remain partially open and `item_124`/`item_125`'s AC8 depend on operator action this session could not perform.
+  - Explicitly NOT done, to resume from: item_122's clustered-activity marker for signals whose transition count exceeds the anchor budget (AC4, falls back to envelope-only rather than a marker); item_123's actual mid-query SQL/chunk cancellation, canonical revision-aware viewport keys, and — the largest remaining piece — the full-file late-selection background reconstruction (AC6: cancellable background decode of a signal selected after loading, coordinated with the SQLite writer and ingestion, atomic coverage publication, explicit source-unavailable/changed/cancelled/partial/failed states); item_124's packaged Windows qualification against the operator's private trace, which requires the operator to run the packaged executable themselves; item_125's AC8 (recording the copied identifier in that same packaged qualification).
+  - Commits this session (newest first): `52a4c9a` cache point-budget double counting, `4b2d1b4` worker-failure presentation, `f5b7315` cache-hit/in-flight race + request-key cache poisoning, `25592e9` copyable build label, `fd7a928` rare-event anchors, `9d73708` batch-independent summaries + atomic reset. All pushed to `origin/main`.
 
 # Links
 - Request: `req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events`
