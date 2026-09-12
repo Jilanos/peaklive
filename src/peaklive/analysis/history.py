@@ -110,50 +110,96 @@ class HistoricalSignalStore:
         # Invalidation is transactional with the append so a worker can never
         # install a summary built from a partial write.
         self._connection.execute("DELETE FROM overview_cache")
-        # Large ingest batches are already indexed by samples_signal_time;
-        # maintaining seven summary levels row-by-row would make ingestion
-        # quadratic in SQLite round trips. Build summaries lazily on the first
-        # viewport request for those batches.
-        summary_rows = rows if len(rows) <= 32 else ()
-        for signal, timestamp, value, _unit in rows_to_summary(summary_rows):
-            encoded = json.dumps(value)
-            numeric = isinstance(value, int | float) and not isinstance(value, bool)
-            for level, width in enumerate((0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)):
-                bucket = int(float(timestamp) // width)
-                existing = self._connection.execute(
-                    "SELECT first_ts, first_value, last_ts, last_value, min_ts, min_value, "
-                    "max_ts, max_value FROM summary WHERE signal=? AND level=? AND bucket=?",
-                    (signal, level, bucket),
-                ).fetchone()
-                if existing is None:
-                    self._connection.execute(
-                        "INSERT INTO summary VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (
-                            signal,
-                            level,
-                            bucket,
-                            timestamp,
-                            encoded,
-                            timestamp,
-                            encoded,
-                            timestamp if numeric else None,
-                            encoded if numeric else None,
-                            timestamp if numeric else None,
-                            encoded if numeric else None,
-                        ),
-                    )
+        # Every batch must maintain complete summary coverage: a partial
+        # summary that is merely nonempty was previously trusted as complete,
+        # silently replacing whole intervals with a handful of points from the
+        # last small append. Group the batch in Python first (already
+        # in-memory) so each distinct bucket costs one SELECT/UPSERT instead
+        # of one round trip per sample, keeping large batches bounded by the
+        # number of touched buckets rather than the sample count.
+        widths = (0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
+        # (signal, level, bucket) -> (first_ts, first_value, last_ts, last_value,
+        #  min_ts, min_value, max_ts, max_value). Ties are broken by timestamp
+        # alone (earliest occurrence), never by batch/processing order, so a
+        # bucket's summary is identical however the same raw rows are split
+        # across append_many() calls.
+        groups: dict[tuple[str, int, int], list] = {}
+        for timestamp, encoded, numeric_flag, signal in (
+            (timestamp, encoded, numeric_flag, signal)
+            for signal, timestamp, encoded, numeric_flag, _unit in rows
+        ):
+            numeric = numeric_flag is not None
+            for level, width in enumerate(widths):
+                bucket = int(timestamp // width)
+                key = (signal, level, bucket)
+                group = groups.get(key)
+                if group is None:
+                    groups[key] = [
+                        timestamp, encoded,  # first
+                        timestamp, encoded,  # last
+                        timestamp if numeric else None, encoded if numeric else None,  # min
+                        timestamp if numeric else None, encoded if numeric else None,  # max
+                    ]
                     continue
-                first_ts, first_value, last_ts, last_value, min_ts, min_value, max_ts, max_value = (
-                    existing
-                )
-                if timestamp < first_ts:
-                    first_ts, first_value = timestamp, encoded
-                if timestamp >= last_ts:
-                    last_ts, last_value = timestamp, encoded
-                if numeric and (min_ts is None or float(value) < json.loads(min_value)):
-                    min_ts, min_value = timestamp, encoded
-                if numeric and (max_ts is None or float(value) > json.loads(max_value)):
-                    max_ts, max_value = timestamp, encoded
+                if timestamp < group[0]:
+                    group[0], group[1] = timestamp, encoded
+                if timestamp > group[2]:
+                    group[2], group[3] = timestamp, encoded
+                if numeric and (
+                    group[4] is None
+                    or numeric_flag < json.loads(group[5])
+                    or (numeric_flag == json.loads(group[5]) and timestamp < group[4])
+                ):
+                    group[4], group[5] = timestamp, encoded
+                if numeric and (
+                    group[6] is None
+                    or numeric_flag > json.loads(group[7])
+                    or (numeric_flag == json.loads(group[7]) and timestamp < group[6])
+                ):
+                    group[6], group[7] = timestamp, encoded
+        for (signal, level, bucket), group in groups.items():
+            first_ts, first_value = group[0], group[1]
+            last_ts, last_value = group[2], group[3]
+            min_ts, min_value = group[4], group[5]
+            max_ts, max_value = group[6], group[7]
+            existing = self._connection.execute(
+                "SELECT first_ts, first_value, last_ts, last_value, min_ts, min_value, "
+                "max_ts, max_value FROM summary WHERE signal=? AND level=? AND bucket=?",
+                (signal, level, bucket),
+            ).fetchone()
+            if existing is not None:
+                (
+                    existing_first_ts,
+                    existing_first_value,
+                    existing_last_ts,
+                    existing_last_value,
+                    existing_min_ts,
+                    existing_min_value,
+                    existing_max_ts,
+                    existing_max_value,
+                ) = existing
+                if existing_first_ts < first_ts:
+                    first_ts, first_value = existing_first_ts, existing_first_value
+                if existing_last_ts > last_ts:
+                    last_ts, last_value = existing_last_ts, existing_last_value
+                if existing_min_ts is not None and (
+                    min_ts is None
+                    or json.loads(existing_min_value) < json.loads(min_value)
+                    or (
+                        json.loads(existing_min_value) == json.loads(min_value)
+                        and existing_min_ts < min_ts
+                    )
+                ):
+                    min_ts, min_value = existing_min_ts, existing_min_value
+                if existing_max_ts is not None and (
+                    max_ts is None
+                    or json.loads(existing_max_value) > json.loads(max_value)
+                    or (
+                        json.loads(existing_max_value) == json.loads(max_value)
+                        and existing_max_ts < max_ts
+                    )
+                ):
+                    max_ts, max_value = existing_max_ts, existing_max_value
                 self._connection.execute(
                     "UPDATE summary SET first_ts=?, first_value=?, last_ts=?, last_value=?, "
                     "min_ts=?, min_value=?, max_ts=?, max_value=? "
@@ -170,6 +216,23 @@ class HistoricalSignalStore:
                         signal,
                         level,
                         bucket,
+                    ),
+                )
+            else:
+                self._connection.execute(
+                    "INSERT INTO summary VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        signal,
+                        level,
+                        bucket,
+                        first_ts,
+                        first_value,
+                        last_ts,
+                        last_value,
+                        min_ts,
+                        min_value,
+                        max_ts,
+                        max_value,
                     ),
                 )
         self._connection.executemany(
@@ -323,7 +386,12 @@ class HistoricalSignalStore:
         return result
 
     def clear(self) -> None:
+        # Reset must be atomic across raw samples, every summary level and the
+        # overview cache: leaving any derived table populated let a cleared,
+        # reused store still answer queries with the previous session's data.
         self._connection.execute("DELETE FROM samples")
+        self._connection.execute("DELETE FROM summary")
+        self._connection.execute("DELETE FROM overview_cache")
         self._connection.commit()
 
     def close(self) -> None:

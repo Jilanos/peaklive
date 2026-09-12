@@ -58,3 +58,54 @@ def test_history_overview_is_materialized_and_invalidated_on_append(tmp_path):
     assert invalidated == 0
     assert first[-1][0] == 99.0
     assert second[-1][0] == 100.0
+
+
+def test_history_overview_coverage_is_independent_of_append_batching(tmp_path):
+    times = [i / 100 for i in range(94_501)]
+    rows = [("probe", t, i % 17, None) for i, t in enumerate(times)]
+
+    reference = HistoricalSignalStore(tmp_path / "bulk.sqlite3")
+    reference.append_many(rows)
+    baseline = reference.overview("probe", 0.0, times[-1], max_points=4_000)
+    assert len(baseline) > 100
+
+    for split, tail in enumerate((1, 16, 32, 33, 256, 4096)):
+        store = HistoricalSignalStore(tmp_path / f"split-{split}.sqlite3")
+        store.append_many(rows[:-tail])
+        store.append_many(rows[-tail:])
+        overview = store.overview("probe", 0.0, times[-1], max_points=4_000)
+        assert len(overview) == len(baseline), f"tail={tail} lost coverage: {len(overview)}"
+        assert overview[0][0] == baseline[0][0]
+        assert overview[-1][0] == baseline[-1][0]
+        store.close()
+    reference.close()
+
+
+def test_history_overview_coverage_is_independent_of_mixed_signal_batching(tmp_path):
+    times = [i / 100 for i in range(5_000)]
+    rows_a = [("a", t, i % 11, None) for i, t in enumerate(times)]
+    rows_b = [("b", t, (i % 11) * 2, None) for i, t in enumerate(times)]
+
+    reference = HistoricalSignalStore(tmp_path / "mixed_bulk.sqlite3")
+    reference.append_many(rows_a + rows_b)
+    baseline_a = reference.overview("a", 0.0, times[-1], max_points=1_000)
+    baseline_b = reference.overview("b", 0.0, times[-1], max_points=1_000)
+
+    store = HistoricalSignalStore(tmp_path / "mixed_split.sqlite3")
+    store.append_many(rows_a[:-16] + rows_b[:-1])
+    store.append_many(rows_a[-16:] + rows_b[-1:])
+    assert store.overview("a", 0.0, times[-1], max_points=1_000) == baseline_a
+    assert store.overview("b", 0.0, times[-1], max_points=1_000) == baseline_b
+
+
+def test_history_clear_invalidates_summary_and_overview_cache(tmp_path):
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    history.append_many([("probe", 0.0, 1, None), ("probe", 1.0, 2, None)])
+    assert history.overview("probe", 0.0, 1.0) == ((0.0, 1), (1.0, 2))
+
+    history.clear()
+
+    assert history._connection.execute("SELECT COUNT(*) FROM summary").fetchone()[0] == 0
+    assert history._connection.execute("SELECT COUNT(*) FROM overview_cache").fetchone()[0] == 0
+    assert history.exact("probe", 0.0, 1.0) == ()
+    assert history.overview("probe", 0.0, 1.0) == ()

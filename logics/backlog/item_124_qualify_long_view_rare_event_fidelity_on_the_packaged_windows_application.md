@@ -1,14 +1,14 @@
 ## item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application - Qualify long-view rare-event fidelity on the packaged Windows application
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 15%
 > Complexity: Medium
 > Theme: Behavioral qualification and reproducible evidence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:42:24
+> Indicators reviewed: 2026-09-12 17:10:01
 
 # AI Context
 - Summary: Prove source coverage, rendered visibility and rare-event drill-down on an identified artifact.

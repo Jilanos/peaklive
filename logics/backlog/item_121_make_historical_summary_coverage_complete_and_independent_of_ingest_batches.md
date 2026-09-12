@@ -1,14 +1,14 @@
 ## item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches - Make historical summary coverage complete and independent of ingest batches
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 15%
 > Complexity: High
 > Theme: Authoritative historical data and revision ownership
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:45
+> Indicators reviewed: 2026-09-12 17:10:01
 
 # AI Context
 - Summary: Reject incomplete summaries and invalidate all historical derivatives on reset.

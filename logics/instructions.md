@@ -25,7 +25,7 @@ Do not edit generated runtime artifacts by hand unless you are deliberately repa
 
 Do not edit indicator lines, owner assignments, or workflow links by hand.
 Not every fix needs a chain. ADR 030 decides which do: a fix needs one when its reasoning cannot live at the point where it would be undone -- it changes what the product asserts, trades one claim against another, rests on a measurement, or has a cause spanning layers. Otherwise the comment at that declaration and a test that fails without it are the record. Say which side a fix falls on when you fix it, not afterwards.
-During task execution, treat meaningful waves as ADR 009 checkpoints: update affected Logics docs inside the wave and leave the repo commit-ready; actual commits stay under operator control.
+During task execution, treat meaningful waves as ADR 009 checkpoints: update affected Logics docs inside the wave, then commit the wave (code, tests, and the updated Logics docs together) instead of leaving it staged for the operator. Commit regularly, one commit per completed wave, with a clear message describing what the wave delivered.
 When grooming or creating backlog items, set a deliberate `# Priority` tier (`High`, `Medium`, or `Low`) with a one-line rationale instead of leaving the default unreviewed.
 Sequence delivery plans and roadmaps by status priority order before lower-priority work when dependencies allow.
 When delivery consumes a linked product brief, `flow closeout` should settle it; otherwise set the brief to `Settled` or `Superseded` through the CLI instead of leaving it `Proposed`.

@@ -1,14 +1,14 @@
 ## item_125_make_the_application_build_identifier_selectable_and_copyable - Make the application build identifier selectable and copyable
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 15%
 > Complexity: Low
 > Theme: Operator build identity usability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:43
+> Indicators reviewed: 2026-09-12 17:10:01
 
 # AI Context
 - Summary: Allow exact read-only build identity selection and copying in normal app chrome.
