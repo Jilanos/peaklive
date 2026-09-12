@@ -109,3 +109,53 @@ def test_history_clear_invalidates_summary_and_overview_cache(tmp_path):
     assert history._connection.execute("SELECT COUNT(*) FROM overview_cache").fetchone()[0] == 0
     assert history.exact("probe", 0.0, 1.0) == ()
     assert history.overview("probe", 0.0, 1.0) == ()
+
+
+def test_history_overview_preserves_a_nonextreme_short_dip_beside_a_larger_one(tmp_path):
+    """A 250 A to 180 A dip lasting 100 ms must not vanish behind a larger,
+    unrelated 250 A to 100 A dip that shares the same overview bucket.
+
+    A 1000 s / 100 Hz capture at a realistic max_points=256 budget puts both
+    dips inside the same single coarse bucket (bucket width 100 s), so the
+    bucket's own min/max can only ever report one of them; only an
+    independent event anchor keeps the non-extreme 180 A dip discoverable.
+    See logics/analysis/dense_overview_diagnosis.md, "nonextreme_short_dip".
+    """
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    history.append_many(
+        ("current", i / 100, 100 if 100 <= i < 110 else 180 if 500 <= i < 510 else 250, "A")
+        for i in range(100_000)
+    )
+
+    overview = history.overview("current", 0.0, 999.99, max_points=256)
+
+    assert any(value == 180 for _, value in overview)
+    assert any(value == 100 for _, value in overview)
+
+
+def test_history_overview_preserves_a_four_frame_assertion_after_quiet_frames(tmp_path):
+    """A binary signal staying at 0 for 50,000 frames then asserting for four
+    frames must remain discoverable, without an amplitude threshold.
+    """
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    history.append_many(
+        ("door", i / 100, 1 if 50_000 <= i < 50_004 else 0, None) for i in range(60_000)
+    )
+
+    overview = history.overview("door", 0.0, 599.99, max_points=256)
+
+    assert any(value == 1 for _, value in overview)
+
+
+def test_history_event_anchors_survive_append_batch_boundaries(tmp_path):
+    """A transition split across two append_many() calls must still anchor
+    both its exit and entry samples, not fabricate a spurious extra one.
+    """
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    rows = [("door", i / 100, 1 if 50_000 <= i < 50_004 else 0, None) for i in range(60_000)]
+    history.append_many(rows[:50_002])
+    history.append_many(rows[50_002:])
+
+    overview = history.overview("door", 0.0, 599.99, max_points=256)
+
+    assert any(value == 1 for _, value in overview)
