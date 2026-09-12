@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 35%
+> Progress: 40%
 > Complexity: High
 > Theme: Pixel-aware historical rendering and diagnostic fidelity
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
