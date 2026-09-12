@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Behavioral qualification and reproducible evidence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:44
+> Indicators reviewed: 2026-09-12 16:42:24
 
 # AI Context
 - Summary: Prove source coverage, rendered visibility and rare-event drill-down on an identified artifact.
@@ -36,7 +36,7 @@
 - AC3: Actual display output preserves coverage, point policy and explicit empty/incomplete distinctions.
 - AC4: Rare short-event discoverability and exact-timecode drill-down are demonstrated at all tested scales.
 - AC5: Attach independent row-work, cache, queue and GUI-heartbeat evidence including cold/warm/index preparation phases.
-- AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified.
+- AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact.
 - AC7: Copy/paste of the build identity agrees with artifact evidence.
 - AC8: Linux/Windows CI, Windows packaging, private reproduction and all evidence gates pass before task closeout.
 

@@ -8,13 +8,13 @@
 > Complexity: High
 > Theme: Historical request lifecycle and cache consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:44
+> Indicators reviewed: 2026-09-12 16:42:24
 
 # AI Context
 - Summary: Bound workers and caches while preserving current results and analytical truthfulness.
 - Keywords: bound, viewport, scheduling, expose, truthful, loading, measurement, states
 - Use when: Implementing cancellable latest-viewport requests, revision isolation and nonmodal states.
-- Skip when: Broadening transport or full-file decoding scope.
+- Skip when: Changing acquisition transport or recovering unrecorded live frames.
 
 # Problem
 - A new QThread can start for every refresh, while cancellation is checked only between signals. Cache-hit callbacks rebuild keys from current UI state and can leave incompatible requests active.
@@ -22,6 +22,8 @@
 
 # Scope
 - In:
+  - For a signal selected after file loading, reconstruct its complete history in cancellable background work with visible progress, preserving viewport, cursors and other lanes. Publish exact samples, complete summaries and event anchors under source/DBC/data revision checks, invalidate cached empty results, and never silently substitute the retained tail. Report source-unavailable/changed, cancelled, partial and failed states explicitly.
+  - Stream the original file through the existing parser and DBC decoding path in bounded chunks, without replaying frames into acquisition/session counters or retaining the entire capture in RAM. Serialize reconstruction jobs, deduplicate signal requests and reuse completed revision-matched history. Coordinate SQLite writer ownership with ingestion; publish coverage atomically only after successful completion. Deselection, reload, DBC changes and shutdown retire stale jobs. Measure preparation separately from viewport latency; no full reconstruction promise for unrecorded live frames.
   - Implement one active plus one replaceable pending request, actual SQL/chunk cancellation, immutable result identity and a canonical viewport key including source/DBC/data revisions, signal set, width and resolution.
   - Invalidate incompatible in-flight work on cache hits; fix cache-hit/replacement point accounting and enforce a byte limit of 64 MiB across all lanes.
   - Use revision-cached bounds; keep scans and long exact measurement work off the GUI thread. Do not dirty unchanged or hidden measurements on a viewport-only change.
@@ -34,7 +36,7 @@
 # Acceptance criteria
 - AC1: Rapid reverse zoom and cache hits cannot install an empty or stale result over valid current data.
 - AC5: Queue, cancellation, revision and memory invariants hold over 1000 gestures; measured reference-machine latency/heartbeat targets hold with three and eight lanes.
-- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries.
+- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact.
 - AC8: Regressions exercise real in-flight workers, source resets and failure delivery rather than only finished-signal flags.
 
 # AC Traceability

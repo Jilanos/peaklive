@@ -6,7 +6,7 @@
 > Related task: `task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:43
+> Indicators reviewed: 2026-09-12 16:42:23
 
 # Overview
 A corrective extension of the existing historical-navigation brief: dense curves retain truthful coverage and very short diagnostic events remain findable with exact timecodes, while the build identity can be copied for qualification.
@@ -21,13 +21,17 @@ A corrective extension of the existing historical-navigation brief: dense curves
 - Replace the native UI with a browser/canvas or migrate the history database solely to copy the reference project.
 - Promise that finite screen pixels can individually show every raw sample or every colliding event.
 - Invent domain-specific analog error thresholds or infer them from private signal names.
-- Implement full-file decoding for signals selected after replay; this was excluded from the previous brief and is not the reported reproduction.
+- Reconstruct discarded live frames when no persisted source exists.
 - Change CAN transport, recording, DBC interpretation, export coverage or version numbering.
 
 # Scope and guardrails
 - In: complete historical summaries, faithful native rendering, discoverable short events, bounded worker/cache ownership and packaged qualification.
-- Keep original sample values/timecodes and existing export coverage contracts. Late-selected full-file decoding is separate debt.
+- Keep original sample values/timecodes and existing export coverage contracts. Late-selected file-backed history is now explicitly in scope; the operator accepts preparation latency.
 - The operator confirmed before-load selection of three signals and prioritized two-frame events over generic oscillation-density rendering.
+
+# Late-selected file history
+- For a signal selected after file loading, reconstruct its complete history in cancellable background work with visible progress, preserving viewport, cursors and other lanes. Publish exact samples, complete summaries and event anchors under source/DBC/data revision checks, invalidate cached empty results, and never silently substitute the retained tail. Report source-unavailable/changed, cancelled, partial and failed states explicitly.
+- Stream the original file through the existing parser and DBC decoding path in bounded chunks, without replaying frames into acquisition/session counters or retaining the entire capture in RAM. Serialize reconstruction jobs, deduplicate signal requests and reuse completed revision-matched history. Coordinate SQLite writer ownership with ingestion; publish coverage atomically only after successful completion. Deselection, reload, DBC changes and shutdown retire stale jobs. Measure preparation separately from viewport latency; no full reconstruction promise for unrecorded live frames.
 
 # Key product decisions
 
@@ -50,6 +54,7 @@ flowchart LR
 - The canonical build identifier is read-only selectable/copyable; no version format change is needed.
 
 # Success signals
+- A signal added after loading matches its preselected full-file history, with progress/cancel controls and no disruption to existing navigation.
 - Three preselected curves survive both directions of wheel zoom around 650 s and full fit in the identified Windows artifact.
 - One/two-frame events, including non-extreme transitions, remain discoverable through anchors or explicit clusters and exact drill-down.
 - Batch partition and reset cannot change authoritative coverage. Renderer-level tests prove visible data, not just enabled options.

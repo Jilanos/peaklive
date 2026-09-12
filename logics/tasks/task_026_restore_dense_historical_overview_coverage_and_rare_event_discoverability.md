@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:42
+> Indicators reviewed: 2026-09-12 16:42:25
 
 # AI Context
 - Summary: Sequence summary correctness, single-pass rendering, event fidelity and packaged qualification.
@@ -21,6 +21,7 @@
 - Summary/render correctness and the pulse/dip fidelity cases are ready to implement. Operator-specific build/DBC evidence gates packaged qualification; generic semantic anomaly classification is excluded.
 
 # Plan
+- [ ] Deliver the accepted late-selection full-file reconstruction in item 123 before packaged qualification in item 124. For a signal selected after file loading, reconstruct its complete history in cancellable background work with visible progress, preserving viewport, cursors and other lanes. Publish exact samples, complete summaries and event anchors under source/DBC/data revision checks, invalidate cached empty results, and never silently substitute the retained tail. Report source-unavailable/changed, cancelled, partial and failed states explicitly. Stream the original file through the existing parser and DBC decoding path in bounded chunks, without replaying frames into acquisition/session counters or retaining the entire capture in RAM. Serialize reconstruction jobs, deduplicate signal requests and reuse completed revision-matched history. Coordinate SQLite writer ownership with ingestion; publish coverage atomically only after successful completion. Deselection, reload, DBC changes and shutdown retire stale jobs. Measure preparation separately from viewport latency; no full reconstruction promise for unrecorded live frames.
 - [ ] 1. Read the diagnosis and existing historical-navigation brief; record the operator's confirmed before-load three-signal setup and the unverified build string. Reproduce the synthetic source/render failures before implementation.
 - [ ] 2. Deliver High-priority summary completeness and reset correctness first; establish the fallback/index-ready contract and raw evidence oracle.
 - [ ] 3. Integrate a single historical render reduction and transition/event anchors, including non-extreme two-frame events, a four-frame assertion after 50,000 quiet frames and a 250 A to 180 A dip lasting 100 ms. Preserve exact entry/extremum/recovery timecodes without requiring an amplitude threshold.
@@ -39,6 +40,7 @@
 - `item_125_make_the_application_build_identifier_selectable_and_copyable`
 
 # Definition of Done (DoD)
+- [ ] AC6 has full-file preselected/late-selected equivalence, background lifecycle and packaged reproduction evidence; retained-tail display alone is not acceptance.
 - [ ] All request acceptance criteria have behavioral evidence; every planned correction is implemented and reviewed.
 - [ ] Synthetic source, render, rare-event, lifecycle and scaling regressions pass without loosening the declared budgets.
 - [ ] Linux/Windows CI and Windows packaging pass for the delivered commit.
@@ -77,7 +79,7 @@
 - Corpus preparation only (2026-09-12): request flow validation has zero findings; Ruff and Logics lint pass; repository audit has zero blockers and one pre-existing prod_021 missing-diagram warning. The synthetic probe reproduces partial summary coverage, zero rendered points after automatic reduction, stale overview after clear, and loss of a non-extreme 100 ms analog dip. Implementation and packaged acceptance remain outstanding; task progress stays 0%.
 
 # Report
-- Additional operator screenshot: selection after loading stays blank with 1705746 dropped frames, matching the capture census minus the 50000-frame cache. Tail-only decoding updates SeriesStore but not HistoricalSignalStore. See the diagnosis for this second failure path. Full-file background reconstruction is recommended; its preparation-latency scope choice awaits operator response and is not yet an implementation commitment.
+- Additional operator screenshot: selection after loading stays blank with 1705746 dropped frames, matching the capture census minus the 50000-frame cache. Tail-only decoding updates SeriesStore but not HistoricalSignalStore. See the diagnosis for this second failure path. Operator subsequently accepted full-file background reconstruction with preparation latency; it is now mandatory scope under AC6.
 
 # Links
 - Request: `req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events`
