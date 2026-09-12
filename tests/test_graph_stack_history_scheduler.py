@@ -165,5 +165,25 @@ def test_a_completed_result_caches_under_the_viewport_it_was_requested_for(qtbot
     cached_keys = list(panel._history_result_cache.keys())
     assert any(
         extent == requested_extent and visible == requested_visible
-        for _path, _curves, extent, visible in cached_keys
+        for _path, _revision, _curves, extent, visible in cached_keys
     ), cached_keys
+
+
+def test_a_history_append_invalidates_a_cached_empty_viewport(qtbot, tmp_path, panel):
+    history = HistoricalSignalStore(tmp_path / "history.sqlite3")
+    store = SeriesStore()
+    panel._history = history
+    panel.sync(store, {RAW_PREVIEW})
+    panel.anchor_plot.getViewBox().setXRange(0, 9, padding=0)
+    panel._window_chosen = True
+
+    panel.refresh_data()
+    qtbot.waitUntil(lambda: panel._history_worker is None, timeout=5_000)
+    x_data = panel.curves[RAW_PREVIEW].xData
+    assert x_data is None or len(x_data) == 0
+
+    history.append_many([(RAW_PREVIEW, float(t), float(t), None) for t in range(10)])
+    panel.refresh_data()
+    qtbot.waitUntil(lambda: panel._history_worker is None, timeout=5_000)
+
+    assert list(panel.curves[RAW_PREVIEW].xData) == [float(t) for t in range(10)]

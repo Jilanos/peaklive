@@ -166,6 +166,7 @@ class WorkspaceSession:
         generation = self._replay_generation + 1
         self._replay_generation = generation
         self._reset_session(path.name)
+        self._replay_source_path = path
         self._replay_worker = ReplayWorker(path)
         self._pending_replay_batches = []
         self._replay_source_completed_generation = None
@@ -282,6 +283,8 @@ class WorkspaceSession:
         and grows with the session.
         """
         self.session_note.clear_message()
+        if not source:
+            self._replay_source_path = None
         self.graph_panel.cancel_history_refresh()
         self.graph_panel.begin_session(live=not source)
         self._cancel_signal_backfill()
