@@ -229,6 +229,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
                     self._history.path, tuple(self._curves), extent, visible, generation
                 )
                 worker.completed.connect(self._historical_refresh_completed)
+                worker.failed.connect(self._historical_refresh_failed)
                 worker.finished.connect(self._history_worker_finished)
                 self._history_worker = worker
                 worker.start()
@@ -308,9 +309,20 @@ class GraphStackPanel(GraphNavigation, QWidget):
         bounds = self.global_extent()
         if bounds is not None:
             self._seed_cursors(bounds)
+        # A successful result supersedes any error note a previous, now
+        # superseded viewport request left behind.
+        if self.note.level == "error":
+            self.note.clear_message()
         self.note.setVisible(not any(points_by_signal.values()))
         self.empty_state_label.setVisible(not any(points_by_signal.values()))
         self._mark_measurements_dirty()
+    def _historical_refresh_failed(self, _error: str, generation: int) -> None:
+        if generation != self._history_generation:
+            return
+        # Retain the last valid curves rather than blanking them: a failed
+        # background read must not look indistinguishable from "no data here".
+        self.note.show_message(translate("graph.history_error"), "error")
+        self.note.setVisible(True)
     def _history_worker_finished(self) -> None:
         worker = self._history_worker
         if worker is not None and not worker.isRunning():

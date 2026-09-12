@@ -146,6 +146,7 @@
     "cursor_summary": "A {cursor_a} · B {cursor_b}",
     "cursor_summary_empty": "Cursors: place A and B to measure a range.",
     "empty": "No plot yet. Show a DBC signal, or start an acquisition for the raw preview.",
+    "history_error": "Historical data could not be loaded. The last valid view is kept; retry by navigating again.",
     "trace_colour": "{signal} — trace colour {colour}",
     "group_view": "Navigate",
     "group_cursors": "Cursors"
