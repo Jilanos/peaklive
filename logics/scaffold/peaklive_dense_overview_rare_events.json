@@ -1,0 +1,210 @@
+{
+  "title": "Restore dense historical curves and preserve rare diagnostic signal events",
+  "references": [
+    "logics/analysis/dense_overview_diagnosis.md",
+    "logics/analysis/dense_overview_probe.py",
+    "logics/request/req_025_restore_responsive_and_faithful_historical_graph_navigation.md",
+    "logics/product/prod_024_peaklive_responsive_and_faithful_historical_navigation_correction.md",
+    "src/peaklive/analysis/history.py",
+    "src/peaklive/services/history_worker.py",
+    "src/peaklive/ui/panels/graph_history.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/measurement.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/main_window.py",
+    "tests/test_history.py",
+    "tests/test_history_worker.py",
+    "tests/test_graph_performance.py",
+    "tests/test_ui_build_identity.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Dense overview coverage and rare-event discoverability",
+    "needs": [
+      "Keep all three previously selected historical curves visible when wheel zoom-out crosses approximately 650 s and when fitting the entire capture.",
+      "Preserve diagnostic peaks, rare variations and errors lasting only two 10 ms samples, with source timecodes for precise follow-up; uniform stride or averaging cannot be the rendering policy.",
+      "Apply the useful contracts of the local reference application within the existing Python/PySide6/pyqtgraph/SQLite architecture.",
+      "Make the displayed build identifier selectable and copyable so qualification evidence does not depend on manual transcription."
+    ],
+    "context": [
+      "Operator confirmed that three signals from two message groups were selected before capture loading. One zoom-out step hides all curves; one zoom-in step restores them. The typed build is recorded verbatim in the diagnosis and is not yet verified against an artifact.",
+      "Source 7cc00d6 has green Linux/Windows CI. The private source contains 1755746 CAN frames and a diagnostic 100 Hz identity has 94493 samples over 944.781020 s. No private payload or message identity belongs in the corpus.",
+      "The diagnostic reproduces incomplete summaries after bulk plus small appends, pyqtgraph automatic peak reduction erasing a nonempty sparse result, and stale overview data after clear(). It does not reproduce the exact operator DBC/build/650 s boundary yet.",
+      "The reference project counts visible samples, reduces time-bucket extrema to a pixel budget, returns reduction metadata and draws the result without a second automatic reducer. Its DuckDB/browser architecture and raw-range query cost are not adoption requirements.",
+      "This is a corrective and rare-event fidelity extension of the settled historical-navigation brief. Prior task 025 status is not new proof; retain its history and qualify the missing behaviors explicitly.",
+      "Definitions, proposed defaults, operator-confirmed pulse/dip semantics, performance targets and excluded technical debt are in logics/analysis/dense_overview_diagnosis.md."
+    ],
+    "acceptance_criteria": [
+      "AC1: On synthetic three-lane 1/10/100 ms and irregular sources, plus the operator's preselected three-signal packaged reproduction, zoom 500/640/650/660/800 s and full extent in both directions without an unexplained empty curve when samples or event anchors exist in the viewport. Verify returned coverage and actual rendered data, not only curve options.",
+      "AC2: Identical source rows produce equivalent coverage/extrema independent of append partition (1/16/32/33/256/4096 and mixed final batches, across multiple signals). Only complete committed summaries may serve a range; reset/reload invalidates every persisted and in-memory derivative atomically.",
+      "AC3: Historical display uses a single explicit pixel/density-aware reduction policy, preserving source first/last, bucket extrema, chronological identity and gaps within its declared point budget. Exact overflow, empty, incomplete, loading and error remain distinct; one-point data is represented deliberately. No secondary automatic reduction may erase a prepared envelope.",
+      "AC4: One- and two-sample diagnostic pulses and rare discrete transitions remain discoverable with original timecodes at every overview level, including events that are not bucket extrema. If anchors collide or exceed the point budget, an explicit clustered marker reports their presence/count/range and supports exact drill-down. Mandatory cases include a four-frame assertion after 50000 quiet frames and a 250 A to 180 A dip lasting 100 ms; preserve entry/extremum/recovery timecodes without requiring an amplitude threshold. Generic anomaly classification is excluded; no uniform stride or averaged surrogate is accepted.",
+      "AC5: Navigation retains last valid data while waiting, uses at most one active and one replaceable pending request, rejects stale results including cache-hit A/B/A races, and performs no history scan on the GUI thread. Indexed query work scales with viewport budget rather than raw count; caches obey an explicit 64 MiB total limit. Proposed recorded-machine targets are warm viewport <=250 ms, cold indexed query <=1 s, heartbeat p95 lateness <=50 ms and maximum <=150 ms; index preparation is measured separately.",
+      "AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence.",
+      "AC7: The normal application build label is read-only, selectable and copyable with mouse/keyboard; copied identifier matches build_info().identifier and the artifact's build identity. Existing layout, accessibility and version semantics are preserved.",
+      "AC8: Before closing, attach deterministic coverage/render/rare-event/lifecycle evidence, Linux and Windows CI results including packaging, and the identified Windows artifact's private-trace wheel-zoom reproduction. Unknown DBC/build or unavailable private qualification stays explicitly outstanding; green unit tests alone do not close the task."
+    ]
+  },
+  "product": {
+    "title": "Discoverable rare diagnostic events in dense historical views",
+    "overview": "A corrective extension of the existing historical-navigation brief: dense curves retain truthful coverage and very short diagnostic events remain findable with exact timecodes, while the build identity can be copied for qualification.",
+    "goals": [
+      "Prevent zoom-out from turning populated historical lanes into blank graphs.",
+      "Make isolated diagnostic events discoverable rather than silently losing them to display reduction.",
+      "Keep the native desktop stack, complete source evidence and bounded responsive interaction.",
+      "Tie operator observations to a copyable, unambiguous build identifier."
+    ],
+    "non_goals": [
+      "Replace the native UI with a browser/canvas or migrate the history database solely to copy the reference project.",
+      "Promise that finite screen pixels can individually show every raw sample or every colliding event.",
+      "Invent domain-specific analog error thresholds or infer them from private signal names.",
+      "Implement full-file decoding for signals selected after replay; this was excluded from the previous brief and is not the reported reproduction.",
+      "Change CAN transport, recording, DBC interpretation, export coverage or version numbering."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Make historical summary coverage complete and independent of ingest batches",
+      "priority": "High - partial summaries can silently replace the full capture with one sample.",
+      "complexity": "High",
+      "theme": "Authoritative historical data and revision ownership",
+      "request_acs": ["AC1", "AC2", "AC3", "AC5", "AC8"],
+      "problem": [
+        "Summary maintenance is skipped for decoded batches above 32 rows but any surviving summary is trusted as complete.",
+        "clear() deletes raw samples only; summary and overview cache entries can leak into a later session."
+      ],
+      "scope_in": [
+        "Reproduce bulk-plus-one/bulk-plus-sixteen and mixed multi-signal batch failures with the diagnostic and deterministic source oracles.",
+        "Add completeness and committed revision ownership for each signal/level; invalidate incomplete levels and use a cancellable authoritative fallback until rebuilding completes.",
+        "Build complete first/min/max/last/count hierarchy levels in bounded background batches; preserve raw rows and read-only worker connections. Avoid seven per-row SELECT/UPDATE loops on the GUI ingest path.",
+        "Handle partial edge buckets, stable duplicate-time sample identity, full endpoints and late extrema; reserve point budget before emitting rather than truncating the last buckets.",
+        "Reset samples, summaries, persistent caches and extent/revision metadata in one owner transaction; invalidate panel caches and in-flight requests.",
+        "Measure row visits, index preparation/cancellation, temporary-disk footprint and disk-full behavior; publish ready levels only after complete commits."
+      ],
+      "scope_out": ["Renderer replacement, source-sample deletion, silent partial summaries and full-file late-selection decoding."],
+      "acceptance_criteria": [
+        "AC1: Broad historical source results remain nonempty with complete expected coverage for the reported dense scenarios.",
+        "AC2: All declared batch partitions yield the same interval coverage and extrema; reset with reused signal/range keys never returns old values.",
+        "AC3: Summary results preserve source identity, chronology, endpoints and budget without slicing away late data.",
+        "AC5: Indexed reads scale with output budget in a 10x-duration experiment; construction and fallback are separately measured and cancellable.",
+        "AC8: Store/worker regression tests and per-signal completeness evidence are attached before integration qualification."
+      ]
+    },
+    {
+      "title": "Render dense envelopes and rare event anchors without a second lossy reduction",
+      "priority": "High - two-frame errors must stay discoverable and populated curves must never disappear on zoom-out.",
+      "complexity": "High",
+      "theme": "Pixel-aware historical rendering and diagnostic fidelity",
+      "request_acs": ["AC1", "AC3", "AC4", "AC6", "AC8"],
+      "problem": [
+        "Automatic pyqtgraph peak downsampling is applied again to already-reduced sparse history and can output zero points.",
+        "Min/max alone can omit a diagnostically important short transition that is not a bucket extremum."
+      ],
+      "scope_in": [
+        "Give each prepared result explicit mode, coverage, source count, range, width and budget metadata. Disable automatic secondary reduction for historical envelopes and restore the existing live policy on mode changes.",
+        "Use min(4000, max(256, 4 * viewport_width_px)) as the proposed historical envelope budget and retain the 20000-source-sample exact cap; select modes by density/coverage with hysteresis.",
+        "Preserve first/min/max/last real samples and gaps; represent isolated samples explicitly. Test data actually passed through PlotDataItem.getData() and visual paths.",
+        "Define discrete/error transition anchors independently of the analog envelope, preserving original timecodes. Cluster only presentation when multiple anchors collide, with visible count/range and exact zoom/drill-down.",
+        "Operator-confirmed analog case: preserve a 250 A to 180 A dip lasting 100 ms, including entry/extremum/recovery anchors even beside a larger bucket extremum. The binary case is four asserted frames after 50000 quiet frames. No configured threshold is required; dense noisy changes may use truthful activity clusters.",
+        "Keep markers distinct from samples and preserve exact A/B/export source semantics. Document enum and nonfinite behavior; do not fabricate numeric zeros.",
+        "Study reference-project pixel budgets, time-bucket source extrema, metadata and error states; reimplement these contracts in the existing stack without copying its renderer or async mutation race."
+      ],
+      "scope_out": ["Uniform Nth-sample decimation, averaging diagnostic peaks, semantic threshold guessing and an oscillation-density overlay as an independent product feature."],
+      "acceptance_criteria": [
+        "AC1: Three lanes stay visible across forward/reverse zoom sweeps and width changes when source evidence exists.",
+        "AC3: Nonempty sparse prepared results cannot become empty through secondary reduction; exact/overview/empty/incomplete statuses and one-point behavior are tested.",
+        "AC4: Inject one/two-frame pulses, the four-frame assertion after 50000 quiet frames, and the 250 A to 180 A dip lasting 100 ms at bucket edges and late in the trace, including non-extreme error-code changes; verify a source-timecode anchor or explicit cluster survives every level and zoom exposes the original samples.",
+        "AC6: Marker/envelope data never supplies supposedly exact measurements or exports.",
+        "AC8: Attach renderer-level and packaged visual evidence, not just option assertions."
+      ]
+    },
+    {
+      "title": "Bound viewport scheduling and expose truthful loading and measurement states",
+      "priority": "High - correctness must survive rapid navigation without reintroducing the previous UI lag.",
+      "complexity": "High",
+      "theme": "Historical request lifecycle and cache consistency",
+      "request_acs": ["AC1", "AC5", "AC6", "AC8"],
+      "problem": [
+        "A new QThread can start for every refresh, while cancellation is checked only between signals. Cache-hit callbacks rebuild keys from current UI state and can leave incompatible requests active.",
+        "Bounds and historical measurements still perform SQL on the UI thread; the worker failed signal is not presented to the operator."
+      ],
+      "scope_in": [
+        "Implement one active plus one replaceable pending request, actual SQL/chunk cancellation, immutable result identity and a canonical viewport key including source/DBC/data revisions, signal set, width and resolution.",
+        "Invalidate incompatible in-flight work on cache hits; fix cache-hit/replacement point accounting and enforce a byte limit of 64 MiB across all lanes.",
+        "Use revision-cached bounds; keep scans and long exact measurement work off the GUI thread. Do not dirty unchanged or hidden measurements on a viewport-only change.",
+        "Retain last valid curves while pending and present accessible loading, incomplete, empty and error states through existing i18n. Diagnose the busy pointer with request/heartbeat evidence before attributing it.",
+        "Make A/B overflow/partial coverage explicit instead of silently falling back to a retained tail or dropping selected lanes; preserve current export coverage semantics.",
+        "Retain the read-only SQLite worker fix and safe QThread teardown from 7cc00d6; cover shutdown, reset, selection changes and cache-hit A/B/A races."
+      ],
+      "scope_out": ["General application concurrency rewrite, acquisition transport changes and raising retention caps to hide missing history."],
+      "acceptance_criteria": [
+        "AC1: Rapid reverse zoom and cache hits cannot install an empty or stale result over valid current data.",
+        "AC5: Queue, cancellation, revision and memory invariants hold over 1000 gestures; measured reference-machine latency/heartbeat targets hold with three and eight lanes.",
+        "AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries.",
+        "AC8: Regressions exercise real in-flight workers, source resets and failure delivery rather than only finished-signal flags."
+      ]
+    },
+    {
+      "title": "Qualify long-view rare-event fidelity on the packaged Windows application",
+      "priority": "High - existing green tests did not detect the operator-visible disappearance.",
+      "complexity": "Medium",
+      "theme": "Behavioral qualification and reproducible evidence",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": ["Unit-level bounds and curve settings passed while the operator lost all three diagnostic curves after one wheel step."],
+      "scope_in": [
+        "Turn the source/render diagnostic into deterministic synthetic tests with one million aggregate samples, three/eight lanes, mixed batch sizes, 1/10/100 ms periods, irregular timing and non-extreme two-frame events.",
+        "Sweep 500/640/650/660/800 s and whole capture plus pixel-width-dependent threshold probes. Record raw rows, summary coverage, display counts, event anchors, detail mode, active/pending work and final generation.",
+        "Qualify exact zoom/drill-down around original event timestamps and distinguish event clusters from measured source values.",
+        "Use the operator's preselected signals with local DBC configuration and private trace on an identified Windows executable; copy its build identity and record artifact hash, screen geometry and exact gestures privately.",
+        "Run required repository tests on Linux and Windows, packaging, Logics validation and the packaged visual reproduction; keep private data and source labels out of versioned evidence.",
+        "Write AC-by-AC evidence and remaining limitations. Preserve prior task 025 history; do not close this correction while artifact-specific qualification or the mandatory pulse/dip fidelity evidence remains missing."
+      ],
+      "scope_out": ["A private capture committed to CI, passive green-CI-only acceptance, and rewriting prior completion proof."],
+      "acceptance_criteria": [
+        "AC1: The operator's forward/reverse wheel-zoom sequence and full fit remain populated in the packaged application.",
+        "AC2: Batch partition/reset cases prove summary completeness and cache invalidation.",
+        "AC3: Actual display output preserves coverage, point policy and explicit empty/incomplete distinctions.",
+        "AC4: Rare short-event discoverability and exact-timecode drill-down are demonstrated at all tested scales.",
+        "AC5: Attach independent row-work, cache, queue and GUI-heartbeat evidence including cold/warm/index preparation phases.",
+        "AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified.",
+        "AC7: Copy/paste of the build identity agrees with artifact evidence.",
+        "AC8: Linux/Windows CI, Windows packaging, private reproduction and all evidence gates pass before task closeout."
+      ]
+    },
+    {
+      "title": "Make the application build identifier selectable and copyable",
+      "priority": "Low - small independent usability correction that prevents qualification transcription errors.",
+      "complexity": "Low",
+      "theme": "Operator build identity usability",
+      "request_acs": ["AC7", "AC8"],
+      "problem": ["The operator has to transcribe the displayed build string manually, leaving an ambiguous artifact identity in the report."],
+      "scope_in": [
+        "Make the existing build label read-only selectable by mouse/keyboard and support ordinary copy behavior using the canonical build_info().identifier.",
+        "Preserve existing normal-workspace visibility, compact layout, tooltip and accessible name. Use existing Qt text interaction rather than inventing another version source.",
+        "Verify selection and clipboard behavior offscreen where reliable, plus copy/paste in the Windows artifact."
+      ],
+      "scope_out": ["Version format changes, editable build values and a broad About-dialog redesign."],
+      "acceptance_criteria": [
+        "AC7: The exact displayed canonical identifier can be selected/copied without editing or obstructing the workspace and matches the artifact identity.",
+        "AC8: The packaged qualification records the copied identifier rather than manually interpreting a typed timestamp."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Restore dense historical overview coverage and rare event discoverability",
+    "plan": [
+      "Read the diagnosis and existing historical-navigation brief; record the operator's confirmed before-load three-signal setup and the unverified build string. Reproduce the synthetic source/render failures before implementation.",
+      "Deliver High-priority summary completeness and reset correctness first; establish the fallback/index-ready contract and raw evidence oracle.",
+      "Integrate a single historical render reduction and transition/event anchors, including non-extreme two-frame events. Include the four-frame assertion after 50000 quiet frames and the 250 A to 180 A dip lasting 100 ms; preserve entry/extremum/recovery anchors without configured thresholds.",
+      "Complete the bounded request scheduler, revision/cache identity and nonmodal state/measurement guardrails; measure both returned data and actual display output.",
+      "Implement the small independent copyable-build label item after the High-priority correctness design, in time for final artifact qualification.",
+      "Run synthetic scaling and rare-event tests, Linux/Windows CI and packaging; reproduce the private trace's exact wheel-zoom sequence in the identified Windows executable and record every AC's evidence before closeout."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_dense_overview_rare_events.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

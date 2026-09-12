@@ -1,0 +1,476 @@
+{
+  "budgets": {
+    "max_docs": 16,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability --mode full --profile deep",
+  "companion_docs": [],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "restore, dense, historical, curves, preserve, rare, diagnostic, signal, events",
+        "skip when": "Changing CAN transport or promising full-file late-selection decoding.",
+        "summary": "Correct dense-view disappearance and preserve discoverable rare diagnostic events.",
+        "use when": "Scoping the operator-confirmed three-lane wheel-zoom regression and fidelity requirements."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction",
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation",
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ]
+      },
+      "path": "logics/request/req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events.md",
+      "ref": "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: On synthetic three-lane 1/10/100 ms and irregular sources, plus the operator's preselected three-signal packaged reproduction, zoom 500/640/650/660/800 s and full extent in both directions without an unexplained empty curve when samples or event anchors exist in the viewport. Verify returned coverage and actual rendered data, not only curve options.",
+          "- AC2: Identical source rows produce equivalent coverage/extrema independent of append partition (1/16/32/33/256/4096 and mixed final batches, across multiple signals). Only complete committed summaries may serve a range; reset/reload invalidates every persisted and in-memory derivative atomically.",
+          "- AC3: Historical display uses a single explicit pixel/density-aware reduction policy, preserving source first/last, bucket extrema, chronological identity and gaps within its declared point budget. Exact overflow, empty, incomplete, loading and error remain distinct; one-point data is represented deliberately. No secondary automatic reduction may erase a prepared envelope.",
+          "- AC4: One- and two-sample diagnostic pulses and rare discrete transitions remain discoverable with original timecodes at every overview level, including events that are not bucket extrema. If anchors collide or exceed the point budget, an explicit clustered marker reports their presence/count/range and supports exact drill-down. Mandatory cases include a four-frame assertion after 50000 quiet frames and a 250 A to 180 A dip lasting 100 ms; preserve entry/extremum/recovery timecodes without requiring an amplitude threshold. Generic anomaly classification is excluded; no uniform stride or averaged surrogate is accepted.",
+          "- AC5: Navigation retains last valid data while waiting, uses at most one active and one replaceable pending request, rejects stale results including cache-hit A/B/A races, and performs no history scan on the GUI thread. Indexed query work scales with viewport budget rather than raw count; caches obey an explicit 64 MiB total limit. Proposed recorded-machine targets are warm viewport <=250 ms, cold indexed query <=1 s, heartbeat p95 lateness <=50 ms and maximum <=150 ms; index preparation is measured separately.",
+          "- AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence."
+        ],
+        "Needs": [
+          "- Keep all three previously selected historical curves visible when wheel zoom-out crosses approximately 650 s and when fitting the entire capture.",
+          "- Preserve diagnostic peaks, rare variations and errors lasting only two 10 ms samples, with source timecodes for precise follow-up; uniform stride or averaging cannot be the rendering policy.",
+          "- Apply the useful contracts of the local reference application within the existing Python/PySide6/pyqtgraph/SQLite architecture.",
+          "- Make the displayed build identifier selectable and copyable so qualification evidence does not depend on manual transcription."
+        ]
+      },
+      "status": "Draft",
+      "title": "Restore dense historical curves and preserve rare diagnostic signal events"
+    },
+    {
+      "ai_context": {
+        "keywords": "restore, responsive, faithful, historical, graph, navigation",
+        "skip when": "Changing CAN transport, export formats or arbitrary late-selected signal decoding.",
+        "summary": "Repair the measured synchronous historical scan and callback accumulation exposed by a 1.75-million-frame capture.",
+        "use when": "Planning the cross-layer historical zoom regression correction and its evidence."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads",
+          "item_118_serve_bounded_chronological_multiresolution_history_summaries",
+          "item_119_align_historical_navigation_extents_and_measurement_truthfulness",
+          "item_120_qualify_large_capture_navigation_with_event_loop_and_packaged_windows_evidence"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_023_deliver_multiresolution_trace_graphs_with_precise_on_demand_zoom_detail",
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_023_deliver_bounded_multiresolution_overview_and_exact_zoom_detail_for_historical_traces"
+        ]
+      },
+      "path": "logics/request/req_025_restore_responsive_and_faithful_historical_graph_navigation.md",
+      "ref": "req_025_restore_responsive_and_faithful_historical_graph_navigation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: With completed historical data and 1, 4 and 8 linked lanes, 100 mixed wheel/pan/fit gestures meet a 20 ms heartbeat p95 lateness <= 50 ms and maximum <= 150 ms on the recorded Windows reference machine. Warm final viewport latency <= 250 ms and cold indexed-query latency <= 1 s after settling; index construction is separately reported.",
+          "- AC2: Navigation has one owned restartable 75 ms timer, at most one active and one replaceable pending history request; duplicate linked-axis notifications coalesce. No historical SQL, full-history scan or JSON reduction executes on the GUI thread. Obsolete work cancels and stale results cannot install.",
+          "- AC3: Broad views use indexed precomputed resolution levels and cached bounds. Returned overview points per lane <= min(4000, max(256, 4 * viewport_width_px)); raw exact points <= 20000. Instrumented rows visited scale with viewport budget and hierarchy depth rather than raw-range sample count.",
+          "- AC4: Every overview preserves full interval coverage, first/last samples and per-bucket extrema including late spikes, emits stable chronological timestamps/sample identities, and never truncates later buckets to meet its budget. Exact results match original decoded samples and distinguish overflow, empty, missing, error and cancelled states.",
+          "- AC5: Fit, follow and range selection use one authoritative historical extent; density-aware exact selection replaces the fixed 8-percent duration heuristic. Overview/exact/loading/unavailable states are visible and accessible; previous valid data remains usable while waiting. Historical A/B results are exact for their requested range or explicitly unavailable/partial.",
+          "- AC6: Session, source/DBC revision, data revision, signal selection and viewport generation isolate caches and workers. Historical viewport caches are capped at 64 MiB total; queues and index resources have explicit bounds and cleanup. Replacement, cancellation, deselection, disk errors and shutdown cannot apply stale data or block the GUI."
+        ],
+        "Needs": [
+          "- Restore usable zoom, pan and fit on large completed captures while retaining complete historical evidence.",
+          "- Stay within Python/PySide6/pyqtgraph and the existing SQLite history store; provide a measured, implementable correction.",
+          "- Correct overview coverage defects together with the scheduler and query costs so faster curves remain trustworthy."
+        ]
+      },
+      "status": "Done",
+      "title": "Restore responsive and faithful historical graph navigation"
+    },
+    {
+      "ai_context": {
+        "keywords": "historical, summary, coverage, complete, independent, ingest, batches",
+        "skip when": "Working on UI labels or unrelated recording formats.",
+        "summary": "Reject incomplete summaries and invalidate all historical derivatives on reset.",
+        "use when": "Repairing batch-dependent loss of full-history coverage and building committed complete levels."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches.md",
+      "ref": "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Broad historical source results remain nonempty with complete expected coverage for the reported dense scenarios.",
+          "- AC2: All declared batch partitions yield the same interval coverage and extrema; reset with reused signal/range keys never returns old values.",
+          "- AC3: Summary results preserve source identity, chronology, endpoints and budget without slicing away late data.",
+          "- AC5: Indexed reads scale with output budget in a 10x-duration experiment; construction and fallback are separately measured and cancellable.",
+          "- AC8: Store/worker regression tests and per-signal completeness evidence are attached before integration qualification."
+        ],
+        "Problem": [
+          "- Summary maintenance is skipped for decoded batches above 32 rows but any surviving summary is trusted as complete.",
+          "- clear() deletes raw samples only; summary and overview cache entries can leak into a later session."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make historical summary coverage complete and independent of ingest batches"
+    },
+    {
+      "ai_context": {
+        "keywords": "render, dense, envelopes, rare, event, anchors, second, lossy, reduction",
+        "skip when": "Using uniform stride or claiming finite pixels show every raw event individually.",
+        "summary": "Render source extrema once and retain short-event anchors independently of envelopes.",
+        "use when": "Fixing blank sparse historical curves and preserving diagnostic event discoverability."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction.md",
+      "ref": "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Three lanes stay visible across forward/reverse zoom sweeps and width changes when source evidence exists.",
+          "- AC3: Nonempty sparse prepared results cannot become empty through secondary reduction; exact/overview/empty/incomplete statuses and one-point behavior are tested.",
+          "- AC4: Inject one/two-frame pulses, the four-frame assertion after 50000 quiet frames, and the 250 A to 180 A dip lasting 100 ms at bucket edges and late in the trace, including non-extreme error-code changes; verify a source-timecode anchor or explicit cluster survives every level and zoom exposes the original samples.",
+          "- AC6: Marker/envelope data never supplies supposedly exact measurements or exports.",
+          "- AC8: Attach renderer-level and packaged visual evidence, not just option assertions."
+        ],
+        "Problem": [
+          "- Automatic pyqtgraph peak downsampling is applied again to already-reduced sparse history and can output zero points.",
+          "- Min/max alone can omit a diagnostically important short transition that is not a bucket extremum."
+        ]
+      },
+      "status": "Ready",
+      "title": "Render dense envelopes and rare event anchors without a second lossy reduction"
+    },
+    {
+      "ai_context": {
+        "keywords": "bound, viewport, scheduling, expose, truthful, loading, measurement, states",
+        "skip when": "Broadening transport or full-file decoding scope.",
+        "summary": "Bound workers and caches while preserving current results and analytical truthfulness.",
+        "use when": "Implementing cancellable latest-viewport requests, revision isolation and nonmodal states."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states.md",
+      "ref": "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Rapid reverse zoom and cache hits cannot install an empty or stale result over valid current data.",
+          "- AC5: Queue, cancellation, revision and memory invariants hold over 1000 gestures; measured reference-machine latency/heartbeat targets hold with three and eight lanes.",
+          "- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries.",
+          "- AC8: Regressions exercise real in-flight workers, source resets and failure delivery rather than only finished-signal flags."
+        ],
+        "Problem": [
+          "- A new QThread can start for every refresh, while cancellation is checked only between signals. Cache-hit callbacks rebuild keys from current UI state and can leave incompatible requests active.",
+          "- Bounds and historical measurements still perform SQL on the UI thread; the worker failed signal is not presented to the operator."
+        ]
+      },
+      "status": "Ready",
+      "title": "Bound viewport scheduling and expose truthful loading and measurement states"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, long, view, rare, event, fidelity, packaged, windows, application",
+        "skip when": "Treating passing flag tests or a private-data upload as acceptable evidence.",
+        "summary": "Prove source coverage, rendered visibility and rare-event drill-down on an identified artifact.",
+        "use when": "Qualifying the three-lane private reproduction and deterministic synthetic cases."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application.md",
+      "ref": "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The operator's forward/reverse wheel-zoom sequence and full fit remain populated in the packaged application.",
+          "- AC2: Batch partition/reset cases prove summary completeness and cache invalidation.",
+          "- AC3: Actual display output preserves coverage, point policy and explicit empty/incomplete distinctions.",
+          "- AC4: Rare short-event discoverability and exact-timecode drill-down are demonstrated at all tested scales.",
+          "- AC5: Attach independent row-work, cache, queue and GUI-heartbeat evidence including cold/warm/index preparation phases.",
+          "- AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified."
+        ],
+        "Problem": [
+          "- Unit-level bounds and curve settings passed while the operator lost all three diagnostic curves after one wheel step."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify long-view rare-event fidelity on the packaged Windows application"
+    },
+    {
+      "ai_context": {
+        "keywords": "application, build, identifier, selectable, copyable",
+        "skip when": "Changing version numbering or replacing the About dialog.",
+        "summary": "Allow exact read-only build identity selection and copying in normal app chrome.",
+        "use when": "Preventing operator build transcription errors with existing Qt text interaction."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_125_make_the_application_build_identifier_selectable_and_copyable.md",
+      "ref": "item_125_make_the_application_build_identifier_selectable_and_copyable",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC7: The exact displayed canonical identifier can be selected/copied without editing or obstructing the workspace and matches the artifact identity.",
+          "- AC8: The packaged qualification records the copied identifier rather than manually interpreting a typed timestamp."
+        ],
+        "Problem": [
+          "- The operator has to transcribe the displayed build string manually, leaving an ambiguous artifact identity in the report."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make the application build identifier selectable and copyable"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_117_coalesce_historical_viewport_requests_and_own_cancellable_background_reads"
+        ],
+        "prod": [
+          "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction"
+        ],
+        "req": [
+          "req_025_restore_responsive_and_faithful_historical_graph_navigation"
+        ],
+        "task": [
+          "task_025_deliver_responsive_and_faithful_historical_graph_navigation"
+        ]
+      },
+      "path": "logics/product/prod_024_peaklive_responsive_and_faithful_historical_navigation_correction.md",
+      "ref": "prod_024_peaklive_responsive_and_faithful_historical_navigation_correction",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Settled",
+      "title": "PeakLive responsive and faithful historical navigation correction"
+    },
+    {
+      "ai_context": {
+        "keywords": "restore, dense, historical, overview, coverage, rare, event, discoverability",
+        "skip when": "Closing with queued CI, unresolved artifact qualification or option-only rendering evidence.",
+        "summary": "Sequence summary correctness, single-pass rendering, event fidelity and packaged qualification.",
+        "use when": "Implementing the complete corrective chain from the supplied diagnosis and source/render probes."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/tasks/task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability.md",
+      "ref": "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Start with logics/analysis/dense_overview_diagnosis.md and its reproducible source/render probe. This task implements the correction; creating this corpus did not change application behavior.",
+          "- Summary/render correctness and the pulse/dip fidelity cases are ready to implement. Operator-specific build/DBC evidence gates packaged qualification; generic semantic anomaly classification is excluded."
+        ],
+        "Validation": [
+          "- Corpus preparation only (2026-09-12): request flow validation has zero findings; Ruff and Logics lint pass; repository audit has zero blockers and one pre-existing prod_021 missing-diagram warning. The synthetic probe reproduces partial summary coverage, zero rendered points after automatic reduction, stale overview after clear, and loss of a non-extreme 100 ms analog dip. Implementation and packaged acceptance remain outstanding; task progress stays 0%."
+        ]
+      },
+      "status": "Ready",
+      "title": "Restore dense historical overview coverage and rare event discoverability"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/product/prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views.md",
+      "ref": "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "Discoverable rare diagnostic events in dense historical views"
+    }
+  ],
+  "estimates": {
+    "char_count": 22767,
+    "companion_doc_count": 0,
+    "doc_count": 10
+  },
+  "generated_at": "2026-09-12T14:35:52Z",
+  "handoff": {
+    "companion_doc_count": 0,
+    "enabled": false,
+    "source_refs": [
+      "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events",
+      "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+    ],
+    "validation_summary_count": 0
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 311
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events,task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability",
+  "refs": [
+    "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events",
+    "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": []
+}
