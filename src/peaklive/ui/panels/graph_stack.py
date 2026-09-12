@@ -2,7 +2,7 @@ from __future__ import annotations  # noqa: I001
 from collections import OrderedDict
 import pyqtgraph as pg
 from PySide6.QtCore import QTimer, Signal
-from PySide6.QtWidgets import QLabel, QSizePolicy, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
 from peaklive.analysis import HistoricalSignalStore, SeriesStore
 from peaklive.i18n import translate
 from peaklive.services.history_worker import HistoryViewportWorker
@@ -14,7 +14,9 @@ from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 from peaklive.ui.worker_lifecycle import abandon_worker
-RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, SHARED_LEFT_AXIS_WIDTH, MEASUREMENT_REFRESH_INTERVAL_MS = "Raw byte 0", 180, 88, 250  # noqa: E501
+RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, SHARED_LEFT_AXIS_WIDTH, MEASUREMENT_REFRESH_INTERVAL_MS = (
+    "Raw byte 0", 180, 88, 250
+)
 class GraphStackPanel(GraphNavigation, QWidget):
     cursors_changed = Signal()
     view_changed = Signal()
@@ -52,6 +54,12 @@ class GraphStackPanel(GraphNavigation, QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.controls = GraphControlsBar()
+        self.fit_button = self.controls.fit_button
+        self.fit_y_button = self.controls.fit_y_button
+        self.measurement_visibility_button = self.controls.measurement_visibility_button
+        self.cursor_a_button = self.controls.cursor_a_button
+        self.cursor_b_button = self.controls.cursor_b_button
+        self.follow_checkbox = self.controls.follow_checkbox
         self.fit_button.clicked.connect(self.fit)
         self.fit_y_button.clicked.connect(self.fit_y)
         self.follow_checkbox.toggled.connect(self._follow_toggled)
@@ -70,24 +78,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         layout.addWidget(self.note)
         self.measurement = MeasurementPanel()
         layout.addWidget(self.measurement)
-    @property
-    def fit_button(self) -> QToolButton:
-        return self.controls.fit_button
-    @property
-    def fit_y_button(self) -> QToolButton:
-        return self.controls.fit_y_button
-    @property
-    def measurement_visibility_button(self) -> QToolButton:
-        return self.controls.measurement_visibility_button
-    @property
-    def cursor_a_button(self) -> QToolButton:
-        return self.controls.cursor_a_button
-    @property
-    def cursor_b_button(self) -> QToolButton:
-        return self.controls.cursor_b_button
-    @property
-    def follow_checkbox(self) -> QToolButton:
-        return self.controls.follow_checkbox
     @property
     def cursor_summary(self) -> QLabel:
         return self.controls.cursor_summary
@@ -195,7 +185,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
             abandon_worker(worker)
         self._history_worker = None
     def refresh_data(self) -> None:
-        """Push the retained samples into the curves without moving the cursors."""
         store = self._store
         if store is None:
             return
@@ -206,20 +195,11 @@ class GraphStackPanel(GraphNavigation, QWidget):
             if extent is not None and visible is not None:
                 key = (str(self._history.path), tuple(self._curves), extent, visible)
                 cached = self._history_result_cache.get(key)
-                # A cache hit must obsolete any in-flight request just like a
-                # fresh query does: without bumping the generation here too,
-                # an older worker still resolving a stale viewport can arrive
-                # later, pass the generation check (never invalidated) and
-                # overwrite this cache hit with data for a viewport the
-                # operator already navigated away from (the A/B/A race).
                 self._history_generation += 1
                 generation = self._history_generation
                 old = self._history_worker
                 if old is not None and old.isRunning():
                     old.request_cancel()
-                # Only the latest generation's key can still be pending;
-                # replacing rather than accumulating keeps this bounded
-                # across an unbounded number of navigation gestures.
                 self._history_request_keys = {generation: key}
                 if cached is not None:
                     self._history_result_cache.move_to_end(key)
@@ -240,8 +220,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self._history, self.global_extent(), self._window_chosen, self.visible_window()
         )
         for signal_name, curve in self._curves.items():
-            # Live samples are raw and unreduced: the automatic peak reducer
-            # is pyqtgraph's only display-time reduction here, so it stays on.
             curve.setDownsampling(auto=True, method="peak")
             points = curve_points(self._history, store, signal_name, extent, visible)
             if points is not None:
@@ -264,11 +242,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
         if generation != self._history_generation or self._history is None:
             return
-        # Cache under the key this result was actually requested for, not
-        # whatever the UI happens to show now: the operator may have kept
-        # navigating while this result was in flight, and rebuilding the key
-        # from current state would file this payload under the wrong
-        # viewport, poisoning a later legitimate cache hit for it.
         fallback_key = (
             str(self._history.path),
             tuple(self._curves),
@@ -276,10 +249,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self.visible_window(),
         )
         key = self._history_request_keys.pop(generation, fallback_key)
-        # A cache hit re-delivers an already-counted entry through this same
-        # path (see refresh_data()); only a genuinely new key should grow the
-        # point budget, or repeatedly revisiting one viewport inflates the
-        # counter without bound and starts evicting other still-valid entries.
         is_new_entry = key not in self._history_result_cache
         self._history_result_cache[key] = points_by_signal
         self._history_result_cache.move_to_end(key)
@@ -293,11 +262,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
                 len(points or ()) for points in removed.values()
             )
         for signal_name, curve in self._curves.items():
-            # Historical envelopes/exact ranges are already reduced to a
-            # pixel-aware budget upstream (HistoricalSignalStore.overview);
-            # pyqtgraph's own automatic peak reducer must not run a second
-            # time on this prepared result, or it can erase a nonempty sparse
-            # envelope entirely (factor > point count => zero display points).
             curve.setDownsampling(auto=False)
             points = points_by_signal.get(signal_name)
             if not points:
@@ -315,8 +279,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         bounds = self.global_extent()
         if bounds is not None:
             self._seed_cursors(bounds)
-        # A successful result supersedes any error note a previous, now
-        # superseded viewport request left behind.
         if self.note.level == "error":
             self.note.clear_message()
         self.note.setVisible(not any(points_by_signal.values()))
@@ -325,8 +287,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_failed(self, _error: str, generation: int) -> None:
         if generation != self._history_generation:
             return
-        # Retain the last valid curves rather than blanking them: a failed
-        # background read must not look indistinguishable from "no data here".
         self.note.show_message(translate("graph.history_error"), "error")
         self.note.setVisible(True)
     def _history_worker_finished(self) -> None:
@@ -334,7 +294,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if worker is not None and not worker.isRunning():
             self._history_worker = None
     def _seed_cursors(self, bounds: tuple[float, float]) -> None:
-        """Seed unplaced cursors once; never re-pin a cursor the operator moved."""
         changed = False
         if self.cursor_a is None:
             self.cursor_a = bounds[0]
@@ -345,7 +304,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if changed:
             self._apply_cursor_lines()
     def place_cursor(self, which: str, position: float | None = None) -> None:
-        """Place a cursor, defaulting to the centre of the visible window."""
         if position is None:
             window = self.visible_window()
             if window is None:
@@ -390,19 +348,17 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self.cursor_summary.setText(translate("graph.cursor_summary_empty"))
             self.cursor_summary.setMinimumWidth(0)
             return
-        text = translate("graph.cursor_summary").format(
-            cursor_a=f"{self.cursor_a:.3f}s",
-            cursor_b=f"{self.cursor_b:.3f}s",
+        summary_format = translate("graph.cursor_summary")
+        text = summary_format.format(
+            cursor_a=f"{self.cursor_a:.3f}s", cursor_b=f"{self.cursor_b:.3f}s"
         )
         self.cursor_summary.setText(text)
-        self.cursor_summary.setMinimumWidth(
-            self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4
-        )
+        width = self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4
+        self.cursor_summary.setMinimumWidth(width)
     @property
     def cursor_range(self) -> tuple[float, float] | None:
-        if self.cursor_a is None or self.cursor_b is None:
-            return None
-        return min(self.cursor_a, self.cursor_b), max(self.cursor_a, self.cursor_b)
+        cursors = self.cursor_a, self.cursor_b
+        return None if None in cursors else tuple(sorted(cursors))
     def refresh_measurements(self) -> None:
         store = self._store
         if self._history is not None and self.cursor_a is not None and self.cursor_b is not None:
@@ -415,15 +371,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
                     exact_store.replace(signal_name, points)
             if any(exact_store.series(name) for name in self._plots):
                 store = exact_store
-        self.measurement.refresh(
-            store, tuple(self._plots), self.cursor_a, self.cursor_b
-        )
+        self.measurement.refresh(store, tuple(self._plots), self.cursor_a, self.cursor_b)
     def _mark_measurements_dirty(self) -> None:
-        """Ask for a recompute without performing one per request.
-        A live stream can call this every 20Hz graph-refresh tick, and a
-        cursor drag every pointer-move tick; either way, at most one
-        recompute happens per `MEASUREMENT_REFRESH_INTERVAL_MS`.
-        """
         self._measurement_dirty = True
         if not self._measurement_refresh_timer.isActive():
             self._measurement_refresh_timer.start()
@@ -434,10 +383,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._measurement_dirty = False
         self.refresh_measurements()
     def set_measurement_values_visible(self, visible: bool) -> None:
-        """Hide or restore the values/statistics table, never the cursor lines.
-        The A/B `InfiniteLine`s live on each plot and are untouched here: only
-        `MeasurementPanel`'s own presentation is toggled.
-        """
         self.measurement_visibility_button.blockSignals(True)
         self.measurement_visibility_button.setChecked(visible)
         self.measurement_visibility_button.blockSignals(False)

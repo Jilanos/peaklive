@@ -16,6 +16,8 @@ Two related defects in the historical viewport cache/generation bookkeeping:
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from peaklive.analysis import SeriesStore
@@ -88,7 +90,13 @@ def test_a_failed_viewport_read_shows_a_nonmodal_error_and_keeps_last_valid_data
 
     # The source becomes unavailable: a background reader must fail cleanly
     # rather than raise into the GUI thread or silently show nothing.
-    history.path.unlink()
+    # SQLite permits unlinking an open database on Unix but Windows correctly
+    # keeps the writer handle exclusive. Closing the owner models the source
+    # disappearing between viewport requests on both platforms.
+    path = history.path
+    history.close()
+    path.unlink()
+    panel._history = SimpleNamespace(path=path, bounds=lambda: (0.0, 99.0))
     panel.anchor_plot.getViewBox().setXRange(10, 89, padding=0)
     panel.refresh_data()
     qtbot.waitUntil(lambda: panel._history_worker is None, timeout=5_000)
