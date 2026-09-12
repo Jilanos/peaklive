@@ -235,14 +235,16 @@ solve this by retaining unlimited frames in RAM or reloading the whole UI.
 Until that preparation is available, a retained-tail preview must be labelled
 partial and must not masquerade as a full-history result. Live acquisition
 without a persisted source cannot promise reconstruction of discarded frames.
-The operator has been asked whether to accept full-file preparation latency;
-this scope choice is pending, not silently added to the implementation contract.
+The operator accepted full-file preparation latency with background progress
+and cancellation. Full-file reconstruction is now mandatory scope in request
+AC6, implemented by the scheduling/history lifecycle slice and qualified by
+the packaged-test slice. Stream the original file through the existing parser and DBC decoding path in bounded chunks, without replaying frames into acquisition/session counters or retaining the entire capture in RAM. Serialize reconstruction jobs, deduplicate signal requests and reuse completed revision-matched history. Coordinate SQLite writer ownership with ingestion; publish coverage atomically only after successful completion. Deselection, reload, DBC changes and shutdown retire stale jobs. Measure preparation separately from viewport latency; no full reconstruction promise for unrecorded live frames.
 
 | Decision or missing fact | Proposed handling | Blocking scope |
 | --- | --- | --- |
 | Exact build, three signal identities, DBC revision and viewport width | Before-load selection confirmed; build string supplied but transcription uncertain. Record locally and redact private identities. | Required for operator-specific executable qualification, not for reproduced unit-level fixes. |
 | Preserve extrema/transitions versus add oscillation-density rendering | Confirmed binary four-frame pulses after 50,000 quiet frames and 250 A to 180 A dips lasting 100 ms, plus earlier two-frame errors. Preserve run-boundary/extremum anchors; uniform stride is excluded. | No unresolved semantic choice for these cases; general threshold anomaly classification is out of scope. |
-| Signals selected after the file loads | Now a second confirmed operator scenario; screenshot count matches the 50,000-frame cache and source inspection finds no history publication. See the diagnosis above. | Full-file reconstruction versus explicitly partial preview is awaiting the operator's choice. |
+| Signals selected after the file loads | Now a second confirmed operator scenario; screenshot count matches the 50,000-frame cache and source inspection finds no history publication. See the diagnosis above. | Confirmed full-file background reconstruction with progress/cancellation; retained-tail preview is not completion. |
 | Digital/enum signals and gaps | Preserve true transitions and gaps within the budget; mark approximation when transitions exceed it. Never coerce enum evidence to fabricated numeric zero. | Confirm representative signal types before visual qualification. |
 | Index preparation and temporary disk allowance | Permit visible cancellable preparation; measure cost and footprint before fixing a production quota. Preserve last valid display and source on failure. | Needed for shipping resource guarantees, not the first coverage patch. |
 | Existing task 025 marked Done while its stronger guarantees are not implemented | Record corrective follow-up and new behavioral evidence. Do not rewrite old proof or consider a green CI equivalent to operator acceptance. | New task cannot close before packaged qualification. |
@@ -256,8 +258,7 @@ scheme change. Relevant code: `src/peaklive/ui/main_window.py` and
 Technical debt to address in this chain: incomplete summary publication; stale
 reset caches; double reduction; callback/cache generation races; weak query
 cancellation; GUI-bound bounds/measurement reads; no worker-failure presentation;
-and coverage-blind tests. Track full-file late-selection decoding separately
-unless the operator opts it into this correction.
+and coverage-blind tests. Full-file late-selection decoding is now included by explicit operator choice.
 
 ## Qualification and completion gates
 

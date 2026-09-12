@@ -10,7 +10,7 @@
     {
       "ai_context": {
         "keywords": "restore, dense, historical, curves, preserve, rare, diagnostic, signal, events",
-        "skip when": "Changing CAN transport or promising full-file late-selection decoding.",
+        "skip when": "Changing CAN transport or reconstructing unrecorded live frames.",
         "summary": "Correct dense-view disappearance and preserve discoverable rare diagnostic events.",
         "use when": "Scoping the operator-confirmed three-lane wheel-zoom regression and fidelity requirements."
       },
@@ -42,9 +42,10 @@
           "- AC3: Historical display uses a single explicit pixel/density-aware reduction policy, preserving source first/last, bucket extrema, chronological identity and gaps within its declared point budget. Exact overflow, empty, incomplete, loading and error remain distinct; one-point data is represented deliberately. No secondary automatic reduction may erase a prepared envelope.",
           "- AC4: One- and two-sample diagnostic pulses and rare discrete transitions remain discoverable with original timecodes at every overview level, including events that are not bucket extrema. If anchors collide or exceed the point budget, an explicit clustered marker reports their presence/count/range and supports exact drill-down. Mandatory cases include a four-frame assertion after 50000 quiet frames and a 250 A to 180 A dip lasting 100 ms; preserve entry/extremum/recovery timecodes without requiring an amplitude threshold. Generic anomaly classification is excluded; no uniform stride or averaged surrogate is accepted.",
           "- AC5: Navigation retains last valid data while waiting, uses at most one active and one replaceable pending request, rejects stale results including cache-hit A/B/A races, and performs no history scan on the GUI thread. Indexed query work scales with viewport budget rather than raw count; caches obey an explicit 64 MiB total limit. Proposed recorded-machine targets are warm viewport <=250 ms, cold indexed query <=1 s, heartbeat p95 lateness <=50 ms and maximum <=150 ms; index preparation is measured separately.",
-          "- AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence."
+          "- AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence. For a signal selected after file loading, reconstruct its complete history in cancellable background work with visible progress, preserving viewport, cursors and other lanes. Publish exact samples, complete summaries and event anchors under source/DBC/data revision checks, invalidate cached empty results, and never silently substitute the retained tail. Report source-unavailable/changed, cancelled, partial and failed states explicitly. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact."
         ],
         "Needs": [
+          "- Reconstruct complete file-backed history for signals added after loading; the operator accepts preparation latency with background progress and cancellation.",
           "- Keep all three previously selected historical curves visible when wheel zoom-out crosses approximately 650 s and when fitting the entire capture.",
           "- Preserve diagnostic peaks, rare variations and errors lasting only two 10 ms samples, with source timecodes for precise follow-up; uniform stride or averaging cannot be the rendering policy.",
           "- Apply the useful contracts of the local reference application within the existing Python/PySide6/pyqtgraph/SQLite architecture.",
@@ -186,7 +187,7 @@
     {
       "ai_context": {
         "keywords": "bound, viewport, scheduling, expose, truthful, loading, measurement, states",
-        "skip when": "Broadening transport or full-file decoding scope.",
+        "skip when": "Changing acquisition transport or recovering unrecorded live frames.",
         "summary": "Bound workers and caches while preserving current results and analytical truthfulness.",
         "use when": "Implementing cancellable latest-viewport requests, revision isolation and nonmodal states."
       },
@@ -212,7 +213,7 @@
         "Acceptance criteria": [
           "- AC1: Rapid reverse zoom and cache hits cannot install an empty or stale result over valid current data.",
           "- AC5: Queue, cancellation, revision and memory invariants hold over 1000 gestures; measured reference-machine latency/heartbeat targets hold with three and eight lanes.",
-          "- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries.",
+          "- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact.",
           "- AC8: Regressions exercise real in-flight workers, source resets and failure delivery rather than only finished-signal flags."
         ],
         "Problem": [
@@ -255,7 +256,7 @@
           "- AC3: Actual display output preserves coverage, point policy and explicit empty/incomplete distinctions.",
           "- AC4: Rare short-event discoverability and exact-timecode drill-down are demonstrated at all tested scales.",
           "- AC5: Attach independent row-work, cache, queue and GUI-heartbeat evidence including cold/warm/index preparation phases.",
-          "- AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified."
+          "- AC6: Analytical truthfulness, pending/error recovery and stable live behavior are verified. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact."
         ],
         "Problem": [
           "- Unit-level bounds and curve settings passed while the operator lost all three diagnostic curves after one wheel step."
@@ -396,11 +397,11 @@
     }
   ],
   "estimates": {
-    "char_count": 22767,
+    "char_count": 24949,
     "companion_doc_count": 0,
     "doc_count": 10
   },
-  "generated_at": "2026-09-12T14:35:52Z",
+  "generated_at": "2026-09-12T14:42:26Z",
   "handoff": {
     "companion_doc_count": 0,
     "enabled": false,

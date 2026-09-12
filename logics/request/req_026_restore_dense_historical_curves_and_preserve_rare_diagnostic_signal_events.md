@@ -7,15 +7,16 @@
 > Complexity: High
 > Theme: Dense overview coverage and rare-event discoverability
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-12 16:30:42
+> Indicators reviewed: 2026-09-12 16:42:23
 
 # AI Context
 - Summary: Correct dense-view disappearance and preserve discoverable rare diagnostic events.
 - Keywords: restore, dense, historical, curves, preserve, rare, diagnostic, signal, events
 - Use when: Scoping the operator-confirmed three-lane wheel-zoom regression and fidelity requirements.
-- Skip when: Changing CAN transport or promising full-file late-selection decoding.
+- Skip when: Changing CAN transport or reconstructing unrecorded live frames.
 
 # Needs
+- Reconstruct complete file-backed history for signals added after loading; the operator accepts preparation latency with background progress and cancellation.
 - Keep all three previously selected historical curves visible when wheel zoom-out crosses approximately 650 s and when fitting the entire capture.
 - Preserve diagnostic peaks, rare variations and errors lasting only two 10 ms samples, with source timecodes for precise follow-up; uniform stride or averaging cannot be the rendering policy.
 - Apply the useful contracts of the local reference application within the existing Python/PySide6/pyqtgraph/SQLite architecture.
@@ -35,7 +36,7 @@
 - AC3: Historical display uses a single explicit pixel/density-aware reduction policy, preserving source first/last, bucket extrema, chronological identity and gaps within its declared point budget. Exact overflow, empty, incomplete, loading and error remain distinct; one-point data is represented deliberately. No secondary automatic reduction may erase a prepared envelope.
 - AC4: One- and two-sample diagnostic pulses and rare discrete transitions remain discoverable with original timecodes at every overview level, including events that are not bucket extrema. If anchors collide or exceed the point budget, an explicit clustered marker reports their presence/count/range and supports exact drill-down. Mandatory cases include a four-frame assertion after 50000 quiet frames and a 250 A to 180 A dip lasting 100 ms; preserve entry/extremum/recovery timecodes without requiring an amplitude threshold. Generic anomaly classification is excluded; no uniform stride or averaged surrogate is accepted.
 - AC5: Navigation retains last valid data while waiting, uses at most one active and one replaceable pending request, rejects stale results including cache-hit A/B/A races, and performs no history scan on the GUI thread. Indexed query work scales with viewport budget rather than raw count; caches obey an explicit 64 MiB total limit. Proposed recorded-machine targets are warm viewport <=250 ms, cold indexed query <=1 s, heartbeat p95 lateness <=50 ms and maximum <=150 ms; index preparation is measured separately.
-- AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence.
+- AC6: Envelope/marker values never masquerade as exact analytical samples. Historical measurement overflow/missing coverage is explicit, unchanged or hidden A/B work is not reissued by pure viewport changes, and existing export coverage semantics remain unchanged. Loading/error state is nonmodal and clears correctly; investigate the reported busy cursor with evidence. For a signal selected after file loading, reconstruct its complete history in cancellable background work with visible progress, preserving viewport, cursors and other lanes. Publish exact samples, complete summaries and event anchors under source/DBC/data revision checks, invalidate cached empty results, and never silently substitute the retained tail. Report source-unavailable/changed, cancelled, partial and failed states explicitly. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact.
 - AC7: The normal application build label is read-only, selectable and copyable with mouse/keyboard; copied identifier matches build_info().identifier and the artifact's build identity. Existing layout, accessibility and version semantics are preserved.
 - AC8: Before closing, attach deterministic coverage/render/rare-event/lifecycle evidence, Linux and Windows CI results including packaging, and the identified Windows artifact's private-trace wheel-zoom reproduction. Unknown DBC/build or unavailable private qualification stays explicitly outstanding; green unit tests alone do not close the task.
 
