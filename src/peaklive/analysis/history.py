@@ -341,6 +341,13 @@ class HistoricalSignalStore:
             return None
         return float(row[0]), float(row[1])
 
+    def data_revision(self) -> tuple[int, int]:
+        """Return an immutable identity for the currently committed samples."""
+        row = self._connection.execute(
+            "SELECT COUNT(*), COALESCE(MAX(sample_id), 0) FROM samples"
+        ).fetchone()
+        return int(row[0]), int(row[1])
+
     def exact(
         self, signal: str, start: float, end: float, *, limit: int = 20_000
     ) -> tuple[tuple[float, Any], ...]:
@@ -491,6 +498,14 @@ class HistoricalSignalStore:
         self._connection.execute("DELETE FROM overview_cache")
         self._connection.execute("DELETE FROM events")
         self._connection.execute("DELETE FROM signal_run_state")
+        self._connection.commit()
+
+    def drop_signal(self, signal: str) -> None:
+        self._connection.execute("DELETE FROM samples WHERE signal = ?", (signal,))
+        self._connection.execute("DELETE FROM summary WHERE signal = ?", (signal,))
+        self._connection.execute("DELETE FROM overview_cache WHERE signal = ?", (signal,))
+        self._connection.execute("DELETE FROM events WHERE signal = ?", (signal,))
+        self._connection.execute("DELETE FROM signal_run_state WHERE signal = ?", (signal,))
         self._connection.commit()
 
     def close(self) -> None:

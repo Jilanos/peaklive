@@ -1,12 +1,4 @@
-"""Frame ingestion: the shared path from a worker batch to the workspace.
-
-Acquisition and replay both land here, and they land on the same terms: every
-frame reaches the bounded trace buffer, the bounded series store, the bounded
-frame cache, and the session facts. What differs is the repaint. Both queue
-every worker batch without dropping any of it, then coalesce only the trace
-and graph projection on a timer, so a saturated bus or a capture with a
-thousand batches in it still repaints on a timer rather than once per batch.
-"""
+"""Frame ingestion: shared acquisition/replay batches into workspace state."""
 
 from __future__ import annotations
 
@@ -39,25 +31,14 @@ from peaklive.i18n import translate
 from peaklive.services.signal_decode_worker import (
     DecodedSeries,
     SignalDecodeWorker,
+    SourceSignalDecodeWorker,
     decode_series,
 )
 from peaklive.ui.live_handoff import LiveFrameHandoff
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
-# Replay delivers every frame - the trace, the series, and the report all have
-# to see the whole capture - but the plots do not have to be redrawn once per
-# batch. Redrawing every curve from scratch is the most expensive step in the
-# ingest path, so replay marks the graphs dirty and one timer tick repaints
-# them, no matter how many batches landed in between.
 GRAPH_REFRESH_INTERVAL_MS = 50
 
-#: The most trace rows one coalesced flush will project.
-#:
-#: A replay can produce rows faster than any operator can read them, and the
-#: table is a bounded window on the newest records: a row that is superseded
-#: before it is drawn was never seen. Capping the flush keeps the cost of the
-#: display proportional to elapsed time rather than to capture size. The window
-#: is made authoritative again by one bounded refresh when ingestion settles.
 MAX_ROWS_PER_FLUSH = 256
 
 class WorkspaceIngest:
@@ -70,7 +51,8 @@ class WorkspaceIngest:
         self._history = HistoricalSignalStore()
         self._historical_view_ready = False
         self._facts = SessionFacts()
-        self._signal_decode_worker: SignalDecodeWorker | None = None
+        self._replay_source_path = None
+        self._signal_decode_worker: SignalDecodeWorker | SourceSignalDecodeWorker | None = None
         self._signal_decode_generation = 0
         self._signal_decode_queue: list[str] = []
         # A sustained conflict raises once per frame; the operator only needs
@@ -80,31 +62,26 @@ class WorkspaceIngest:
     # ---- on-demand signal decoding -------------------------------------
 
     def _request_signal_backfill(self, signal_name: str) -> None:
-        """Derive a newly selected signal from the session already loaded.
-
-        A signal that was selected during ingestion already has its samples, so
-        the common case costs one lookup. Everything else is queued: the
-        retained frames are the only source, and reopening the capture is
-        exactly what this exists to avoid.
-        """
         if signal_name == RAW_PREVIEW:
             return
         series = self._series.series(signal_name)
         if series is not None and len(series):
             return
-        if not len(self._frames):
+        if self._historical_view_ready:
+            bounds = self._history.signal_bounds(signal_name)
+            if bounds is not None:
+                samples = self._history.exact(signal_name, *bounds, limit=20_000)
+                if samples:
+                    self._series.replace(signal_name, samples)
+                    self._sync_graphs()
+                return
+        if not len(self._frames) and not self._replay_source_path:
             self._report_signal_unavailable(signal_name)
             return
         self._signal_decode_queue.append(signal_name)
         self._pump_signal_backfill()
 
     def _pump_signal_backfill(self) -> None:
-        """Start the next queued backfill, one at a time.
-
-        Serializing keeps the decodes off each other's backs and keeps the
-        answer deterministic: each one commits against the frames retained when
-        it started, not against a cache another decode is racing.
-        """
         if self._signal_decode_worker is not None:
             return
         while self._signal_decode_queue:
@@ -113,14 +90,25 @@ class WorkspaceIngest:
                 continue
             self._signal_decode_generation += 1
             generation = self._signal_decode_generation
-            worker = SignalDecodeWorker(
-                self._catalog,
-                self._frames.snapshot(),
-                signal_name,
-                self._frames.ingested,
-                truncated=self._frames.truncated,
-                generation=generation,
-            )
+            if self._historical_view_ready and self._replay_source_path is not None:
+                worker = SourceSignalDecodeWorker(
+                    self._catalog,
+                    self._replay_source_path,
+                    self._history.path,
+                    signal_name,
+                    generation,
+                )
+                worker.failed.connect(partial(self._signal_backfill_failed, generation))
+                worker.progressed.connect(partial(self._signal_backfill_progressed, generation))
+            else:
+                worker = SignalDecodeWorker(
+                    self._catalog,
+                    self._frames.snapshot(),
+                    signal_name,
+                    self._frames.ingested,
+                    truncated=self._frames.truncated,
+                    generation=generation,
+                )
             worker.completed.connect(partial(self._signal_backfill_completed, generation))
             worker.finished.connect(partial(self._signal_backfill_finished, generation))
             self._signal_decode_worker = worker
@@ -131,7 +119,6 @@ class WorkspaceIngest:
             return
 
     def _cancel_signal_backfill(self, signal_name: str | None = None) -> None:
-        """Abandon a backfill the operator has already moved on from."""
         self._signal_decode_queue = [
             queued for queued in self._signal_decode_queue if queued != signal_name
         ]
@@ -141,8 +128,6 @@ class WorkspaceIngest:
         if signal_name is not None and worker.signal_name != signal_name:
             return
         worker.request_cancel()
-        # Bumping the generation retires a worker that races past its own
-        # cancel check and completes anyway.
         self._signal_decode_generation += 1
 
     def _signal_backfill_completed(self, generation: int, decoded: DecodedSeries) -> None:
@@ -150,12 +135,12 @@ class WorkspaceIngest:
             return
         if decoded.signal_name not in self._selected_signal_names:
             return
-        # Frames that landed while the snapshot was decoding are decoded here,
-        # so the installed series is neither short of the newest samples nor
-        # holding any of them twice.
-        samples = decoded.samples + decode_series(
-            self._catalog, self._frames.frames_after(decoded.ingested), decoded.signal_name
-        )
+        if decoded.source_count is None:
+            samples = decoded.samples + decode_series(
+                self._catalog, self._frames.frames_after(decoded.ingested), decoded.signal_name
+            )
+        else:
+            samples = decoded.samples
         if not samples:
             self._report_signal_unavailable(decoded.signal_name)
             return
@@ -163,7 +148,7 @@ class WorkspaceIngest:
         self._sync_graphs()
         self.status.showMessage(
             translate("signals.derived").format(
-                signal=decoded.signal_name, count=len(samples)
+                signal=decoded.signal_name, count=decoded.source_count or len(samples)
             )
         )
         if decoded.truncated:
@@ -173,6 +158,24 @@ class WorkspaceIngest:
                 ),
                 "warning",
             )
+
+    def _signal_backfill_failed(
+        self, generation: int, message: str, worker_generation: int
+    ) -> None:
+        if generation != self._signal_decode_generation or worker_generation != generation:
+            return
+        self.session_note.show_message(
+            translate("signals.reconstruct_failed").format(message=message), "error"
+        )
+
+    def _signal_backfill_progressed(
+        self, generation: int, count: int, _total: int, worker_generation: int
+    ) -> None:
+        if generation != self._signal_decode_generation or worker_generation != generation:
+            return
+        self.status.showMessage(
+            translate("signals.reconstructing").format(count=count)
+        )
 
     def _signal_backfill_finished(self, generation: int) -> None:
         worker = self._signal_decode_worker

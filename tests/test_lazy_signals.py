@@ -130,18 +130,20 @@ def test_selecting_a_signal_with_no_retained_session_says_so_plainly(qtbot, tmp_
     assert SECOND in window.session_note.text()
 
 
-def test_a_backfill_is_bounded_by_the_retained_frames(qtbot, tmp_path):
+def test_a_late_selection_after_replay_is_reconstructed_from_the_full_source(qtbot, tmp_path):
     window = _workspace(qtbot, tmp_path)
-    window._frames = type(window._frames)(capacity=500)
+    window._frames = type(window._frames)(capacity=25)
     _load(window, _capture(tmp_path), qtbot, selected={FIRST})
 
     window._signal_shown_changed(SECOND, True)
     _await_backfill(window, qtbot)
 
-    assert len(window._frames) == 500
-    assert _samples(window, SECOND) <= 500
-    # The operator is told the session no longer holds the whole capture.
-    assert "no longer held" in window.session_note.text()
+    assert len(window._frames) == 25
+    assert _samples(window, SECOND) == CAPTURE.frames // CAPTURE.message_count
+    assert window._history.exact(SECOND, 0.0, 2.0, limit=CAPTURE.frames) == tuple(
+        window._series.series(SECOND).iter_samples()
+    )
+    assert "no longer held" not in window.session_note.text()
 
 
 def test_a_cancelled_backfill_installs_nothing(qtbot, tmp_path):

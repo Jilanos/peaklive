@@ -131,6 +131,8 @@
     "favorite_state": "Keep {signal} in the favorites filter — currently {state}",
     "deriving": "Deriving {signal} from the loaded session…",
     "derived": "{signal}: {count} sample(s) derived from the loaded session",
+    "reconstructing": "Reconstructing selected signal from source capture… {count} sample(s)",
+    "reconstruct_failed": "Source-backed signal reconstruction failed: {message}",
     "unavailable": "No retained sample for {signal} in the loaded session.",
     "truncated": "{signal} starts at the oldest retained frame: {dropped} earlier frame(s) are no longer held."
   },

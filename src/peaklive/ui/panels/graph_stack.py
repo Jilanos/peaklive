@@ -193,7 +193,14 @@ class GraphStackPanel(GraphNavigation, QWidget):
                 self._history, self.global_extent(), self._window_chosen, self.visible_window()
             )
             if extent is not None and visible is not None:
-                key = (str(self._history.path), tuple(self._curves), extent, visible)
+                revision = getattr(self._history, "data_revision", lambda: ("", ""))()
+                key = (
+                    str(self._history.path),
+                    revision,
+                    tuple(self._curves),
+                    extent,
+                    visible,
+                )
                 cached = self._history_result_cache.get(key)
                 self._history_generation += 1
                 generation = self._history_generation
@@ -244,6 +251,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
             return
         fallback_key = (
             str(self._history.path),
+            ("", ""),
             tuple(self._curves),
             self.global_extent(),
             self.visible_window(),
