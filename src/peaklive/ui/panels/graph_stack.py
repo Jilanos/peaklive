@@ -276,11 +276,17 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self.visible_window(),
         )
         key = self._history_request_keys.pop(generation, fallback_key)
+        # A cache hit re-delivers an already-counted entry through this same
+        # path (see refresh_data()); only a genuinely new key should grow the
+        # point budget, or repeatedly revisiting one viewport inflates the
+        # counter without bound and starts evicting other still-valid entries.
+        is_new_entry = key not in self._history_result_cache
         self._history_result_cache[key] = points_by_signal
         self._history_result_cache.move_to_end(key)
-        self._history_result_cache_points += sum(
-            len(points or ()) for points in points_by_signal.values()
-        )
+        if is_new_entry:
+            self._history_result_cache_points += sum(
+                len(points or ()) for points in points_by_signal.values()
+            )
         while self._history_result_cache_points > self._history_result_cache_limit:
             _, removed = self._history_result_cache.popitem(last=False)
             self._history_result_cache_points -= sum(
