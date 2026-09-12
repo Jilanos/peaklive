@@ -28,7 +28,9 @@ function Invoke-NativeStep {
 function Invoke-PyInstaller {
     param(
         [Parameter(Mandatory = $true)]
-        [int] $TimeoutSeconds
+        [int] $TimeoutSeconds,
+        [Parameter(Mandatory = $true)]
+        [string] $WorkPath
     )
 
     # PyInstaller's default logging hides its progress. Keep the CI log useful
@@ -36,15 +38,14 @@ function Invoke-PyInstaller {
     # bound the process so a stuck runner cannot consume its whole job slot.
     $arguments = @(
         "run", "python", "-m", "PyInstaller", "--noconfirm", "--clean",
-        "--log-level", "INFO", "peaklive.spec"
+        "--log-level", "INFO", "--workpath", $WorkPath, "peaklive.spec"
     )
-    $process = Start-Process -FilePath "uv" -ArgumentList $arguments -NoNewWindow -PassThru
-    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-        $process.Kill($true)
-        throw "pyinstaller exceeded its $TimeoutSeconds-second limit and was terminated"
-    }
-    if ($process.ExitCode -ne 0) {
-        throw "pyinstaller failed with exit code $($process.ExitCode)"
+    # `uv` replaces its shim process on Windows, so Start-Process cannot
+    # reliably report its child exit code. Invoke it directly to preserve the
+    # native `$LASTEXITCODE` contract.
+    & uv @arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "pyinstaller failed with exit code $LASTEXITCODE"
     }
 }
 
@@ -70,7 +71,10 @@ if (-not $SkipValidation) {
     Invoke-NativeStep "ruff" { uv run ruff check . }
     Invoke-NativeStep "pytest" { uv run python -m pytest }
 }
-Invoke-PyInstaller -TimeoutSeconds 900
+# Keep PyInstaller's disposable work tree outside a synced checkout. Windows
+# can retain a transient handle beneath the default `build/` directory after a
+# prior run, which makes `--clean` fail before packaging begins.
+Invoke-PyInstaller -TimeoutSeconds 900 -WorkPath (Join-Path $env:TEMP "peaklive-pyinstaller-$PID")
 
 $identifier = (uv run python -m peaklive.version).Trim()
 $exePath = Join-Path $PWD "dist/PeakLive.exe"

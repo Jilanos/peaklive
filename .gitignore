@@ -24,6 +24,7 @@ captures/
 test-data-private/
 *.partial
 *.peaklive-events.jsonl
+artifacts/windows-qualification/
 
 # Editors and operating systems
 .idea/

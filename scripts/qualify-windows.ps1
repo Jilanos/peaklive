@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$ExecutablePath = (Join-Path $PSScriptRoot '..\..\PeakLive.exe'),
-    [string]$BuildMetadataPath = (Join-Path $PSScriptRoot '..\..\PeakLive.build.txt'),
-    [string]$ArtifactRoot = (Join-Path $PSScriptRoot '..\artifacts\windows-qualification'),
+    [string]$ExecutablePath,
+    [string]$BuildMetadataPath,
+    [string]$ArtifactRoot,
     [ValidateSet('automated','all','hardware','ui','fixtures')]
     [string]$Lane = 'automated',
     [int]$StartupTimeoutSeconds = 20,
@@ -11,6 +11,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+if ([string]::IsNullOrWhiteSpace($ExecutablePath)) { $ExecutablePath = Join-Path $repoRoot '..\PeakLive.exe' }
+if ([string]::IsNullOrWhiteSpace($BuildMetadataPath)) { $BuildMetadataPath = Join-Path $repoRoot '..\PeakLive.build.txt' }
+if ([string]::IsNullOrWhiteSpace($ArtifactRoot)) { $ArtifactRoot = Join-Path $repoRoot 'artifacts\windows-qualification' }
 $runId = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
 $artifactFull = [IO.Path]::GetFullPath($ArtifactRoot)
 New-Item -ItemType Directory -Force -Path $artifactFull | Out-Null

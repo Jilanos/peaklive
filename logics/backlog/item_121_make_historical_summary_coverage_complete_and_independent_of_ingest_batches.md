@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 48%
+> Progress: 52%
 > Complexity: High
 > Theme: Authoritative historical data and revision ownership
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
