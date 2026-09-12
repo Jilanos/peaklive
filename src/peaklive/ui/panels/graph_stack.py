@@ -45,6 +45,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._viewport_refresh_timer.timeout.connect(self.refresh_data)
         self._history_worker: HistoryViewportWorker | None = None
         self._history_generation = 0
+        self._history_request_keys: dict[int, tuple] = {}
         self._history_result_cache: OrderedDict[tuple, dict] = OrderedDict()
         self._history_result_cache_points = 0
         self._history_result_cache_limit = 64_000
@@ -187,6 +188,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self._history_generation += 1
         self._history_result_cache.clear()
         self._history_result_cache_points = 0
+        self._history_request_keys.clear()
         worker = self._history_worker
         if worker is not None and worker.isRunning():
             worker.request_cancel()
@@ -204,15 +206,25 @@ class GraphStackPanel(GraphNavigation, QWidget):
             if extent is not None and visible is not None:
                 key = (str(self._history.path), tuple(self._curves), extent, visible)
                 cached = self._history_result_cache.get(key)
-                if cached is not None:
-                    self._history_result_cache.move_to_end(key)
-                    self._historical_refresh_completed(cached, self._history_generation)
-                    return
+                # A cache hit must obsolete any in-flight request just like a
+                # fresh query does: without bumping the generation here too,
+                # an older worker still resolving a stale viewport can arrive
+                # later, pass the generation check (never invalidated) and
+                # overwrite this cache hit with data for a viewport the
+                # operator already navigated away from (the A/B/A race).
                 self._history_generation += 1
                 generation = self._history_generation
                 old = self._history_worker
                 if old is not None and old.isRunning():
                     old.request_cancel()
+                # Only the latest generation's key can still be pending;
+                # replacing rather than accumulating keeps this bounded
+                # across an unbounded number of navigation gestures.
+                self._history_request_keys = {generation: key}
+                if cached is not None:
+                    self._history_result_cache.move_to_end(key)
+                    self._historical_refresh_completed(cached, generation)
+                    return
                 worker = HistoryViewportWorker(
                     self._history.path, tuple(self._curves), extent, visible, generation
                 )
@@ -251,10 +263,18 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
         if generation != self._history_generation or self._history is None:
             return
-        key = (
-            str(self._history.path), tuple(self._curves),
-            self.global_extent(), self.visible_window()
+        # Cache under the key this result was actually requested for, not
+        # whatever the UI happens to show now: the operator may have kept
+        # navigating while this result was in flight, and rebuilding the key
+        # from current state would file this payload under the wrong
+        # viewport, poisoning a later legitimate cache hit for it.
+        fallback_key = (
+            str(self._history.path),
+            tuple(self._curves),
+            self.global_extent(),
+            self.visible_window(),
         )
+        key = self._history_request_keys.pop(generation, fallback_key)
         self._history_result_cache[key] = points_by_signal
         self._history_result_cache.move_to_end(key)
         self._history_result_cache_points += sum(
