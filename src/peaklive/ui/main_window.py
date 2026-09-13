@@ -193,7 +193,7 @@ class MainWindow(
             self.workspace.addWidget(panel)
         self.workspace.setStretchFactor(1, 1)
         self.workspace.setSizes([320, 720, 280])
-        self.workspace.splitterMoved.connect(lambda *_: self._persist_layout())
+        self.workspace.splitterMoved.connect(lambda *_: self._splitter_dragged())
         root_layout.addWidget(self.workspace, 1)
         self.setCentralWidget(root)
 

@@ -8,7 +8,12 @@ shell so it can be reasoned about — and tested — on its own.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from peaklive.ui.widgets import RAIL_WIDTH
+
+if TYPE_CHECKING:
+    from peaklive.ui.widgets import CollapsiblePanel
 
 #: A side panel narrower than this cannot show a signal name or a field label,
 #: so it is the floor an expanded panel is restored to.
@@ -73,17 +78,45 @@ def reflow_widths(
 class WorkspaceReflow:
     """Collapse handling for the shell: reclaim, restore, and remember."""
 
-    def _remember_panel_widths(self) -> None:
-        """Record the widths the splitter currently shows.
+    def _remember_panel_widths(self, *, only: CollapsiblePanel | None = None) -> None:
+        """Record the widths the splitter currently shows as the operator's preference.
 
-        The collapse signal arrives before the splitter has reflowed, so the
-        panel being collapsed is still at its full width here — which is
-        exactly the width the operator expects back on expand. A rail-sized
-        column is never worth remembering.
+        Call this only where the current sizes reflect an explicit operator
+        choice: right before a collapse/expand reflow runs (the collapse
+        signal arrives before the splitter has reflowed, so the panel being
+        collapsed is still at its full width here — exactly the width the
+        operator expects back on expand) or after a real splitter drag. Never
+        call it after `_reflow_workspace` has run, or the automatic
+        redistribution it computed would be captured as if the operator had
+        chosen it. A rail-sized column is never worth remembering.
+
+        `only`, when given, limits the capture to that one panel. A sibling
+        panel's *current* width can itself be leftover automatic allocation
+        from an earlier reflow (for example the one panel left open when its
+        neighbours were collapsed, which absorbed all of their released
+        space) — recording it here would launder that allocation into a
+        preference the operator never chose. A real drag legitimately moves
+        every column at once, so `_splitter_dragged` passes no `only`.
         """
-        for panel, size in zip(self._layout_panels, self.workspace.sizes(), strict=False):
+        panels = (only,) if only is not None else self._layout_panels
+        sizes = self.workspace.sizes()
+        for panel in panels:
+            index = self._layout_panels.index(panel)
+            size = sizes[index]
             if size > RAIL_WIDTH:
                 self._expanded_widths[panel.key] = int(size)
+
+    def _splitter_dragged(self) -> None:
+        """Handle an explicit operator drag of a splitter handle.
+
+        Unlike collapse/expand, a drag does not go through `_reflow_workspace`,
+        so the sizes it just produced are exactly the operator's new
+        preference and are safe to remember before persisting.
+        """
+        if self._restoring:
+            return
+        self._remember_panel_widths()
+        self._persist_layout()
 
     def _reflow_workspace(self) -> None:
         """Apply the collapsed/expanded width split to the workspace splitter."""
@@ -107,6 +140,9 @@ class WorkspaceReflow:
         # all restored state is installed.
         if self._restoring:
             return
-        self._remember_panel_widths()
+        # Only the panel whose own collapse state just changed had a width
+        # the operator was actually looking at; a sibling's current width can
+        # be leftover automatic allocation from an earlier reflow.
+        self._remember_panel_widths(only=self.sender())
         self._reflow_workspace()
         self._persist_layout()

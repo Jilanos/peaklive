@@ -154,9 +154,18 @@ class WorkspaceProfiles:
         self._save_debouncer.flush()
 
     def _persist_layout(self) -> None:
+        """Write the workspace's current geometry to the active profile.
+
+        This only serializes state; it must never call `_remember_panel_widths`
+        itself, because callers run it both right after an explicit operator
+        change (a drag, a collapse/expand) and after purely automatic reflow
+        (e.g. a sibling panel's collapse redistributing width) — capturing
+        widths here would promote that automatic redistribution to the
+        operator's preferred layout. Callers that hold a genuine preference
+        change must call `_remember_panel_widths` themselves beforehand.
+        """
         if self._restoring:
             return
-        self._remember_panel_widths()
         layout = self.selected_profile.layout
         layout.splitter_sizes = list(self.workspace.sizes())
         layout.divider_sizes = list(self.center_divider.sizes())

@@ -1,14 +1,14 @@
 ## item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row - Place A B and temporal delta readouts in the shared graph command row
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: High
 > Theme: Compact cursor timing
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-13 15:32:01
+> Indicators reviewed: 2026-09-13 15:34:34
 
 # AI Context
 - Summary: Move synchronized A/B and signed B-minus-A times beside graph commands with complete values and a same-row overflow policy.

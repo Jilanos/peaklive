@@ -1,14 +1,14 @@
 ## item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion - Restore operator splitter geometry across panel collapse and expansion
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: High
 > Theme: Panel geometry state
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-13 15:32:00
+> Indicators reviewed: 2026-09-13 15:34:34
 
 # AI Context
 - Summary: Separate operator geometry from automatic Qt allocations so center and side-panel round trips do not drift.
