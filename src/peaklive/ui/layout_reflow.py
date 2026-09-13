@@ -107,9 +107,39 @@ def reflow_widths(
         widths[index] = max(minimums[index], remembered[index] or DEFAULT_SIDE_WIDTH)
     requested = sum(widths[index] for index in sides)
     if available - requested < minimums[center] and sides:
-        room = max(available - minimums[center], 0)
-        for index in sides:
-            widths[index] = widths[index] * room // requested
+        # The centre needs more than a plain proportional shrink of the
+        # sides would leave it. Every side keeps its own live floor first -
+        # scaling a side down by a flat ratio, the way a single `widths[i] *
+        # room // requested` pass would, has no notion of that floor and can
+        # push a side below what Qt itself will actually allow, which is
+        # what let a side panel land narrower than its own minimum content
+        # after a reflow. Only the room *beyond* every side's floor is up
+        # for proportional sharing, weighted by how much each side still
+        # wants past its own floor.
+        room_for_sides = max(available - minimums[center], 0)
+        floor_total = sum(minimums[index] for index in sides)
+        if room_for_sides <= floor_total:
+            for index in sides:
+                widths[index] = minimums[index]
+        else:
+            extra = room_for_sides - floor_total
+            wants = {index: widths[index] - minimums[index] for index in sides}
+            total_want = sum(wants.values())
+            if total_want <= 0:
+                for index in sides:
+                    widths[index] = minimums[index]
+            else:
+                given = 0
+                for index in sides:
+                    share = extra * wants[index] // total_want
+                    widths[index] = minimums[index] + share
+                    given += share
+                # Floor division can leave a few pixels of `extra`
+                # unassigned; handing them to the last side (rather than
+                # letting them silently inflate the centre instead) is what
+                # keeps every side's round trip within a couple of pixels of
+                # what it was actually assigned, not just the total.
+                widths[sides[-1]] += extra - given
     widths[center] = available - sum(widths[index] for index in sides)
     return widths
 

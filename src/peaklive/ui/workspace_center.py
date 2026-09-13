@@ -90,6 +90,16 @@ class WorkspaceCenter:
         # method, so its own GraphControlsBar row is unaffected.
         controls.setVisible(False)
         self.workspace_header.refresh_overflow()
+        # A longer/shorter formatted cursor value changes cursor_summary's
+        # own required minimum width (see `_refresh_cursor_summary`), which
+        # changes the centre panel's real minimum too - but nothing resizes
+        # the splitter just because a child asked for more room later, so
+        # without this the header would only ever get to fold controls
+        # into overflow, never actually reclaim the wider column its new
+        # required content needs. Reflowing first, before folding, is what
+        # lets `_available_width()` see the column's corrected size instead
+        # of judging against a stale, now-too-small one.
+        self.graph_panel.cursors_changed.connect(self._reflow_workspace)
         self.graph_panel.cursors_changed.connect(self.workspace_header.refresh_overflow)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")
