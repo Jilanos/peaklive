@@ -1,0 +1,254 @@
+{
+  "title": "Make long trace loading responsive ordered and failure explicit",
+  "references": [
+    "docs/audit-2026-09-13-trace-loading.md",
+    "logics/request/req_028_incremental_review_findings_trace_loading_and_historical_storage.md",
+    "logics/analysis/trace_load_followup_probe.py",
+    "src/peaklive/analysis/history.py",
+    "src/peaklive/analysis/profiling.py",
+    "src/peaklive/analysis/replay.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/services/signal_decode_worker.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "scripts/audit_trace_performance.py",
+    "tests/test_trace_performance.py",
+    "tests/test_replay_integrity.py",
+    "tests/test_lazy_signals.py",
+    "logics/tasks/task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability.md",
+    "logics/tasks/task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Measured long trace loading and historical ingestion",
+    "needs": [
+      "Load typical and fifty-minute captures without freezing the workspace, losing record order, disguising failed preparation or sacrificing complete historical evidence.",
+      "Expose reliable progress and cancellation throughout parsing, historical preparation and display finalization, accepting longer total loading for longer captures.",
+      "Attribute the complete loading cost and remove synchronous historical persistence from GUI ingestion.",
+      "Coordinate existing historical reconstruction and viewport work through explicit writer ownership and revision contracts."
+    ],
+    "context": [
+      "Corrective scope authorized after the incremental review; audit evidence is captured separately in the referenced review request and report. This corpus prepares implementation and does not implement runtime changes.",
+      "Reviewed application baseline cc75668 follows independent review a4a4bbf by 93 commits. Synthetic 200k-frame loading with sixteen signals spends 12.565s in synchronous history writes, omitted by the current stage profiler; initial diagnostic load time is 21.981s and slowest event pass 487ms.",
+      "Reproductions prove source event/frame reordering, 10000 unacknowledged valid events escaping the queue bound, and SQLite write exceptions escaping a partially mutated GUI ingestion batch.",
+      "Operator-provided local capture census: 195753923 bytes, 1755746 frames over 944.788905 seconds, 40 distinct frame identities and mean 1858.347 frames/s. Events: 991 bus statuses, 23 error frames and one parser anomaly. Only aggregate statistics are versioned; no private path, identifier values, DBC or payload data.",
+      "Operator accepts longer preparation for captures up to fifty minutes at comparable density. This implies approximately 5575042 frames and 621579875 source bytes, not a promise of linear runtime or storage. Existing synthetic 1kHz fixtures remain useful microbenchmarks but do not represent this full workload.",
+      "Default selected-signal matrix is 1/8/16 until the operator refines it. Keep the existing 250ms interaction target; do not invent a hard total-load SLA. Report elapsed time, throughput and clearly distinguished first-data versus fully-ready milestones.",
+      "Existing historical scheduling and late reconstruction scope is owned by the referenced active historical backlog/task. It includes cancellation inside SQL, coverage publication, source/DBC/session identity and bounded caches. Coordinate these interfaces instead of creating a duplicate navigation implementation.",
+      "Native Windows hardware/storage, total-load expectations and temporary-disk policy remain open qualification choices. They do not block synthetic implementation. Use explicit incomplete/error states and preserve the original source as the conservative recovery contract.",
+      "Baseline Linux/offscreen full suite passes 626 tests; existing green tests do not cover the demonstrated failures. Windows layout quarantine remains owned by the existing workspace task."
+    ],
+    "acceptance_criteria": [
+      "AC1: A reproducible harness covers ASC/TRC and 0/1/8/16 selected signals, measures history append/summary/commit, queue wait, GUI projection, first useful data and fully-ready milestones, verifies exact accepted source counts and terminal success, and exits nonzero on timeout, partial load, failure or selected budget overrun.",
+      "AC2: Frames and valid bus events retain source order and exact authoritative counts through one bounded acknowledged replay transport. Event-only captures, bursts of at least 10000 events, mixed record boundaries, EOF, cancellation and replacement cannot bypass bounds or complete before all accepted records settle.",
+      "AC3: Read-only, locked, full and failed history persistence plus worker exceptions cause one explicit failed/incomplete terminal state. No GUI slot exception escapes, source files remain intact, owned queue permits are retired exactly once, retries cannot double-count records and reopening a valid capture succeeds.",
+      "AC4: Raw historical samples, seven-level or equivalently faithful summaries and rare-event anchors are prepared off the GUI thread under a documented single-writer bounded-queue contract. On the declared reference workload the existing 250ms responsiveness objective holds during ingest/finalization/cancel; no higher timeouts, missing history, unbounded queues or disabled integrity checks substitute for that objective.",
+      "AC5: Historical preparation has explicit temporary-disk accounting, admission/low-space policy, bounded batches and cleanup ownership. Reset, deselection, source or DBC changes, late reconstruction, cancellation and shutdown cannot mix revisions or delete another session's data. Configured resource-limit failures are explicit and tested.",
+      "AC6: Current full-history values, timestamps, source order, rare-event anchors and CAN/signal identity remain correct against source-derived oracles; live recording, replay, exports, historical navigation and retained buffers pass relevant regression checks. Existing historical and workspace tasks retain their own unfinished acceptance responsibilities.",
+      "AC7: Qualification includes measured typical-density synthetic captures around 1.756M frames and fifty-minute captures around 5.575M frames at 1858 frames/s, with 1/8/16 selected signals and event-heavy companions. Record machine, build, throughput, first-data/ready latency, memory/disk peaks and cancellation response. Long loading itself is acceptable; unresponsive or misleading loading is not. Native Windows evidence is required before claiming target-platform completion."
+    ]
+  },
+  "product": {
+    "title": "PeakLive responsive and trustworthy long trace preparation",
+    "overview": "Make opening typical and fifty-minute captures a responsive, measurable and cancellable preparation process whose completion guarantees ordered and complete measurement evidence.",
+    "goals": [
+      "Keep the workspace usable and preparation state truthful regardless of source duration.",
+      "Preserve frames, bus events, selected-signal provenance and historical fidelity.",
+      "Expose costs and resource limits so loading performance can be improved and qualified."
+    ],
+    "non_goals": [
+      "Immediate loading of fifty-minute captures or an arbitrary fixed wall-clock SLA.",
+      "A Qt rewrite, alternate database migration, parallel-agent execution, dependency overhaul or unrelated visual redesign.",
+      "Reimplementing navigation/reconstruction acceptance already owned by the active historical task.",
+      "Publishing private capture filenames, payloads or DBC identities."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Measure and gate the complete trace preparation lifecycle",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Trace loading evidence",
+      "request_acs": [
+        "AC1",
+        "AC7"
+      ],
+      "problem": [
+        "The profiler excludes the new dominant history write cost and the script can report success after timeout or budget overruns.",
+        "The old one-signal small fixture does not qualify the operator's long dense captures."
+      ],
+      "scope_in": [
+        "Priority rationale: establish valid failure and performance evidence before changing the loading architecture.",
+        "Instrument history append, summary/event maintenance, transaction commit, queue wait, GUI projection, first-data and final-ready separately. State overlapping-thread timing semantics and measure bounded overhead with profiling disabled.",
+        "Make the command fail for timeout, unsuccessful/partial replay, count mismatch and enabled budget violations; keep strict product thresholds distinct from environment-specific diagnostics.",
+        "Add configurable synthetic density/duration and ASC/TRC/event-heavy fixtures; ordinary CI uses bounded small cases and a scheduled/manual qualification tier uses typical and fifty-minute profiles.",
+        "Capture machine/build/configuration and raw structured metrics; do not commit generated captures or private source details."
+      ],
+      "scope_out": [
+        "Changing runtime ingestion ownership in this measurement slice.",
+        "Treating Linux offscreen or widened CI tolerance as Windows qualification."
+      ],
+      "acceptance_criteria": [
+        "AC1: Harness regressions prove nonzero exit for timeout, cancellation/failure, frame/event mismatch and forced stage or readiness overrun.",
+        "AC2: Structured results distinguish history preparation from GUI work and first-data from final-ready; 0/1/8/16 signals actually exercise their expected historical sample counts.",
+        "AC3: Synthetic density is configurable to the measured 1858 frames/s and the report identifies whether 1.756M/5.575M qualification cases were run or deferred."
+      ]
+    },
+    {
+      "title": "Deliver ordered bounded replay batches for frames and bus events",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Replay transport integrity",
+      "request_acs": [
+        "AC2",
+        "AC6"
+      ],
+      "problem": [
+        "Valid bus events bypass the four-batch semaphore and overtake earlier frames buffered in ReplayWorker."
+      ],
+      "scope_in": [
+        "Priority rationale: event floods can freeze loading and event reordering changes measurement evidence.",
+        "Use one ordered batch representation for normalized frame and bus-event records with explicit queue ownership, size and acknowledgement invariants.",
+        "Adapt GUI projection and session facts to consume ordered records without one unbounded Qt event per source event.",
+        "Keep malformed-record aggregation bounded and distinct from authoritative valid event counts.",
+        "Cover Stop, replacement, queued terminal signals and EOF after an event-only or mixed final batch."
+      ],
+      "scope_out": [
+        "Changing CAN parsing semantics, inventing event timestamps or dropping valid events to meet a bound.",
+        "Live adapter event policy redesign unless shared integration requires a compatible interface."
+      ],
+      "acceptance_criteria": [
+        "AC1: Source frame(0.000), event(0.001), frame(0.002) is observed in the same order by trace and facts consumers.",
+        "AC2: A blocked GUI cannot cause 10000 valid events to bypass transport capacity; event-only and mixed loads retain exact counts after drain.",
+        "AC3: Completion requires settlement of every accepted record; cancel/replacement release only owned permits and cannot install stale records.",
+        "AC4: Existing ASC/TRC replay, CAN identity and progress integrity tests remain green."
+      ]
+    },
+    {
+      "title": "Contain historical persistence failures and settle ingestion ownership",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Recoverable trace preparation",
+      "request_acs": [
+        "AC3",
+        "AC5",
+        "AC6"
+      ],
+      "problem": [
+        "A SQLite exception currently occurs after trace/facts/frame mutations and before batch acknowledgement, escaping the GUI slot."
+      ],
+      "scope_in": [
+        "Priority rationale: explicit failure and permit ownership must exist before moving historical writes between threads.",
+        "Define batch accepted/projected/persisted states and terminal failure ownership shared by ordered replay and historical persistence.",
+        "Handle database write/commit and worker failures once, stop further source consumption, retain actionable nonmodal failure and mark analytical coverage incomplete.",
+        "Test read-only, busy/locked, bounded disk-full injection, append/commit exception and retry; use owned temporary paths only.",
+        "Preserve source captures and already-valid independent exports; ensure clearing or reopening releases resources without double-counting partial batches.",
+        "Coordinate failure and cleanup semantics with the active historical reconstruction backlog instead of duplicating its worker lifecycle implementation."
+      ],
+      "scope_out": [
+        "Automatic destructive source repair or silently substituting retained-tail history.",
+        "A comprehensive live transport redesign."
+      ],
+      "acceptance_criteria": [
+        "AC1: The query_only reproduction no longer escapes a Qt slot, leaks a permit, blocks the drain indefinitely or reports complete analysis.",
+        "AC2: Locked/full/write/commit/worker failure cases emit one terminal cause, retire ownership exactly once, preserve source bytes and permit a subsequent successful open.",
+        "AC3: A failure after partial preparation cannot be retried into duplicate session facts or reused as complete historical coverage.",
+        "AC4: Cancellation and failure clean only artifacts owned by their session/revision and do not remove a new session's samples."
+      ]
+    },
+    {
+      "title": "Move and batch historical trace ingestion behind bounded writer ownership",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Historical loading performance",
+      "request_acs": [
+        "AC4",
+        "AC5",
+        "AC6"
+      ],
+      "problem": [
+        "The GUI constructs and commits historical samples, seven summary levels and run events every 256 frames.",
+        "The measured sixteen-signal history reaches about 39 times the synthetic source bytes; no explicit disk admission policy exists."
+      ],
+      "scope_in": [
+        "Priority rationale: history construction is the measured dominant selected-signal loading cost and blocks the interaction path.",
+        "Declare a single SQLite writer owner with bounded record/sample/byte queues, explicit backpressure and transactional revision publication; move SQL and CPU-heavy history preparation off the GUI path.",
+        "Measure grouped summary construction, numeric extrema handling and transaction sizing before choosing optimizations; retain complete original sample/summary/anchor semantics.",
+        "Use separate first-data and ready milestones so staged preparation remains truthful; cancellation must be checked within bounded work chunks.",
+        "Integrate the existing late-selection writer and session/reset lifecycle through one agreed ownership contract; stale generations cannot write to or clean a new session.",
+        "Add configurable temporary-disk limit and free-space margin with explicit resource exhaustion; select documented defaults after workload estimation rather than allocating proportional memory.",
+        "Protect live acquisition/recording from new SQLite waits because ingestion helpers are shared; test it against a saturated synthetic adapter."
+      ],
+      "scope_out": [
+        "Replacing SQLite, weakening durability to claim speed, reducing raw history or suppressing rare events.",
+        "Implementing the existing navigation scheduler, cache byte-budget or clustered-event UI in this slice."
+      ],
+      "acceptance_criteria": [
+        "AC1: Instrumented GUI ingestion performs no historical SQL or full-history summary construction; writer concurrency, queue count/bytes and chunk sizes have deterministic asserted limits.",
+        "AC2: Selected-signal sample counts, exact values/timestamps and summary/event fidelity match a source oracle across batch sizes, including one-frame final batches.",
+        "AC3: Resource-limit, reset, cancellation, late selection and shutdown tests prove writer cleanup and revision isolation without stale mutation.",
+        "AC4: Reference-machine loading stays within the retained 250ms interaction objective and reports first-data/ready time, with a measured reduction of the identified GUI history work.",
+        "AC5: Live recording and bounded replay continue to preserve authoritative counts without new GUI-thread disk waits."
+      ]
+    },
+    {
+      "title": "Qualify typical and fifty minute trace loading with existing historical work",
+      "priority": "Medium",
+      "complexity": "High",
+      "theme": "Integrated long capture qualification",
+      "request_acs": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC4",
+        "AC5",
+        "AC6",
+        "AC7"
+      ],
+      "problem": [
+        "Small offscreen tests and historic Windows evidence cannot qualify the current selected-signal pipeline at operator density."
+      ],
+      "scope_in": [
+        "Priority rationale: qualification follows High-priority correctness and loading fixes and gates final claims.",
+        "Run the new matrix at 20k/200k frames in routine validation and approximately 1.756M/5.575M frames at measured density in an explicit resource-budgeted qualification job.",
+        "Qualify 1/8/16 signals, mixed bus events, late selection, repeated open/cancel, resource failure and one representative source-derived raw oracle; private evidence stays local.",
+        "Integrate existing historical scheduler/reconstruction and rare-event obligations through their current owner; list unmet prerequisites rather than rewriting their statuses.",
+        "Record identifiable native Windows build, hardware/storage, memory/disk peaks, first-data/ready times and heartbeat/cancel latency; retain explicit unavailable status if platform access is missing.",
+        "Run focused tests plus full Linux/Windows suites, Ruff, i18n validation when copy changes, and required Logics validation before closeout.",
+        "Track existing workspace quarantine and native DPI acceptance separately; do not claim those resolved by a loading benchmark."
+      ],
+      "scope_out": [
+        "Closing unrelated tasks or waiving their remaining criteria.",
+        "Requiring an operator-private fixture to start development."
+      ],
+      "acceptance_criteria": [
+        "AC1: The complete lifecycle harness records each preparation stage and first-data/ready milestones; timeout, partial load and enabled budget failures have nonzero verdicts.",
+        "AC2: Typical-density and event-heavy qualification preserves ordered frame/event counts with bounded queues through EOF, cancel and replacement.",
+        "AC3: Storage and worker fault qualification demonstrates one explicit incomplete outcome, exact ownership retirement and successful reopen without source mutation.",
+        "AC4: Identified reference-machine evidence demonstrates the existing 250ms interaction target during loading, finalization and cancellation without relaxing product bounds.",
+        "AC5: Temporary-disk, memory and queue peaks plus configured admission limits are recorded; reset, late-selection and shutdown preserve session/revision isolation.",
+        "AC6: Source-oracle, live/export and historical regression evidence remains traceable; existing navigation/rare-event/workspace obligations are not duplicated or silently waived.",
+        "AC7: Approximately 1.756M/5.575M-frame workloads at 1858 frames/s and 1/8/16 signals have identifiable native Windows evidence; unrun configurations explicitly block final qualification."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver responsive ordered and measurable long trace loading",
+    "plan": [
+      "Read the incremental audit and active historical backlog first. Confirm ownership boundaries and record the operator's fifty-minute workload; preserve unrelated external deletions.",
+      "High-priority evidence checkpoint: implement the complete lifecycle harness and fail-closed verdicts first because every optimization and terminal-state claim depends on them. Capture a reference baseline and the exact matrix actually executed.",
+      "High-priority integrity checkpoint: unify ordered frame/event transport, then implement explicit failure and acknowledgement ownership. Add focused regressions for the audit's deterministic counterexamples.",
+      "High-priority performance checkpoint: move/batch historical writes behind bounded single-writer ownership, enforce resource admission and integrate the active historical reconstruction/session revision contract. Preserve live capture and rare-event fidelity.",
+      "Coordinate navigation/cancellation/coverage prerequisites with the existing active historical task; do not implement duplicate backlog slices or silently waive its outstanding guarantees.",
+      "Medium-priority qualification checkpoint: run representative typical/fifty-minute synthetic cases and the native Windows reference matrix. Long total loading is acceptable; responsive, cancellable, correctly labelled preparation and exact evidence remain required.",
+      "Run focused regressions, full platform suites and required lint/i18n/Logics validation in proportion to the changes. Update affected docs and commit each meaningful implementation wave following ADR 009.",
+      "Before finish, attach distinct behavioral evidence for all request ACs, explicitly resolve or retain platform/resource-policy blockers, and use lifecycle closeout commands. This corpus creation itself does not start implementation."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_trace_loading_followup.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
