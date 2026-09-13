@@ -250,3 +250,13 @@ QSplitter::handle:hover {{ background: {ACCENT}; }}
 #: The one stylesheet the workspace installs: base chrome plus the explicit
 #: control-state contract.
 APP_STYLE: Final = BASE_STYLE + CONTROL_STYLE
+
+#: The in-plot lane title overlay's own translucent backing (item_128), kept
+#: here - not in graph_lane_header.py - so every literal stylesheet rule
+#: stays in this one token module.
+LANE_TITLE_OVERLAY_STYLE: Final = (
+    "background-color: rgba(8, 13, 19, 0.55);"
+    " border-radius: 3px;"
+    " padding: 1px 4px;"
+    " font-weight: 700;"
+)

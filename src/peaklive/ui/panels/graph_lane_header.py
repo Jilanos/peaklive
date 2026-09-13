@@ -38,12 +38,7 @@ TITLE_OVERLAY_MARGIN = 4
 #: width, so a long or duplicate signal name never crowds out the plot itself.
 TITLE_OVERLAY_MAX_WIDTH_FRACTION = 0.6
 
-TITLE_OVERLAY_STYLE = (
-    "background-color: rgba(8, 13, 19, 0.55);"
-    " border-radius: 3px;"
-    " padding: 1px 4px;"
-    " font-weight: 700;"
-)
+TITLE_OVERLAY_STYLE = theme.LANE_TITLE_OVERLAY_STYLE
 
 
 def lane_identity(store: SeriesStore | None, signal_name: str) -> tuple[str, str]:

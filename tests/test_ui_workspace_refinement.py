@@ -627,7 +627,12 @@ def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
     window.profile_selector.addItem("Second setup")
     window._state.profiles.append(window.selected_profile.duplicate("Second setup"))
     window._profile_changed(1)
-    window.workspace.setSizes([420, 500, 320])
+    # The centre column must clear the graph/trace stack's own real minimum
+    # width (title-row commands, A/B/delta readout, plot area) - 500px does
+    # not, and Qt's own splitter would silently clamp it regardless of what
+    # this test requests, defeating the round-trip this test exists to
+    # prove. 700px comfortably clears it at the window size `_window` uses.
+    window.workspace.setSizes([300, 680, 260])
     window._splitter_dragged()
     window._flush_save()
 
@@ -640,8 +645,8 @@ def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
     window._profile_changed(1)
     qtbot.wait(10)
     sizes = window.workspace.sizes()
-    assert abs(sizes[0] - 420) <= 8
-    assert abs(sizes[2] - 320) <= 8
+    assert abs(sizes[0] - 300) <= 8
+    assert abs(sizes[2] - 260) <= 8
 
 
 def test_a_malformed_partial_panel_widths_mapping_still_loads(qtbot, tmp_path):
@@ -967,50 +972,53 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
         "graphViewGroup",
         "graphCursorGroup",
     ]
-    # These commands were reparented into the one-line Graphs/Trace header
-    # (item_053 AC6) - GraphControlsBar still owns and wires them, it just no
-    # longer displays them in its own row. cursor_summary stays behind in
-    # GraphControlsBar's own row instead (item_055 AC3): the shared header has
-    # too little width on every platform to hold both complete A/B timestamps
-    # without eliding, while the dedicated row spans the full graph column.
+    # Every command - including cursor_summary's A/B/delta readout - was
+    # reparented into the one-line Graphs/Trace header (item_053 AC6,
+    # item_129 AC1): GraphControlsBar still owns and wires them, it just no
+    # longer displays its own row. Required commands (fit, Start/Stop, cursor
+    # placement, the readout) always stay on the header row; lower-frequency
+    # ones are merely registered as deferrable and may fold into overflow.
     header = window.workspace_header
     for control in (
         bar.fit_button,
-        bar.fit_y_button,
-        bar.follow_checkbox,
         bar.cursor_a_button,
         bar.cursor_b_button,
-        bar.measurement_visibility_button,
-        bar.mode_selector,
         window.acquisition_bar.start_button,
         window.acquisition_bar.stop_button,
+        bar.cursor_summary,
     ):
         assert control.parent() is header
-    assert bar.cursor_summary.parent() is bar.cursor_group
+    for control in (
+        bar.fit_y_button,
+        bar.follow_checkbox,
+        bar.measurement_visibility_button,
+        bar.mode_selector,
+    ):
+        assert control in header._deferrable
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
-def test_the_graph_controls_stay_readable_at_the_bench_viewports(qtbot, tmp_path, size):
+def test_the_empty_graph_controls_row_is_reclaimed(qtbot, tmp_path, size):
+    """item_129: every GraphControlsBar command moved into the shared header,
+    so its own row is now empty and hidden - not a residual second band.
+    """
     window = _with_dbc(qtbot, tmp_path, size=size)
     qtbot.wait(20)
     bar = window.graph_panel.controls
 
-    assert bar.isVisible()
-    for group in bar.groups:
-        assert group.isVisible()
-        assert group.x() >= 0
-        assert group.x() + group.width() <= bar.width() + 1
+    assert not bar.isVisible()
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
 def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     qtbot, tmp_path, size
 ):
-    """item_053 AC6: title, view selection, fit, Follow live, Play/Stop, and
-    cursor actions on one row, at every bench viewport, without wrapping,
-    overlap, or clipping. item_055 AC3: both complete cursor timestamps stay
-    visible together (in GraphControlsBar's own row) rather than falling back
-    to a tooltip.
+    """item_053 AC6: title and required commands stay on one row, at every
+    bench viewport, without wrapping, overlap, or clipping. item_129 AC1/AC3:
+    the complete A/B/delta readout shares that same row beside fit and
+    Start/Stop; lower-frequency controls (mode selector, Follow live, fit-Y,
+    measurement visibility) may fold into the accessible overflow menu under
+    side-panel width pressure, but are never silently dropped.
     """
     window = _with_dbc(qtbot, tmp_path, size=size)
     window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
@@ -1029,14 +1037,12 @@ def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
         for index in range(header.row.count())
         if header.row.itemAt(index).widget() is not None
     ]
-    assert window.workspace_mode_selector in controls
     assert window.acquisition_bar.start_button in controls
     assert window.acquisition_bar.stop_button in controls
     assert window.graph_panel.fit_button in controls
-    assert window.graph_panel.fit_y_button in controls
-    assert window.graph_panel.follow_checkbox in controls
     assert window.graph_panel.cursor_a_button in controls
     assert window.graph_panel.cursor_b_button in controls
+    assert window.graph_panel.cursor_summary in controls
 
     visible = [control for control in controls if control.isVisible()]
     rects = _rects(visible)
@@ -1054,7 +1060,128 @@ def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     summary = window.graph_panel.cursor_summary
     assert summary.isVisible()
     assert "1078.077" in summary.text() and "84.387" in summary.text()
+    assert "-993.690" in summary.text()
     assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+
+    # Anything deferred under width pressure is still reachable, never
+    # silently dropped: the overflow button appears whenever it holds a
+    # control.
+    deferred = [widget for widget in header._deferrable if widget not in controls]
+    if deferred:
+        assert header._overflow_button.isVisible()
+
+
+# --------------------------------------------------------------------------
+# item_129 AC2 - A/B/delta formatting
+# --------------------------------------------------------------------------
+
+
+def _summary_text(qtbot, tmp_path, cursor_a, cursor_b) -> str:
+    window = _with_dbc(qtbot, tmp_path)
+    window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
+    window.graph_panel.restore_cursors(cursor_a, cursor_b)
+    qtbot.wait(10)
+    return window.graph_panel.cursor_summary.text()
+
+
+def test_neither_cursor_set_shows_the_onboarding_hint(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, None, None)
+    assert text == translate("graph.cursor_summary_empty")
+
+
+def test_only_cursor_a_set_represents_b_and_delta_independently(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, 12.5, None)
+    assert "12.500" in text
+    assert text.count(translate("graph.cursor_unset")) == 2
+
+
+def test_only_cursor_b_set_represents_a_and_delta_independently(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, None, 12.5)
+    assert "12.500" in text
+    assert text.count(translate("graph.cursor_unset")) == 2
+
+
+def test_equal_cursors_show_a_zero_delta_without_a_negative_sign(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, 4.0, 4.0)
+    assert "0.000s" in text
+    assert "-0.000" not in text
+
+
+def test_reversed_cursors_show_a_negative_delta(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, 10.0, 3.0)
+    assert "-7.000s" in text
+
+
+def test_forward_cursors_show_a_positive_delta(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, 3.0, 10.0)
+    assert "+7.000s" in text
+
+
+def test_negative_timestamps_format_correctly(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, -5.25, -1.0)
+    assert "-5.250" in text and "-1.000" in text
+    assert "+4.250s" in text
+
+
+def test_long_recording_timestamps_are_not_truncated(qtbot, tmp_path):
+    text = _summary_text(qtbot, tmp_path, 123456.789, 123999.1)
+    assert "123456.789" in text
+    assert "123999.100" in text
+
+
+def test_submillisecond_delta_is_computed_before_rounding(qtbot, tmp_path):
+    # Rounding each cursor to 3 decimals first, then subtracting, would give
+    # 1.002 - 1.000 = 0.002s. The true delta, from the unrounded positions
+    # and rounded only for display, is 0.0012s -> "0.001s".
+    cursor_a, cursor_b = 1.0004, 1.0016
+    text = _summary_text(qtbot, tmp_path, cursor_a, cursor_b)
+    assert "+0.001s" in text
+    assert "+0.002s" not in text
+
+
+def test_zero_delta_from_submillisecond_positions_shows_no_negative_sign(qtbot, tmp_path):
+    cursor_a, cursor_b = 1.0004, 1.0006
+    text = _summary_text(qtbot, tmp_path, cursor_a, cursor_b)
+    assert round(cursor_b - cursor_a, 3) == 0.0
+    assert "0.000s" in text
+    assert "-0.000s" not in text
+
+
+# --------------------------------------------------------------------------
+# item_129 AC3 - accessible overflow under side-panel width pressure
+# --------------------------------------------------------------------------
+
+
+def test_long_values_never_clip_when_side_panels_squeeze_the_header(qtbot, tmp_path):
+    """At the narrowest bench viewport, with both default (expanded) side
+    panels present, a long signed A/B/delta reading still shows completely
+    on the header row - lower-frequency controls fold into the accessible
+    overflow menu instead of anything being clipped.
+    """
+    window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
+    window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
+    window.graph_panel.place_cursor("a", -123456.789)
+    window.graph_panel.place_cursor("b", 123999.123)
+    qtbot.wait(20)
+
+    header = window.workspace_header
+    summary = window.graph_panel.cursor_summary
+    assert summary.isVisible()
+    assert "-123456.789" in summary.text()
+    assert "123999.123" in summary.text()
+    assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+    right_edge = summary.mapTo(header, summary.rect().topRight()).x()
+    assert right_edge <= header.width()
+
+    for control in (
+        window.acquisition_bar.start_button,
+        window.acquisition_bar.stop_button,
+        window.graph_panel.fit_button,
+        window.graph_panel.cursor_a_button,
+        window.graph_panel.cursor_b_button,
+    ):
+        assert control.isVisible()
+        assert control.parent() is header
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
@@ -1157,17 +1284,22 @@ def test_multiple_signals_share_one_compact_non_scrolling_time_surface(qtbot, tm
     )
 
 
-def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot, tmp_path):
+def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot):
     """Font metrics differ per platform; a readout must not size the cluster.
 
     Windows fonts made the cursor cluster 731 px wide inside a 601 px bar,
-    which overflows rather than wraps. The readout now elides instead.
+    which overflows rather than wraps. The readout now elides instead. This
+    exercises `GraphControlsBar` standalone (its own row, cursor_summary
+    included) - the behaviour item_129 requires the integrated MainWindow
+    workspace to preserve even though it reparents cursor_summary elsewhere.
     """
-    window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
-    bar = window.graph_panel.controls
+    bar = GraphControlsBar()
+    qtbot.addWidget(bar)
+    bar.setFixedWidth(601)
     long_text = "A 1234.567s · B 9876.543s · Δ 8641.976s " * 4
 
     bar.cursor_summary.setText(long_text)
+    bar.show()
     qtbot.wait(20)
 
     for group in bar.groups:
@@ -1176,6 +1308,34 @@ def test_a_long_readout_never_pushes_its_cluster_past_the_bar(qtbot, tmp_path):
     assert bar.cursor_summary.text() == long_text
     assert bar.cursor_summary.toolTip() == long_text
     assert bar.cursor_summary.sizeHint().width() <= READOUT_PREFERRED_WIDTH
+
+
+def test_a_long_readout_never_pushes_required_controls_past_the_header(qtbot, tmp_path):
+    """In the integrated workspace, a long A/B/delta readout must not push
+    the required controls (fit, Start/Stop, cursor placement) past the
+    header's own bounds - deferrable controls fold into overflow first.
+    """
+    window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
+    header = window.workspace_header
+    summary = window.graph_panel.cursor_summary
+    long_text = "A 1234.567s · B 9876.543s · Δ 8641.976s"
+
+    summary.setText(long_text)
+    summary.setMinimumWidth(summary.fontMetrics().horizontalAdvance(long_text) + 4)
+    header.refresh_overflow()
+    qtbot.wait(20)
+
+    for control in (
+        window.acquisition_bar.start_button,
+        window.acquisition_bar.stop_button,
+        window.graph_panel.fit_button,
+        window.graph_panel.cursor_a_button,
+        window.graph_panel.cursor_b_button,
+        summary,
+    ):
+        right = control.mapTo(header, control.rect().topRight()).x()
+        assert right <= header.width() + 1
+    assert summary.text() == long_text
 
 
 def test_the_flow_layout_compresses_an_item_wider_than_its_line(qtbot):
