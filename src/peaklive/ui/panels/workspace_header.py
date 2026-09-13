@@ -208,3 +208,22 @@ class WorkspaceHeaderBar(QWidget):
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)
         self.refresh_overflow()
+
+    def showEvent(self, event) -> None:  # noqa: N802 - Qt override
+        """Re-settle the fold decision once real, on-screen geometry exists.
+
+        The very first `refresh_overflow()` call (from `WorkspaceCenter`,
+        during `MainWindow.__init__`) necessarily runs before the window is
+        ever shown, when every ancestor's width is still whatever a fresh,
+        unlaid-out `QWidget` reports - not the real splitter-applied width
+        `_available_width()` is meant to read. `resizeEvent` alone is not a
+        reliable second chance: once that early call folds something out of
+        `self.row`, `self`'s own size can shrink to match, and if the
+        surrounding layout pass settles without `self`'s own size crossing
+        a value Qt considers a "change", no further `resizeEvent` follows to
+        correct it. `showEvent` fires once real geometry is finally in
+        place regardless, so it is the one point guaranteed to see the true
+        picture at least once.
+        """
+        super().showEvent(event)
+        self.refresh_overflow()
