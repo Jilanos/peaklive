@@ -162,6 +162,13 @@ class WorkspaceHeaderBar(QWidget):
             total += spacing
             total += sum(_width_demand(widget) for widget in deferrable)
             total += spacing * (len(deferrable) - 1)
+        if total > available and deferrable:
+            # The overflow button is about to appear and claims row width of
+            # its own; folding against the budget it will actually leave
+            # behind - rather than the button-less budget above - is what
+            # keeps the button's own rect from landing on top of a control
+            # this pass judged as already fitting.
+            available = max(available - spacing - _width_demand(self._overflow_button), 0)
         for widget in deferrable:
             if total <= available:
                 break
