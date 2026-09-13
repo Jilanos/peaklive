@@ -792,15 +792,16 @@ def test_live_minimums_override_the_constants_when_larger():
     assert widths[0] >= 450
 
     # A total too narrow for every live minimum at once is a genuine
-    # resource conflict Qt would have to arbitrate too; each side still
-    # gets its own floor rather than an arbitrary flat-ratio shrink below
-    # it, and the centre - not a side - absorbs the shortfall.
+    # resource conflict Qt would have to arbitrate too; request-AC8 settles
+    # it in the centre's favour - its required controls must never be
+    # silently clipped, and a side panel carries no such protection - so
+    # the centre keeps its full live minimum even if that leaves the sides
+    # below their own floor, rather than the other way round.
     widths = reflow_widths(
         [False, False, False], [500, 0, 500], 900, minimums=[200, 900, 200]
     )
     assert sum(widths) == 900
-    assert widths[0] == 200
-    assert widths[2] == 200
+    assert widths[1] == 900
 
 
 def test_the_keyboard_collapse_shortcut_reclaims_the_column(qtbot, tmp_path):
