@@ -83,7 +83,8 @@
     "mode_graphs": "Graphs only",
     "mode_trace": "Trace only",
     "mode_report": "Report only",
-    "mode_accessible": "Workspace visible configuration"
+    "mode_accessible": "Workspace visible configuration",
+    "header_overflow": "More graph commands"
   },
   "dbc": {
     "library": "DBC library",
@@ -145,8 +146,9 @@
     "follow": "Follow live",
     "cursor_a": "Place cursor A",
     "cursor_b": "Place cursor B",
-    "cursor_summary": "A {cursor_a} · B {cursor_b}",
+    "cursor_summary": "A {cursor_a} · B {cursor_b} · Δ {delta}",
     "cursor_summary_empty": "Cursors: place A and B to measure a range.",
+    "cursor_unset": "—",
     "empty": "No plot yet. Show a DBC signal, or start an acquisition for the raw preview.",
     "history_error": "Historical data could not be loaded. The last valid view is kept; retry by navigating again.",
     "trace_colour": "{signal} — trace colour {colour}",

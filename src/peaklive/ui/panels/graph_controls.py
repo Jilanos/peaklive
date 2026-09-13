@@ -18,6 +18,34 @@ from peaklive.ui.widgets import (
 )
 
 
+def format_cursor_time(value: float | None) -> str:
+    """A single cursor's readout: its own unset state, independent of the other."""
+    if value is None:
+        return translate("graph.cursor_unset")
+    return f"{value:.3f}s"
+
+
+def format_cursor_delta(cursor_a: float | None, cursor_b: float | None) -> str:
+    """B minus A, computed from unrounded positions and rounded only for display.
+
+    Rounding before subtracting can turn a genuine sub-millisecond difference
+    into a wrong sign or a spurious zero, so the subtraction always happens on
+    the raw float positions. The sign is likewise decided on the rounded
+    value, not the raw delta, so a delta that rounds to zero never prints as
+    "-0.000".
+    """
+    if cursor_a is None or cursor_b is None:
+        return translate("graph.cursor_unset")
+    rounded = round(cursor_b - cursor_a, 3)
+    if rounded > 0:
+        sign = "+"
+    elif rounded < 0:
+        sign = "-"
+    else:
+        sign = ""
+    return f"{sign}{abs(rounded):.3f}s"
+
+
 class GraphControlsBar(QWidget):
     """One dense toolbar for graph navigation, display, cursor, and view mode.
 

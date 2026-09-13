@@ -7,6 +7,7 @@ from peaklive.analysis import HistoricalSignalStore, SeriesStore
 from peaklive.i18n import translate
 from peaklive.services.history_worker import HistoryViewportWorker
 from peaklive.ui import theme
+from peaklive.ui.panels import graph_controls
 from peaklive.ui.panels.graph_controls import GraphControlsBar
 from peaklive.ui.panels.graph_history import curve_points, viewport
 from peaklive.ui.panels.graph_lane_header import build_lane, lane_identity
@@ -17,6 +18,8 @@ from peaklive.ui.worker_lifecycle import abandon_worker
 RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, SHARED_LEFT_AXIS_WIDTH, MEASUREMENT_REFRESH_INTERVAL_MS = (
     "Raw byte 0", 180, 88, 250
 )
+
+
 class GraphStackPanel(GraphNavigation, QWidget):
     cursors_changed = Signal()
     view_changed = Signal()
@@ -347,13 +350,15 @@ class GraphStackPanel(GraphNavigation, QWidget):
             self._updating_cursors = False
         self._refresh_cursor_summary()
     def _refresh_cursor_summary(self) -> None:
-        if self.cursor_a is None or self.cursor_b is None:
+        if self.cursor_a is None and self.cursor_b is None:
             self.cursor_summary.setText(translate("graph.cursor_summary_empty"))
             self.cursor_summary.setMinimumWidth(0)
             return
         summary_format = translate("graph.cursor_summary")
         text = summary_format.format(
-            cursor_a=f"{self.cursor_a:.3f}s", cursor_b=f"{self.cursor_b:.3f}s"
+            cursor_a=graph_controls.format_cursor_time(self.cursor_a),
+            cursor_b=graph_controls.format_cursor_time(self.cursor_b),
+            delta=graph_controls.format_cursor_delta(self.cursor_a, self.cursor_b),
         )
         self.cursor_summary.setText(text)
         width = self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4

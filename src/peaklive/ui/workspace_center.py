@@ -49,6 +49,7 @@ class WorkspaceCenter:
             (controls.cursor_group.layout(), controls.cursor_a_button),
             (controls.cursor_group.layout(), controls.cursor_b_button),
             (controls.cursor_group.layout(), controls.measurement_visibility_button),
+            (controls.cursor_group.layout(), controls.cursor_summary),
         ):
             source_row.removeWidget(widget)
             widget.setParent(self.workspace_header)
@@ -59,25 +60,37 @@ class WorkspaceCenter:
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
-        self.workspace_header.add(self.workspace_mode_selector)
-        self.workspace_header.add(controls.empty_state_label)
-        for button in (
-            controls.fit_button,
-            controls.fit_y_button,
-            controls.follow_checkbox,
-        ):
-            self.workspace_header.add(button)
+        # Required: A/B/delta, Start/Stop, cursor placement, and the primary
+        # fit action stay directly on the row (request AC7/AC8) no matter how
+        # much the side panels squeeze it. Everything else is lower-frequency
+        # and may fold into the overflow menu under width pressure.
+        self.workspace_header.add(controls.fit_button)
         self.workspace_header.add(self.acquisition_bar.start_button)
         self.workspace_header.add(self.acquisition_bar.stop_button)
         self.workspace_header.add(controls.cursor_a_button)
         self.workspace_header.add(controls.cursor_b_button)
-        self.workspace_header.add(controls.measurement_visibility_button)
-        # cursor_summary deliberately stays in GraphControlsBar's own row
-        # (item_055 AC3): the shared one-line header has too little width on
-        # every platform to hold both complete A/B timestamps alongside the
-        # view selector and acquisition/fit/cursor actions without eliding,
-        # while the dedicated row spans the full graph column.
+        self.workspace_header.add(controls.cursor_summary)
+        # empty_state_label's own visibility already reflects real
+        # application state (whether a sample has been captured yet) rather
+        # than width pressure, so it stays required even though it claims no
+        # width while hidden (`refresh_overflow` excludes hidden widgets from
+        # the budget either way).
+        self.workspace_header.add(controls.empty_state_label)
+        # Deferred in this order - least important first - so the mode
+        # selector (the one most operators reach for) is the last to fold.
+        self.workspace_header.add(controls.measurement_visibility_button, deferrable=True)
+        self.workspace_header.add(controls.follow_checkbox, deferrable=True)
+        self.workspace_header.add(controls.fit_y_button, deferrable=True)
+        self.workspace_header.add(self.workspace_mode_selector, deferrable=True)
         self.trace_graph_panel.insert_into_header(self.workspace_header)
+        # GraphControlsBar's own row now holds nothing - every control moved
+        # into the shared header above (item_129) - so hiding it reclaims
+        # that row's height in the integrated window. A standalone
+        # GraphStackPanel (used outside this composed shell) never runs this
+        # method, so its own GraphControlsBar row is unaffected.
+        controls.setVisible(False)
+        self.workspace_header.refresh_overflow()
+        self.graph_panel.cursors_changed.connect(self.workspace_header.refresh_overflow)
 
         self.center_divider = QSplitter(Qt.Orientation.Vertical, objectName="centerDivider")
         self.graph_panel.cursors_changed.connect(self._persist_layout)

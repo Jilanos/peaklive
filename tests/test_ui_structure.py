@@ -24,7 +24,7 @@ TRANSLATE_CALL = re.compile(r'translate\(\s*"([a-z0-9_.]+)"\s*\)')
 #: Literals that are not user-facing prose: glyphs, enum values, and units the
 #: catalog would only obscure.
 ALLOWED_LITERALS = {
-    "RX", "EVENT", "+", "−", "▲", "▼", "⤢", "↕", "▤", "▶", "■", "A", "B", "—", "",
+    "RX", "EVENT", "+", "−", "▲", "▼", "⤢", "↕", "▤", "▶", "■", "⋯", "A", "B", "—", "",
 }
 
 LABEL_CALL = re.compile(
