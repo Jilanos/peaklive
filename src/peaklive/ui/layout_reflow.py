@@ -108,19 +108,38 @@ def reflow_widths(
     requested = sum(widths[index] for index in sides)
     if available - requested < minimums[center] and sides:
         # The centre needs more than a plain proportional shrink of the
-        # sides would leave it. Every side keeps its own live floor first -
-        # scaling a side down by a flat ratio, the way a single `widths[i] *
-        # room // requested` pass would, has no notion of that floor and can
-        # push a side below what Qt itself will actually allow, which is
-        # what let a side panel land narrower than its own minimum content
-        # after a reflow. Only the room *beyond* every side's floor is up
-        # for proportional sharing, weighted by how much each side still
-        # wants past its own floor.
+        # sides would leave it. When there is enough room for every side to
+        # keep its own live floor and still give the centre its minimum,
+        # each side keeps that floor and only shares the room *beyond* it -
+        # a flat-ratio shrink of the whole width, the way a single
+        # `widths[i] * room // requested` pass would do it, has no notion
+        # of a floor and can push a side below what Qt itself will actually
+        # allow. When there is not even enough room for that (see below),
+        # the centre's own minimum wins instead.
         room_for_sides = max(available - minimums[center], 0)
         floor_total = sum(minimums[index] for index in sides)
         if room_for_sides <= floor_total:
-            for index in sides:
-                widths[index] = minimums[index]
+            # Not enough total width to give the centre its own real
+            # minimum *and* every side its floor. request-AC8 settles which
+            # one gives way: the centre's required controls (fit,
+            # Start/Stop, cursor placement, the A/B/delta readout) must
+            # never be silently clipped, and a side panel carries no such
+            # protection - so the centre keeps its full minimum and the
+            # sides split whatever room is actually left between them,
+            # even below their own floor. `requested` (each side's pre-
+            # shrink target) is used only as the sharing ratio, not a
+            # floor, since a floor is exactly what there is no room for
+            # here.
+            if requested > 0:
+                given = 0
+                for index in sides:
+                    share = room_for_sides * widths[index] // requested
+                    widths[index] = share
+                    given += share
+                widths[sides[-1]] += room_for_sides - given
+            else:
+                for index in sides:
+                    widths[index] = 0
         else:
             extra = room_for_sides - floor_total
             wants = {index: widths[index] - minimums[index] for index in sides}
