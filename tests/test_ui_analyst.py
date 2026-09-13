@@ -889,6 +889,7 @@ def test_layout_geometry_and_collapse_state_persist_across_a_restart(qtbot, tmp_
     window.show()
     window.workspace.setSizes([200, 800, 320])
     window.center_divider.setSizes([300, 400, 0])
+    window._splitter_dragged()
     window.inspector_panel.set_collapsed(True)
     window._persist_layout()
     window._flush_save()

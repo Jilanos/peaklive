@@ -1,14 +1,14 @@
 ## item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu - Add persistent full-panel visibility actions to the View menu
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: Medium
 > Theme: Workspace panel visibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-13 15:32:01
+> Indicators reviewed: 2026-09-13 15:34:34
 
 # AI Context
 - Summary: Add profile-backed visibility independent of collapse, including complete rail removal and menu recovery from all-hidden state.

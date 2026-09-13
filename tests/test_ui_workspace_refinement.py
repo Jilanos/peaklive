@@ -527,7 +527,7 @@ def test_the_collapsed_rail_centres_a_compact_unobstructed_expand_control(
 def test_expanding_restores_the_remembered_width_and_the_content(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     window.workspace.setSizes([340, 700, 240])
-    window._persist_layout()
+    window._splitter_dragged()
     window.signal_filter.setText("speed")
     qtbot.wait(10)
     remembered = window.workspace.sizes()[0]
@@ -543,6 +543,124 @@ def test_expanding_restores_the_remembered_width_and_the_content(qtbot, tmp_path
     assert window.signal_filter.text() == "speed"
 
 
+def test_collapsing_the_centre_panel_does_not_corrupt_side_panel_preferences(qtbot, tmp_path):
+    """item_126: an automatic reflow must never be re-remembered as a preference.
+
+    Collapsing Graphs makes `reflow_widths` split its released width equally
+    between Signals and Inspector. That equal split is Qt allocation, not an
+    operator choice, so it must not overwrite the distinct widths the
+    operator actually dragged to.
+    """
+    window = _window(qtbot, tmp_path)
+    window.workspace.setSizes([340, 660, 240])
+    window._splitter_dragged()
+    qtbot.wait(10)
+
+    window.trace_graph_panel.set_collapsed(True)
+    qtbot.wait(10)
+
+    window.trace_graph_panel.set_collapsed(False)
+    qtbot.wait(10)
+
+    sizes = window.workspace.sizes()
+    assert abs(sizes[0] - 340) <= 2
+    assert abs(sizes[2] - 240) <= 2
+
+
+def test_mixed_non_lifo_collapse_sequences_restore_each_panels_own_width(qtbot, tmp_path):
+    """item_126 AC1: repeated and out-of-order toggles must not drift."""
+    window = _window(qtbot, tmp_path)
+    window.workspace.setSizes([360, 620, 260])
+    window._splitter_dragged()
+    qtbot.wait(10)
+
+    window.signals_panel.set_collapsed(True)
+    qtbot.wait(10)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+    window.trace_graph_panel.set_collapsed(True)
+    qtbot.wait(10)
+    # Reopen out of collapse order: inspector, then centre, then signals.
+    window.inspector_panel.set_collapsed(False)
+    qtbot.wait(10)
+    window.trace_graph_panel.set_collapsed(False)
+    qtbot.wait(10)
+    window.signals_panel.set_collapsed(False)
+    qtbot.wait(10)
+
+    sizes = window.workspace.sizes()
+    assert abs(sizes[0] - 360) <= 2
+    assert abs(sizes[2] - 260) <= 2
+
+
+def test_resize_small_then_expand_then_resize_back_keeps_allocation_sane(qtbot, tmp_path):
+    """item_126 AC2: deterministic allocation, never a negative or offscreen width."""
+    window = _window(qtbot, tmp_path, size=(1280, 720))
+    window.workspace.setSizes([340, 700, 240])
+    window._splitter_dragged()
+    qtbot.wait(10)
+
+    window.resize(700, 720)
+    qtbot.wait(10)
+    small_sizes = window.workspace.sizes()
+    assert all(size >= 0 for size in small_sizes)
+
+    window.resize(1600, 720)
+    qtbot.wait(10)
+    window.resize(1280, 720)
+    qtbot.wait(10)
+
+    sizes = window.workspace.sizes()
+    assert all(size >= 0 for size in sizes)
+    assert abs(sizes[0] - 340) <= 8
+    assert abs(sizes[2] - 240) <= 8
+
+
+def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
+    """item_126 AC3: profile switching must not bleed one profile's geometry into another."""
+    window = _window(qtbot, tmp_path)
+
+    window.workspace.setSizes([340, 660, 240])
+    window._splitter_dragged()
+    window._flush_save()
+
+    window.profile_selector.addItem("Second setup")
+    window._state.profiles.append(window.selected_profile.duplicate("Second setup"))
+    window._profile_changed(1)
+    window.workspace.setSizes([420, 500, 320])
+    window._splitter_dragged()
+    window._flush_save()
+
+    window._profile_changed(0)
+    qtbot.wait(10)
+    sizes = window.workspace.sizes()
+    assert abs(sizes[0] - 340) <= 8
+    assert abs(sizes[2] - 240) <= 8
+
+    window._profile_changed(1)
+    qtbot.wait(10)
+    sizes = window.workspace.sizes()
+    assert abs(sizes[0] - 420) <= 8
+    assert abs(sizes[2] - 320) <= 8
+
+
+def test_a_malformed_partial_panel_widths_mapping_still_loads(qtbot, tmp_path):
+    """item_126 AC3/AC4: an incomplete persisted mapping must not crash restoration."""
+    store = ProfileStore(tmp_path / "settings")
+    state = store.load()
+    state.selected.layout.panel_widths = {"signals": 340}
+    state.selected.layout.collapsed_panels = []
+    store.save(state)
+
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+
+    assert window.workspace.sizes()[0] >= MIN_SIDE_WIDTH
+
+
 def test_the_collapsed_state_and_remembered_width_persist_per_profile(qtbot, tmp_path):
     store = ProfileStore(tmp_path / "settings")
     window = MainWindow(store, adapter_factory=FakeCanAdapter)
@@ -551,7 +669,7 @@ def test_the_collapsed_state_and_remembered_width_persist_per_profile(qtbot, tmp
     window.show()
     qtbot.waitExposed(window)
     window.workspace.setSizes([340, 700, 240])
-    window._persist_layout()
+    window._splitter_dragged()
     window.inspector_panel.set_collapsed(True)
     window._flush_save()
 
