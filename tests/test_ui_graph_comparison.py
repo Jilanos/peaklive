@@ -87,7 +87,10 @@ def test_adjacent_lanes_have_a_subtle_separator_and_keep_readable_y_ticks(qtbot,
     window._signal_shown_changed("VehicleStatus.Rpm", True)
     panel = window.graph_panel
 
-    lanes = [panel.lane_headers[name].parentWidget() for name in panel.plots]
+    # item_128: the header is an in-ViewBox overlay parented to the plot, not
+    # to the lane wrapper any more, so the separator lives on the plot's own
+    # parent widget instead of the header's.
+    lanes = [panel.plots[name].parentWidget() for name in panel.plots]
     assert len(lanes) >= 2
     # Every lane but the last carries the separator; the last does not, so the
     # panel's own outer edge never grows an extra, redundant boundary line.
@@ -110,6 +113,142 @@ def test_hovering_the_plot_never_leaks_the_dbc_hash_but_the_lane_header_reaches_
     assert database_hash not in plot.toolTip()
     assert database_hash[:8] in header.toolTip()
     assert database_hash[:8] in header.accessibleName()
+
+
+# --------------------------------------------------------------------------
+# item_128 - the lane title moves inside the drawable ViewBox
+# --------------------------------------------------------------------------
+
+
+def rect_of(panel, signal_name):
+    from peaklive.ui.panels.graph_lane_header import anchor_lane_title
+
+    plot = panel.plots[signal_name]
+    header = panel.lane_headers[signal_name]
+    anchor_lane_title(plot, header, header.text() or "x")
+    view_box = plot.getViewBox()
+    return plot.mapFromScene(view_box.sceneBoundingRect()).boundingRect()
+
+
+def test_lane_title_sits_a_few_pixels_inside_the_viewbox_top_left_with_no_layout_height(
+    qtbot, tmp_path
+):
+    window = _with_dbc(qtbot, tmp_path)
+    window._signal_shown_changed("VehicleStatus.Rpm", True)
+    panel = window.graph_panel
+    signal_name = next(iter(panel.plots))
+    plot = panel.plots[signal_name]
+    header = panel.lane_headers[signal_name]
+
+    qtbot.waitUntil(lambda: rect_of(panel, signal_name).width() > 0, timeout=2_000)
+    rect = rect_of(panel, signal_name)
+
+    # The header is a plain child of the plot, never part of any layout, so
+    # it cannot claim vertical space from - or padding inside - the plot.
+    assert header.parentWidget() is plot
+    assert plot.layout() is None
+    offset_x = header.x() - rect.left()
+    offset_y = header.y() - rect.top()
+    assert 2 <= offset_x <= 6
+    assert 2 <= offset_y <= 6
+
+
+def test_plot_area_gains_the_removed_title_row_height_for_one_three_and_eight_lanes(
+    qtbot, tmp_path
+):
+    from peaklive.analysis import SeriesStore
+
+    for lane_count in (1, 3, 8):
+        window = _with_dbc(qtbot, tmp_path)
+        panel = window.graph_panel
+        names = [f"Synthetic.Signal{i}" for i in range(lane_count)]
+        panel.sync(SeriesStore(), set(names))
+        qtbot.waitUntil(
+            lambda panel=panel, names=names: all(
+                rect_of(panel, n).width() > 0 for n in names
+            ),
+            timeout=2_000,
+        )
+
+        rects = [rect_of(panel, name) for name in names]
+        # No lane wastes a layout row on the title any more: every ViewBox's
+        # top edge sits at (or right after) the lane's own top edge, not
+        # pushed down by a header band.
+        for name, rect in zip(names, rects, strict=True):
+            lane = panel.plots[name].parentWidget()
+            assert rect.top() <= lane.height() * 0.4
+        # Every lane still shares one X origin (item_112's contract) and its
+        # own readable Y axis.
+        left_edges = {round(rect.left()) for rect in rects}
+        assert len(left_edges) == 1
+        for name in names:
+            assert panel.plots[name].getAxis("left").style["showValues"] is not False
+        bottom_axis_visible = [
+            panel.plots[name].getAxis("bottom").style.get("showValues")
+            for name in names
+        ]
+        # Exactly the last lane shows the shared bottom time axis.
+        assert bottom_axis_visible.count(True) <= 1
+        window.close()
+
+
+def test_long_and_duplicate_lane_titles_stay_identifiable_without_leaking_hashes(
+    qtbot, tmp_path
+):
+    from peaklive.analysis import SeriesStore
+
+    window = _with_dbc(qtbot, tmp_path, size=(480, 400))
+    panel = window.graph_panel
+    long_name = "Synthetic." + "AVeryLongDuplicateSignalNameThatShouldElideCleanly" * 3
+    panel.sync(SeriesStore(), {long_name})
+    qtbot.waitUntil(lambda: rect_of(panel, long_name).width() > 0, timeout=2_000)
+
+    header = panel.lane_headers[long_name]
+    # A name this long cannot fit the bounded overlay width, so the visible
+    # text is elided - but the full identity remains reachable through the
+    # deliberate tooltip/accessible-name detail surface, never lost.
+    assert header.text() != long_name
+    assert header.toolTip() == long_name
+    assert header.accessibleName() == long_name
+
+
+def test_pan_zoom_and_cursor_drag_pass_through_the_title_overlay(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path)
+    window._signal_shown_changed("VehicleStatus.Rpm", True)
+    panel = window.graph_panel
+    signal_name = next(iter(panel.plots))
+    header = panel.lane_headers[signal_name]
+
+    assert header.testAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+
+def test_title_anchoring_survives_resize_and_lane_rebuild(qtbot, tmp_path):
+    from peaklive.analysis import SeriesStore
+
+    window = _with_dbc(qtbot, tmp_path)
+    panel = window.graph_panel
+    panel.sync(SeriesStore(), {"VehicleStatus.Rpm"})
+    qtbot.waitUntil(lambda: rect_of(panel, "VehicleStatus.Rpm").width() > 0, timeout=2_000)
+    before = rect_of(panel, "VehicleStatus.Rpm")
+
+    window.resize(window.width() + 120, window.height() + 40)
+    qtbot.waitUntil(
+        lambda: rect_of(panel, "VehicleStatus.Rpm").width() != before.width(), timeout=2_000
+    )
+    after_resize = rect_of(panel, "VehicleStatus.Rpm")
+    header = panel.lane_headers["VehicleStatus.Rpm"]
+    assert 2 <= header.x() - after_resize.left() <= 6
+    assert 2 <= header.y() - after_resize.top() <= 6
+
+    # A lane rebuild (signal selection changes) must re-anchor cleanly too.
+    panel.sync(SeriesStore(), {"VehicleStatus.Rpm", "VehicleStatus.Speed"})
+    qtbot.waitUntil(
+        lambda: rect_of(panel, "VehicleStatus.Rpm").width() > 0, timeout=2_000
+    )
+    rebuilt_rect = rect_of(panel, "VehicleStatus.Rpm")
+    rebuilt_header = panel.lane_headers["VehicleStatus.Rpm"]
+    assert 2 <= rebuilt_header.x() - rebuilt_rect.left() <= 6
+    assert 2 <= rebuilt_header.y() - rebuilt_rect.top() <= 6
 
 
 # --------------------------------------------------------------------------
