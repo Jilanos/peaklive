@@ -58,7 +58,11 @@ def _synthetic_frames(count: int) -> list[CanFrame]:
 
 def _replay(window: MainWindow, capture: Path, qtbot) -> None:
     window._open_trace(capture)
+    worker = window._replay_worker
+    failures: list[str] = []
+    worker.replay_failed.connect(failures.append)
     qtbot.waitUntil(lambda: window._replay_worker is None, timeout=120_000)
+    assert worker.succeeded, failures or window.status.currentMessage()
 
 
 # --------------------------------------------------------------------------
@@ -238,7 +242,16 @@ def test_the_event_loop_is_serviced_within_the_responsiveness_budget(qtbot, tmp_
 # --------------------------------------------------------------------------
 
 
-def test_a_large_load_leaves_every_retained_store_inside_its_bound(qtbot, tmp_path):
+def test_a_large_load_leaves_every_retained_store_inside_its_bound(qtbot, tmp_path, monkeypatch):
+    if sys.platform == "win32":
+        # This audit checks retention, not the UI's stall deadline. A busy
+        # Windows runner can exceed the production two-second deadline and
+        # abort replay early (CI run 34774401807 retained only 8,960 frames).
+        # Keep the worker bounded and all exact retention assertions intact;
+        # replay integrity tests continue to exercise the production timeout.
+        monkeypatch.setattr(
+            "peaklive.services.replay_worker.BACKPRESSURE_STALL_TIMEOUT_S", 30.0
+        )
     window = _window(qtbot, tmp_path)
     dbc = tmp_path / "synthetic.dbc"
     dbc.write_text(synthetic_dbc(AUDIT_PROFILE.message_count), encoding="utf-8")
