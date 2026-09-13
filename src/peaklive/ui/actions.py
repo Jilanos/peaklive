@@ -43,6 +43,20 @@ class WorkspaceActions:
             self._action("menu.focus_filter", self._focus_trace_filter, "Ctrl+F")
         )
         view_menu.addAction(self._action("menu.fullscreen", self._toggle_fullscreen, "F11"))
+        view_menu.addSeparator()
+        self._panel_visibility_actions = {
+            self.signals_panel.key: self._panel_visibility_action(
+                "menu.view_signals", self.signals_panel
+            ),
+            self.trace_graph_panel.key: self._panel_visibility_action(
+                "menu.view_graphs_trace", self.trace_graph_panel
+            ),
+            self.inspector_panel.key: self._panel_visibility_action(
+                "menu.view_inspector", self.inspector_panel
+            ),
+        }
+        for panel in self._layout_panels:
+            view_menu.addAction(self._panel_visibility_actions[panel.key])
 
         help_menu = bar.addMenu(translate("menu.help"))
         help_menu.addAction(self._action("menu.about", self._show_about))
@@ -55,6 +69,37 @@ class WorkspaceActions:
             action.setToolTip(f"{translate(key)} ({shortcut})")
         action.triggered.connect(slot)
         return action
+
+    def _panel_visibility_action(self, key: str, panel) -> QAction:  # noqa: ANN001
+        """A checkable View action that shows/hides one panel, rail included.
+
+        Checked means visible, so the box mirrors what the operator sees
+        rather than an internal "hidden" flag. `set_hidden` is idempotent, so
+        triggering the action from either the menu or the keyboard always
+        converges the panel and the checkmark to the same state.
+        """
+        action = QAction(translate(key), self)
+        action.setObjectName(key.replace(".", "_"))
+        action.setCheckable(True)
+        action.setChecked(not panel.is_hidden)
+        action.toggled.connect(lambda checked, target=panel: target.set_hidden(not checked))
+        panel.visibility_changed.connect(
+            lambda hidden, target=action: target.setChecked(not hidden)
+        )
+        return action
+
+    def _sync_visibility_actions(self) -> None:
+        """Reconcile every View checkmark with its panel's actual state.
+
+        Needed after profile restoration, where `set_hidden` is called while
+        `_restoring` suppresses the persistence path but the checkmark still
+        has to reflect whatever the newly loaded profile says.
+        """
+        for panel in self._layout_panels:
+            action = self._panel_visibility_actions[panel.key]
+            action.blockSignals(True)
+            action.setChecked(not panel.is_hidden)
+            action.blockSignals(False)
 
     def _install_shortcuts(self) -> None:
         self.cursor_a_action = self._action(

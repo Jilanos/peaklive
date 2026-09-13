@@ -39,25 +39,45 @@ def reflow_widths(
     total: int,
     *,
     center: int = 1,
+    hidden: list[bool] | None = None,
 ) -> list[int]:
     """Split `total` across three panels, giving collapsed ones only a rail.
 
     `remembered` carries each panel's preferred expanded width; the centre
     panel absorbs whatever the side panels do not need, and gives width back
-    only down to `MIN_CENTER_WIDTH`.
+    only down to `MIN_CENTER_WIDTH`. A panel flagged in `hidden` consumes no
+    width at all — not even a rail — regardless of its collapsed state; a
+    hidden centre panel behaves like a collapsed one for the purpose of side
+    allocation, since neither leaves it open to absorb released space.
     """
-    if total <= 0 or len(collapsed) != len(remembered):
+    if hidden is None:
+        hidden = [False] * len(collapsed)
+    if total <= 0 or not (len(collapsed) == len(remembered) == len(hidden)):
         return []
-    rails = sum(1 for flag in collapsed if flag)
+    rails = sum(1 for flag, gone in zip(collapsed, hidden, strict=False) if flag and not gone)
     available = total - rails * RAIL_WIDTH
-    open_indexes = [index for index, flag in enumerate(collapsed) if not flag]
+    open_indexes = [
+        index
+        for index, (flag, gone) in enumerate(zip(collapsed, hidden, strict=False))
+        if not flag and not gone
+    ]
+    widths = [
+        0 if gone else (RAIL_WIDTH if flag else 0)
+        for flag, gone in zip(collapsed, hidden, strict=False)
+    ]
     if not open_indexes or available <= 0:
-        return [RAIL_WIDTH if flag else max(available, 0) for flag in collapsed]
+        if not open_indexes:
+            return widths
+        return [
+            0 if gone else (RAIL_WIDTH if flag else max(available, 0))
+            for flag, gone in zip(collapsed, hidden, strict=False)
+        ]
 
-    widths = [RAIL_WIDTH if flag else 0 for flag in collapsed]
     sides = [index for index in open_indexes if index != center]
 
     if center not in open_indexes:
+        if not sides:
+            return widths
         share = available // len(sides)
         for index in sides:
             widths[index] = share
@@ -128,6 +148,7 @@ class WorkspaceReflow:
             [self._expanded_widths.get(panel.key, 0) for panel in panels],
             total,
             center=1,
+            hidden=[panel.is_hidden for panel in panels],
         )
         if widths:
             self.workspace.setSizes(widths)
@@ -146,3 +167,13 @@ class WorkspaceReflow:
         self._remember_panel_widths(only=self.sender())
         self._reflow_workspace()
         self._persist_layout()
+
+    def _panel_visibility_changed(self) -> None:
+        # Same rationale as `_panel_collapse_changed`: profile restoration
+        # drives `set_hidden` too, and that pass reflows and persists once
+        # itself after every panel is installed.
+        if self._restoring:
+            return
+        self._reflow_workspace()
+        self._persist_layout()
+        self._sync_visibility_actions()
