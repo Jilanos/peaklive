@@ -1,0 +1,591 @@
+{
+  "budgets": {
+    "max_docs": 56,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space prod_026_peaklive_predictable_and_space_efficient_measurement_workspace item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu item_128_overlay_signal_lane_titles_inside_the_drawable_graphs item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+          "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+          "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+          "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/product/prod_026_peaklive_predictable_and_space_efficient_measurement_workspace.md",
+      "ref": "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace",
+      "sections": {
+        "Goals": [
+          "- Make repeated collapse, expansion, hiding, and restoration predictable.",
+          "- Allow a graph-focused workspace with no unused Signals or Inspector rail.",
+          "- Recover vertical plotting space through in-plot identity and one-row cursor timing.",
+          "- Preserve measurement accuracy, deliberate identity access, keyboard operation, and saved profiles."
+        ],
+        "Key product decisions": [
+          "- Collapse leaves a recoverable rail; menu hiding removes the whole panel and remembers its collapse state.",
+          "- Graphs visibility controls the existing central Graphs/Trace/Report container.",
+          "- Keep existing visibility defaults; remember operator choices independently per profile.",
+          "- Titles overlay the ViewBox without consuming layout height or affecting data bounds.",
+          "- Delta means B minus A, computed before display rounding; all cursor times remain on the command row.",
+          "- At constrained widths, expose secondary commands in a same-row overflow while keeping times and Start/Stop visible."
+        ],
+        "Overview": [
+          "Make panel geometry recoverable and eliminate avoidable rails and title/readout rows so analysts can dedicate more screen area to graph comparison without losing state or measurement controls."
+        ],
+        "References": [
+          "- Product back-reference: `req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space`",
+          "- Task back-reference: `task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive predictable and space-efficient measurement workspace"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_055_simplify_and_make_the_peaklive_graph_command_row_legible"
+        ],
+        "prod": [
+          "prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states"
+        ],
+        "req": [
+          "req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states"
+        ],
+        "task": [
+          "task_017_implement_compact_graph_controls_and_unmistakable_signal_states"
+        ]
+      },
+      "path": "logics/product/prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states.md",
+      "ref": "prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states",
+      "sections": {
+        "Goals": [
+          "- Eliminate ambiguous drop-down and signal-state affordances in the dark workspace.",
+          "- Make the graph command row calmer and readable without sacrificing fit, cursor, or Follow live operation.",
+          "- Prioritize simultaneous complete A/B cursor-time visibility over redundant window-status information.",
+          "- Preserve familiar unselected favorite styling while making selected state decisive."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A focused visual cleanup makes every selector look intentional, leaves the graph header to the controls operators actually use, gives both cursor times enough room, and makes signal visibility and favorites obvious at a glance.",
+          "```mermaid",
+          "flowchart LR",
+          "  Combo[Ambiguous drop-down] --> Trigger[High-contrast trigger]",
+          "  Header[Crowded graph header] --> Compact[Fit, Follow live, cursors only]",
+          "  Compact --> Readout[Complete A/B cursor times]"
+        ],
+        "References": [
+          "- Product back-reference: `item_055_simplify_and_make_the_peaklive_graph_command_row_legible`",
+          "- Task back-reference: `task_017_implement_compact_graph_controls_and_unmistakable_signal_states`"
+        ]
+      },
+      "status": "Settled",
+      "title": "PeakLive compact graph controls and unmistakable signal states"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation",
+          "item_113_expose_an_acquisition_wide_received_frame_sequence_in_trace"
+        ],
+        "prod": [
+          "prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence"
+        ],
+        "req": [
+          "req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered"
+        ],
+        "task": [
+          "task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence"
+        ]
+      },
+      "path": "logics/product/prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence.md",
+      "ref": "prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence",
+      "sections": {
+        "Goals": [
+          "- Let an operator identify a lane by its coloured horizontal signal title without rotating their reading or relying on a hover popup.",
+          "- Preserve technical signal provenance without making hashes and frame identifiers the primary visual identity.",
+          "- Let an operator see where a retained frame sits in the complete session even after the visible trace window has rotated.",
+          "- Preserve the existing dense non-scrolling graph workspace and bounded-memory behaviour."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A focused operator-readability refinement for the existing diagnostic workspace. It makes each graph lane identifiable without technical noise, separates dense lanes visually, and exposes an acquisition-wide CAN-frame sequence in the bounded Trace table."
+        ],
+        "References": [
+          "- Product back-reference: `req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered`",
+          "- Task back-reference: `task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive self-identifying graph lanes and durable frame sequence"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "restore, predictable, panel, geometry, reclaim, graph, workspace, space",
+        "skip when": "Changing data capture, decoding, retention, or historical curve fidelity.",
+        "summary": "Defines independent panel visibility and stable geometry plus in-plot titles and one-row A/B/delta, with explicit width-pressure and profile compatibility rules.",
+        "use when": "Scoping the complete screen-space correction or resolving conflicts with earlier header requirements."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_055_simplify_and_make_the_peaklive_graph_command_row_legible",
+          "item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation",
+          "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+          "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+          "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+          "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ]
+      },
+      "path": "logics/request/req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space.md",
+      "ref": "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: At unchanged window size, a collapse/expand round trip restores all horizontal splitter positions within 2 logical pixels of the last operator layout. Cover Signals, Graphs, Inspector, repeated cycles, and multiple panels collapsed then reopened in either order. Automatic reflow must not become the new preferred layout; genuine splitter drags do update the affected layout preferences.",
+          "- AC2: After resize while panels are collapsed or hidden, restoration is deterministic, respects current available width and feasible widget minimums, and retains preferred geometry so it can be restored when space returns. Profile switches and restart preserve preferences without cross-profile leakage; temporary zero/rail geometry during Qt layout settling cannot overwrite them.",
+          "- AC3: View offers three keyboard-accessible checked visibility actions for Signals, Graphs/Trace, and Inspector. Unchecking removes the whole panel, including its rail and unused splitter handle space; checking restores its previous expanded/collapsed state and preferred geometry. Collapse remains distinct from hiding. All panels may be hidden and remain recoverable from the top menu.",
+          "- AC4: Panel visibility persists per profile; old profiles default to all three panels visible while retaining existing collapse states. Hiding/showing preserves signal selection, graph range, cursors, trace/report mode, Inspector contents, and acquisition state; it neither recreates the analysis session nor changes Start/Stop semantics.",
+          "- AC5: Every lane has one concise, curve-coloured title with its optional unit overlaid inside the drawable graph, anchored 2-6 logical pixels from its top-left corner, immediately right of the Y-axis region. There is no dedicated title row, full-width grey band, added top margin, or range padding to accommodate it. The title stays anchored during pan, zoom, resize, and signal-list changes; shared axes and a subtle inter-lane boundary remain aligned.",
+          "- AC6: Overlay titles remain legible against traces, keep Y ticks readable, and do not intercept pan, zoom, or A/B dragging beneath them. Long titles are bounded to the lane and may elide with complete identity available by accessible detail/tooltip; default graph hover still omits technical hashes. Cover duplicate display names, units, the raw preview, and dense stacks."
+        ],
+        "Needs": [
+          "- Restore the operator's splitter positions when Signals, Graphs, or Inspector is reopened with + after being collapsed with -.",
+          "- Add independently checked panel-visibility options to the top View menu so a rarely used panel can disappear completely, including its collapsed rail.",
+          "- Overlay each signal title inside its own graph at the top, starting just to the right of the Y axis, to reclaim the separate grey title band.",
+          "- Display A and B time positions and their temporal delta on the same horizontal command row as fit/resize, Start, Stop, and the existing graph actions."
+        ]
+      },
+      "status": "Ready",
+      "title": "Restore predictable panel geometry and reclaim graph workspace space"
+    },
+    {
+      "ai_context": {
+        "keywords": "simplify, peaklive, graph, command, row, legible",
+        "skip when": "The change is only about curve data, decoding, or export scope, not the command row's own controls.",
+        "summary": "Remove the zoom/grid/window-readout controls, enlarge the fit glyphs, keep Follow live on the same row, and let complete A/B cursor timestamps render together without eliding.",
+        "use when": "Changing what the graph command row displays or how it lays out fit, Follow live, and cursor readouts."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_055_simplify_and_make_the_peaklive_graph_command_row_legible"
+        ],
+        "prod": [
+          "prod_016_peaklive_compact_graph_controls_and_unmistakable_signal_states"
+        ],
+        "req": [
+          "req_016_compact_peaklive_graph_controls_and_unmistakable_signal_states"
+        ],
+        "task": [
+          "task_017_implement_compact_graph_controls_and_unmistakable_signal_states"
+        ]
+      },
+      "path": "logics/backlog/item_055_simplify_and_make_the_peaklive_graph_command_row_legible.md",
+      "ref": "item_055_simplify_and_make_the_peaklive_graph_command_row_legible",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC2: The graph command row has no + zoom button, - zoom button, or grid control. The remaining fit-all and fit-Y/resize glyphs are visually larger and centered in their buttons, Follow live is on the same horizontal row as these commands, and all remaining actions retain accessible names, tooltips, keyboard reachability, and working behavior.",
+          "- AC3: At 1024x768, 1280x720, and 1600x900, both complete A and B cursor timestamps are visible together in the graph header without clipping, overlap, wrapping, or tooltip-only fallback. The graph header shows neither start/end-second window text, delta/zoom window text, nor the No sample yet placeholder.",
+          "- AC4: The graph no longer exposes the removed zoom buttons, grid toggle, or window readout through visible UI, keyboard shortcuts, inaccessible focus targets, or misleading tooltips. Existing pan/scroll navigation, fit actions, cursor placement, Follow live, and measurement calculations remain intact.",
+          "- AC7: Focused offscreen/rendered UI regression tests prove combo trigger contrast, removed-control absence, enlarged fit glyph geometry, one-row containment, simultaneous complete A/B timestamps, absent window/no-sample text, Follow live placement, eye/star state contrast, and preserved graph/signal workflows."
+        ],
+        "Problem": [
+          "- The + and - zoom buttons, grid toggle, and window readout consume scarce header width while the B cursor time clips.",
+          "- The fit/resize glyphs are too small to be recognized reliably inside their buttons.",
+          "- Follow live is not guaranteed to sit with the primary graph commands after responsive layout pressure."
+        ]
+      },
+      "status": "Done",
+      "title": "Simplify and make the PeakLive graph command row legible"
+    },
+    {
+      "ai_context": {
+        "keywords": "render, concise, coloured, graph, lane, titles, subtle, separation",
+        "skip when": "Changing decoded values, curve colours themselves, axis fitting/navigation semantics, or the number of lanes a workspace may show.",
+        "summary": "Replaces the rotated, hash-qualified left-axis plot title with a concise, curve-coloured horizontal lane header and a subtle inter-lane separator, keeping the full DBC identity reachable only through the header's own tooltip/accessible name.",
+        "use when": "Changing how a graph lane's identity, colour, or separator is presented, or auditing that the plot's default hover text never leaks DBC provenance."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation"
+        ],
+        "prod": [
+          "prod_021_peaklive_self_identifying_graph_lanes_and_durable_frame_sequence"
+        ],
+        "req": [
+          "req_022_make_peaklive_graph_lanes_self_identifying_and_received_frames_globally_numbered"
+        ],
+        "task": [
+          "task_022_deliver_readable_graph_lanes_and_a_global_received_frame_sequence"
+        ]
+      },
+      "path": "logics/backlog/item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation.md",
+      "ref": "item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A shown lane has one horizontal, curve-coloured title containing its concise operator identity and optional unit; no rotated technical title is rendered on the left axis.",
+          "- AC2: Adjacent lanes have a visible but restrained separator and retain legible Y ticks at the supported workspace sizes.",
+          "- AC3: Hovering the graph does not disclose a raw DBC hash or identifier key by default; detailed provenance remains intentionally reachable and accessible.",
+          "- AC4: Shared X links, follow-live, fit actions, A/B lines, measurements, downsampling, and plot accessibility retain their current behaviour."
+        ],
+        "Problem": [
+          "- Each PlotWidget assigns a long provenance-qualified signal label to its left Y AxisItem, which pyqtgraph rotates vertically and which becomes illegible when several lanes are compacted.",
+          "- The PlotWidget-wide tooltip exposes an internal DBC hash, frame identifier, and signal key when the operator hovers the axis region.",
+          "- Zero spacing between stacked plots leaves no quiet visual boundary between adjacent axes and traces."
+        ]
+      },
+      "status": "In progress",
+      "title": "Render concise coloured graph-lane titles with subtle lane separation"
+    },
+    {
+      "ai_context": {
+        "keywords": "restore, operator, splitter, geometry, across, panel, collapse, expansion",
+        "skip when": "Adding panel menu actions or changing graph title and cursor presentation.",
+        "summary": "Separate operator geometry from automatic Qt allocations so center and side-panel round trips do not drift.",
+        "use when": "Changing splitter persistence, collapse reflow, resize allocation, or profile restoration."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion.md",
+      "ref": "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Actual toggle-button round trips satisfy request AC1 within 2 logical pixels after event settling for all three panels and repeated/mixed sequences; explicit drags establish the subsequent preferred layout.",
+          "- AC2: Resize-small/expand/resize-back tests prove deterministic allocation and restoration of retained preferences without negative widths or offscreen controls where minimums are feasible.",
+          "- AC3: Tests of restart, profile switching, collapsed startup, and save debouncing preserve each profile's widths and vertical dividers without transient-geometry corruption.",
+          "- AC4: Record failing-before/passing-after geometry evidence and run focused layout/profile regressions; document the state model for the following visibility slice."
+        ],
+        "Problem": [
+          "- The existing width memory can capture automatic redistributed geometry, especially when Graphs is collapsed, instead of retaining the operator's chosen divider positions."
+        ]
+      },
+      "status": "Ready",
+      "title": "Restore operator splitter geometry across panel collapse and expansion"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, persistent, full, panel, visibility, actions, view, menu",
+        "skip when": "Changing per-signal selection or the workspace mode system.",
+        "summary": "Add profile-backed visibility independent of collapse, including complete rail removal and menu recovery from all-hidden state.",
+        "use when": "Implementing View actions, hide/show transitions, keyboard reveal, or legacy profile defaults."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu.md",
+      "ref": "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Each checkable action removes/restores the complete corresponding panel and rail, with no residual unused handle gutter, and reflects explicit state rather than parent/window isVisible timing.",
+          "- AC2: Visible-expanded, visible-collapsed, hidden-from-expanded, and hidden-from-collapsed transitions restore the appropriate geometry and collapse state; all-hidden recovery and keyboard reveal work.",
+          "- AC3: Old profiles load with all panels visible, new visibility survives save/restart/profile switching, and unrelated profile fields remain unchanged.",
+          "- AC4: Hiding and showing does not reset selected signals, X range, A/B, measurement visibility, workspace mode, or Inspector state; acquisition Start/Stop remains available and correct."
+        ],
+        "Problem": [
+          "- Collapse leaves a labelled rail; there is no menu command to reclaim that last strip while retaining reliable recovery and panel state."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add persistent full-panel visibility actions to the View menu"
+    },
+    {
+      "ai_context": {
+        "keywords": "overlay, signal, lane, titles, inside, drawable, graphs",
+        "skip when": "Changing curve sampling, signal values, palettes, or Y-axis fitting semantics.",
+        "summary": "Recover each lane's title-row height with a ViewBox-anchored identity overlay that passes through graph gestures.",
+        "use when": "Changing lane composition, overlay geometry, accessible identity, or title contrast."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_128_overlay_signal_lane_titles_inside_the_drawable_graphs.md",
+      "ref": "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Titles start 2-6 logical pixels inside the top-left of each ViewBox, right of Y ticks, and no title widget contributes vertical layout height or autorange padding.",
+          "- AC2: At the same window size and lane count, plot area gains the removed title-row height; 1, 3, and 8 lanes retain aligned X origins, legible Y ticks, one bottom time axis, and no added scrolling.",
+          "- AC3: Long/duplicate names, units, and raw preview remain identifiable with complete accessible details; technical hashes stay absent from ambient graph hover.",
+          "- AC4: Pan, wheel zoom, fit, follow-live, and A/B drag initiated under the title still work; title anchoring survives these interactions, resize, and lane rebuilds."
+        ],
+        "Problem": [
+          "- Each lane currently allocates a separate QLabel row above the PlotWidget, consuming height for every shown signal."
+        ]
+      },
+      "status": "Ready",
+      "title": "Overlay signal lane titles inside the drawable graphs"
+    },
+    {
+      "ai_context": {
+        "keywords": "place, temporal, delta, readouts, shared, graph, command, row",
+        "skip when": "Changing cursor placement semantics or signal measurement algorithms.",
+        "summary": "Move synchronized A/B and signed B-minus-A times beside graph commands with complete values and a same-row overflow policy.",
+        "use when": "Changing cursor formatting, command-row geometry, overflow behaviour, or supported-width qualification."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/backlog/item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row.md",
+      "ref": "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A/B/delta update on placement, dragging, restoration, and data initialization on the same row as fit and Start/Stop, with no residual second readout band.",
+          "- AC2: Formatting tests cover neither cursor, only A, only B, equal cursors, reversed cursors, negative timestamps, long recordings, and sub-millisecond values where rounding before subtraction would produce an incorrect delta.",
+          "- AC3: Qt geometry tests at all three benchmark window sizes prove complete A/B/delta plus required direct controls in graph-focused mode, and an accessible one-row overflow policy with expanded side panels; include the long values in request AC8.",
+          "- AC4: Windows 100%/150% visual evidence confirms readable timestamps and real plot-height gains; focused cursor/navigation/profile tests pass and any unavailable Windows qualification is explicitly recorded before closeout."
+        ],
+        "Problem": [
+          "- cursor_summary stays in a separate GraphControlsBar row and reports only A/B. Moving it without a width policy would recreate the known clipping defect."
+        ]
+      },
+      "status": "Ready",
+      "title": "Place A B and temporal delta readouts in the shared graph command row"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+          "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+          "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+          "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/product/prod_026_peaklive_predictable_and_space_efficient_measurement_workspace.md",
+      "ref": "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive predictable and space-efficient measurement workspace"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, stable, panel, restoration, space, efficient, graph, workspace",
+        "skip when": "Scaffolding unrelated features or closing earlier active graph work.",
+        "summary": "Deliver four implementation waves with geometry and visibility first, then title overlays and compact cursor timing; require Qt and Windows evidence.",
+        "use when": "Implementing this request, sequencing its dependencies, and recording acceptance evidence for closeout."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+          "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+          "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+          "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row"
+        ],
+        "prod": [
+          "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace"
+        ],
+        "req": [
+          "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space"
+        ],
+        "task": [
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/tasks/task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace.md",
+      "ref": "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Deliver the four linked implementation slices against request AC1-AC9. Geometry restoration precedes visibility; integrate title and toolbar changes with the existing lane identity and cursor contracts."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver stable panel restoration and a space-efficient graph workspace"
+    }
+  ],
+  "estimates": {
+    "char_count": 26977,
+    "companion_doc_count": 3,
+    "doc_count": 9
+  },
+  "generated_at": "2026-09-13T13:32:18Z",
+  "handoff": {
+    "companion_doc_count": 3,
+    "enabled": true,
+    "source_refs": [
+      "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space",
+      "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace",
+      "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+      "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+      "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+      "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row",
+      "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 314
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space,prod_026_peaklive_predictable_and_space_efficient_measurement_workspace,item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion,item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu,item_128_overlay_signal_lane_titles_inside_the_drawable_graphs,item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row,task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace",
+  "refs": [
+    "req_027_restore_predictable_panel_geometry_and_reclaim_graph_workspace_space",
+    "prod_026_peaklive_predictable_and_space_efficient_measurement_workspace",
+    "item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion",
+    "item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu",
+    "item_128_overlay_signal_lane_titles_inside_the_drawable_graphs",
+    "item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row",
+    "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace.md",
+      "ref": "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+    }
+  ]
+}

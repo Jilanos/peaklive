@@ -1,0 +1,181 @@
+{
+  "title": "Restore predictable panel geometry and reclaim graph workspace space",
+  "references": [
+    "src/peaklive/ui/layout_reflow.py",
+    "src/peaklive/ui/widgets.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/profile_controller.py",
+    "src/peaklive/ui/actions.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/panels/workspace_header.py",
+    "src/peaklive/ui/panels/graph_lane_header.py",
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/domain/models.py",
+    "src/peaklive/ui/theme.py",
+    "src/peaklive/i18n/en.json",
+    "tests/test_ui_workspace_refinement.py",
+    "tests/test_ui_compact_graph_and_signal_states.py",
+    "tests/test_ui_graph_comparison.py",
+    "tests/test_ui_analyst.py",
+    "tests/test_profiles.py",
+    "tests/test_graph_navigation.py",
+    "logics/backlog/item_055_simplify_and_make_the_peaklive_graph_command_row_legible.md",
+    "logics/backlog/item_112_render_concise_coloured_graph_lane_titles_with_subtle_lane_separation.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Stable panel geometry and compact measurement presentation",
+    "needs": [
+      "Restore the operator's splitter positions when Signals, Graphs, or Inspector is reopened with + after being collapsed with -.",
+      "Add independently checked panel-visibility options to the top View menu so a rarely used panel can disappear completely, including its collapsed rail.",
+      "Overlay each signal title inside its own graph at the top, starting just to the right of the Y axis, to reclaim the separate grey title band.",
+      "Display A and B time positions and their temporal delta on the same horizontal command row as fit/resize, Start, Stop, and the existing graph actions."
+    ],
+    "context": [
+      "The operator normally keeps Graphs open, often collapses Signals, and rarely uses Inspector. These are usage motivations, not a request to force different visibility defaults on existing profiles.",
+      "The current native Qt shell has three horizontal CollapsiblePanel instances: signals_panel, trace_graph_panel, and inspector_panel. Graphs in this request means the existing central Graphs/Trace/Report container, not an individual plot lane or the workspace mode selector.",
+      "WorkspaceReflow already stores expanded widths. Its center-collapsed branch shares remaining width equally, and _persist_layout calls _remember_panel_widths after reflow. This suggests automatic redistribution can overwrite operator geometry; prove the sequence with settled Qt geometry before changing the algorithm.",
+      "Layout state already persists splitter_sizes, divider_sizes, panel_widths, and collapsed_panels per measurement profile. Additive visibility/preferred-geometry state must tolerate existing saved profiles without losing their settings.",
+      "graph_lane_header.build_lane currently inserts a QLabel above each PlotWidget in a vertical layout. Retain its concise signal name, optional unit, curve colour, and deliberate technical-detail access while moving the title into the drawable area.",
+      "workspace_center deliberately leaves cursor_summary in a separate GraphControlsBar row because of width pressure. This request overrides that implementation choice and narrows item_055 AC3 to one shared command row while preserving complete readable timestamps. The new delta is cursor B minus cursor A, not the previously removed viewport-duration or zoom readout.",
+      "item_112 is still In progress and permits a title inside or above the lane; this follow-up requires inside only. Coordinate overlapping edits during implementation and preserve its other identity, colour, separator, and provenance guarantees. Do not close or rewrite the earlier task merely to scaffold this request.",
+      "This is a new cross-panel space and restoration contract spanning existing presentation areas; the earlier compact-controls product brief is already Settled. Give this coherent follow-up its own brief and reference the earlier backlog requirements.",
+      "No external screenshot is required: reproduce from current code and synthetic signal fixtures. Previously removed logics/external artefacts are not implementation dependencies."
+    ],
+    "acceptance_criteria": [
+      "AC1: At unchanged window size, a collapse/expand round trip restores all horizontal splitter positions within 2 logical pixels of the last operator layout. Cover Signals, Graphs, Inspector, repeated cycles, and multiple panels collapsed then reopened in either order. Automatic reflow must not become the new preferred layout; genuine splitter drags do update the affected layout preferences.",
+      "AC2: After resize while panels are collapsed or hidden, restoration is deterministic, respects current available width and feasible widget minimums, and retains preferred geometry so it can be restored when space returns. Profile switches and restart preserve preferences without cross-profile leakage; temporary zero/rail geometry during Qt layout settling cannot overwrite them.",
+      "AC3: View offers three keyboard-accessible checked visibility actions for Signals, Graphs/Trace, and Inspector. Unchecking removes the whole panel, including its rail and unused splitter handle space; checking restores its previous expanded/collapsed state and preferred geometry. Collapse remains distinct from hiding. All panels may be hidden and remain recoverable from the top menu.",
+      "AC4: Panel visibility persists per profile; old profiles default to all three panels visible while retaining existing collapse states. Hiding/showing preserves signal selection, graph range, cursors, trace/report mode, Inspector contents, and acquisition state; it neither recreates the analysis session nor changes Start/Stop semantics.",
+      "AC5: Every lane has one concise, curve-coloured title with its optional unit overlaid inside the drawable graph, anchored 2-6 logical pixels from its top-left corner, immediately right of the Y-axis region. There is no dedicated title row, full-width grey band, added top margin, or range padding to accommodate it. The title stays anchored during pan, zoom, resize, and signal-list changes; shared axes and a subtle inter-lane boundary remain aligned.",
+      "AC6: Overlay titles remain legible against traces, keep Y ticks readable, and do not intercept pan, zoom, or A/B dragging beneath them. Long titles are bounded to the lane and may elide with complete identity available by accessible detail/tooltip; default graph hover still omits technical hashes. Cover duplicate display names, units, the raw preview, and dense stacks.",
+      "AC7: The single graph command row shows complete A, B, and signed delta timestamps beside the retained fit/resize, Start/Stop, Follow live, cursor-placement, and measurement-visibility controls. Delta is calculated as B minus A from the unrounded cursor positions; all three values use seconds with three decimal places, normalize display negative zero, update together, and show an explicit unavailable marker independently when a needed cursor is unset.",
+      "AC8: At 1024x768, 1280x720, and 1600x900, the graph-focused workspace with Signals and Inspector hidden displays the command row without clipping, overlap, wrapping, tooltip-only timestamp fallback, or a second readout row, including A=86400.123s and B=86412.468s. When side panels leave insufficient center width, keep A/B/delta and Start/Stop visible and expose lower-frequency commands in an accessible same-row overflow menu; compact labels/icons retain names and tooltips. Report measured minimum center width and handle narrower-than-supported space explicitly rather than silently truncating values.",
+      "AC9: Focused Qt interaction/geometry tests and a Windows visual pass at 100% and 150% scaling demonstrate the reclaimed panel/plot space, restoration and menu recovery, anchored overlay interactions, and synchronized cursor readouts. Existing profile, navigation, measurements, trace/report, acquisition, and historical-curve behaviour remains intact; delivery evidence records the tested configurations and any qualification still outstanding."
+    ]
+  },
+  "product": {
+    "title": "PeakLive predictable and space-efficient measurement workspace",
+    "overview": "Make panel geometry recoverable and eliminate avoidable rails and title/readout rows so analysts can dedicate more screen area to graph comparison without losing state or measurement controls.",
+    "goals": [
+      "Make repeated collapse, expansion, hiding, and restoration predictable.",
+      "Allow a graph-focused workspace with no unused Signals or Inspector rail.",
+      "Recover vertical plotting space through in-plot identity and one-row cursor timing.",
+      "Preserve measurement accuracy, deliberate identity access, keyboard operation, and saved profiles."
+    ],
+    "non_goals": [
+      "Implement floating docks, detachable windows, or a new workspace mode system.",
+      "Change CAN capture, decoding, historical retention, curve reduction, exports, or signal measurement mathematics.",
+      "Add per-signal menu visibility toggles: these menu actions control the three workspace panels.",
+      "Reintroduce removed zoom/grid/window readouts, redesign the palette, or force Inspector hidden by default."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Restore operator splitter geometry across panel collapse and expansion",
+      "priority": "High - unstable restoration disrupts every panel toggle and is the prerequisite for reliable hide/show behaviour.",
+      "complexity": "High",
+      "theme": "Panel geometry state",
+      "request_acs": ["AC1", "AC2", "AC9"],
+      "problem": ["The existing width memory can capture automatic redistributed geometry, especially when Graphs is collapsed, instead of retaining the operator's chosen divider positions."],
+      "scope_in": [
+        "Reproduce the defect with actual minus/plus clicks and settled Qt events in tests/test_ui_workspace_refinement.py, including center collapse and non-LIFO reopen sequences.",
+        "Separate preferred user geometry from allocated splitter geometry in layout_reflow/profile_controller; record explicit drags and retain compatible snapshots or equivalent stable per-state preferences for round trips.",
+        "Define a deterministic constrained-width allocation: hidden panels consume zero, collapsed visible panels consume their rail, open panels respect feasible minimums, and the expanded center absorbs released space. Do not overwrite preferences during automatic redistribution or profile restoration.",
+        "Preserve existing vertical divider positions and profile serialization through an additive backwards-compatible state representation; validate malformed or incomplete persisted values using existing model conventions."
+      ],
+      "scope_out": ["Menu visibility actions, overlay titles, cursor-row presentation, and unrelated active historical-rendering work."],
+      "acceptance_criteria": [
+        "AC1: Actual toggle-button round trips satisfy request AC1 within 2 logical pixels after event settling for all three panels and repeated/mixed sequences; explicit drags establish the subsequent preferred layout.",
+        "AC2: Resize-small/expand/resize-back tests prove deterministic allocation and restoration of retained preferences without negative widths or offscreen controls where minimums are feasible.",
+        "AC3: Tests of restart, profile switching, collapsed startup, and save debouncing preserve each profile's widths and vertical dividers without transient-geometry corruption.",
+        "AC4: Record failing-before/passing-after geometry evidence and run focused layout/profile regressions; document the state model for the following visibility slice."
+      ]
+    },
+    {
+      "title": "Add persistent full-panel visibility actions to the View menu",
+      "priority": "High - hiding the unused Inspector rail directly recovers graph width and builds on the geometry correction.",
+      "complexity": "Medium",
+      "theme": "Workspace panel visibility",
+      "request_acs": ["AC2", "AC3", "AC4", "AC9"],
+      "problem": ["Collapse leaves a labelled rail; there is no menu command to reclaim that last strip while retaining reliable recovery and panel state."],
+      "scope_in": [
+        "Depends on the geometry slice. Add three checkable View actions in actions.py backed by explicit per-profile visibility, independent of collapsed_panels.",
+        "Treat Graphs/Trace as the central container including its Report mode; do not turn the new visibility action into a mode selector or per-signal toggle.",
+        "Make hide/show work for both expanded and collapsed panels, synchronize checkmarks after profile changes, and restore hidden panels from the always-reachable top menu even when all are hidden.",
+        "Preserve hidden panel contents and active acquisition. Existing F5/F6 and top-menu Start/Stop remain usable with the center hidden. Ctrl+B remains collapse/expand when Signals is visible and reveals then expands Signals when hidden; explicit reveal shortcuts update the menu checkmark.",
+        "Use translated action labels and accessible names, and add backwards-compatible model round-trip/default tests."
+      ],
+      "scope_out": ["Changing default visible panels in existing profiles, floating docks, and suspending capture when a panel is hidden."],
+      "acceptance_criteria": [
+        "AC1: Each checkable action removes/restores the complete corresponding panel and rail, with no residual unused handle gutter, and reflects explicit state rather than parent/window isVisible timing.",
+        "AC2: Visible-expanded, visible-collapsed, hidden-from-expanded, and hidden-from-collapsed transitions restore the appropriate geometry and collapse state; all-hidden recovery and keyboard reveal work.",
+        "AC3: Old profiles load with all panels visible, new visibility survives save/restart/profile switching, and unrelated profile fields remain unchanged.",
+        "AC4: Hiding and showing does not reset selected signals, X range, A/B, measurement visibility, workspace mode, or Inspector state; acquisition Start/Stop remains available and correct."
+      ]
+    },
+    {
+      "title": "Overlay signal lane titles inside the drawable graphs",
+      "priority": "Medium - removing repeated title bands increases plot height while preserving the existing lane identity contract.",
+      "complexity": "Medium",
+      "theme": "In-plot signal identity",
+      "request_acs": ["AC5", "AC6", "AC9"],
+      "problem": ["Each lane currently allocates a separate QLabel row above the PlotWidget, consuming height for every shown signal."],
+      "scope_in": [
+        "Replace build_lane's title layout row with a screen-anchored overlay attached to the drawable ViewBox geometry; keep it out of data bounds and autorange calculations.",
+        "Preserve lane_identity, curve-colour matching, optional units, and intentional full-identity access; retain a subtle separator without a full-width title background.",
+        "Anchor the overlay after resize/axis layout and keep it fixed during pan/zoom. Use bounded elision and restrained text outline or local translucent backing if needed for contrast.",
+        "Allow gestures and cursor dragging through the overlay while exposing deliberate detail/accessibility; update existing header-structure expectations to test the new product behaviour.",
+        "Coordinate with item_112's active delivery: retain its identity/provenance requirements and narrow only title placement."
+      ],
+      "scope_out": ["Changing signal selection, palette assignments, curve reduction, Y-scale semantics, historical rendering, or adding graph scrollbars."],
+      "acceptance_criteria": [
+        "AC1: Titles start 2-6 logical pixels inside the top-left of each ViewBox, right of Y ticks, and no title widget contributes vertical layout height or autorange padding.",
+        "AC2: At the same window size and lane count, plot area gains the removed title-row height; 1, 3, and 8 lanes retain aligned X origins, legible Y ticks, one bottom time axis, and no added scrolling.",
+        "AC3: Long/duplicate names, units, and raw preview remain identifiable with complete accessible details; technical hashes stay absent from ambient graph hover.",
+        "AC4: Pan, wheel zoom, fit, follow-live, and A/B drag initiated under the title still work; title anchoring survives these interactions, resize, and lane rebuilds."
+      ]
+    },
+    {
+      "title": "Place A B and temporal delta readouts in the shared graph command row",
+      "priority": "Medium - the separate timestamp row wastes graph height and omits the requested direct time-difference readout.",
+      "complexity": "High",
+      "theme": "Compact cursor timing",
+      "request_acs": ["AC7", "AC8", "AC9"],
+      "problem": ["cursor_summary stays in a separate GraphControlsBar row and reports only A/B. Moving it without a width policy would recreate the known clipping defect."],
+      "scope_in": [
+        "Move the existing live cursor summary into WorkspaceHeaderBar beside fit/resize and Start/Stop, preserving a single source of cursor state and removing empty GraphControlsBar row height in the integrated window.",
+        "Render A, B, and delta B-A in seconds to three decimals from unrounded positions; independently represent unset values, support negative and zero delta, and avoid display negative zero.",
+        "Implement request AC8's same-row width policy: compact control presentation first, then accessible overflow for lower-frequency controls under side-panel pressure; keep A/B/delta and Start/Stop directly visible. Measure required center width and prevent unsupported narrowing from silently clipping timestamps.",
+        "Use font-metric sizing for long signed values and scalable controls. Preserve fit-all, fit-Y, Follow live, cursor placement, measurement visibility, mode access, keyboard actions, and standalone GraphStackPanel behaviour.",
+        "Update the workspace_center comment and affected item_055-related test expectations to reflect this new one-row contract; the cursor delta does not restore removed viewport readouts."
+      ],
+      "scope_out": ["Changing cursor positioning semantics, sample/value measurement algorithms, adding frequency readouts, or restoring removed zoom/grid controls."],
+      "acceptance_criteria": [
+        "AC1: A/B/delta update on placement, dragging, restoration, and data initialization on the same row as fit and Start/Stop, with no residual second readout band.",
+        "AC2: Formatting tests cover neither cursor, only A, only B, equal cursors, reversed cursors, negative timestamps, long recordings, and sub-millisecond values where rounding before subtraction would produce an incorrect delta.",
+        "AC3: Qt geometry tests at all three benchmark window sizes prove complete A/B/delta plus required direct controls in graph-focused mode, and an accessible one-row overflow policy with expanded side panels; include the long values in request AC8.",
+        "AC4: Windows 100%/150% visual evidence confirms readable timestamps and real plot-height gains; focused cursor/navigation/profile tests pass and any unavailable Windows qualification is explicitly recorded before closeout."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver stable panel restoration and a space-efficient graph workspace",
+    "plan": [
+      "Wave 1 (High): Reproduce the toggle geometry defect at settled Qt event boundaries; implement and validate preferred-versus-allocated geometry, mixed collapse sequences, resizing, and profile round trips. Record tests and the chosen allocation policy in this task before committing the wave.",
+      "Wave 2 (High, depends on Wave 1): Add independent persistent visibility and synchronized View menu actions. Verify rail-space recovery, all-hidden recovery, keyboard reveal, acquisition availability, and preserved session state; record and commit the completed wave.",
+      "Wave 3 (Medium): Coordinate existing item_112 edits, move lane titles into the ViewBox, and verify anchoring, height gain, accessible identity, and gesture pass-through for 1/3/8 lanes. Record and commit the completed wave.",
+      "Wave 4 (Medium, integrate after Wave 2): Consolidate A/B/delta into the command row with the explicit width and overflow policy. Validate numerical edge cases, supported resolutions, side-panel pressure, and absence of a second row; record and commit the completed wave.",
+      "Before new user-facing labels, run logics-manager i18n status and follow the existing translation contract; validate i18n after copy changes. Use synthetic fixtures and avoid dependencies on removed external artefacts.",
+      "Run QT_QPA_PLATFORM=offscreen pytest tests/test_ui_workspace_refinement.py tests/test_ui_compact_graph_and_signal_states.py tests/test_ui_graph_comparison.py tests/test_ui_analyst.py tests/test_profiles.py tests/test_graph_navigation.py plus new focused tests in the project environment. Run the repository lint and required CI checks in proportion to changed modules.",
+      "Qualify the integrated Windows application at 1024x768, 1280x720, and 1600x900 with 100%/150% scaling where feasible. Record actual logical viewport, splitter positions before/after, title/plot bounds, toolbar containment, screenshots with synthetic data, and any unavailable platform checks; offscreen tests alone do not prove Windows visual acceptance.",
+      "Map every request AC to concrete test/visual evidence, run Logics lint and audit, and use flow closeout only when implemented and qualified. This scaffold is planning only; do not start or finish implementation tasks during corpus creation."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_stable_space_efficient_workspace.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}
