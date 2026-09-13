@@ -17,6 +17,7 @@ accessible "more commands" button instead of clipping a timestamp.
 
 from __future__ import annotations
 
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QMenu,
@@ -112,6 +113,32 @@ class WorkspaceHeaderBar(QWidget):
                 self._recompute_overflow()
         finally:
             self._refreshing_overflow = False
+
+    def _required_floor_width(self) -> int:
+        """The row's true, non-negotiable floor: required controls only.
+
+        This must never depend on which *deferrable* controls happen to be
+        on the row right now, or on the overflow button's current
+        visibility. `minimumSizeHint()` below feeds straight into
+        `reflow_widths`'s idea of the centre panel's minimum width
+        (`_reflow_workspace` reads `panel.minimumSizeHint()`); if that
+        number could shrink whenever something folds into the overflow
+        menu, the centre panel would be allocated less room on the next
+        reflow, which shrinks `_available_width()` further, folding more -
+        a runaway collapse down to nothing. Reserving the overflow button's
+        own width unconditionally (not only when it happens to be visible)
+        keeps this floor a fixed point: once every deferrable control has
+        folded, there is nothing left that can still shrink it.
+        """
+        spacing = self.row.spacing()
+        required = [widget for widget in self._required if not widget.isHidden()]
+        width = sum(_width_demand(widget) for widget in required)
+        width += spacing * len(required)
+        width += _width_demand(self._overflow_button)
+        return width
+
+    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        return QSize(self._required_floor_width(), super().minimumSizeHint().height())
 
     def _available_width(self) -> int:
         """The row's real width budget, not just this widget's current size.
