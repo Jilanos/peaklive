@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Stable panel geometry and compact measurement presentation
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-13 15:34:34
+> Indicators reviewed: 2026-09-13 17:01:13
 > Owner: paul.mondou@circle-mobility.com
 
 # AI Context
@@ -29,9 +29,9 @@
 - [x] 6. Run QT_QPA_PLATFORM=offscreen pytest tests/test_ui_workspace_refinement.py tests/test_ui_compact_graph_and_signal_states.py tests/test_ui_graph_comparison.py tests/test_ui_analyst.py tests/test_profiles.py tests/test_graph_navigation.py plus new focused tests in the project environment. Run the repository lint and required CI checks in proportion to changed modules.
 - [ ] 7. Qualify the integrated Windows application at 1024x768, 1280x720, and 1600x900 with 100%/150% scaling where feasible. Record actual logical viewport, splitter positions before/after, title/plot bounds, toolbar containment, screenshots with synthetic data, and any unavailable platform checks; offscreen tests alone do not prove Windows visual acceptance. UNAVAILABLE in this session's environment (Linux/WSL, offscreen Qt platform, no Windows host) - explicitly recorded as an open gap, not claimed as done. See Validation.
 - [ ] 8. Map every request AC to concrete test/visual evidence, run Logics lint and audit, and use flow closeout only when implemented and qualified. This scaffold is planning only; do not start or finish implementation tasks during corpus creation.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
-- [ ] Commit each completed meaningful wave with implementation, regression coverage, and updated Logics evidence as required by the repository instructions.
-- [ ] GATE: do not close until lint, audit, and scaffold validation pass.
+- [x] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready. Done each wave (see Validation); repo is commit-ready with no pending source/test changes.
+- [x] Commit each completed meaningful wave with implementation, regression coverage, and updated Logics evidence as required by the repository instructions. `9f1be11`, `95c1d89`, `5e7e098`, `53e3ad3`.
+- [ ] GATE: do not close until lint, audit, and scaffold validation pass. Lint/audit pass (see Validation); scaffold validation (Windows qualification, Plan item 7) is outstanding, so this task is NOT closed.
 
 # Backlog
 - `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`
@@ -40,27 +40,36 @@
 - `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`
 
 # Definition of Done (DoD)
-- [ ] All four slices are implemented and request AC1-AC9 have concrete evidence.
-- [ ] Geometry round trips, mixed hide/collapse states, all-hidden recovery, and legacy profile round trips pass.
-- [ ] In-plot titles reclaim height, preserve accessible identity, and pass through graph gestures.
-- [ ] Complete A/B/delta share the command row, with tested formatting and width-pressure behaviour.
-- [ ] Focused Qt regressions, required repository checks, and Windows visual qualification pass; unavailable qualification is recorded and prevents claiming full completion.
-- [ ] Meaningful waves follow ADR 009 with updated docs and commits; context pack and acceptance traceability reflect the delivered state.
+- [x] All four slices are implemented and request AC1-AC9 have concrete evidence. See AC Traceability.
+- [x] Geometry round trips, mixed hide/collapse states, all-hidden recovery, and legacy profile round trips pass. See Validation (Waves 1-2).
+- [x] In-plot titles reclaim height, preserve accessible identity, and pass through graph gestures. See Validation (Wave 3).
+- [x] Complete A/B/delta share the command row, with tested formatting and width-pressure behaviour. See Validation (Wave 4).
+- [ ] Focused Qt regressions, required repository checks, and Windows visual qualification pass; unavailable qualification is recorded and prevents claiming full completion. Qt regressions and required repo checks pass; Windows visual qualification is UNAVAILABLE in this environment and is explicitly recorded as an open gap (see Validation) — this bullet stays unchecked and the task stays open until it is obtained.
+- [x] Meaningful waves follow ADR 009 with updated docs and commits; context pack and acceptance traceability reflect the delivered state.
 
 # AC Traceability
-- request-AC1 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof deferred to slice closeout.
-- request-AC2 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof deferred to slice closeout.
-- request-AC9 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof deferred to slice closeout.
-- request-AC2 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof deferred to slice closeout.
-- request-AC3 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof deferred to slice closeout.
-- request-AC4 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof deferred to slice closeout.
-- request-AC9 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof deferred to slice closeout.
-- request-AC5 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof deferred to slice closeout.
-- request-AC6 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof deferred to slice closeout.
-- request-AC9 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof deferred to slice closeout.
-- request-AC7 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof deferred to slice closeout.
-- request-AC8 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof deferred to slice closeout.
-- request-AC9 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof deferred to slice closeout.
+- request-AC1 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof: see item_126 AC1.
+- request-AC1 -> This task. Proof: `test_collapsing_the_centre_panel_does_not_corrupt_side_panel_preferences` and `test_mixed_non_lifo_collapse_sequences_restore_each_panels_own_width` (tests/test_ui_workspace_refinement.py) — toggle round trips restore the operator's dragged widths within 2px after settled Qt events, including mixed/non-LIFO sequences; commit `9f1be11`.
+- request-AC2 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof: see item_126 AC2.
+- request-AC2 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof: see item_127 AC2.
+- request-AC2 -> This task. Proof: `test_resize_small_then_expand_then_resize_back_keeps_allocation_sane` (geometry, commit `9f1be11`) and `test_showing_a_hidden_expanded_panel_restores_its_remembered_width`/`test_showing_a_hidden_collapsed_panel_restores_the_rail_not_the_full_width` (visibility, commit `95c1d89`), all in tests/test_ui_workspace_refinement.py.
+- request-AC3 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof: see item_127 AC1.
+- request-AC3 -> This task. Proof: `test_hiding_an_expanded_panel_removes_it_and_its_rail_completely` and `test_hiding_a_collapsed_panel_removes_the_rail_too` (tests/test_ui_workspace_refinement.py) — each View action fully removes the panel and its rail with no residual gutter; commit `95c1d89`.
+- request-AC4 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof: see item_127 AC3/AC4.
+- request-AC4 -> This task. Proof: `test_old_profile_without_hidden_panels_loads_with_everything_visible`, `test_visibility_survives_save_restart_and_profile_switch`, `test_all_panels_hidden_are_still_recoverable_from_the_view_menu`, `test_ctrl_b_reveals_and_expands_signals_when_hidden`, `test_hiding_and_showing_preserves_unrelated_workspace_state`, `test_start_stop_remain_usable_with_the_centre_panel_hidden` (tests/test_ui_workspace_refinement.py); commit `95c1d89`.
+- request-AC5 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof: see item_128 AC1.
+- request-AC5 -> This task. Proof: `test_lane_title_sits_a_few_pixels_inside_the_viewbox_top_left_with_no_layout_height` (tests/test_ui_graph_comparison.py) — title anchored 2-6px inside the ViewBox top-left, right of the Y ticks, no layout height contributed; commit `5e7e098`.
+- request-AC6 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof: see item_128 AC2.
+- request-AC6 -> This task. Proof: `test_plot_area_gains_the_removed_title_row_height_for_one_three_and_eight_lanes` and `test_adjacent_lanes_have_a_subtle_separator_and_keep_readable_y_ticks` (tests/test_ui_graph_comparison.py) for 1/3/8 lanes; commit `5e7e098`.
+- request-AC7 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof: see item_129 AC1.
+- request-AC7 -> This task. Proof: `test_graph_controls_are_grouped_by_purpose`, `test_the_empty_graph_controls_row_is_reclaimed` (tests/test_ui_workspace_refinement.py) — A/B/delta share the command row with fit/Start/Stop and the second row is reclaimed; commit `53e3ad3`.
+- request-AC8 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof: see item_129 AC2/AC3.
+- request-AC8 -> This task. Proof: formatting matrix (`test_only_cursor_a_set_represents_b_and_delta_independently` through `test_zero_delta_from_submillisecond_positions_shows_no_negative_sign`) and the width-pressure matrix (`test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports`, `test_long_values_never_clip_when_side_panels_squeeze_the_header`, `test_a_long_readout_never_pushes_required_controls_past_the_header`), all tests/test_ui_workspace_refinement.py; commit `53e3ad3`. Windows 100%/150% visual confirmation of this policy is NOT available in this environment — see Validation and Plan item 7.
+- request-AC9 -> `item_126_restore_operator_splitter_geometry_across_panel_collapse_and_expansion`. Proof: see item_126 AC3/AC4.
+- request-AC9 -> `item_127_add_persistent_full_panel_visibility_actions_to_the_view_menu`. Proof: see item_127 AC3.
+- request-AC9 -> `item_128_overlay_signal_lane_titles_inside_the_drawable_graphs`. Proof: see item_128 AC4.
+- request-AC9 -> `item_129_place_a_b_and_temporal_delta_readouts_in_the_shared_graph_command_row`. Proof: see item_129 AC4.
+- request-AC9 -> This task. Proof: full offscreen Qt regression suite (tests/test_ui_workspace_refinement.py, tests/test_ui_compact_graph_and_signal_states.py, tests/test_ui_graph_comparison.py, tests/test_ui_analyst.py, tests/test_profiles.py, tests/test_graph_navigation.py, `uv run pytest tests/ -q`) green across all four waves, and `uv run ruff check`/`logics-manager i18n validate` clean on every touched file; commits `9f1be11`, `95c1d89`, `5e7e098`, `53e3ad3`. Windows 100%/150% visual qualification (request-AC9's Windows evidence) is NOT available in this environment — explicitly recorded as an open gap, not claimed as done; see Validation and Plan item 7.
 
 # Validation
 - Wave 1 (item_126) allocation policy: separated the single `_expanded_widths` store into a strict preferred-width cache that is only updated by an explicit operator action. `_remember_panel_widths(only=<panel>)` now scopes the capture to the one panel whose `collapsed_changed` signal actually fired (via `self.sender()`), never its siblings, and `_persist_layout()` no longer calls `_remember_panel_widths` at all — only `_splitter_dragged()` (wired to `QSplitter.splitterMoved`) and `_panel_collapse_changed()` do, each before any reflow runs. This stops two corruption paths: (a) `_persist_layout`'s old unconditional re-remember after `_reflow_workspace` had already applied an automatic equal-share split when the centre panel collapsed, and (b) a sibling panel's currently-allocated (not preferred) width being captured just because a different panel's collapse state changed, e.g. the sole remaining open side panel absorbing 100% of the released width and then having that absorbed value promoted to "preferred" when a third panel was reopened. `reflow_widths` itself (src/peaklive/ui/layout_reflow.py) is unchanged: hidden-panel concept is out of scope for Wave 1 (added in Wave 2/item_127); collapsed panels consume `RAIL_WIDTH`; open panels respect `MIN_SIDE_WIDTH`/`MIN_CENTER_WIDTH`; the centre absorbs released space.
