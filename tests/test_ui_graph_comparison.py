@@ -129,6 +129,18 @@ def test_fit_y_only_rescales_y_and_preserves_the_visible_x_window(qtbot, tmp_pat
     assert panel.visible_window() == window_before
 
 
+def test_adding_a_signal_preserves_the_visible_time_window(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path)
+    panel = window.graph_panel
+    window._render_frames([_speed_frame(float(i), 100 * i) for i in range(10)])
+    panel.zoom(0.4)
+    window_before = panel.visible_window()
+
+    window._signal_shown_changed("VehicleStatus.Rpm", True)
+
+    assert panel.visible_window() == window_before
+
+
 def test_fit_x_and_y_resets_the_full_extent(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
     panel = window.graph_panel

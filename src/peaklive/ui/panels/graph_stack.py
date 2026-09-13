@@ -97,8 +97,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def lane_headers(self) -> dict[str, QLabel]:
         return self._lane_headers
     def sync(self, store: SeriesStore, shown: set[str]) -> None:
-        """Rebuild one plot per shown signal, keeping the cursors where they are."""
         self._store = store
+        previous_window = self.visible_window()
         wanted = sorted(shown) or [RAW_PREVIEW]
         while self.container_layout.count():
             item = self.container_layout.takeAt(0)
@@ -167,6 +167,10 @@ class GraphStackPanel(GraphNavigation, QWidget):
             if is_bottom:
                 plot.setLabel("bottom", translate("graph.time_axis"), units="s")
         self.anchor_plot = anchor
+        if previous_window is not None and anchor is not None:
+            self._applying_range = True
+            anchor.getViewBox().setXRange(*previous_window, padding=0)
+            self._applying_range = False
         self._apply_cursor_lines()
         self.refresh_data()
     def closeEvent(self, event) -> None:  # type: ignore[no-untyped-def]
@@ -194,13 +198,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
             )
             if extent is not None and visible is not None:
                 revision = getattr(self._history, "data_revision", lambda: ("", ""))()
-                key = (
-                    str(self._history.path),
-                    revision,
-                    tuple(self._curves),
-                    extent,
-                    visible,
-                )
+                key = (str(self._history.path), revision, tuple(self._curves), extent, visible)
                 cached = self._history_result_cache.get(key)
                 self._history_generation += 1
                 generation = self._history_generation
@@ -250,11 +248,8 @@ class GraphStackPanel(GraphNavigation, QWidget):
         if generation != self._history_generation or self._history is None:
             return
         fallback_key = (
-            str(self._history.path),
-            ("", ""),
-            tuple(self._curves),
-            self.global_extent(),
-            self.visible_window(),
+            str(self._history.path), ("", ""), tuple(self._curves),
+            self.global_extent(), self.visible_window()
         )
         key = self._history_request_keys.pop(generation, fallback_key)
         is_new_entry = key not in self._history_result_cache

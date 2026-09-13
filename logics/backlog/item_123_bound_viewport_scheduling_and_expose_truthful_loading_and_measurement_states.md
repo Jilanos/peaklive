@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 72%
+> Progress: 80%
 > Complexity: High
 > Theme: Historical request lifecycle and cache consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -61,6 +61,7 @@
 
 # Validation
 - Wave 7 (2026-09-12): late-selection source reconstruction is implemented for completed replay sessions. `SourceSignalDecodeWorker` streams the opened ASC/TRC source through `iter_trace` and a copied DBC catalog, writes decoded samples to `HistoricalSignalStore` in bounded batches, keeps only a bounded `SeriesStore` tail, serializes requests through the existing signal backfill queue, reports progress/failure, and cleans partial signal history on cancel/failure/source-change before it can be reused. `GraphStackPanel` cache keys now include the committed history data revision, invalidating stale empty results after reconstruction. Regression coverage: `tests/test_lazy_signals.py::test_a_late_selection_after_replay_is_reconstructed_from_the_full_source` and `tests/test_graph_stack_history_scheduler.py::test_a_history_append_invalidates_a_cached_empty_viewport`. Local proof: `uv run python -m pytest tests/` -> `588 passed, 1 skipped`; `uv run ruff check` -> pass; `python -m logics_manager lint --require-status` -> OK; `python -m logics_manager audit --group-by-doc` -> zero blockers with known warnings; Windows build `0.1.2+b202609122024` and automated packaged qualification pass with SHA-256 `F1E8DC5AA7CA6E35E1AD73C57D86C0DC2A369F722F55C701D359ADC4CE0DE6F0`.
+- Wave 8 (2026-09-13): adding a signal no longer resizes the operator's visible time window. `GraphStackPanel.sync()` preserves the current X range while rebuilding lanes and applies it to the new anchor plot as programmatic navigation, so the late-selected lane appears without moving the time viewport. Regression: `tests/test_ui_graph_comparison.py::test_adding_a_signal_preserves_the_visible_time_window`; targeted validation `uv run python -m pytest tests/test_ui_structure.py tests/test_ui_graph_comparison.py tests/test_graph_navigation.py` -> `100 passed`; targeted Ruff passes.
 
 # Report
 - Remaining item_123 closeout gaps: direct mid-query SQL/chunk cancellation proof, 1000-gesture latency/heartbeat evidence, hidden/unchanged measurement-budget proof, and operator private-trace Windows qualification from item_124. The source reconstruction path intentionally does not claim recovery for unrecorded live frames.

@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 72%
+> Progress: 80%
 > Complexity: Medium
 > Theme: Behavioral qualification and reproducible evidence
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -63,3 +63,9 @@
 # Priority
 - Priority: High - existing green tests did not detect the operator-visible disappearance.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Validation
+- Operator private packaged update (2026-09-13): scenarios A and B from the local qualification protocol pass on the operator's private trace/DBC using the packaged Windows artifact from wave 7. A = three original signals selected before load with wheel zoom around the previously failing boundary; B = late-selected signal after load using source-backed reconstruction. Scenario C rare-event drill-down is explicitly not tested because no acquired/known rare event was available to validate directly, so AC4 remains open. The copied build identity/hash from wave 7 remain the artifact evidence: build `0.1.2+b202609122024`, SHA-256 `F1E8DC5AA7CA6E35E1AD73C57D86C0DC2A369F722F55C701D359ADC4CE0DE6F0`.
+
+# Report
+- Residual operator-observed defect from A/B: adding a new signal resized the visible time window. Fixed in item_123 wave 8 by preserving the X range across `GraphStackPanel.sync()` lane rebuilds; covered by `tests/test_ui_graph_comparison.py::test_adding_a_signal_preserves_the_visible_time_window`.
