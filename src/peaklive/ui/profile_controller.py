@@ -98,8 +98,10 @@ class WorkspaceProfiles:
                 self.center_divider.setSizes(layout.divider_sizes)
             self._expanded_widths = dict(layout.panel_widths)
             for panel in self._layout_panels:
+                panel.set_hidden(panel.key in layout.hidden_panels)
                 panel.set_collapsed(panel.key in layout.collapsed_panels)
             self._reflow_workspace()
+            self._sync_visibility_actions()
             self.graph_panel.restore_cursors(layout.cursor_a, layout.cursor_b)
             self.graph_panel.set_measurement_values_visible(profile.measurement_values_visible)
             if layout.fullscreen and not self.isFullScreen():
@@ -173,6 +175,7 @@ class WorkspaceProfiles:
         layout.collapsed_panels = [
             panel.key for panel in self._layout_panels if panel.is_collapsed
         ]
+        layout.hidden_panels = [panel.key for panel in self._layout_panels if panel.is_hidden]
         layout.cursor_a = self.graph_panel.cursor_a
         layout.cursor_b = self.graph_panel.cursor_b
         layout.fullscreen = self.isFullScreen()

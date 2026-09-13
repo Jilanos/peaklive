@@ -276,6 +276,10 @@ class WorkspaceLayout:
     #: Remembered expanded width per side panel, so a collapsed panel comes
     #: back to the width the operator gave it rather than to a guess.
     panel_widths: dict[str, int] = field(default_factory=dict)
+    #: Panels fully removed from the workspace, rail included, independent of
+    #: `collapsed_panels`. Absent (the default) means visible, so a profile
+    #: saved before this field existed restores with every panel visible.
+    hidden_panels: list[str] = field(default_factory=list)
     cursor_a: float | None = None
     cursor_b: float | None = None
     fullscreen: bool = False
@@ -287,6 +291,7 @@ class WorkspaceLayout:
             "divider_sizes": list(self.divider_sizes),
             "collapsed_panels": list(self.collapsed_panels),
             "panel_widths": dict(self.panel_widths),
+            "hidden_panels": list(self.hidden_panels),
             "cursor_a": self.cursor_a,
             "cursor_b": self.cursor_b,
             "fullscreen": self.fullscreen,
@@ -330,6 +335,7 @@ class WorkspaceLayout:
             divider_sizes=sizes("divider_sizes"),
             collapsed_panels=[str(name) for name in raw.get("collapsed_panels", [])],
             panel_widths=widths("panel_widths"),
+            hidden_panels=[str(name) for name in raw.get("hidden_panels", [])],
             cursor_a=optional_float("cursor_a"),
             cursor_b=optional_float("cursor_b"),
             fullscreen=bool(raw.get("fullscreen", False)),

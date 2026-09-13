@@ -745,6 +745,220 @@ def test_the_keyboard_collapse_shortcut_reclaims_the_column(qtbot, tmp_path):
     assert window.workspace.sizes()[0] >= MIN_SIDE_WIDTH
 
 
+# --------------------------------------------------------------------------
+# item_127 - persistent full-panel visibility, independent of collapse
+# --------------------------------------------------------------------------
+
+
+def test_hiding_an_expanded_panel_removes_it_and_its_rail_completely(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    window.inspector_panel.set_hidden(True)
+    qtbot.wait(10)
+
+    assert not window.inspector_panel.isVisible()
+    assert not window.inspector_panel.rail.isVisible()
+    sizes = window.workspace.sizes()
+    assert sizes[2] == 0
+    assert window._panel_visibility_actions["inspector"].isChecked() is False
+
+
+def test_hiding_a_collapsed_panel_removes_the_rail_too(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+    assert window.inspector_panel.rail.isVisible()
+
+    window.inspector_panel.set_hidden(True)
+    qtbot.wait(10)
+
+    assert not window.inspector_panel.isVisible()
+    sizes = window.workspace.sizes()
+    assert sizes[2] == 0
+
+
+def test_showing_a_hidden_expanded_panel_restores_its_remembered_width(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window.workspace.setSizes([340, 660, 280])
+    window._splitter_dragged()
+    qtbot.wait(10)
+
+    window.inspector_panel.set_hidden(True)
+    qtbot.wait(10)
+    window.inspector_panel.set_hidden(False)
+    qtbot.wait(10)
+
+    assert not window.inspector_panel.is_collapsed
+    assert _about(window.workspace.sizes()[2], 280)
+    assert window._panel_visibility_actions["inspector"].isChecked() is True
+
+
+def test_showing_a_hidden_collapsed_panel_restores_the_rail_not_the_full_width(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(10)
+    window.inspector_panel.set_hidden(True)
+    qtbot.wait(10)
+
+    window.inspector_panel.set_hidden(False)
+    qtbot.wait(10)
+
+    assert window.inspector_panel.is_collapsed
+    assert window.workspace.sizes()[2] == RAIL_WIDTH
+
+
+def test_all_panels_hidden_are_still_recoverable_from_the_view_menu(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    for panel in window._layout_panels:
+        panel.set_hidden(True)
+    qtbot.wait(10)
+
+    assert window.menuBar().isEnabled()
+    assert all(size >= 0 for size in window.workspace.sizes())
+    action = window._panel_visibility_actions["center"]
+    assert action.isEnabled()
+
+    action.trigger()
+    qtbot.wait(10)
+
+    assert not window.trace_graph_panel.is_hidden
+    assert window.trace_graph_panel.isVisible()
+
+
+def test_the_view_menu_action_toggles_visibility_and_stays_synced(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    action = window._panel_visibility_actions["signals"]
+    assert action.isChecked() is True
+
+    action.trigger()
+    qtbot.wait(10)
+    assert window.signals_panel.is_hidden
+    assert action.isChecked() is False
+
+    window.signals_panel.set_hidden(False)
+    qtbot.wait(10)
+    assert action.isChecked() is True
+
+
+def test_ctrl_b_reveals_and_expands_signals_when_hidden(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    window.signals_panel.set_hidden(True)
+    qtbot.wait(10)
+
+    window._toggle_signals_panel()
+    qtbot.wait(10)
+
+    assert not window.signals_panel.is_hidden
+    assert not window.signals_panel.is_collapsed
+    assert window._panel_visibility_actions["signals"].isChecked() is True
+
+
+def test_start_stop_remain_usable_with_the_centre_panel_hidden(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+
+    window.trace_graph_panel.set_hidden(True)
+    qtbot.wait(10)
+
+    assert window.start_action.isEnabled()
+    window._start_acquisition()
+    qtbot.waitUntil(lambda: window.stop_action.isEnabled(), timeout=5_000)
+    window._stop_acquisition()
+    qtbot.wait(10)
+
+
+def test_hiding_and_showing_preserves_unrelated_workspace_state(qtbot, tmp_path):
+    window = _with_dbc(qtbot, tmp_path)
+    window.signal_filter.setText("speed")
+    item = _signal_item(window, "Speed")
+    window.signal_explorer.setCurrentItem(item)
+    window._signal_shown_changed(_signal_key(window, "Speed"), True)
+    window.graph_panel.place_cursor("a")
+    window.workspace_mode_selector.setCurrentIndex(
+        window.workspace_mode_selector.findData("trace")
+    )
+    qtbot.wait(10)
+    selected_before = set(window._selected_signal_names)
+    mode_before = window.selected_profile.layout.workspace_mode
+    cursor_a_before = window.graph_panel.cursor_a
+
+    window.inspector_panel.set_hidden(True)
+    qtbot.wait(10)
+    window.inspector_panel.set_hidden(False)
+    qtbot.wait(10)
+
+    assert window._selected_signal_names == selected_before
+    assert window.selected_profile.layout.workspace_mode == mode_before
+    assert window.graph_panel.cursor_a == cursor_a_before
+    assert window.start_action.isEnabled()
+
+
+def test_old_profile_without_hidden_panels_loads_with_everything_visible(qtbot, tmp_path):
+    store = ProfileStore(tmp_path / "settings")
+    state = store.load()
+    assert not hasattr(state.selected.layout, "hidden_panels") or (
+        state.selected.layout.hidden_panels == []
+    )
+    store.save(state)
+
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+
+    for panel in window._layout_panels:
+        assert not panel.is_hidden
+        assert panel.isVisible()
+
+
+def test_visibility_survives_save_restart_and_profile_switch(qtbot, tmp_path):
+    store = ProfileStore(tmp_path / "settings")
+    window = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(window)
+    window.resize(1280, 720)
+    window.show()
+    qtbot.waitExposed(window)
+
+    window.inspector_panel.set_hidden(True)
+    window._flush_save()
+
+    stored = store.load().selected.layout
+    assert stored.hidden_panels == ["inspector"]
+    assert stored.collapsed_panels == []
+
+    restored = MainWindow(store, adapter_factory=FakeCanAdapter)
+    qtbot.addWidget(restored)
+    restored.resize(1280, 720)
+    restored.show()
+    qtbot.waitExposed(restored)
+
+    assert restored.inspector_panel.is_hidden
+    assert restored._panel_visibility_actions["inspector"].isChecked() is False
+    assert not restored.signals_panel.is_hidden
+    assert not restored.trace_graph_panel.is_hidden
+
+    second = restored.selected_profile.duplicate("Second setup")
+    second.layout.hidden_panels = []
+    restored.profile_selector.addItem("Second setup")
+    restored._state.profiles.append(second)
+    restored._profile_changed(1)
+    qtbot.wait(10)
+    assert not restored.inspector_panel.is_hidden
+
+    restored._profile_changed(0)
+    qtbot.wait(10)
+    assert restored.inspector_panel.is_hidden
+
+
+def test_a_hidden_centre_panel_lets_reflow_release_its_full_width(qtbot, tmp_path):
+    widths = reflow_widths(
+        [False, False, False], [300, 0, 300], 1200, hidden=[False, True, False]
+    )
+    assert widths[1] == 0
+    assert widths[0] + widths[2] == 1200
+
+
 def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
     bar = window.graph_panel.controls

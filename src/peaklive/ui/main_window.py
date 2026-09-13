@@ -190,6 +190,7 @@ class MainWindow(
 
         for panel in self._layout_panels:
             panel.collapsed_changed.connect(self._panel_collapse_changed)
+            panel.visibility_changed.connect(self._panel_visibility_changed)
             self.workspace.addWidget(panel)
         self.workspace.setStretchFactor(1, 1)
         self.workspace.setSizes([320, 720, 280])
@@ -247,7 +248,14 @@ class MainWindow(
         self.report_panel.setVisible(mode == "report")
 
     def _toggle_signals_panel(self) -> None:
-        self.signals_panel.set_collapsed(not self.signals_panel.is_collapsed)
+        panel = self.signals_panel
+        if panel.is_hidden:
+            # Ctrl+B always leaves Signals usable: reveal it and open it in
+            # the same keystroke rather than requiring a second press.
+            panel.set_hidden(False)
+            panel.set_collapsed(False)
+        else:
+            panel.set_collapsed(not panel.is_collapsed)
 
     def _toggle_fullscreen(self) -> None:
         if self.isFullScreen():

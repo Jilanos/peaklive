@@ -102,6 +102,9 @@ class CollapsiblePanel(QFrame):
     """
 
     collapsed_changed = Signal(bool)
+    #: Emitted with the new hidden state whenever `set_hidden` actually
+    #: changes it, mirroring `collapsed_changed`.
+    visibility_changed = Signal(bool)
 
     def __init__(self, title: str, key: str, parent: QWidget | None = None) -> None:
         super().__init__(parent, objectName="instrument")
@@ -110,6 +113,9 @@ class CollapsiblePanel(QFrame):
         # Explicit state: a panel inside a window that was never shown is not
         # collapsed, it is simply not on screen yet.
         self._collapsed = False
+        # Explicit state, independent of `QWidget.isVisible()`, which also
+        # reflects whether the top-level window itself has been shown yet.
+        self._hidden = False
         layout = QVBoxLayout(self)
         self._layout = layout
         self._expanded_margins = layout.contentsMargins()
@@ -190,6 +196,23 @@ class CollapsiblePanel(QFrame):
 
     def _toggle(self) -> None:
         self.set_collapsed(not self.is_collapsed)
+
+    @property
+    def is_hidden(self) -> bool:
+        return self._hidden
+
+    def set_hidden(self, hidden: bool) -> None:
+        """Remove the panel, rail included, or restore it.
+
+        Independent of `set_collapsed`: the collapsed/expanded state is
+        preserved underneath and reapplied exactly as it was the moment the
+        panel becomes visible again.
+        """
+        if hidden == self._hidden:
+            return
+        self._hidden = hidden
+        self.setVisible(not hidden)
+        self.visibility_changed.emit(hidden)
 
     def _sync_toggle(self) -> None:
         collapsed = self.is_collapsed
