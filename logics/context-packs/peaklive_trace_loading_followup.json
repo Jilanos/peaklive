@@ -1,0 +1,499 @@
+{
+  "budgets": {
+    "max_docs": 64,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation task_028_deliver_responsive_ordered_and_measurable_long_trace_loading item_130_measure_and_gate_the_complete_trace_preparation_lifecycle item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work --mode full --profile deep",
+  "companion_docs": [],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "long, trace, loading, responsive, ordered, failure, explicit",
+        "skip when": "Reopening the earlier review or duplicating historical navigation and workspace layout tasks.",
+        "summary": "Load the operator's 1.756M-frame typical and 5.575M-frame long workloads with ordered evidence and bounded historical preparation.",
+        "use when": "Scoping the four reproduced loading gaps and their integrated Windows qualification."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+          "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+          "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+          "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+          "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_028_incremental_review_findings_trace_loading_and_historical_storage",
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability",
+          "task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace"
+        ]
+      },
+      "path": "logics/request/req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit.md",
+      "ref": "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A reproducible harness covers ASC/TRC and 0/1/8/16 selected signals, measures history append/summary/commit, queue wait, GUI projection, first useful data and fully-ready milestones, verifies exact accepted source counts and terminal success, and exits nonzero on timeout, partial load, failure or selected budget overrun.",
+          "- AC2: Frames and valid bus events retain source order and exact authoritative counts through one bounded acknowledged replay transport. Event-only captures, bursts of at least 10000 events, mixed record boundaries, EOF, cancellation and replacement cannot bypass bounds or complete before all accepted records settle.",
+          "- AC3: Read-only, locked, full and failed history persistence plus worker exceptions cause one explicit failed/incomplete terminal state. No GUI slot exception escapes, source files remain intact, owned queue permits are retired exactly once, retries cannot double-count records and reopening a valid capture succeeds.",
+          "- AC4: Raw historical samples, seven-level or equivalently faithful summaries and rare-event anchors are prepared off the GUI thread under a documented single-writer bounded-queue contract. On the declared reference workload the existing 250ms responsiveness objective holds during ingest/finalization/cancel; no higher timeouts, missing history, unbounded queues or disabled integrity checks substitute for that objective.",
+          "- AC5: Historical preparation has explicit temporary-disk accounting, admission/low-space policy, bounded batches and cleanup ownership. Reset, deselection, source or DBC changes, late reconstruction, cancellation and shutdown cannot mix revisions or delete another session's data. Configured resource-limit failures are explicit and tested.",
+          "- AC6: Current full-history values, timestamps, source order, rare-event anchors and CAN/signal identity remain correct against source-derived oracles; live recording, replay, exports, historical navigation and retained buffers pass relevant regression checks. Existing historical and workspace tasks retain their own unfinished acceptance responsibilities."
+        ],
+        "Needs": [
+          "- Load typical and fifty-minute captures without freezing the workspace, losing record order, disguising failed preparation or sacrificing complete historical evidence.",
+          "- Expose reliable progress and cancellation throughout parsing, historical preparation and display finalization, accepting longer total loading for longer captures.",
+          "- Attribute the complete loading cost and remove synchronous historical persistence from GUI ingestion.",
+          "- Coordinate existing historical reconstruction and viewport work through explicit writer ownership and revision contracts."
+        ]
+      },
+      "status": "Ready",
+      "title": "Make long trace loading responsive ordered and failure explicit"
+    },
+    {
+      "ai_context": {
+        "keywords": "incremental, review, findings, trace, loading, historical, storage",
+        "skip when": "Claiming these findings are implemented or duplicating already-open navigation and Windows layout work.",
+        "summary": "Evidence-backed incremental audit after the second-pass review, focused on trace loading, ordered events, history write failure and missing performance attribution.",
+        "use when": "Reviewing the evidence and ownership map before implementing the associated corrective corpus."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "req": [
+          "req_028_incremental_review_findings_trace_loading_and_historical_storage"
+        ]
+      },
+      "path": "logics/request/req_028_incremental_review_findings_trace_loading_and_historical_storage.md",
+      "ref": "req_028_incremental_review_findings_trace_loading_and_historical_storage",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Selected-signal loading has attributable history costs and bounded GUI work without discarding raw or rare-event history.",
+          "- AC2: Mixed frame/event and event-only replay is source-ordered and bounded through terminal acknowledgement.",
+          "- AC3: Storage failures produce explicit recoverable terminal outcomes without silent partial success or stuck permits.",
+          "- AC4: Performance evidence covers representative signal counts, long-duration density, first-data and ready states; harness failure returns a nonzero verdict.",
+          "- AC5: New corrections and already-owned historical/Windows debts are distinguished, with workload decisions, qualification blockers and remaining questions documented."
+        ],
+        "Needs": [
+          "- F1 (High): Remove synchronous historical sample/summary/event construction from the GUI loading critical path while retaining complete measurement evidence.",
+          "- F2 (High): Bound valid replay events together with frames and preserve their source order.",
+          "- F3 (High): Contain history write failures without leaking acknowledgements, leaving unexplained partial facts or misreporting completion.",
+          "- F4 (Medium): Measure and enforce the complete current loading path, including history construction and first/final useful display."
+        ]
+      },
+      "status": "Draft",
+      "title": "Incremental review findings: trace loading and historical storage"
+    },
+    {
+      "ai_context": {
+        "keywords": "measure, gate, complete, trace, preparation, lifecycle",
+        "skip when": "Changing transport or writer ownership before their dedicated slices.",
+        "summary": "Expose SQLite preparation and truthful ready milestones missing from the old seven-stage benchmark.",
+        "use when": "Building trustworthy before/after evidence and fail-closed benchmark verdicts."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_130_measure_and_gate_the_complete_trace_preparation_lifecycle.md",
+      "ref": "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Harness regressions prove nonzero exit for timeout, cancellation/failure, frame/event mismatch and forced stage or readiness overrun.",
+          "- AC2: Structured results distinguish history preparation from GUI work and first-data from final-ready; 0/1/8/16 signals actually exercise their expected historical sample counts.",
+          "- AC3: Synthetic density is configurable to the measured 1858 frames/s and the report identifies whether 1.756M/5.575M qualification cases were run or deferred."
+        ],
+        "Problem": [
+          "- The profiler excludes the new dominant history write cost and the script can report success after timeout or budget overruns.",
+          "- The old one-signal small fixture does not qualify the operator's long dense captures."
+        ]
+      },
+      "status": "Ready",
+      "title": "Measure and gate the complete trace preparation lifecycle"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, ordered, bounded, replay, batches, frames, bus, events",
+        "skip when": "Changing bus event meaning or dropping authoritative events for presentation speed.",
+        "summary": "Prevent valid bus events from overtaking buffered frames or bypassing replay capacity.",
+        "use when": "Implementing a shared ordered record transport with explicit acknowledgement and EOF semantics."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events.md",
+      "ref": "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Source frame(0.000), event(0.001), frame(0.002) is observed in the same order by trace and facts consumers.",
+          "- AC2: A blocked GUI cannot cause 10000 valid events to bypass transport capacity; event-only and mixed loads retain exact counts after drain.",
+          "- AC3: Completion requires settlement of every accepted record; cancel/replacement release only owned permits and cannot install stale records.",
+          "- AC4: Existing ASC/TRC replay, CAN identity and progress integrity tests remain green."
+        ],
+        "Problem": [
+          "- Valid bus events bypass the four-batch semaphore and overtake earlier frames buffered in ReplayWorker."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver ordered bounded replay batches for frames and bus events"
+    },
+    {
+      "ai_context": {
+        "keywords": "contain, historical, persistence, failures, settle, ingestion, ownership",
+        "skip when": "Silently retrying partial mutations or treating discarded historical coverage as complete.",
+        "summary": "Turn mid-batch SQLite exceptions into explicit incomplete outcomes with exact permit retirement.",
+        "use when": "Defining accepted versus persisted batches and recoverable terminal cleanup."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership.md",
+      "ref": "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The query_only reproduction no longer escapes a Qt slot, leaks a permit, blocks the drain indefinitely or reports complete analysis.",
+          "- AC2: Locked/full/write/commit/worker failure cases emit one terminal cause, retire ownership exactly once, preserve source bytes and permit a subsequent successful open.",
+          "- AC3: A failure after partial preparation cannot be retried into duplicate session facts or reused as complete historical coverage.",
+          "- AC4: Cancellation and failure clean only artifacts owned by their session/revision and do not remove a new session's samples."
+        ],
+        "Problem": [
+          "- A SQLite exception currently occurs after trace/facts/frame mutations and before batch acknowledgement, escaping the GUI slot."
+        ]
+      },
+      "status": "Ready",
+      "title": "Contain historical persistence failures and settle ingestion ownership"
+    },
+    {
+      "ai_context": {
+        "keywords": "move, batch, historical, trace, ingestion, behind, bounded, writer, ownership",
+        "skip when": "Rewriting the viewport scheduler or changing database technology without evidence.",
+        "summary": "Remove seven-level summary and SQLite commit work from Qt ingestion without reducing historical fidelity.",
+        "use when": "Implementing measured transaction batching and shared writer/resource ownership."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership.md",
+      "ref": "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Instrumented GUI ingestion performs no historical SQL or full-history summary construction; writer concurrency, queue count/bytes and chunk sizes have deterministic asserted limits.",
+          "- AC2: Selected-signal sample counts, exact values/timestamps and summary/event fidelity match a source oracle across batch sizes, including one-frame final batches.",
+          "- AC3: Resource-limit, reset, cancellation, late selection and shutdown tests prove writer cleanup and revision isolation without stale mutation.",
+          "- AC4: Reference-machine loading stays within the retained 250ms interaction objective and reports first-data/ready time, with a measured reduction of the identified GUI history work.",
+          "- AC5: Live recording and bounded replay continue to preserve authoritative counts without new GUI-thread disk waits."
+        ],
+        "Problem": [
+          "- The GUI constructs and commits historical samples, seven summary levels and run events every 256 frames.",
+          "- The measured sixteen-signal history reaches about 39 times the synthetic source bytes; no explicit disk admission policy exists."
+        ]
+      },
+      "status": "Ready",
+      "title": "Move and batch historical trace ingestion behind bounded writer ownership"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, typical, fifty, minute, trace, loading, existing, historical, work",
+        "skip when": "Using small offscreen tests or historical artifact records as current native Windows acceptance.",
+        "summary": "Exercise 1.756M and 5.575M frames at operator density and keep missing Windows proof explicit.",
+        "use when": "Qualifying the integrated preparation pipeline after correctness and performance slices."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/backlog/item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work.md",
+      "ref": "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The complete lifecycle harness records each preparation stage and first-data/ready milestones; timeout, partial load and enabled budget failures have nonzero verdicts.",
+          "- AC2: Typical-density and event-heavy qualification preserves ordered frame/event counts with bounded queues through EOF, cancel and replacement.",
+          "- AC3: Storage and worker fault qualification demonstrates one explicit incomplete outcome, exact ownership retirement and successful reopen without source mutation.",
+          "- AC4: Identified reference-machine evidence demonstrates the existing 250ms interaction target during loading, finalization and cancellation without relaxing product bounds.",
+          "- AC5: Temporary-disk, memory and queue peaks plus configured admission limits are recorded; reset, late-selection and shutdown preserve session/revision isolation.",
+          "- AC6: Source-oracle, live/export and historical regression evidence remains traceable; existing navigation/rare-event/workspace obligations are not duplicated or silently waived."
+        ],
+        "Problem": [
+          "- Small offscreen tests and historic Windows evidence cannot qualify the current selected-signal pipeline at operator density."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify typical and fifty minute trace loading with existing historical work"
+    },
+    {
+      "ai_context": {
+        "keywords": "restore, dense, historical, overview, coverage, rare, event, discoverability",
+        "skip when": "Closing with queued CI, unresolved artifact qualification or option-only rendering evidence.",
+        "summary": "Sequence summary correctness, single-pass rendering, event fidelity and packaged qualification.",
+        "use when": "Implementing the complete corrective chain from the supplied diagnosis and source/render probes."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/tasks/task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability.md",
+      "ref": "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Start with logics/analysis/dense_overview_diagnosis.md and its reproducible source/render probe. This task implements the correction; creating this corpus did not change application behavior.",
+          "- Summary/render correctness and the pulse/dip fidelity cases are ready to implement. Operator-specific build/DBC evidence gates packaged qualification; generic semantic anomaly classification is excluded."
+        ],
+        "Validation": [
+          "- Corpus preparation only (2026-09-12): request flow validation has zero findings; Ruff and Logics lint pass; repository audit has zero blockers and one pre-existing prod_021 missing-diagram warning. The synthetic probe reproduces partial summary coverage, zero rendered points after automatic reduction, stale overview after clear, and loss of a non-extreme 100 ms analog dip. Implementation and packaged acceptance remain outstanding; task progress stays 0%.",
+          "- Wave 1 (2026-09-12): item_121 correctness fixes landed \u2014 `HistoricalSignalStore.append_many` now builds complete first/min/max/last summaries for every batch size (grouped in Python, one SQL upsert per touched bucket instead of per sample), with deterministic timestamp-based tie-breaking so coverage no longer depends on how raw rows are split across append calls; `clear()` now wipes `summary` and `overview_cache` alongside `samples`. item_122's proven double-reduction defect is fixed \u2014 `GraphStackPanel` now disables pyqtgraph's automatic peak downsampling on historical (already-reduced) results and re-enables it for live samples. New regression tests: `tests/test_history.py::test_history_overview_coverage_is_independent_of_append_batching`, `::test_history_overview_coverage_is_independent_of_mixed_signal_batching`, `::test_history_clear_invalidates_summary_and_overview_cache`; `tests/test_graph_stack_downsampling.py` (both new tests, verified to fail without the fix and pass with it). Full `uv run python -m pytest tests/` is green. Re-ran `logics/analysis/dense_overview_probe.py`: `bulk_plus_tail` coverage is now consistent across tail=0/1/16; `clear` case no longer returns stale overview data. Still outstanding and unfixed: `sparse_summary_wide_view` disabled-auto case (item_122 rare-event anchors, not yet implemented) and `nonextreme_short_dip` (180 A event still lost \u2014 needs run-boundary/local-extremum anchors, out of scope for this wave). item_123 (viewport scheduler/cache budget), item_124 (packaged Windows qualification \u2014 requires the operator's private trace and a Windows executable, cannot be performed from this environment) and item_125 (copyable build label) are untouched.",
+          "- Wave 2 (2026-09-12): item_122 rare-event anchors landed. `HistoricalSignalStore` now tracks per-signal value runs during `append_many` (`events` + `signal_run_state` tables) and anchors every run's entry/exit sample, carried correctly across append-batch boundaries. `overview()` reserves anchor slots (`max(4, max_points // 4)`) in both the summary-level and raw-bucket-scan branches, competing honestly for the point budget before truncation; when the anchor count in range exceeds the reserved slots, anchors are omitted rather than an arbitrary, silently-truncated subset (an explicit clustered-count marker is not yet implemented \u2014 flagged as a known gap, not claimed as done). `clear()` wipes `events`/`signal_run_state` too. Verified against the diagnosis's exact mandatory cases at a realistic production budget (max_points=256, not the diagnosis's deliberately-extreme max_points=4 counterexample): a 250 A\u2192180 A dip beside a larger, unrelated 250 A\u2192100 A dip in the same coarse bucket now both survive (`tests/test_history.py::test_history_overview_preserves_a_nonextreme_short_dip_beside_a_larger_one`, confirmed to fail without the fix and pass with it); a four-frame assertion after 50,000 quiet frames survives with and without an append-batch split across the transition (`::test_history_overview_preserves_a_four_frame_assertion_after_quiet_frames`, `::test_history_event_anchors_survive_append_batch_boundaries` \u2014 these two already pass without the anchor mechanism too, since a binary assertion is inherently the bucket max; kept as coverage, not proof of the anchor path). Full `uv run python -m pytest tests/` and `ruff check` are green. Known remaining gap in item_122: no clustered-activity marker for dense/noisy signals whose transition count exceeds the reserved budget (falls back to envelope-only, matching pre-existing behavior \u2014 not a regression, but AC4's \"explicit clustered marker\" requirement is not yet met); `sparse_summary_wide_view`'s already-passing case is unaffected. item_123 and item_124 remain untouched.",
+          "- Wave 3 (2026-09-12): item_125 landed. The status-bar build label (`MainWindow.build`) is now selectable/copyable by mouse and keyboard (`Qt.TextInteractionFlag.TextSelectableByMouse | TextSelectableByKeyboard`) without being editable, with an I-beam cursor as an affordance; text, tooltip, accessible name, size constraints and `build_info().identifier` source are all unchanged (AC7, offscreen-verified \u2014 `tests/test_ui_build_identity.py::test_the_identifier_is_selectable_and_copyable_but_read_only`, confirmed to fail without the fix). AC8 (packaged qualification recording the copied identifier) is operator action inside item_124 and is not claimed here. Full `uv run python -m pytest tests/` and `ruff check` are green.",
+          "- Wave 4 (2026-09-12): item_123, two scoped fixes to `GraphStackPanel`'s viewport request bookkeeping (the fuller scheduler/byte-budget/full-file-late-selection scope in item_123 remains open). (1) A cache hit for a new viewport used to leave any still-running worker for a previous viewport untouched and did not bump the request generation; a slow worker completing later would then pass the (unchanged) generation check and overwrite the cache-hit display with stale data \u2014 the \"cache-hit A/B/A race\" named in the diagnosis. The cache-hit path now bumps the generation and cancels the in-flight worker exactly like a cache miss does. (2) The completion handler cached its result under a key rebuilt from whatever viewport the UI showed at completion time rather than the viewport actually requested; if the operator kept navigating while a query was in flight, the result was filed under the wrong key, poisoning a later legitimate cache hit for the viewport it was really computed for. The request's own key is now threaded through `_history_request_keys` (keyed by generation, replaced rather than accumulated so it can't leak across an unbounded number of navigation gestures) and used at completion instead of recomputed state. New tests in `tests/test_graph_stack_history_scheduler.py`, both confirmed to fail without the fix. Full `uv run python -m pytest tests/` and `ruff check` are green. Still open in item_123: the byte-budget cache accounting audit, actual mid-query SQL/chunk cancellation, canonical revision-aware viewport keys, and the full-file late-selection background reconstruction (AC6) \u2014 none of these are touched by this wave.",
+          "- Wave 5 (2026-09-12): item_123, nonmodal worker-failure presentation. `HistoryViewportWorker.failed` was emitted but never connected to anything in `GraphStackPanel` \u2014 a background read failure (source missing/changed/permission error) was silently dropped, with only a log line the operator never sees. `refresh_data()` now connects `worker.failed` to `_historical_refresh_failed`, which shows a new nonmodal error message (`graph.history_error`, added to `src/peaklive/i18n/en.json`) on the existing `StateNote` (`self.note`) without touching the currently-displayed curves \u2014 the last valid view is retained rather than blanked, consistent with AC6's \"retain last valid data\" requirement. A later successful completion clears the error note. New tests in `tests/test_graph_stack_history_scheduler.py` (`test_a_failed_viewport_read_shows_a_nonmodal_error_and_keeps_last_valid_data`, `test_a_subsequent_success_clears_a_previous_error_note`), both confirmed to fail without the fix \u2014 reproduced with a real worker failure (the backing SQLite file is unlinked mid-session so a new read-only connection genuinely cannot open, not a mocked exception). Full `uv run python -m pytest tests/` and `ruff check` are green. Still open in item_123: actual mid-query SQL/chunk cancellation, canonical revision-aware viewport keys, and the full-file late-selection background reconstruction (AC6)."
+        ]
+      },
+      "status": "In progress",
+      "title": "Restore dense historical overview coverage and rare event discoverability"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+          "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+          "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+          "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+          "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/product/prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation.md",
+      "ref": "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive responsive and trustworthy long trace preparation"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, responsive, ordered, measurable, long, trace, loading",
+        "skip when": "Claiming completion from green scaffolding or silently closing existing platform and rare-event gaps.",
+        "summary": "Sequence measurement, ordered transport, storage failure containment, writer optimization and long-capture qualification.",
+        "use when": "Implementing the approved preparation contract with the active historical task's revision and cancellation interfaces."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+          "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+          "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+          "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+          "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+        ],
+        "prod": [
+          "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation"
+        ],
+        "req": [
+          "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit"
+        ],
+        "task": [
+          "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading"
+        ]
+      },
+      "path": "logics/tasks/task_028_deliver_responsive_ordered_and_measurable_long_trace_loading.md",
+      "ref": "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- The audit and synthetic fault probe reproduce missing history attribution, event order/capacity bypass and an unchecked SQLite failure. The user accepts long preparation for equally dense captures up to fifty minutes.",
+          "- Synthetic implementation is ready. Windows reference-machine access and temporary-disk policy gate final qualification/default selection, not the start of transport and failure-boundary work. Coordinate existing historical reconstruction before changing shared writer ownership."
+        ],
+        "Validation": [
+          "- Corpus preparation only: 626 baseline Linux/offscreen tests passed in 197.18s; initial and shown-window probes reproduce the history bottleneck. Ordered event and SQLite error probes reproduce the reported gaps. No runtime correction has been implemented."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver responsive ordered and measurable long trace loading"
+    }
+  ],
+  "estimates": {
+    "char_count": 30007,
+    "companion_doc_count": 0,
+    "doc_count": 10
+  },
+  "generated_at": "2026-09-13T21:32:49Z",
+  "handoff": {
+    "companion_doc_count": 0,
+    "enabled": false,
+    "source_refs": [
+      "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit",
+      "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation",
+      "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading",
+      "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+      "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+      "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+      "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+      "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+    ],
+    "validation_summary_count": 0
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 319
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit,prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation,task_028_deliver_responsive_ordered_and_measurable_long_trace_loading,item_130_measure_and_gate_the_complete_trace_preparation_lifecycle,item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events,item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership,item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership,item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work",
+  "refs": [
+    "req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit",
+    "prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation",
+    "task_028_deliver_responsive_ordered_and_measurable_long_trace_loading",
+    "item_130_measure_and_gate_the_complete_trace_preparation_lifecycle",
+    "item_131_deliver_ordered_bounded_replay_batches_for_frames_and_bus_events",
+    "item_132_contain_historical_persistence_failures_and_settle_ingestion_ownership",
+    "item_133_move_and_batch_historical_trace_ingestion_behind_bounded_writer_ownership",
+    "item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": []
+}
