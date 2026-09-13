@@ -40,6 +40,7 @@ def reflow_widths(
     *,
     center: int = 1,
     hidden: list[bool] | None = None,
+    minimums: list[int] | None = None,
 ) -> list[int]:
     """Split `total` across three panels, giving collapsed ones only a rail.
 
@@ -49,10 +50,28 @@ def reflow_widths(
     width at all — not even a rail — regardless of its collapsed state; a
     hidden centre panel behaves like a collapsed one for the purpose of side
     allocation, since neither leaves it open to absorb released space.
+
+    `minimums`, when given, is each panel's actual Qt-enforced minimum width
+    (e.g. read live from `QWidget.minimumSizeHint()`), used instead of the
+    `MIN_SIDE_WIDTH`/`MIN_CENTER_WIDTH` constants. Those constants are a
+    guess made without knowing what a panel's content — button labels, an
+    icon row, a readout — actually costs on the running platform's fonts and
+    style; when that real cost is larger than the guess (a wider default
+    font, denser native chrome), computing sizes as if the guess were still
+    the floor lets `QSplitter` silently override the result to meet the real
+    minimum, taking the difference from a sibling this arithmetic never
+    accounted for. Passing the live minimum keeps the two in agreement, so
+    `QSplitter.setSizes` applies exactly what was computed instead of
+    correcting it after the fact.
     """
     if hidden is None:
         hidden = [False] * len(collapsed)
-    if total <= 0 or not (len(collapsed) == len(remembered) == len(hidden)):
+    if minimums is None:
+        minimums = [
+            MIN_CENTER_WIDTH if index == center else MIN_SIDE_WIDTH
+            for index in range(len(collapsed))
+        ]
+    if total <= 0 or not (len(collapsed) == len(remembered) == len(hidden) == len(minimums)):
         return []
     rails = sum(1 for flag, gone in zip(collapsed, hidden, strict=False) if flag and not gone)
     available = total - rails * RAIL_WIDTH
@@ -85,10 +104,10 @@ def reflow_widths(
         return widths
 
     for index in sides:
-        widths[index] = max(MIN_SIDE_WIDTH, remembered[index] or DEFAULT_SIDE_WIDTH)
+        widths[index] = max(minimums[index], remembered[index] or DEFAULT_SIDE_WIDTH)
     requested = sum(widths[index] for index in sides)
-    if available - requested < MIN_CENTER_WIDTH and sides:
-        room = max(available - MIN_CENTER_WIDTH, 0)
+    if available - requested < minimums[center] and sides:
+        room = max(available - minimums[center], 0)
         for index in sides:
             widths[index] = widths[index] * room // requested
     widths[center] = available - sum(widths[index] for index in sides)
@@ -143,12 +162,24 @@ class WorkspaceReflow:
         panels = self._layout_panels
         sizes = self.workspace.sizes()
         total = sum(sizes) or self.workspace.width()
+        # A collapsed panel's own `minimumSizeHint()` reflects its rail, not
+        # what it would need if reopened, but `reflow_widths` only ever reads
+        # a collapsed panel's minimum for a slot that isn't collapsed - so a
+        # too-small hint here is simply unused, never a wrong floor.
+        minimums = [
+            max(
+                MIN_CENTER_WIDTH if index == 1 else MIN_SIDE_WIDTH,
+                panel.minimumSizeHint().width(),
+            )
+            for index, panel in enumerate(panels)
+        ]
         widths = reflow_widths(
             [panel.is_collapsed for panel in panels],
             [self._expanded_widths.get(panel.key, 0) for panel in panels],
             total,
             center=1,
             hidden=[panel.is_hidden for panel in panels],
+            minimums=minimums,
         )
         if widths:
             self.workspace.setSizes(widths)

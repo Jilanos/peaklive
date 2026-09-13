@@ -14,8 +14,16 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QScrollArea, QWidget
+from PySide6.QtGui import QColor, QFont
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QHeaderView,
+    QLabel,
+    QScrollArea,
+    QWidget,
+)
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.i18n import translate
@@ -555,6 +563,13 @@ def test_collapsing_the_centre_panel_does_not_corrupt_side_panel_preferences(qtb
     window.workspace.setSizes([340, 660, 240])
     window._splitter_dragged()
     qtbot.wait(10)
+    # `setSizes` above is only a request; a platform whose fonts make a
+    # panel's real content wider than 340/240px has Qt clamp the applied
+    # sizes up to that real minimum immediately. What `_splitter_dragged`
+    # actually remembered is whatever Qt applied, not the literal request,
+    # so the round trip below is compared against that live snapshot -
+    # otherwise this test would assume a specific platform's font metrics.
+    dragged = window.workspace.sizes()
 
     window.trace_graph_panel.set_collapsed(True)
     qtbot.wait(10)
@@ -563,8 +578,8 @@ def test_collapsing_the_centre_panel_does_not_corrupt_side_panel_preferences(qtb
     qtbot.wait(10)
 
     sizes = window.workspace.sizes()
-    assert abs(sizes[0] - 340) <= 2
-    assert abs(sizes[2] - 240) <= 2
+    assert abs(sizes[0] - dragged[0]) <= 2
+    assert abs(sizes[2] - dragged[2]) <= 2
 
 
 def test_mixed_non_lifo_collapse_sequences_restore_each_panels_own_width(qtbot, tmp_path):
@@ -573,6 +588,10 @@ def test_mixed_non_lifo_collapse_sequences_restore_each_panels_own_width(qtbot, 
     window.workspace.setSizes([360, 620, 260])
     window._splitter_dragged()
     qtbot.wait(10)
+    # See the comment in the preceding test: compare against what Qt
+    # actually applied, since a platform-dependent real minimum can clamp
+    # the literal request before this snapshot is even taken.
+    dragged = window.workspace.sizes()
 
     window.signals_panel.set_collapsed(True)
     qtbot.wait(10)
@@ -589,8 +608,8 @@ def test_mixed_non_lifo_collapse_sequences_restore_each_panels_own_width(qtbot, 
     qtbot.wait(10)
 
     sizes = window.workspace.sizes()
-    assert abs(sizes[0] - 360) <= 2
-    assert abs(sizes[2] - 260) <= 2
+    assert abs(sizes[0] - dragged[0]) <= 2
+    assert abs(sizes[2] - dragged[2]) <= 2
 
 
 def test_resize_small_then_expand_then_resize_back_keeps_allocation_sane(qtbot, tmp_path):
@@ -599,6 +618,10 @@ def test_resize_small_then_expand_then_resize_back_keeps_allocation_sane(qtbot, 
     window.workspace.setSizes([340, 700, 240])
     window._splitter_dragged()
     qtbot.wait(10)
+    # See the geometry tests above: compare the round trip against what Qt
+    # actually applied, not the literal request, since a platform-dependent
+    # real minimum can clamp it first.
+    dragged = window.workspace.sizes()
 
     window.resize(700, 720)
     qtbot.wait(10)
@@ -612,8 +635,8 @@ def test_resize_small_then_expand_then_resize_back_keeps_allocation_sane(qtbot, 
 
     sizes = window.workspace.sizes()
     assert all(size >= 0 for size in sizes)
-    assert abs(sizes[0] - 340) <= 8
-    assert abs(sizes[2] - 240) <= 8
+    assert abs(sizes[0] - dragged[0]) <= 8
+    assert abs(sizes[2] - dragged[2]) <= 8
 
 
 def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
@@ -623,6 +646,10 @@ def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
     window.workspace.setSizes([340, 660, 240])
     window._splitter_dragged()
     window._flush_save()
+    # See the geometry tests above: a platform-dependent real minimum can
+    # clamp the literal request, so each profile's round trip is compared
+    # against what Qt actually applied for that profile, not the request.
+    first_dragged = window.workspace.sizes()
 
     window.profile_selector.addItem("Second setup")
     window._state.profiles.append(window.selected_profile.duplicate("Second setup"))
@@ -635,18 +662,19 @@ def test_switching_profiles_preserves_each_profiles_own_widths(qtbot, tmp_path):
     window.workspace.setSizes([300, 680, 260])
     window._splitter_dragged()
     window._flush_save()
+    second_dragged = window.workspace.sizes()
 
     window._profile_changed(0)
     qtbot.wait(10)
     sizes = window.workspace.sizes()
-    assert abs(sizes[0] - 340) <= 8
-    assert abs(sizes[2] - 240) <= 8
+    assert abs(sizes[0] - first_dragged[0]) <= 8
+    assert abs(sizes[2] - first_dragged[2]) <= 8
 
     window._profile_changed(1)
     qtbot.wait(10)
     sizes = window.workspace.sizes()
-    assert abs(sizes[0] - 300) <= 8
-    assert abs(sizes[2] - 260) <= 8
+    assert abs(sizes[0] - second_dragged[0]) <= 8
+    assert abs(sizes[2] - second_dragged[2]) <= 8
 
 
 def test_a_malformed_partial_panel_widths_mapping_still_loads(qtbot, tmp_path):
@@ -736,6 +764,32 @@ def test_the_centre_keeps_its_floor_when_the_window_is_narrow():
     assert widths[1] >= MIN_CENTER_WIDTH
 
 
+def test_live_minimums_override_the_constants_when_larger():
+    """A platform whose real content is wider than the guessed constants
+    (a wider default font, denser native chrome) must not have this
+    arithmetic hand out a size Qt will silently override afterwards -
+    passing `minimums` is what keeps the two in agreement (see item_126's
+    Windows-only CI regression: the constants alone underestimated a side
+    panel's real Qt-enforced minimum on that platform).
+    """
+    # The centre's live minimum (900) is far above the MIN_CENTER_WIDTH
+    # constant (360); a side asking for its full remembered width would
+    # leave the centre below that real floor, so the side must give way.
+    widths = reflow_widths(
+        [False, False, False], [500, 0, 500], 1200, minimums=[MIN_SIDE_WIDTH, 900, MIN_SIDE_WIDTH]
+    )
+    assert sum(widths) == 1200
+    assert widths[1] >= 900
+
+    # A side panel's own live minimum (450) above MIN_SIDE_WIDTH must be
+    # respected too, even when the caller only remembered a smaller width.
+    widths = reflow_widths(
+        [False, False, False], [200, 0, 200], 1200, minimums=[450, MIN_CENTER_WIDTH, MIN_SIDE_WIDTH]
+    )
+    assert sum(widths) == 1200
+    assert widths[0] >= 450
+
+
 def test_the_keyboard_collapse_shortcut_reclaims_the_column(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
 
@@ -787,6 +841,10 @@ def test_showing_a_hidden_expanded_panel_restores_its_remembered_width(qtbot, tm
     window.workspace.setSizes([340, 660, 280])
     window._splitter_dragged()
     qtbot.wait(10)
+    # See the geometry tests above: a platform-dependent real minimum can
+    # clamp the literal request, so the round trip is compared against what
+    # Qt actually applied for Inspector, not the 280px request.
+    dragged_inspector = window.workspace.sizes()[2]
 
     window.inspector_panel.set_hidden(True)
     qtbot.wait(10)
@@ -794,7 +852,7 @@ def test_showing_a_hidden_expanded_panel_restores_its_remembered_width(qtbot, tm
     qtbot.wait(10)
 
     assert not window.inspector_panel.is_collapsed
-    assert _about(window.workspace.sizes()[2], 280)
+    assert _about(window.workspace.sizes()[2], dragged_inspector)
     assert window._panel_visibility_actions["inspector"].isChecked() is True
 
 
@@ -1336,6 +1394,58 @@ def test_a_long_readout_never_pushes_required_controls_past_the_header(qtbot, tm
         right = control.mapTo(header, control.rect().topRight()).x()
         assert right <= header.width() + 1
     assert summary.text() == long_text
+
+
+def test_a_wider_platform_font_still_yields_a_usable_non_overlapping_header(qtbot, tmp_path):
+    """Proxy for the Windows-only CI regression this suite cannot reproduce
+    directly (no Windows runner here): a noticeably wider default font -
+    standing in for Windows' wider system font versus this offscreen
+    platform's - must not shrink the header to near-nothing or leave any
+    two controls occupying the same pixels, even though it legitimately
+    changes which deferrable controls fold into the overflow menu.
+    """
+    app = QApplication.instance()
+    assert app is not None
+    original_font = app.font()
+    wide_font = QFont(original_font)
+    wide_font.setPointSize(original_font.pointSize() + 10)
+    app.setFont(wide_font)
+    try:
+        window = _window(qtbot, tmp_path, size=(1280, 720))
+        window.setFont(wide_font)
+        for widget in window.findChildren(QWidget):
+            widget.setFont(wide_font)
+        window.workspace.setSizes([340, 660, 280])
+        window._splitter_dragged()
+        window.workspace_header.refresh_overflow()
+        qtbot.wait(20)
+
+        header = window.workspace_header
+        assert header.width() > 100
+        required = [widget for widget in header._required if not widget.isHidden()]  # noqa: SLF001
+        visible_overflow = header._overflow_button if header._overflow_button.isVisible() else None  # noqa: SLF001
+        candidates = required + ([visible_overflow] if visible_overflow else [])
+        rects = [
+            widget.rect().translated(widget.mapTo(header, widget.rect().topLeft()))
+            for widget in candidates
+        ]
+        for first in range(len(rects)):
+            for second in range(first + 1, len(rects)):
+                assert not rects[first].intersects(rects[second]), (
+                    candidates[first].objectName(),
+                    candidates[second].objectName(),
+                )
+        dragged = window.workspace.sizes()
+        window.trace_graph_panel.set_collapsed(True)
+        qtbot.wait(10)
+        window.trace_graph_panel.set_collapsed(False)
+        qtbot.wait(10)
+        sizes = window.workspace.sizes()
+        assert all(size >= 0 for size in sizes)
+        assert abs(sizes[0] - dragged[0]) <= 2
+        assert abs(sizes[2] - dragged[2]) <= 2
+    finally:
+        app.setFont(original_font)
 
 
 def test_the_flow_layout_compresses_an_item_wider_than_its_line(qtbot):
