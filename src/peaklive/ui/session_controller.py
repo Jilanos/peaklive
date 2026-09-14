@@ -90,6 +90,15 @@ class WorkspaceSession:
     def _acquisition_failed(self, message: str) -> None:
         self.acquisition_bar.set_bus_state("bus_error")
         self.status.showMessage(translate("acquisition.failed").format(message=message))
+    def _acquisition_history_failed(self, message: str) -> None:
+        """Wind live acquisition down after historical persistence failed once.
+
+        `_fail_history` already showed the detailed session note; this stops
+        the worker so it is not left recording into a store that just proved
+        it cannot persist samples.
+        """
+        self._acquisition_failed(message)
+        self._stop_acquisition()
     def _acquisition_finished(self, generation: int) -> None:
         """Retire one generation's worker. A stale finish is dropped on the floor."""
         if generation != self._lifecycle.generation:
@@ -196,9 +205,19 @@ class WorkspaceSession:
         if not self._pending_replay_batches:
             return
         generation, worker, records = self._pending_replay_batches.pop(0)
+        history_failed = False
         if generation == getattr(self, "_replay_generation", 0):
-            self._ingest_replay_records(records)
+            history_failed = self._ingest_replay_records(records)
         worker.batch_rendered()
+        if history_failed:
+            # Stop further source consumption on the same explicit failed
+            # terminal path a parser failure already uses, rather than
+            # continuing to accept records into a store that just proved it
+            # cannot persist them.
+            worker.request_stop()
+            abandon_worker(worker)
+            self._replay_failed_for_generation(generation, self._history_failure_message or "")
+            return
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()
         elif self._replay_ready_to_complete(generation, worker):
@@ -231,6 +250,11 @@ class WorkspaceSession:
         return worker.succeeded and worker.pending_batch_count == 0
     def _replay_failed_for_generation(self, generation: int, message: str) -> None:
         if generation != getattr(self, "_replay_generation", 0):
+            return
+        if getattr(self, "_replay_failed_generation", None) == generation:
+            # Already failed once (e.g. a history-persistence failure that
+            # then requested the worker stop): a cancellation notice cascading
+            # from that request-to-stop must not overwrite the real cause.
             return
         self._replay_failed_generation = generation
         self.acquisition_bar.set_bus_state("stopped")
@@ -284,7 +308,7 @@ class WorkspaceSession:
         self._series.clear()
         self._trace.clear()
         self._frames.clear()
-        self._history.clear()
+        self._reset_history_store()
         self._historical_view_ready = False
         self._facts.reset(source)
         self.inspector.clear()
