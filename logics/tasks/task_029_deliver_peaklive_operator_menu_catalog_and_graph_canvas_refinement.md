@@ -2,8 +2,8 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Ready
-> Understanding: 90%
-> Confidence: 85%
+> Understanding: 95%
+> Confidence: 95%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Implementation delivery
@@ -19,11 +19,10 @@
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
 # Plan
-- [ ] 1. Confirm the semantic mapping of Save measurement setup to the existing profile save-as flow and define any migration/shortcut decision before moving commands.
-- [ ] 2. Deliver the Recording and Setup menu ownership wave, including safe cascading setting menus, recording-format relocation, lifecycle synchronization, i18n, and regression coverage.
-- [ ] 3. Deliver the DBC menu and displayed-signal summary wave while preserving asynchronous catalog ownership and source-of-truth value semantics.
-- [ ] 4. Deliver shared graph X-range clamping, full-extent Follow live, fit-control regrouping, and measured gutter reduction without taking over active historical/workspace scope.
-- [ ] 5. Run focused and full headless suites, Windows offscreen UI coverage, Ruff, i18n validation, Logics validation, lint, and audit. Record each completed wave with the evidence actually run; this corpus creation does not start implementation.
+- [ ] 1. Deliver the confirmed Recording, Setup, and DBC menu-bar ownership wave, preserving Save measurement setup as the existing profile save-as behavior; include safe cascading setting menus, recording-format relocation, lifecycle synchronization, i18n, and regression coverage.
+- [ ] 2. Deliver the DBC menu and displayed-signal summary wave with at-most-once-per-second summary refreshes, while preserving asynchronous catalog ownership and source-of-truth value semantics.
+- [ ] 3. Deliver shared graph X-range clamping, View-selectable Follow live modes with Full acquisition span as default, fit-control regrouping, and measured gutter reduction without taking over active historical/workspace scope.
+- [ ] 4. Run focused and full headless suites, Windows offscreen UI coverage, Ruff, i18n validation, Logics validation, lint, and audit. Record each completed wave with the evidence actually run; this corpus creation does not start implementation.
 - [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
 - [ ] Keep commit creation under operator control; do not force one commit per micro-step.
 - [ ] GATE: do not close until lint, audit, and scaffold validation pass.

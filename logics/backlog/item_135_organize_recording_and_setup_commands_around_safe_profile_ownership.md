@@ -2,8 +2,8 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Ready
-> Understanding: 90%
-> Confidence: 85%
+> Understanding: 95%
+> Confidence: 95%
 > Progress: 0%
 > Complexity: High
 > Theme: Menu ownership and acquisition configuration
@@ -21,7 +21,7 @@
 
 # Scope
 - In:
-  - Create Recording and Setup top-level menus; remove Start, Stop, and Recording settings from View and move Save measurement setup from File to Setup.
+  - Create the three confirmed top-level menu-bar menus Recording, Setup, and DBC; remove Start, Stop, and Recording settings from View and move Save measurement setup from File to Setup without changing its profile save-as behavior.
   - Keep compact header Start/Stop controls as the direct lifecycle surface; style Stop with an explicit destructive/running semantic only while its lifecycle action is enabled.
   - Represent channel, bitrate, and acquisition mode as Setup cascading menus whose immediate choices are selectable by mouse hover/pointer and keyboard arrows/Enter, with check state or another unambiguous current-value marker.
   - Move ASC/TRC selection into Recording settings and remove its top-bar selector; persist it with the existing recording profile contract and prevent mid-session edits from mutating an active worker profile.
@@ -30,20 +30,20 @@
 - Out:
   - Adding hardware channel discovery, arbitrary custom bitrates, or additional controller modes beyond the supported profile model.
   - Changing acquisition worker ownership, recording file contents, or adapter connection behavior.
-  - Changing the meaning of Save measurement setup without an explicit migration decision.
+  - Changing the profile save-as behavior behind Save measurement setup.
 
 # Acceptance criteria
-- AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; their new menu homes expose the same lifecycle and recording behavior.
+- AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; Recording, Setup, and DBC are top-level menu-bar menus, and the relocated commands preserve their existing behavior.
 - AC2: Setup's channel, bitrate, and mode choices are cascading submenus with persistent current selection, keyboard navigation, accessible labels, and disabled/gated states while a session makes edits unsafe.
 - AC3: Recording settings own ASC/TRC selection; no capture-format selector remains in the top bar and a recording starts with the stored selected format.
 - AC4: Header Stop is red and enabled only in a stoppable acquisition phase, returns to its non-running appearance outside that phase, and menu and header actions remain synchronized.
 - AC5: Existing profile save, profile switching, invalid recording-template handling, replay/acquisition mutual exclusion, and passive-mode tests remain green.
 
 # AC Traceability
-- request-AC1 -> This backlog slice. Proof: AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; their new menu homes expose the same lifecycle and recording behavior.
+- request-AC1 -> This backlog slice. Proof: AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; Recording, Setup, and DBC are top-level menu-bar menus, and the relocated commands preserve their existing behavior.
 - request-AC2 -> This backlog slice. Proof: AC2: Setup's channel, bitrate, and mode choices are cascading submenus with persistent current selection, keyboard navigation, accessible labels, and disabled/gated states while a session makes edits unsafe.
 - request-AC3 -> This backlog slice. Proof: AC3: Recording settings own ASC/TRC selection; no capture-format selector remains in the top bar and a recording starts with the stored selected format.
-- request-AC9 -> This backlog slice. Proof: AC4: Header Stop is red and enabled only in a stoppable acquisition phase, returns to its non-running appearance outside that phase, and menu and header actions remain synchronized.
+- request-AC9 -> This backlog slice. Proof: AC5: Existing profile save, profile switching, invalid recording-template handling, replay/acquisition mutual exclusion, and passive-mode tests remain green.
 
 # Decision framing
 - Product framing: Not needed
