@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sqlite3
 from itertools import groupby
 
 from PySide6.QtCore import QTimer
@@ -29,8 +28,10 @@ from peaklive.analysis.profiling import (
 )
 from peaklive.domain import BusEvent, CanFrame
 from peaklive.i18n import translate
+from peaklive.services.history_writer import QUEUE_STALL_TIMEOUT_S, HistoryWriter
 from peaklive.ui.live_handoff import LiveFrameHandoff
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
+from peaklive.ui.worker_lifecycle import abandon_worker
 
 GRAPH_REFRESH_INTERVAL_MS = 50
 
@@ -49,6 +50,15 @@ class WorkspaceIngest:
         self._replay_source_path = None
         self._history_failed = False
         self._history_failure_message: str | None = None
+        self._history_settled_samples = 0
+        # Exact accepted-vs-persisted batch counts, so a caller can tell
+        # "every frame has been decoded" (accepted) apart from "every sample
+        # is actually on disk" (settled) - the first-data/ready distinction
+        # the write-batching backlog slice calls for.
+        self._history_batches_submitted = 0
+        self._history_batches_settled = 0
+        self._history_writer: HistoryWriter | None = None
+        self._start_history_writer()
         self._init_signal_backfill_state()
         # A sustained conflict raises once per frame; the operator only needs
         # to see it once per arbitration ID for the session, not once per frame.
@@ -186,11 +196,19 @@ class WorkspaceIngest:
         # happened to half-succeed could double-count an already-accepted
         # batch. Trace/series projection above is unaffected, so inspection
         # of already-ingested and newly-arriving frames keeps working.
-        if not self._history_failed:
-            try:
-                self._history.append_many(historical)
-            except sqlite3.Error as error:
-                self._fail_history(str(error))
+        if historical and not self._history_failed:
+            # SQL and summary/run-event maintenance happen off this thread
+            # (item_133): submit() only blocks long enough to apply the same
+            # bounded backpressure ReplayWorker's own batches already use.
+            if self._history_writer.submit(historical):
+                self._history_batches_submitted += 1
+            else:
+                self._fail_history(
+                    self._history_writer.last_error
+                    or translate("trace.history_queue_stalled").format(
+                        seconds=int(QUEUE_STALL_TIMEOUT_S)
+                    )
+                )
         if coalesce:
             self._pending_trace_records.extend(added)
         else:
@@ -201,9 +219,9 @@ class WorkspaceIngest:
     def _ingest_replay_records(self, records: list[object]) -> bool:
         """Ingest one ordered replay batch, preserving source frame/event order.
 
-        Returns whether historical persistence failed while processing this
-        batch, so the caller can put the replay generation into an explicit
-        failed terminal state instead of continuing to accept records.
+        Returns whether historical persistence has failed as of this call
+        (`_fail_history` already reacted to it if so); a caller that does not
+        need that state may ignore the return value.
         """
         ingested_frames = False
         for is_event, group in groupby(records, key=lambda record: isinstance(record, BusEvent)):
@@ -226,30 +244,57 @@ class WorkspaceIngest:
         upstream, not by discarding frames here.
         """
         self._ingest_frames(frames)
-        if self._history_failed:
-            self._acquisition_history_failed(self._history_failure_message or "")
-            return
         self._graph_dirty = True
         self._flush_graph_refresh()
 
-    def _reset_history_store(self) -> None:
-        """Clear historical storage for a new session, replacing a poisoned store.
+    def _start_history_writer(self) -> None:
+        """Start the one background writer owning `self._history`'s writes."""
+        writer = HistoryWriter(self._history.path)
+        writer.write_failed.connect(self._fail_history)
+        writer.settled.connect(self._history_settled)
+        self._history_writer = writer
+        writer.start()
 
-        A store that already failed once may no longer accept `clear()`
-        either (a still-broken backing file); discarding it for a fresh
-        temporary store is what actually guarantees the next open succeeds,
-        rather than depending on whatever caused the failure having cleared.
+    def _history_settled(self, count: int) -> None:
+        self._history_settled_samples += count
+        self._history_batches_settled += 1
+
+    def _history_fully_drained(self) -> bool:
+        """Whether every accepted batch has actually settled to disk.
+
+        "Accepted" (decoded, projected, handed to the writer) and "ready"
+        (durably persisted) are deliberately different milestones once
+        writes are off the GUI thread: a caller that needs the complete,
+        current-on-disk history - such as showing the full extent once a
+        replay finishes - must wait for this, not just for ingestion to
+        stop producing new batches.
         """
-        if not self._history_failed:
-            try:
-                self._history.clear()
-                return
-            except sqlite3.Error:
-                pass
+        return (
+            not self._history_failed
+            and self._history_batches_submitted == self._history_batches_settled
+        )
+
+    def _reset_history_store(self) -> None:
+        """Replace historical storage with a fresh store/writer for a new session.
+
+        A new temporary store is always allocated rather than reusing the
+        previous one: the outgoing writer's already-queued batches (if any)
+        keep draining to their own file independently, with no race against
+        the new session's writes, and a store that already failed cannot be
+        trusted to accept a `clear()` either.
+        """
+        old_writer = self._history_writer
+        if old_writer is not None:
+            old_writer.request_stop()
+            abandon_worker(old_writer)
         self._history.close()
         self._history = HistoricalSignalStore()
         self._history_failed = False
         self._history_failure_message = None
+        self._history_settled_samples = 0
+        self._history_batches_submitted = 0
+        self._history_batches_settled = 0
+        self._start_history_writer()
 
     def _fail_history(self, message: str) -> None:
         """Record one terminal historical-persistence failure, exactly once.
@@ -257,8 +302,14 @@ class WorkspaceIngest:
         The store is presumed poisoned for the rest of this session: further
         writes are skipped (see `_ingest_frames`) rather than retried, and the
         overview is marked incomplete so a stale/partial history is never
-        mistaken for a complete one. The caller (replay or acquisition) is
-        responsible for stopping further source consumption.
+        mistaken for a complete one.
+
+        The write itself may have been detected synchronously (a `submit()`
+        backpressure timeout, on the GUI thread) or asynchronously (the
+        background writer's own `write_failed` signal, arriving after its
+        thread already discovered the fault) - either way this is the one
+        place that stops further source consumption, so a caller never has
+        to guess which path found the failure.
         """
         if self._history_failed:
             return
@@ -268,6 +319,14 @@ class WorkspaceIngest:
         self.session_note.show_message(
             translate("trace.history_failed").format(message=message), "error"
         )
+        if self._replay_worker is not None:
+            generation = self._replay_generation
+            worker = self._replay_worker
+            worker.request_stop()
+            abandon_worker(worker)
+            self._replay_failed_for_generation(generation, message)
+        elif self._worker is not None and self._worker.isRunning():
+            self._acquisition_history_failed(message)
 
     def _render_acquisition_event(self, event: object) -> None:
         if not isinstance(event, BusEvent):

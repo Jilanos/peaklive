@@ -46,7 +46,9 @@ def historical_points(
 class HistoricalSignalStore:
     """A temporary, indexed store of decoded signal samples."""
 
-    def __init__(self, path: Path | None = None, *, read_only: bool = False) -> None:
+    def __init__(
+        self, path: Path | None = None, *, read_only: bool = False, timeout: float = 5.0
+    ) -> None:
         if read_only and path is None:
             raise ValueError("A read-only history requires an existing path")
         self._read_only = read_only
@@ -60,9 +62,15 @@ class HistoricalSignalStore:
         if read_only:
             # Never recreate a session file already removed by its owner, or
             # write schema/cache data from a background viewport reader.
-            self._connection = sqlite3.connect(self._path.resolve().as_uri() + "?mode=ro", uri=True)
+            self._connection = sqlite3.connect(
+                self._path.resolve().as_uri() + "?mode=ro", uri=True, timeout=timeout
+            )
             return
-        self._connection = sqlite3.connect(self._path)
+        # sqlite3's own default (5s) silently retries a lock conflict before
+        # raising; a caller with its own explicit bounded-wait contract (the
+        # background writer) passes a shorter one so a stuck lock surfaces as
+        # an explicit failure instead of a multi-second unexplained stall.
+        self._connection = sqlite3.connect(self._path, timeout=timeout)
         self._connection.execute(
             "CREATE TABLE IF NOT EXISTS samples ("
             "signal TEXT NOT NULL, timestamp REAL NOT NULL, "

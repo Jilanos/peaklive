@@ -51,7 +51,14 @@ class WorkspaceSignalBackfill:
                 continue
             self._signal_decode_generation += 1
             generation = self._signal_decode_generation
-            if self._historical_view_ready and self._replay_source_path is not None:
+            # Eligible for full-source reconstruction once this session's
+            # replay has finished parsing its source, even if the
+            # background history writer (item_133) has not yet settled
+            # every batch: SourceSignalDecodeWorker reads the source file
+            # directly rather than the history store, so it does not need
+            # to wait for that - only `_historical_view_ready` (used above
+            # to answer instantly from an already-settled store) does.
+            if self._replay_source_path is not None and self._replay_worker is None:
                 worker = SourceSignalDecodeWorker(
                     self._catalog,
                     self._replay_source_path,
