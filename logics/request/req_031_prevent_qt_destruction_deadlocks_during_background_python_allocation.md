@@ -2,17 +2,17 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Draft
-> Understanding: 90%
-> Confidence: 85%
+> Understanding: 100%
+> Confidence: 90%
 > Complexity: Medium
 > Theme: Runtime reliability
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Prevent worker-triggered cyclic GC from destroying Qt wrappers and deadlocking the GUI against the Python GIL.
 - Keywords: prevent, destruction, deadlocks, during, background, python, allocation
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Investigating DBC worker hangs or changing QApplication cyclic collection ownership.
+- Skip when: Changing decoding semantics or ordinary reference-counted object cleanup.
 
 # Needs
 - Keep cyclic garbage collection of Qt wrappers on the GUI thread while workers parse or ingest data.

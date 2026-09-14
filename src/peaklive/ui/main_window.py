@@ -38,6 +38,7 @@ from peaklive.ui.actions import WorkspaceActions
 from peaklive.ui.addressing import WorkspaceAddressing
 from peaklive.ui.catalog_controller import WorkspaceCatalog
 from peaklive.ui.dialogs import ColumnsDialog, ExportDialog, RecordingSettingsDialog
+from peaklive.ui.gui_gc import ensure_gui_garbage_collection
 from peaklive.ui.ingest_controller import WorkspaceIngest
 from peaklive.ui.layout_reflow import WorkspaceReflow
 from peaklive.ui.panels import (
@@ -83,6 +84,7 @@ class MainWindow(
         profile_store: ProfileStore | None = None,
         adapter_factory: Callable[[], CanAdapter] = default_adapter,
     ) -> None:
+        ensure_gui_garbage_collection()
         super().__init__()
         self.setWindowTitle(translate("app.title"))
         self.setMinimumSize(1024, 680)
