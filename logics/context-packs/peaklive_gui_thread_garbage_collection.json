@@ -1,0 +1,202 @@
+{
+  "budgets": {
+    "max_docs": 6,
+    "max_docs_per_ref": 2
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation item_138_own_cyclic_garbage_collection_on_the_qapplication_thread task_030_eliminate_the_qt_python_garbage_collection_lock_inversion --mode summary-only --profile tiny --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread"
+        ],
+        "prod": [
+          "prod_029_peaklive_gui_owned_cyclic_memory_reclamation"
+        ],
+        "req": [
+          "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation"
+        ],
+        "task": [
+          "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+        ]
+      },
+      "path": "logics/product/prod_029_peaklive_gui_owned_cyclic_memory_reclamation.md",
+      "ref": "prod_029_peaklive_gui_owned_cyclic_memory_reclamation",
+      "status": "Proposed",
+      "title": "PeakLive GUI-owned cyclic memory reclamation"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "prevent, destruction, deadlocks, during, background, python, allocation",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread"
+        ],
+        "prod": [
+          "prod_029_peaklive_gui_owned_cyclic_memory_reclamation"
+        ],
+        "req": [
+          "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation"
+        ]
+      },
+      "path": "logics/request/req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation.md",
+      "ref": "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Prevent Qt destruction deadlocks during background Python allocation"
+    },
+    {
+      "ai_context": {
+        "keywords": "own, cyclic, garbage, collection, qapplication, thread",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread"
+        ],
+        "prod": [
+          "prod_029_peaklive_gui_owned_cyclic_memory_reclamation"
+        ],
+        "req": [
+          "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation"
+        ],
+        "task": [
+          "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+        ]
+      },
+      "path": "logics/backlog/item_138_own_cyclic_garbage_collection_on_the_qapplication_thread.md",
+      "ref": "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Own cyclic garbage collection on the QApplication thread"
+    },
+    {
+      "ai_context": {
+        "keywords": "eliminate, python, garbage, collection, lock, inversion",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread"
+        ],
+        "prod": [
+          "prod_029_peaklive_gui_owned_cyclic_memory_reclamation"
+        ],
+        "req": [
+          "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation"
+        ],
+        "task": [
+          "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+        ]
+      },
+      "path": "logics/tasks/task_030_eliminate_the_qt_python_garbage_collection_lock_inversion.md",
+      "ref": "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Eliminate the Qt Python garbage collection lock inversion"
+    }
+  ],
+  "estimates": {
+    "char_count": 3241,
+    "companion_doc_count": 1,
+    "doc_count": 3
+  },
+  "generated_at": "2026-09-14T15:32:55Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation",
+      "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread",
+      "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 329
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "summary-only",
+  "profile": "tiny",
+  "ref": "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation,item_138_own_cyclic_garbage_collection_on_the_qapplication_thread,task_030_eliminate_the_qt_python_garbage_collection_lock_inversion",
+  "refs": [
+    "req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation",
+    "item_138_own_cyclic_garbage_collection_on_the_qapplication_thread",
+    "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_030_eliminate_the_qt_python_garbage_collection_lock_inversion.md",
+      "ref": "task_030_eliminate_the_qt_python_garbage_collection_lock_inversion"
+    }
+  ]
+}
