@@ -1,12 +1,12 @@
 ## prod_029_peaklive_gui_owned_cyclic_memory_reclamation - PeakLive GUI-owned cyclic memory reclamation
 > Date: 2026-09-14
-> Status: Proposed
+> Status: Settled
 > Related request: `req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation`
 > Related backlog: `item_138_own_cyclic_garbage_collection_on_the_qapplication_thread`
 > Related task: `task_030_eliminate_the_qt_python_garbage_collection_lock_inversion`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-14 18:12:04
+> Indicators reviewed: 2026-09-14 18:15:53
 
 # Overview
 Prevent native Qt/Python lock inversion without moving DBC parsing back to the UI thread.
@@ -40,5 +40,5 @@ flowchart LR
 ```
 
 # References
-- Product back-reference: `req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation`
+- Product back-reference: `item_138_own_cyclic_garbage_collection_on_the_qapplication_thread`
 - Task back-reference: `task_030_eliminate_the_qt_python_garbage_collection_lock_inversion`

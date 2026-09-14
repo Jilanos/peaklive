@@ -1,12 +1,13 @@
 ## req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation - Prevent Qt destruction deadlocks during background Python allocation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 100%
 > Confidence: 90%
 > Complexity: Medium
 > Theme: Runtime reliability
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-09-14 18:15:53
 
 # AI Context
 - Summary: Prevent worker-triggered cyclic GC from destroying Qt wrappers and deadlocking the GUI against the Python GIL.

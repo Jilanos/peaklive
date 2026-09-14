@@ -1,14 +1,14 @@
 ## item_138_own_cyclic_garbage_collection_on_the_qapplication_thread - Own cyclic garbage collection on the QApplication thread
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 100%
 > Confidence: 90%
-> Progress: 90%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Runtime reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-14 17:33:57
+> Indicators reviewed: 2026-09-14 18:15:53
 
 # AI Context
 - Summary: Prevent worker-triggered cyclic GC from destroying Qt wrappers and deadlocking the GUI against the Python GIL.
@@ -51,3 +51,9 @@
 # Priority
 - Priority: High - A reproduced native lock inversion freezes the application and blocks CI.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_030_eliminate_the_qt_python_garbage_collection_lock_inversion`
+
+# Notes
+- Task `task_030_eliminate_the_qt_python_garbage_collection_lock_inversion` was finished via `logics-manager flow finish task` on 2026-09-14.
