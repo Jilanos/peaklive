@@ -36,6 +36,7 @@ _None_
 | [prod_026_peaklive_predictable_and_space_efficient_measurement_workspace](product/prod_026_peaklive_predictable_and_space_efficient_measurement_workspace.md) | PeakLive predictable and space-efficient measurement workspace | Proposed |  |  | product/prod_026_peaklive_predictable_and_space_efficient_measurement_workspace.md |
 | [prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation](product/prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation.md) | PeakLive responsive and trustworthy long trace preparation | Proposed |  |  | product/prod_027_peaklive_responsive_and_trustworthy_long_trace_preparation.md |
 | [prod_028_peaklive_focused_operator_controls_and_bounded_measurement_canvas](product/prod_028_peaklive_focused_operator_controls_and_bounded_measurement_canvas.md) | PeakLive focused operator controls and bounded measurement canvas | Settled |  |  | product/prod_028_peaklive_focused_operator_controls_and_bounded_measurement_canvas.md |
+| [prod_029_peaklive_gui_owned_cyclic_memory_reclamation](product/prod_029_peaklive_gui_owned_cyclic_memory_reclamation.md) | PeakLive GUI-owned cyclic memory reclamation | Proposed |  |  | product/prod_029_peaklive_gui_owned_cyclic_memory_reclamation.md |
 
 ## Roadmaps
 
@@ -76,6 +77,7 @@ _None_
 | [req_028_incremental_review_findings_trace_loading_and_historical_storage](request/req_028_incremental_review_findings_trace_loading_and_historical_storage.md) | Incremental review findings: trace loading and historical storage | Draft |  |  | request/req_028_incremental_review_findings_trace_loading_and_historical_storage.md |
 | [req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit](request/req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit.md) | Make long trace loading responsive ordered and failure explicit | Ready |  |  | request/req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit.md |
 | [req_030_refine_peaklive_operator_menus_catalog_access_and_graph_navigation](request/req_030_refine_peaklive_operator_menus_catalog_access_and_graph_navigation.md) | Refine PeakLive operator menus, catalog access, and graph navigation | Done |  |  | request/req_030_refine_peaklive_operator_menus_catalog_access_and_graph_navigation.md |
+| [req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation](request/req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation.md) | Prevent Qt destruction deadlocks during background Python allocation | Draft |  |  | request/req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation.md |
 
 ## Backlog
 
@@ -218,6 +220,7 @@ _None_
 | [item_135_organize_recording_and_setup_commands_around_safe_profile_ownership](backlog/item_135_organize_recording_and_setup_commands_around_safe_profile_ownership.md) | Organize recording and setup commands around safe profile ownership | Done | maintainer@example.invalid | 100% | backlog/item_135_organize_recording_and_setup_commands_around_safe_profile_ownership.md |
 | [item_136_move_dbc_management_to_its_own_menu_and_summarize_displayed_signals](backlog/item_136_move_dbc_management_to_its_own_menu_and_summarize_displayed_signals.md) | Move DBC management to its own menu and summarize displayed signals | Done |  | 100% | backlog/item_136_move_dbc_management_to_its_own_menu_and_summarize_displayed_signals.md |
 | [item_137_bound_graph_time_navigation_and_reclaim_safe_graph_canvas_width](backlog/item_137_bound_graph_time_navigation_and_reclaim_safe_graph_canvas_width.md) | Bound graph time navigation and reclaim safe graph canvas width | Done |  | 100% | backlog/item_137_bound_graph_time_navigation_and_reclaim_safe_graph_canvas_width.md |
+| [item_138_own_cyclic_garbage_collection_on_the_qapplication_thread](backlog/item_138_own_cyclic_garbage_collection_on_the_qapplication_thread.md) | Own cyclic garbage collection on the QApplication thread | Ready |  | 0% | backlog/item_138_own_cyclic_garbage_collection_on_the_qapplication_thread.md |
 
 ## Tasks
 
@@ -252,6 +255,7 @@ _None_
 | [task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace](tasks/task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace.md) | Deliver stable panel restoration and a space-efficient graph workspace | In progress | maintainer@example.invalid | 90% | tasks/task_027_deliver_stable_panel_restoration_and_a_space_efficient_graph_workspace.md |
 | [task_028_deliver_responsive_ordered_and_measurable_long_trace_loading](tasks/task_028_deliver_responsive_ordered_and_measurable_long_trace_loading.md) | Deliver responsive ordered and measurable long trace loading | In progress | maintainer@example.invalid | 60% | tasks/task_028_deliver_responsive_ordered_and_measurable_long_trace_loading.md |
 | [task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement](tasks/task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement.md) | Deliver PeakLive operator menu, catalog, and graph-canvas refinement | Done | maintainer@example.invalid | 100% | tasks/task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement.md |
+| [task_030_eliminate_the_qt_python_garbage_collection_lock_inversion](tasks/task_030_eliminate_the_qt_python_garbage_collection_lock_inversion.md) | Eliminate the Qt Python garbage collection lock inversion | Ready |  | 0% | tasks/task_030_eliminate_the_qt_python_garbage_collection_lock_inversion.md |
 
 ## Runbooks
 

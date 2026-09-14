@@ -1,0 +1,41 @@
+{
+  "title": "Prevent Qt destruction deadlocks during background Python allocation",
+  "references": ["src/peaklive/ui/main_window.py", "src/peaklive/services/dbc_worker.py", ".github/workflows/ci.yml"],
+  "request": {
+    "complexity": "Medium",
+    "theme": "Runtime reliability",
+    "needs": ["Keep cyclic garbage collection of Qt wrappers on the GUI thread while workers parse or ingest data."],
+    "context": [
+      "GitHub run 34858021301 timed out inside the rapid consecutive DBC operations test.",
+      "A Linux reproduction after menu lifetime repairs showed the GUI thread blocked in QObject destruction while the parser thread waited in Shiboken GilState::acquire during destruction of collected Qt wrappers.",
+      "Menu leak repairs alone did not eliminate the reproduced deadlock. The native pytest watchdog now exits with stacks after 120 seconds."
+    ],
+    "acceptance_criteria": [
+      "Background allocation cannot automatically collect GUI-owned Python cycles; Qt wrapper destruction from scheduled collection runs on the GUI thread.",
+      "Collection remains enabled through a threshold-aware GUI timer owned once per QApplication, without one collector per window or collection after application destruction.",
+      "Regression tests verify destruction thread ownership and collector reuse; full Linux and relevant Windows tests and Ruff pass."
+    ]
+  },
+  "product": {
+    "title": "PeakLive GUI-owned cyclic memory reclamation",
+    "overview": "Prevent native Qt/Python lock inversion without moving DBC parsing back to the UI thread.",
+    "goals": ["Retain responsive background workers and reclaim unreachable cycles on the GUI thread."],
+    "non_goals": ["Change decoding results, acquisition ownership, or the user interface."]
+  },
+  "backlog_items": [{
+    "title": "Own cyclic garbage collection on the QApplication thread",
+    "priority": "High - A reproduced native lock inversion freezes the application and blocks CI.",
+    "complexity": "Medium",
+    "theme": "Runtime reliability",
+    "request_acs": ["AC1", "AC2", "AC3"],
+    "problem": ["CPython automatic collection can destroy Qt wrappers inside a parser worker while the GUI thread is also destroying Qt objects."],
+    "scope_in": ["Install one GUI collection scheduler before window workers start.", "Respect collection thresholds and application lifetime.", "Verify thread ownership with a deterministic regression and rerun Linux CI tests."],
+    "scope_out": ["Disable garbage collection permanently.", "Change parser semantics or move parsing onto the GUI thread."],
+    "acceptance_criteria": ["Worker allocations leave GUI cycles for GUI-thread collection.", "Repeated window construction reuses one timer and application destruction restores the prior automatic-GC setting.", "Linux suite, targeted Windows regressions, and Ruff pass."]
+  }],
+  "orchestration_task": {
+    "title": "Eliminate the Qt Python garbage collection lock inversion",
+    "plan": ["Record the native lock inversion evidence and add a deterministic thread-ownership regression.", "Implement application-owned GUI collection with threshold-aware scheduling.", "Validate Linux full suite and Windows regressions, record results, commit and push."]
+  },
+  "context_pack": {"out": "logics/context-packs/peaklive_gui_thread_garbage_collection.json", "mode": "summary-only", "profile": "tiny"}
+}
