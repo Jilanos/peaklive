@@ -123,15 +123,6 @@ class AcquisitionBar(QFrame):
         self.bitrate_selector.currentIndexChanged.connect(self.options_changed)
         layout.addWidget(self.bitrate_selector)
 
-        layout.addWidget(QLabel(translate("acquisition.capture_format").upper()))
-        self.capture_format_selector = QComboBox(objectName="captureFormatSelector")
-        self.capture_format_selector.setAccessibleName(translate("acquisition.capture_format_accessible"))
-        self.capture_format_selector.setToolTip(translate("acquisition.capture_format_accessible"))
-        self.capture_format_selector.addItem(translate("acquisition.capture_format_asc"), "asc")
-        self.capture_format_selector.addItem(translate("acquisition.capture_format_trc"), "trc")
-        self.capture_format_selector.currentIndexChanged.connect(self.options_changed)
-        layout.addWidget(self.capture_format_selector)
-
         self.controller_mode_selector = QComboBox(objectName="controllerModeSelector")
         self.controller_mode_selector.setAccessibleName(translate("acquisition.mode_accessible"))
         self.controller_mode_selector.setToolTip(translate("acquisition.mode_accessible"))
@@ -236,8 +227,15 @@ class AcquisitionBar(QFrame):
         self.lifecycle_phase = phase
         self.start_button.setEnabled(phase in STARTABLE_PHASES)
         self.stop_button.setEnabled(phase in STOPPABLE_PHASES)
+        self.stop_button.setProperty("active", phase in STOPPABLE_PHASES)
+        self.stop_button.style().unpolish(self.stop_button)
+        self.stop_button.style().polish(self.stop_button)
         self.recover_button.setVisible(phase is AcquisitionPhase.TIMED_OUT)
         self.recover_button.setEnabled(phase is AcquisitionPhase.TIMED_OUT)
+        edit_safe = phase in STARTABLE_PHASES
+        self.channel_selector.setEnabled(edit_safe)
+        self.bitrate_selector.setEnabled(edit_safe)
+        self.controller_mode_selector.setEnabled(edit_safe)
         self.set_bus_state(PHASE_BUS_STATES.get(phase, "idle"))
 
     def show_profile(self, profile: MeasurementProfile) -> None:
@@ -255,12 +253,6 @@ class AcquisitionBar(QFrame):
             max(0, self.bitrate_selector.findData(profile.bitrate))
         )
         self.bitrate_selector.blockSignals(False)
-
-        self.capture_format_selector.blockSignals(True)
-        self.capture_format_selector.setCurrentIndex(
-            max(0, self.capture_format_selector.findData(profile.recording.capture_format))
-        )
-        self.capture_format_selector.blockSignals(False)
 
         self.controller_mode_selector.blockSignals(True)
         self.controller_mode_selector.setCurrentIndex(
@@ -294,9 +286,6 @@ class AcquisitionBar(QFrame):
         bitrate = self.bitrate_selector.currentData()
         if bitrate is not None:
             profile.bitrate = int(bitrate)
-        capture_format = self.capture_format_selector.currentData()
-        if capture_format is not None:
-            profile.recording.capture_format = str(capture_format)
         mode = self.controller_mode_selector.currentData()
         if mode is not None:
             profile.controller_mode = ControllerMode(str(mode))

@@ -11,13 +11,12 @@ from peaklive.ui.panels import graph_controls
 from peaklive.ui.panels.graph_controls import GraphControlsBar
 from peaklive.ui.panels.graph_history import curve_points, viewport
 from peaklive.ui.panels.graph_lane_header import build_lane, lane_identity
-from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, GraphNavigation
+from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, FOLLOW_MODE_FULL, GraphNavigation
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 from peaklive.ui.worker_lifecycle import abandon_worker
-RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, SHARED_LEFT_AXIS_WIDTH, MEASUREMENT_REFRESH_INTERVAL_MS = (
-    "Raw byte 0", 180, 88, 250
-)
+RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, MEASUREMENT_REFRESH_INTERVAL_MS = ("Raw byte 0", 180, 250)
+SHARED_LEFT_AXIS_WIDTH = 64  # sign + 4 digits + 2 decimals + tick clearance (item_137 AC5)
 
 
 class GraphStackPanel(GraphNavigation, QWidget):
@@ -29,6 +28,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.cursor_a: float | None = None
         self.cursor_b: float | None = None
         self.follow_live = True
+        self.follow_live_mode = FOLLOW_MODE_FULL
         self._axis_mode = AXIS_CAPTURE
         self._live_extent_end = 0.0
         self._window_chosen = False

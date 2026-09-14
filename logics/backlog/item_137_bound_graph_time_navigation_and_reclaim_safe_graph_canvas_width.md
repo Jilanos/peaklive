@@ -1,13 +1,14 @@
 ## item_137_bound_graph_time_navigation_and_reclaim_safe_graph_canvas_width - Bound graph time navigation and reclaim safe graph canvas width
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 95%
 > Confidence: 95%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Graph navigation and density
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-14 16:30:50
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -59,3 +60,12 @@
 # Priority
 - Priority: High - unconstrained graph navigation wastes analyst attention and the current gutter/control layout reduces the drawable measurement area.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Validation
+- Wave 3 implemented: shared X-range clamp (_clamp_x_range in graph_navigation.py) bounds every manual pan/zoom to the data extent plus max(5% of span, 0.5s floor) via _x_range_changed/_clamp_manual_range, with no NaN/recursion for empty, one-sample, or near-zero extents. Added a View > Follow live submenu (Full acquisition span default, Trailing window) backed by GraphNavigation.set_follow_live_mode and persisted on MeasurementProfile.layout.follow_live_mode. Reduced SHARED_LEFT_AXIS_WIDTH from a flat 88px to 64px (sized for typical decoded-signal tick labels). Fit/Fit Y/Follow-live/cursor control grouping was left as-is: GraphControlsBar already groups Fit+FitY+Follow in one navigation cluster and cursors+measurement-toggle in another, matching the existing (pre-dating this task) test_follow_live_shares_the_fit_commands_row intent, so no reorder was needed for AC4. Evidence: full pytest suite green, new clamp/follow-live-mode tests added to tests/test_graph_navigation.py, ruff clean, logics-manager lint/audit clean.
+
+# Tasks
+- `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement`
+
+# Notes
+- Task `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement` was finished via `logics-manager flow finish task` on 2026-09-14.

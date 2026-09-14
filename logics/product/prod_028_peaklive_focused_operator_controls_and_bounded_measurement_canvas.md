@@ -1,14 +1,31 @@
 ## prod_028_peaklive_focused_operator_controls_and_bounded_measurement_canvas - PeakLive focused operator controls and bounded measurement canvas
 > Date: 2026-09-14
-> Status: Proposed
+> Status: Settled
 > Related request: `req_030_refine_peaklive_operator_menus_catalog_access_and_graph_navigation`
-> Related backlog: `item_135_organize_recording_and_setup_commands_around_safe_profile_ownership`, `item_136_move_dbc_management_to_its_own_menu_and_summarize_displayed_signals`, `item_137_bound_graph_time_navigation_and_reclaim_safe_graph_canvas_width`
+> Related backlog: `item_135_organize_recording_and_setup_commands_around_safe_profile_ownership`
 > Related task: `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-14 16:30:50
 
 # Overview
 Organize operator commands by Recording, Setup, DBC, and View intent while protecting safe acquisition settings, exposing live signal state, and keeping graphs focused on the time interval that was actually acquired.
+
+```mermaid
+flowchart LR
+    View[View menu] --> Recording[Recording menu: Start, Stop, settings]
+    View --> Setup[Setup menu: Save setup, Channel/Bitrate/Mode]
+    View --> Dbc[DBC menu: activation, add, remove, conflicts]
+    Setup --> Bar[Header Start/Stop stay compact]
+    Dbc --> Summary[Signal summary: shown signals and latest value]
+    Summary --> Signals[Signals panel leads with summary, then explorer]
+    Recording --> Bar
+    Bar --> Nav[Bounded graph navigation]
+    Nav --> Clamp[Shared X-range clamp: extent plus 5 percent]
+    Nav --> Follow[Follow live: Full span default, Trailing window]
+    Clamp --> Canvas[Reclaimed graph canvas width]
+    Follow --> Canvas
+```
 
 # Goals
 - Reduce top-bar and View-menu clutter without losing direct Start/Stop access.
@@ -35,5 +52,5 @@ Organize operator commands by Recording, Setup, DBC, and View intent while prote
 - Context-pack output can be handed to an implementation agent directly.
 
 # References
-- Product back-reference: `req_030_refine_peaklive_operator_menus_catalog_access_and_graph_navigation`
+- Product back-reference: `item_135_organize_recording_and_setup_commands_around_safe_profile_ownership`
 - Task back-reference: `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement`

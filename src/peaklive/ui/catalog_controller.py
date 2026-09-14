@@ -60,6 +60,7 @@ class WorkspaceCatalog:
         worker.finished.connect(partial(self._catalog_worker_finished, generation))
         self._catalog_worker = worker
         self._begin_work(_operation_message(operation))
+        self._sync_dbc_menu_busy()
         worker.start()
 
     def _cancel_catalog_operation(self) -> None:
@@ -99,6 +100,7 @@ class WorkspaceCatalog:
             return
         self._catalog_worker = None
         self._end_work()
+        self._sync_dbc_menu_busy()
         self._pump_catalog_queue()
 
     # ---- commit ---------------------------------------------------------
@@ -146,11 +148,12 @@ class WorkspaceCatalog:
         """Point every dependent panel and projection at one catalog view."""
         self._persist_signal_state(view.all_signal_names)
         self._persist_dbc_state()
-        self.dbc_panel.refresh(view)
+        self._refresh_dbc_menu(view)
         self.explorer_panel.refresh(
             view.references, self._selected_signal_names, self._favorite_signal_names
         )
         self._sync_graphs()
+        self._mark_signal_summary_dirty()
 
     def _reconcile_profile_paths(self, outcome: CatalogOutcome) -> None:
         profile = self.selected_profile
@@ -255,13 +258,12 @@ class WorkspaceCatalog:
 
     def _report_dbc_error(self, path: Path, message: str) -> None:
         self._facts.record_anomaly("dbc_error")
-        self.dbc_panel.show_error(
-            translate("dbc.load_failed").format(name=path.name, message=message)
+        self.session_note.show_message(
+            translate("dbc.load_failed").format(name=path.name, message=message), "error"
         )
 
     def _dbc_enabled_changed(self, content_hash: str, enabled: bool) -> None:
-        # The row already shows the new state; the catalog catches up behind it.
-        self.dbc_panel.set_row_state(content_hash, enabled)
+        # The menu action already shows the new state; the catalog catches up behind it.
         self._queue_catalog_operation(
             CatalogOperation(
                 kind=CatalogOperationKind.ENABLE,
@@ -274,9 +276,6 @@ class WorkspaceCatalog:
         self._queue_catalog_operation(
             CatalogOperation(kind=CatalogOperationKind.REMOVE, content_hash=content_hash)
         )
-
-    def _remove_selected_dbc(self) -> None:
-        self.dbc_panel._remove_current()
 
     def _resolve_conflict(
         self,
@@ -334,6 +333,7 @@ class WorkspaceCatalog:
             self._series.drop(signal_name)
         self._persist_signal_state()
         self._sync_graphs()
+        self._mark_signal_summary_dirty()
         if shown:
             self._request_signal_backfill(signal_name)
 

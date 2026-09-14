@@ -283,6 +283,9 @@ class WorkspaceLayout:
     cursor_a: float | None = None
     cursor_b: float | None = None
     fullscreen: bool = False
+    #: "full" (default: t=0 through the newest sample) or "trailing" (the
+    #: existing pinned-narrower-window behavior) - item_137 AC3.
+    follow_live_mode: str = "full"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -295,6 +298,7 @@ class WorkspaceLayout:
             "cursor_a": self.cursor_a,
             "cursor_b": self.cursor_b,
             "fullscreen": self.fullscreen,
+            "follow_live_mode": self.follow_live_mode,
         }
 
     @classmethod
@@ -339,6 +343,9 @@ class WorkspaceLayout:
             cursor_a=optional_float("cursor_a"),
             cursor_b=optional_float("cursor_b"),
             fullscreen=bool(raw.get("fullscreen", False)),
+            follow_live_mode=(
+                "trailing" if raw.get("follow_live_mode") == "trailing" else "full"
+            ),
         )
 
 

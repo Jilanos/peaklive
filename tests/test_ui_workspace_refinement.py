@@ -247,11 +247,11 @@ def test_each_action_cell_states_its_action_and_its_state(qtbot, tmp_path):
     assert translate("signals.state_off") in item.data(FAVORITE_COLUMN, ACCESSIBLE_ROLE)
 
 
-def test_dbc_enablement_stays_in_the_library_and_is_not_duplicated(qtbot, tmp_path):
+def test_dbc_enablement_stays_in_the_dbc_menu_and_is_not_duplicated(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
 
-    library_row = window.dbc_library.topLevelItem(0)
-    assert library_row.checkState(0) == Qt.CheckState.Checked
+    menu_entry = next(iter(window._dbc_menu_entries.values()))
+    assert menu_entry.isChecked()
 
     assert window.signal_explorer.columnCount() == 3
     dbc_row = window.signal_explorer.topLevelItem(0)

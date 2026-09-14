@@ -101,7 +101,7 @@ def test_main_window_manages_multi_dbc_signals_favorites_and_graphs(qtbot, tmp_p
         ]
     )
 
-    assert window.dbc_library.topLevelItemCount() == 2
+    assert len(window._dbc_menu_entries) == 2
     assert {name.rsplit(":", 1)[-1] for name in window.selected_profile.displayed_signals} == {
         "BodyStatus.DoorOpen",
         "VehicleStatus.Speed",

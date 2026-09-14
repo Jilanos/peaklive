@@ -106,6 +106,7 @@ class WorkspaceIngest:
         self._graph_dirty = False
         with PROFILER.stage(STAGE_GRAPH_REFRESH):
             self.graph_panel.refresh_data()
+        self._mark_signal_summary_dirty()
 
     def _settle_presentation(self) -> None:
         """Make the trace window authoritative once ingestion has stopped.
@@ -371,7 +372,7 @@ class WorkspaceIngest:
             # restyle it drives is only worth showing once per identifier.
             if frame.identifier_key not in self._reported_dbc_conflicts:
                 self._reported_dbc_conflicts.add(frame.identifier_key)
-                self.dbc_panel.show_error(str(error))
+                self.session_note.show_message(str(error), "error")
             return [], DECODE_CONFLICT
         except (ValueError, TypeError, KeyError):
             self._facts.record_anomaly("decode_invalid")

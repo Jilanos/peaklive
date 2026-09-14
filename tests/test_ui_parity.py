@@ -71,28 +71,28 @@ def _legacy_label(key: str) -> str:
     return key.rsplit(":", 1)[-1]
 
 
-def test_parity_multi_dbc_library_shows_state_and_supports_disable_and_remove(qtbot, tmp_path):
+def test_parity_multi_dbc_menu_shows_state_and_supports_disable_and_remove(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
     vehicle = _write(tmp_path, "vehicle.dbc", VEHICLE_DBC)
     body = _write(tmp_path, "body.dbc", BODY_DBC)
 
     window._load_dbc_path(vehicle)
     window._load_dbc_path(body)
-    assert window.dbc_library.topLevelItemCount() == 2
+    assert len(window._dbc_menu_entries) == 2
     assert {str(vehicle), str(body)} == set(window.selected_profile.dbc_paths)
 
     # Enable, disable, and remove are prepared off the UI thread and committed
     # in one step, so each assertion waits for that commit rather than assuming
     # the mutation happened inside the click.
-    window.dbc_library.topLevelItem(0).setCheckState(0, Qt.CheckState.Unchecked)
+    first_hash = window._catalog.definitions[0].content_hash
+    window._dbc_menu_entries[first_hash].setChecked(False)
     qtbot.waitUntil(lambda: bool(window.selected_profile.trace_filters["disabled_dbc_hashes"]))
 
-    window.dbc_library.topLevelItem(0).setCheckState(0, Qt.CheckState.Checked)
+    window._dbc_menu_entries[first_hash].setChecked(True)
     qtbot.waitUntil(lambda: not window.selected_profile.trace_filters["disabled_dbc_hashes"])
 
-    window.dbc_library.setCurrentItem(window.dbc_library.topLevelItem(0))
-    window._remove_selected_dbc()
-    qtbot.waitUntil(lambda: window.dbc_library.topLevelItemCount() == 1)
+    window._remove_dbc(first_hash)
+    qtbot.waitUntil(lambda: len(window._dbc_menu_entries) == 1)
     assert len(window.selected_profile.dbc_paths) == 1
 
 
@@ -103,9 +103,9 @@ def test_parity_dbc_conflicts_are_explicit_and_resolution_persists(qtbot, tmp_pa
     window._load_dbc_path(_write(tmp_path, "vehicle.dbc", VEHICLE_DBC))
     window._load_dbc_path(_write(tmp_path, "gateway.dbc", CONFLICTING_DBC))
 
-    assert window.conflict_selector.count() > 1
+    assert len(window._dbc_conflict_actions) > 1
 
-    window.conflict_selector.setCurrentIndex(1)
+    window._dbc_conflict_actions[1].trigger()
     qtbot.waitUntil(
         lambda: bool(store.load().selected.trace_filters["dbc_conflict_resolutions"])
     )
@@ -215,7 +215,12 @@ def test_parity_acquisition_setup_persists_and_stays_receive_only(qtbot, tmp_pat
     qtbot.addWidget(window)
 
     window.bitrate_selector.setCurrentIndex(window.bitrate_selector.findData(1_000_000))
-    window.capture_format_selector.setCurrentIndex(window.capture_format_selector.findData("trc"))
+    dialog = window._open_recording_dialog()
+    qtbot.addWidget(dialog)
+    dialog.capture_format_selector.setCurrentIndex(
+        dialog.capture_format_selector.findData("trc")
+    )
+    dialog.close()
     window.controller_mode_selector.setCurrentIndex(
         window.controller_mode_selector.findData(ControllerMode.NORMAL_RECEIVE.value)
     )

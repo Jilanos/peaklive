@@ -1,13 +1,15 @@
 ## item_135_organize_recording_and_setup_commands_around_safe_profile_ownership - Organize recording and setup commands around safe profile ownership
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 95%
 > Confidence: 95%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Menu ownership and acquisition configuration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-14 16:30:50
+> Owner: maintainer@example.invalid
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -58,3 +60,12 @@
 # Priority
 - Priority: High - misplaced lifecycle and bus controls make critical operator actions harder to find and consume measurement workspace.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Validation
+- Wave 1 implemented: Recording/Setup top-level menus added, Save measurement setup moved to Setup, Start/Stop/Recording settings moved to Recording, capture-format (ASC/TRC) relocated from AcquisitionBar into RecordingSettingsDialog, channel/bitrate/controller-mode mirrored as Setup cascading submenus (keyboard/pointer accessible, check-marked, gated by lifecycle), header Stop styled red only while stoppable. Evidence: full pytest suite green except one pre-existing timing-flaky perf test (test_trace_performance.py, also fails intermittently on the unmodified tree); ruff clean.
+
+# Tasks
+- `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement`
+
+# Notes
+- Task `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement` was finished via `logics-manager flow finish task` on 2026-09-14.

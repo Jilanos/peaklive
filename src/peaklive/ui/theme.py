@@ -125,6 +125,10 @@ QPushButton:pressed, QToolButton:pressed {{
 QPushButton:checked, QToolButton:checked {{
     background: {SELECTION_BACKGROUND}; border: 1px solid {FOCUS_RING};
 }}
+QPushButton#stopAcquisitionButton[active="true"] {{
+    background: {STATE_ERROR}; border: 1px solid #fca5a5;
+}}
+QPushButton#stopAcquisitionButton[active="true"]:hover {{ background: #f87171; }}
 QToolButton#collapseButton {{ background: #202b3a; color: {TEXT_BODY}; min-width: 24px; }}
 QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18px; padding: 0; }}
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};

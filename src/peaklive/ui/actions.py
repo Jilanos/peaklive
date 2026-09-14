@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QActionGroup, QKeySequence
+from PySide6.QtWidgets import QComboBox, QMenu
 
+from peaklive.analysis import CatalogView
 from peaklive.i18n import translate
+from peaklive.ui.panels.graph_navigation import FOLLOW_MODE_FULL, FOLLOW_MODE_TRAILING
 
 
 class WorkspaceActions:
@@ -25,25 +28,51 @@ class WorkspaceActions:
         file_menu.addAction(self._action("menu.export", self._open_export_dialog, "Ctrl+E"))
         file_menu.addAction(self._action("menu.export_report", self._export_report))
         file_menu.addSeparator()
-        file_menu.addAction(
-            self._action("menu.save_profile_as", self._save_profile_as, "Ctrl+Shift+S")
-        )
-        file_menu.addSeparator()
         file_menu.addAction(self._action("menu.quit", self.close, "Ctrl+Q"))
 
-        view_menu = bar.addMenu(translate("menu.view"))
+        recording_menu = bar.addMenu(translate("menu.recording"))
         self.start_action = self._action("menu.start", self._start_acquisition, "F5")
-        view_menu.addAction(self.start_action)
+        recording_menu.addAction(self.start_action)
         self.stop_action = self._action("menu.stop", self._stop_acquisition, "F6")
-        view_menu.addAction(self.stop_action)
-        view_menu.addAction(self._action("menu.recording_settings", self._open_recording_dialog))
-        view_menu.addSeparator()
+        recording_menu.addAction(self.stop_action)
+        recording_menu.addSeparator()
+        recording_menu.addAction(
+            self._action("menu.recording_settings", self._open_recording_dialog)
+        )
+
+        setup_menu = bar.addMenu(translate("menu.setup"))
+        setup_menu.addAction(
+            self._action("menu.save_profile_as", self._save_profile_as, "Ctrl+Shift+S")
+        )
+        setup_menu.addSeparator()
+        self._setup_menu_refreshers = [
+            self._build_choice_submenu(
+                setup_menu, "menu.channel", self.acquisition_bar.channel_selector
+            ),
+            self._build_choice_submenu(
+                setup_menu, "menu.bitrate", self.acquisition_bar.bitrate_selector
+            ),
+            self._build_choice_submenu(
+                setup_menu, "menu.controller_mode", self.acquisition_bar.controller_mode_selector
+            ),
+        ]
+
+        view_menu = bar.addMenu(translate("menu.view"))
         view_menu.addAction(self._action("menu.fit", self.graph_panel.fit, "Ctrl+0"))
         view_menu.addAction(
             self._action("menu.focus_filter", self._focus_trace_filter, "Ctrl+F")
         )
         view_menu.addAction(self._action("menu.fullscreen", self._toggle_fullscreen, "F11"))
         view_menu.addSeparator()
+        self._build_follow_live_menu(view_menu)
+        view_menu.addSeparator()
+
+        self._dbc_menu = bar.addMenu(translate("dbc.menu"))
+        self._dbc_menu.setObjectName("menu_dbc")
+        self._dbc_menu_entries: dict[str, QAction] = {}
+        self._dbc_remove_actions: dict[str, QAction] = {}
+        self._dbc_conflict_actions: list[QAction] = []
+
         self._panel_visibility_actions = {
             self.signals_panel.key: self._panel_visibility_action(
                 "menu.view_signals", self.signals_panel
@@ -60,6 +89,171 @@ class WorkspaceActions:
 
         help_menu = bar.addMenu(translate("menu.help"))
         help_menu.addAction(self._action("menu.about", self._show_about))
+
+    def _build_choice_submenu(self, menu: QMenu, key: str, combo: QComboBox) -> Callable[[], None]:
+        """A cascading submenu mirroring one combo box's items and selection.
+
+        The combo stays the single source of truth: choosing a submenu entry
+        just drives the combo's current index, which already carries the
+        existing persistence and lifecycle-safety wiring. Rebuilding on every
+        `currentIndexChanged` keeps the menu correct even when the combo's
+        item list itself changes (e.g. an unrecognised profile channel).
+        """
+        submenu = menu.addMenu(translate(key))
+        submenu.setObjectName(key.replace(".", "_"))
+        object_prefix = key.replace(".", "_")
+        state: dict[str, list[QAction]] = {"actions": []}
+
+        def rebuild() -> None:
+            for action in state["actions"]:
+                action.deleteLater()
+            submenu.clear()
+            group = QActionGroup(self)
+            group.setExclusive(True)
+            actions = []
+            for index in range(combo.count()):
+                action = QAction(combo.itemText(index), self)
+                action.setObjectName(f"{object_prefix}_{index}")
+                action.setCheckable(True)
+                action.setChecked(index == combo.currentIndex())
+                action.setEnabled(combo.isEnabled())
+                action.triggered.connect(
+                    lambda _checked=False, i=index: combo.setCurrentIndex(i)
+                )
+                group.addAction(action)
+                submenu.addAction(action)
+                actions.append(action)
+            state["actions"] = actions
+            submenu._peaklive_action_group = group  # keep alive: parented actions only
+
+        rebuild()
+        combo.currentIndexChanged.connect(lambda *_: rebuild())
+        return rebuild
+
+    def _build_follow_live_menu(self, view_menu: QMenu) -> None:
+        """View > Follow live: Full acquisition span (default) or Trailing window."""
+        submenu = view_menu.addMenu(translate("graph.follow_live_menu"))
+        submenu.setObjectName("menu_follow_live")
+        group = QActionGroup(self)
+        group.setExclusive(True)
+        self._follow_live_mode_actions: dict[str, QAction] = {}
+        for mode, key, object_name in (
+            (FOLLOW_MODE_FULL, "graph.follow_live_full", "menu_follow_live_full"),
+            (FOLLOW_MODE_TRAILING, "graph.follow_live_trailing", "menu_follow_live_trailing"),
+        ):
+            action = QAction(translate(key), self)
+            action.setObjectName(object_name)
+            action.setCheckable(True)
+            action.setChecked(mode == FOLLOW_MODE_FULL)
+            action.triggered.connect(
+                lambda _checked=False, m=mode: self._follow_live_mode_changed(m)
+            )
+            group.addAction(action)
+            submenu.addAction(action)
+            self._follow_live_mode_actions[mode] = action
+
+    def _sync_follow_live_mode_actions(self, mode: str) -> None:
+        for action_mode, action in getattr(self, "_follow_live_mode_actions", {}).items():
+            action.blockSignals(True)
+            action.setChecked(action_mode == mode)
+            action.blockSignals(False)
+
+    def _follow_live_mode_changed(self, mode: str) -> None:
+        self.graph_panel.set_follow_live_mode(mode)
+        if self._restoring:
+            return
+        self.selected_profile.layout.follow_live_mode = mode
+        self._save()
+
+    def _refresh_dbc_menu(self, view: CatalogView) -> None:
+        """Rebuild the DBC menu from one prepared catalog view.
+
+        The menu is the sole DBC control surface (item_136): one checkable
+        entry per loaded database, an Add command, and Remove/Conflicts
+        submenus built only when there is something to remove or resolve.
+        """
+        menu = self._dbc_menu
+        menu.clear()
+        self._dbc_menu_entries = {}
+        self._dbc_remove_actions = {}
+        self._dbc_conflict_actions = []
+
+        menu.addAction(self._action("dbc.menu_add", self._choose_dbc))
+        if view.definitions:
+            menu.addSeparator()
+        for definition in view.definitions:
+            action = QAction(f"{definition.path.name} · {definition.short_hash}", self)
+            action.setObjectName(f"dbc_entry_{definition.content_hash}")
+            action.setCheckable(True)
+            action.setChecked(view.is_enabled(definition.content_hash))
+            action.toggled.connect(
+                lambda checked, h=definition.content_hash: self._dbc_enabled_changed(h, checked)
+            )
+            menu.addAction(action)
+            self._dbc_menu_entries[definition.content_hash] = action
+
+        if view.definitions:
+            menu.addSeparator()
+            remove_menu = menu.addMenu(translate("dbc.menu_remove"))
+            remove_menu.setObjectName("menu_dbc_remove")
+            for definition in view.definitions:
+                action = QAction(definition.path.name, self)
+                action.setObjectName(f"dbc_remove_{definition.content_hash}")
+                action.triggered.connect(
+                    lambda _checked=False, h=definition.content_hash: self._remove_dbc(h)
+                )
+                remove_menu.addAction(action)
+                self._dbc_remove_actions[definition.content_hash] = action
+
+        unresolved = view.unresolved_conflicts
+        if unresolved:
+            menu.addSeparator()
+            conflicts_menu = menu.addMenu(translate("dbc.menu_conflicts"))
+            conflicts_menu.setObjectName("menu_dbc_conflicts")
+            for conflict in unresolved:
+                for definition in conflict.candidates:
+                    label = translate("dbc.conflict_entry").format(
+                        identifier=(
+                            f"0x{conflict.arbitration_id:X}"
+                            f"{'x' if conflict.is_extended_id else ''}"
+                        ),
+                        name=definition.path.name,
+                    )
+                    action = QAction(label, self)
+                    action.triggered.connect(
+                        lambda _checked=False,
+                        arbitration_id=conflict.arbitration_id,
+                        is_extended_id=conflict.is_extended_id,
+                        content_hash=definition.content_hash: self._resolve_conflict(
+                            arbitration_id, is_extended_id, content_hash
+                        )
+                    )
+                    conflicts_menu.addAction(action)
+                    self._dbc_conflict_actions.append(action)
+        self._sync_dbc_menu_busy()
+
+    def _sync_dbc_menu_busy(self) -> None:
+        """Disable the whole DBC menu while a catalog operation is in flight.
+
+        A menu action triggered mid-mutation would queue a second operation
+        against a catalog view that is about to change underneath it; disabling
+        the menu for that one moment is simpler than reconciling overlapping
+        mutations against a stale view.
+        """
+        menu = getattr(self, "_dbc_menu", None)
+        if menu is not None:
+            menu.setEnabled(self._catalog_worker is None)
+
+    def _sync_setup_menu_enabled(self) -> None:
+        """Reconcile every Setup submenu's items with their combo's gating.
+
+        Lifecycle gating disables the channel/bitrate/mode combos without
+        necessarily changing their current index, so `currentIndexChanged`
+        never fires — the submenus need their own refresh hook after a
+        lifecycle-phase change.
+        """
+        for refresh in getattr(self, "_setup_menu_refreshers", ()):
+            refresh()
 
     def _action(self, key: str, slot: Callable[[], None], shortcut: str = "") -> QAction:
         action = QAction(translate(key), self)

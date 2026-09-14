@@ -140,6 +140,7 @@ class WorkspaceSession:
         """Reflect the current phase in the bar, the status line, and progress."""
         phase = self._lifecycle.phase
         self.acquisition_bar.set_lifecycle_phase(phase)
+        self._sync_setup_menu_enabled()
         message = _PHASE_STATUS.get(phase)
         if message is not None:
             self.status.showMessage(translate(message))
