@@ -6,6 +6,7 @@
 > Related task: `task_030_eliminate_the_qt_python_garbage_collection_lock_inversion`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-14 18:12:04
 
 # Overview
 Prevent native Qt/Python lock inversion without moving DBC parsing back to the UI thread.
@@ -17,16 +18,26 @@ Prevent native Qt/Python lock inversion without moving DBC parsing back to the U
 - Change decoding results, acquisition ownership, or the user interface.
 
 # Scope and guardrails
-- In: scaffolded request, product, backlog, orchestration task, validation, and handoff context.
-- Out: unrelated workflow docs and implementation of generated tasks.
+- In: QApplication-owned cyclic collection, startup ordering, lifetime restoration, and thread-ownership regression coverage.
+- Out: parser semantics, explicit third-party gc.collect calls, and non-cyclic reference-counted destruction.
 
 # Key product decisions
-- Use structured input as the source of truth for generated docs.
-- Keep generated write paths local and repo-bounded.
+- Disable automatic cyclic collection before window workers start and schedule threshold-aware collection on the GUI event loop once per second.
+- Share one timer across windows and restore the prior automatic-GC setting when QApplication is destroyed.
 
 # Success signals
-- Generated docs pass lint and audit without broad manual rewrites.
-- Context-pack output can be handed to an implementation agent directly.
+- Worker allocation cannot reclaim GUI-owned cycles; the destruction-thread regression passes.
+- Full Linux and relevant Windows tests complete without the reproduced deadlock; Ruff passes.
+
+# Runtime ownership
+```mermaid
+flowchart LR
+    App[QApplication] --> Timer[Shared GUI timer]
+    Timer --> GC[Threshold aware cyclic collection]
+    GC --> Qt[Qt wrapper destruction on GUI thread]
+    Worker[DBC worker allocation] --> Deferred[Cycles await GUI collection]
+    Deferred --> GC
+```
 
 # References
 - Product back-reference: `req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation`

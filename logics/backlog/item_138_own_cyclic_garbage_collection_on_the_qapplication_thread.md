@@ -1,19 +1,20 @@
 ## item_138_own_cyclic_garbage_collection_on_the_qapplication_thread - Own cyclic garbage collection on the QApplication thread
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
-> Understanding: 90%
-> Confidence: 85%
-> Progress: 0%
+> Status: In progress
+> Understanding: 100%
+> Confidence: 90%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Runtime reliability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-14 17:33:57
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Prevent worker-triggered cyclic GC from destroying Qt wrappers and deadlocking the GUI against the Python GIL.
 - Keywords: own, cyclic, garbage, collection, qapplication, thread
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Investigating DBC worker hangs or changing QApplication cyclic collection ownership.
+- Skip when: Changing decoding semantics or ordinary reference-counted object cleanup.
 
 # Problem
 - CPython automatic collection can destroy Qt wrappers inside a parser worker while the GUI thread is also destroying Qt objects.

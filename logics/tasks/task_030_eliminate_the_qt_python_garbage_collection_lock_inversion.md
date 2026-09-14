@@ -1,22 +1,24 @@
 ## task_030_eliminate_the_qt_python_garbage_collection_lock_inversion - Eliminate the Qt Python garbage collection lock inversion
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: Codex
+> Indicators reviewed: 2026-09-14 17:33:57
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: Prevent worker-triggered cyclic GC from destroying Qt wrappers and deadlocking the GUI against the Python GIL.
 - Keywords: eliminate, python, garbage, collection, lock, inversion
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: Investigating DBC worker hangs or changing QApplication cyclic collection ownership.
+- Skip when: Changing decoding semantics or ordinary reference-counted object cleanup.
 
 # Context
-- Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
+- Complete the native Qt/Python lock inversion repair identified in GitHub run 34858021301 and reproduced under Linux after the menu lifetime fixes.
 
 # Plan
 - [ ] 1. Record the native lock inversion evidence and add a deterministic thread-ownership regression.
@@ -41,10 +43,15 @@
 - request-AC3 -> `item_138_own_cyclic_garbage_collection_on_the_qapplication_thread`. Proof deferred to slice closeout.
 
 # Validation
-- (no validation recorded yet)
+- 2026-09-14 Windows: `uv run python -m pytest -ra -o faulthandler_timeout=120 -o faulthandler_exit_on_timeout=true` with `QT_QPA_PLATFORM=offscreen`: 671 passed, 1 skipped, 9 xfailed, 3 xpassed in 323.88s; all exclusions are existing Windows offscreen layout quarantines.
+- 2026-09-14 Linux (WSL Ubuntu, matching source and tests): same pytest command, 684 passed in 310.28s, including rapid consecutive DBC operations.
+- `uv run ruff check .` passed on Windows and Linux; Logics lint and scoped flow validation passed; audit has no blockers (two unrelated existing warnings).
 
 # Report
-- Not started.
+- Implemented one QApplication-owned, threshold-aware collection timer, installed before MainWindow starts workers. Automatic cyclic GC is disabled until application destruction restores the previous policy; reference counting is unchanged.
+- Regression coverage verifies worker allocations do not reclaim Qt cycles, GUI-thread destruction, timer reuse, generation selection, and application teardown.
+- Full Windows and Linux suites passed. The regression verifies destruction thread ownership deterministically; the Linux full suite also completes beyond the formerly hanging DBC test.
+- Remaining limitation: explicit third-party `gc.collect()` calls and reference-counted destruction are outside this automatic cyclic collection policy.
 
 # Links
 - Request: `req_031_prevent_qt_destruction_deadlocks_during_background_python_allocation`
