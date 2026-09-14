@@ -121,6 +121,23 @@ def test_after_a_failure_further_batches_do_not_retry_persistence_or_duplicate_f
     assert not window._historical_view_ready
 
 
+def test_a_late_replay_drain_after_writer_shutdown_does_not_escape_the_qt_slot(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    writer = window._history_writer
+    assert writer is not None
+    writer.request_stop()
+    abandon_worker(writer)
+    window._history_writer = None
+
+    # A queued Qt drain can arrive after closeEvent has released the writer.
+    # It may still project its accepted frame, but must not dereference the
+    # retired writer or submit new historical work to a closing session.
+    window._ingest_frames([CanFrame(0.0, 0x300, bytes(8))], coalesce=True)
+
+    assert len(window._trace) == 1
+    assert window._history_batches_submitted == 0
+
+
 def test_reopening_after_the_fault_clears_succeeds_from_a_fresh_store(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
     _install_readonly_writer(window, qtbot)
