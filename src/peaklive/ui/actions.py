@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from weakref import proxy
 
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
 from PySide6.QtWidgets import QComboBox, QMenu
@@ -102,17 +103,17 @@ class WorkspaceActions:
         submenu = menu.addMenu(translate(key))
         submenu.setObjectName(key.replace(".", "_"))
         object_prefix = key.replace(".", "_")
-        state: dict[str, list[QAction]] = {"actions": []}
+        group = QActionGroup(submenu)
+        group.setExclusive(True)
 
         def rebuild() -> None:
-            for action in state["actions"]:
+            # A choice can rebuild its own menu from inside triggered().
+            # Retire actions after that signal returns, and reuse the group.
+            for action in submenu.actions():
+                submenu.removeAction(action)
                 action.deleteLater()
-            submenu.clear()
-            group = QActionGroup(self)
-            group.setExclusive(True)
-            actions = []
             for index in range(combo.count()):
-                action = QAction(combo.itemText(index), self)
+                action = QAction(combo.itemText(index), submenu)
                 action.setObjectName(f"{object_prefix}_{index}")
                 action.setCheckable(True)
                 action.setChecked(index == combo.currentIndex())
@@ -122,9 +123,6 @@ class WorkspaceActions:
                 )
                 group.addAction(action)
                 submenu.addAction(action)
-                actions.append(action)
-            state["actions"] = actions
-            submenu._peaklive_action_group = group  # keep alive: parented actions only
 
         rebuild()
         combo.currentIndexChanged.connect(lambda *_: rebuild())
@@ -136,6 +134,7 @@ class WorkspaceActions:
         submenu.setObjectName("menu_follow_live")
         group = QActionGroup(self)
         group.setExclusive(True)
+        owner = proxy(self)
         self._follow_live_mode_actions: dict[str, QAction] = {}
         for mode, key, object_name in (
             (FOLLOW_MODE_FULL, "graph.follow_live_full", "menu_follow_live_full"),
@@ -146,7 +145,7 @@ class WorkspaceActions:
             action.setCheckable(True)
             action.setChecked(mode == FOLLOW_MODE_FULL)
             action.triggered.connect(
-                lambda _checked=False, m=mode: self._follow_live_mode_changed(m)
+                lambda _checked=False, m=mode: owner._follow_live_mode_changed(m)
             )
             group.addAction(action)
             submenu.addAction(action)
@@ -173,21 +172,32 @@ class WorkspaceActions:
         submenus built only when there is something to remove or resolve.
         """
         menu = self._dbc_menu
+        # Retire submenus explicitly: clear() removes their menu actions but
+        # leaves the child QMenus alive. Own all leaf actions in their menus.
+        for action in menu.actions():
+            child_menu = action.menu()
+            if child_menu is not None:
+                child_menu.deleteLater()
         menu.clear()
         self._dbc_menu_entries = {}
         self._dbc_remove_actions = {}
         self._dbc_conflict_actions = []
 
-        menu.addAction(self._action("dbc.menu_add", self._choose_dbc))
+        add_action = self._action("dbc.menu_add", self._choose_dbc)
+        add_action.setParent(menu)
+        menu.addAction(add_action)
+        # Qt owns these callbacks. They must not retain the entire window in
+        # a Python cycle that another worker's allocation may collect later.
+        owner = proxy(self)
         if view.definitions:
             menu.addSeparator()
         for definition in view.definitions:
-            action = QAction(f"{definition.path.name} · {definition.short_hash}", self)
+            action = QAction(f"{definition.path.name} · {definition.short_hash}", menu)
             action.setObjectName(f"dbc_entry_{definition.content_hash}")
             action.setCheckable(True)
             action.setChecked(view.is_enabled(definition.content_hash))
             action.toggled.connect(
-                lambda checked, h=definition.content_hash: self._dbc_enabled_changed(h, checked)
+                lambda checked, h=definition.content_hash: owner._dbc_enabled_changed(h, checked)
             )
             menu.addAction(action)
             self._dbc_menu_entries[definition.content_hash] = action
@@ -197,10 +207,10 @@ class WorkspaceActions:
             remove_menu = menu.addMenu(translate("dbc.menu_remove"))
             remove_menu.setObjectName("menu_dbc_remove")
             for definition in view.definitions:
-                action = QAction(definition.path.name, self)
+                action = QAction(definition.path.name, remove_menu)
                 action.setObjectName(f"dbc_remove_{definition.content_hash}")
                 action.triggered.connect(
-                    lambda _checked=False, h=definition.content_hash: self._remove_dbc(h)
+                    lambda _checked=False, h=definition.content_hash: owner._remove_dbc(h)
                 )
                 remove_menu.addAction(action)
                 self._dbc_remove_actions[definition.content_hash] = action
@@ -219,12 +229,12 @@ class WorkspaceActions:
                         ),
                         name=definition.path.name,
                     )
-                    action = QAction(label, self)
+                    action = QAction(label, conflicts_menu)
                     action.triggered.connect(
                         lambda _checked=False,
                         arbitration_id=conflict.arbitration_id,
                         is_extended_id=conflict.is_extended_id,
-                        content_hash=definition.content_hash: self._resolve_conflict(
+                        content_hash=definition.content_hash: owner._resolve_conflict(
                             arbitration_id, is_extended_id, content_hash
                         )
                     )
