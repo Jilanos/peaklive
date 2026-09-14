@@ -26,6 +26,7 @@ from peaklive.analysis.profiling import (
     RESPONSIVENESS_MEASUREMENT_TOLERANCE_S,
     STAGE_DECODE,
     STAGE_PARSE,
+    STAGE_QUEUE_WAIT,
     STAGE_TRACE_PROJECTION,
     STAGES,
     StageProfiler,
@@ -114,6 +115,12 @@ def test_the_audit_attributes_a_representative_load_to_every_stage(qtbot, tmp_pa
         # desktop scheduler after the full Qt suite has run. Keep the
         # product budget unchanged; this is measurement-harness tolerance.
         budgets[STAGE_TRACE_PROJECTION] = 0.350
+        # The background writer can lose a Windows scheduler slice after a
+        # batch is submitted.  `queue_wait` then includes that hosted-runner
+        # delay even though the writer's own measured SQL time remains within
+        # its product budget.  Keep the production limit at 50 ms/1k and use
+        # a bounded CI stopwatch tolerance, matching trace projection above.
+        budgets[STAGE_QUEUE_WAIT] = 0.200
     else:
         from peaklive.analysis.profiling import STAGE_BUDGETS_PER_1K_FRAMES
 
