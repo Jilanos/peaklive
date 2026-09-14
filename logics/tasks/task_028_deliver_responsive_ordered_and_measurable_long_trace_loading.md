@@ -1,13 +1,15 @@
 ## task_028_deliver_responsive_ordered_and_measurable_long_trace_loading - Deliver responsive ordered and measurable long trace loading
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 14%
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: maintainer@example.invalid
+> Indicators reviewed: 2026-09-13 23:46:55
 
 # AI Context
 - Summary: Sequence measurement, ordered transport, storage failure containment, writer optimization and long-capture qualification.
@@ -66,10 +68,11 @@
 - request-AC7 -> `item_134_qualify_typical_and_fifty_minute_trace_loading_with_existing_historical_work`. Proof deferred to slice closeout.
 
 # Validation
-- Corpus preparation only: 626 baseline Linux/offscreen tests passed in 197.18s; initial and shown-window probes reproduce the history bottleneck. Ordered event and SQLite error probes reproduce the reported gaps. No runtime correction has been implemented.
+- Corpus preparation baseline: 626 Linux/offscreen tests passed in 197.18s; initial and shown-window probes reproduce the history bottleneck. Ordered event and SQLite error probes reproduce the reported gaps.
+- Wave 1 (item_131, 2026-09-14): see `item_131`'s own Validation entry. `tests/test_replay_ordered_transport.py` added (3 new tests); full-suite proof recorded there.
 
 # Report
-- Not started.
+- Wave 1 landed item_131 (ordered bounded replay transport unifying frames and valid bus events). Implementation order was adjusted from the plan's literal step numbering: the ordering fix was implemented before the item_130 measurement harness, since it is a self-contained, independently testable correctness fix, and the harness (still pending) will measure the post-fix pipeline rather than needing to precede every other change. Remaining: item_130 (harness), item_132 (failure containment), item_133 (bounded writer), item_134 (qualification, native Windows evidence out of reach from this session).
 
 # Links
 - Request: `req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit`
