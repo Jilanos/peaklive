@@ -109,7 +109,7 @@ def test_loading_a_slow_dbc_keeps_the_window_interactive(qtbot, tmp_path, monkey
     qtbot.waitUntil(lambda: len(window._catalog.definitions) == 1)
     probe.stop()
     assert not window.progress.isVisible()
-    assert window.dbc_library.topLevelItemCount() == 1
+    assert len(window._dbc_menu_entries) == 1
 
 
 def test_removing_a_dbc_keeps_the_window_interactive(qtbot, tmp_path, monkeypatch):
@@ -123,7 +123,7 @@ def test_removing_a_dbc_keeps_the_window_interactive(qtbot, tmp_path, monkeypatc
 
     qtbot.waitUntil(lambda: not window._catalog.definitions)
     probe.stop()
-    assert window.dbc_library.topLevelItemCount() == 0
+    assert len(window._dbc_menu_entries) == 0
 
 
 def test_the_file_dialog_path_queues_a_background_load(qtbot, tmp_path, monkeypatch):
@@ -173,7 +173,7 @@ def test_cancelling_before_commit_leaves_the_catalog_and_profile_unchanged(
 
     assert [d.content_hash for d in window._catalog.definitions] == before_hashes
     assert window.selected_profile.dbc_paths == before_paths
-    assert window.dbc_library.topLevelItemCount() == 1
+    assert len(window._dbc_menu_entries) == 1
 
 
 def test_a_malformed_file_is_reported_without_losing_the_good_one(qtbot, tmp_path):
@@ -184,8 +184,8 @@ def test_a_malformed_file_is_reported_without_losing_the_good_one(qtbot, tmp_pat
     _load(window, broken, good)
     qtbot.waitUntil(lambda: len(window._catalog.definitions) == 1)
 
-    assert "Cannot load broken.dbc" in window.dbc_panel.note.text()
-    assert window.dbc_panel.note.level == "error"
+    assert "Cannot load broken.dbc" in window.session_note.text()
+    assert window.session_note.level == "error"
     assert window.selected_profile.dbc_paths == [str(good)]
 
 
@@ -214,7 +214,7 @@ def test_rapid_consecutive_operations_are_serialized_and_end_consistent(qtbot, t
     # Catalog, profile, and panel all describe the same single remaining DBC.
     assert window._catalog.definitions[0].path == body
     assert window.selected_profile.dbc_paths == [str(body)]
-    assert window.dbc_library.topLevelItemCount() == 1
+    assert len(window._dbc_menu_entries) == 1
     assert not window.selected_profile.trace_filters["disabled_dbc_hashes"]
 
 
@@ -252,7 +252,7 @@ def test_a_superseded_operation_result_is_not_committed(qtbot, tmp_path, monkeyp
     qtbot.waitUntil(lambda: window._catalog_worker is None)
 
     assert not window._catalog.definitions
-    assert window.dbc_library.topLevelItemCount() == 0
+    assert len(window._dbc_menu_entries) == 0
 
 
 def test_conflict_resolution_commits_off_the_ui_thread(qtbot, tmp_path):
@@ -289,7 +289,9 @@ BO_ 291 VehicleStatus: 8 GW
     window._load_dbc_path(_write(tmp_path, "vehicle.dbc", VEHICLE_DBC))
     window._load_dbc_path(_write(tmp_path, "gateway.dbc", conflicting))
     errors: list = []
-    window.dbc_panel.show_error = lambda message: errors.append(message)  # type: ignore[method-assign]
+    window.session_note.show_message = (  # type: ignore[method-assign]
+        lambda message, level="info": errors.append(message)
+    )
 
     for index in range(20):
         window._render_frames([CanFrame(float(index), 291, b"\x00" * 8)])

@@ -23,6 +23,42 @@ AXIS_LIVE = "live"
 
 ZOOM_STEP = 1.6
 
+#: Follow-live modes (item_137 AC3): the default is the whole live/capture
+#: extent; "trailing" keeps the pre-existing pinned-narrower-window behavior.
+FOLLOW_MODE_FULL = "full"
+FOLLOW_MODE_TRAILING = "trailing"
+
+#: How far a manual pan or zoom may travel past either data edge, as a
+#: fraction of the acquired/live span (item_137 AC1) - enough room to read the
+#: last sample without it sitting flush against the plot border.
+X_RANGE_PADDING_FRACTION = 0.05
+
+#: A floor on that padding in seconds, so an empty, one-sample, or
+#: sub-millisecond extent still clamps to a usable, non-degenerate window
+#: instead of one a fraction of a millisecond wide (item_137 AC2).
+X_RANGE_MIN_PADDING_SECONDS = 0.5
+
+
+def _clamp_x_range(
+    low: float, high: float, extent: tuple[float, float]
+) -> tuple[float, float]:
+    """Bound `[low, high]` to `extent` plus a small, finite edge margin.
+
+    A window that lands entirely outside the padded extent (e.g. after a
+    fast pan) snaps back to the full padded extent rather than staying
+    stranded over blank canvas.
+    """
+    extent_low, extent_high = extent
+    span = extent_high - extent_low
+    padding = max(span * X_RANGE_PADDING_FRACTION, X_RANGE_MIN_PADDING_SECONDS)
+    lower_bound = extent_low - padding
+    upper_bound = extent_high + padding
+    clamped_low = max(low, lower_bound)
+    clamped_high = min(high, upper_bound)
+    if clamped_high <= clamped_low:
+        return lower_bound, upper_bound
+    return clamped_low, clamped_high
+
 
 class GraphNavigation:
     """Extent, zoom, fit, and follow-tail over the shared X axis."""
@@ -70,13 +106,17 @@ class GraphNavigation:
         self.fit()
 
     def _apply_follow(self, extent: tuple[float, float]) -> None:
-        """Keep the extent in view, or the tail if the operator zoomed into it.
+        """Keep the extent in view, or the tail if in trailing mode and zoomed in.
 
-        Following the tail means something only once the operator has chosen a
-        window narrower than the extent. Inferring that from the current span
-        alone was the old defect: a plot that has never been ranged reports the
-        library's own default, so a fresh session showed a one-second tail of a
-        capture it should have been showing whole.
+        `FOLLOW_MODE_FULL` (the default) always shows the whole extent, so
+        re-enabling follow-live after a manual zoom jumps back to the whole
+        span rather than resuming wherever the operator last narrowed it.
+        `FOLLOW_MODE_TRAILING` keeps the pre-existing behavior: once the
+        operator has chosen a window narrower than the extent, that width
+        stays pinned to the newest data instead. Inferring "chosen" from the
+        current span alone was the old defect: a plot that has never been
+        ranged reports the library's own default, so a fresh session showed a
+        one-second tail of a capture it should have been showing whole.
         """
         anchor = getattr(self, "anchor_plot", None)
         if anchor is None:
@@ -85,14 +125,27 @@ class GraphNavigation:
         current = view.viewRange()[0]
         span = current[1] - current[0]
         full = extent[1] - extent[0]
+        mode = getattr(self, "follow_live_mode", FOLLOW_MODE_FULL)
         self._applying_range = True
         try:
-            if not self._window_chosen or span <= 0 or span >= full:
+            if (
+                mode != FOLLOW_MODE_TRAILING
+                or not self._window_chosen
+                or span <= 0
+                or span >= full
+            ):
                 view.setXRange(extent[0], extent[1], padding=0.02)
                 return
             view.setXRange(extent[1] - span, extent[1], padding=0)
         finally:
             self._applying_range = False
+
+    def set_follow_live_mode(self, mode: str) -> None:
+        """Adopt a Follow-live mode and, if following now, reapply it at once."""
+        self.follow_live_mode = mode
+        extent = self.global_extent()
+        if extent is not None and self.follow_live:
+            self._apply_follow(extent)
 
     def zoom(self, factor: float) -> None:
         anchor = getattr(self, "anchor_plot", None)
@@ -172,4 +225,28 @@ class GraphNavigation:
         if not self._applying_range:
             self.set_follow_live(False)
             self._window_chosen = True
+            self._clamp_manual_range()
         self.view_changed.emit()
+
+    def _clamp_manual_range(self) -> None:
+        """Snap a just-completed manual pan/zoom back inside the data extent.
+
+        Only reached for a manual change (see `_x_range_changed`); a follow-live
+        or fit update already computes its range from the extent itself and
+        sets `_applying_range` around its own `setXRange`, so it never re-enters
+        here.
+        """
+        anchor = getattr(self, "anchor_plot", None)
+        extent = self.global_extent()
+        if anchor is None or extent is None:
+            return
+        view = anchor.getViewBox()
+        low, high = view.viewRange()[0]
+        clamped_low, clamped_high = _clamp_x_range(low, high, extent)
+        if (clamped_low, clamped_high) == (low, high):
+            return
+        self._applying_range = True
+        try:
+            view.setXRange(clamped_low, clamped_high, padding=0)
+        finally:
+            self._applying_range = False

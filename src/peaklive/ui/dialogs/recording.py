@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QDialog,
     QFileDialog,
     QFormLayout,
@@ -55,6 +56,19 @@ class RecordingSettingsDialog(QDialog):
         self.enabled_checkbox.setChecked(profile.recording.enabled)
         self.enabled_checkbox.toggled.connect(self._set_enabled)
         form.addRow(QLabel(translate("recording.enabled")), self.enabled_checkbox)
+
+        self.capture_format_selector = QComboBox(objectName="recordingCaptureFormat")
+        self.capture_format_selector.setAccessibleName(
+            translate("recording.capture_format_accessible")
+        )
+        self.capture_format_selector.setToolTip(translate("recording.capture_format_accessible"))
+        self.capture_format_selector.addItem(translate("recording.capture_format_asc"), "asc")
+        self.capture_format_selector.addItem(translate("recording.capture_format_trc"), "trc")
+        self.capture_format_selector.setCurrentIndex(
+            max(0, self.capture_format_selector.findData(profile.recording.capture_format))
+        )
+        self.capture_format_selector.currentIndexChanged.connect(self._set_capture_format)
+        form.addRow(QLabel(translate("recording.capture_format")), self.capture_format_selector)
 
         directory_row = QHBoxLayout()
         self.directory_edit = QLineEdit(
@@ -131,6 +145,14 @@ class RecordingSettingsDialog(QDialog):
 
     def _set_enabled(self, checked: bool) -> None:
         self._profile.recording.enabled = checked
+        self.recording_changed.emit()
+
+    def _set_capture_format(self) -> None:
+        capture_format = self.capture_format_selector.currentData()
+        if capture_format is None:
+            return
+        self._profile.recording.capture_format = str(capture_format)
+        self._refresh_preview()
         self.recording_changed.emit()
 
     def _browse(self) -> None:

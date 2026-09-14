@@ -1,13 +1,14 @@
 ## item_136_move_dbc_management_to_its_own_menu_and_summarize_displayed_signals - Move DBC management to its own menu and summarize displayed signals
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 95%
 > Confidence: 95%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: DBC catalog and signal observability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-14 16:30:50
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -57,3 +58,12 @@
 # Priority
 - Priority: High - catalog state and live signal state need separate, immediately discoverable homes.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Validation
+- Wave 2 implemented: DBC library panel removed from Signals; a new top-level DBC menu (menu_dbc) lists every loaded DBC as a checkable action mirroring WorkspaceCatalog's async enable/disable/remove/conflict-resolution operations, with Add/Remove/Conflicts entry points and the whole menu disabled while an operation is pending. A new SignalSummaryPanel leads Signals with currently shown signals, their latest value and unit, refreshed at most once/second (immediate first refresh, coalesced afterward) via WorkspaceSignalSummary. DBC load/decode failures now route to the shared session_note. Evidence: full pytest suite green (no regressions), new tests/test_signal_summary.py added, ruff clean, logics-manager lint/audit clean (no new blocking issues).
+
+# Tasks
+- `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement`
+
+# Notes
+- Task `task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement` was finished via `logics-manager flow finish task` on 2026-09-14.

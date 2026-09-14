@@ -24,10 +24,6 @@ class WorkspaceAddressing:
         return self.acquisition_bar.bitrate_selector
 
     @property
-    def capture_format_selector(self):
-        return self.acquisition_bar.capture_format_selector
-
-    @property
     def controller_mode_selector(self):
         return self.acquisition_bar.controller_mode_selector
 
@@ -50,18 +46,6 @@ class WorkspaceAddressing:
     @property
     def stop_button(self):
         return self.acquisition_bar.stop_button
-
-    @property
-    def dbc_library(self):
-        return self.dbc_panel.tree
-
-    @property
-    def remove_dbc_button(self):
-        return self.dbc_panel.remove_button
-
-    @property
-    def conflict_selector(self):
-        return self.dbc_panel.conflict_selector
 
     @property
     def signal_filter(self):

@@ -750,18 +750,18 @@ def test_bus_state_reflects_error_and_bus_off_events(qtbot, tmp_path):
     assert window.bus_state == "bus_error"
 
 
-def test_a_dbc_load_failure_stays_visible_in_the_library_panel(qtbot, tmp_path):
+def test_a_dbc_load_failure_stays_visible_in_the_shell(qtbot, tmp_path):
     window = _window(qtbot, tmp_path, show=True)
     broken = tmp_path / "broken.dbc"
     broken.write_text("this is not a DBC file", encoding="utf-8")
 
     window._load_dbc_path(broken)
-    assert "Cannot load broken.dbc" in window.dbc_panel.note.text()
-    assert window.dbc_panel.note.level == "error"
+    assert "Cannot load broken.dbc" in window.session_note.text()
+    assert window.session_note.level == "error"
 
     # Further traffic must not clear the diagnosis.
     window._render_frames([CanFrame(1.0, 0x100, b"\x01")])
-    assert "Cannot load broken.dbc" in window.dbc_panel.note.text()
+    assert "Cannot load broken.dbc" in window.session_note.text()
 
 
 def test_a_recording_warning_stays_visible_in_the_shell(qtbot, tmp_path):
@@ -829,6 +829,71 @@ def test_the_menu_bar_exposes_the_workspace_actions(qtbot, tmp_path):
     assert names["menu_fit"] == "Ctrl+0"
     assert names["menu_focus_filter"] == "Ctrl+F"
     assert "menu_about" in names
+    assert "menu_recording_settings" in names
+    assert names["menu_save_profile_as"] == "Ctrl+Shift+S"
+
+
+def test_recording_and_setup_menus_own_the_relocated_commands(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    top_menus = {
+        menu.text().replace("&", ""): menu.menu()
+        for menu in window.menuBar().actions()
+        if menu.menu() is not None
+    }
+
+    file_names = {action.objectName() for action in top_menus["File"].actions()}
+    view_names = {action.objectName() for action in top_menus["View"].actions()}
+    recording_names = {action.objectName() for action in top_menus["Recording"].actions()}
+    setup_names = {action.objectName() for action in top_menus["Setup"].actions()}
+
+    assert "menu_save_profile_as" not in file_names
+    assert "menu_start" not in view_names
+    assert "menu_stop" not in view_names
+    assert "menu_recording_settings" not in view_names
+    assert {"menu_start", "menu_stop", "menu_recording_settings"} <= recording_names
+    assert "menu_save_profile_as" in setup_names
+    submenu_titles = {
+        action.menu().objectName() for action in top_menus["Setup"].actions() if action.menu()
+    }
+    assert submenu_titles == {"menu_channel", "menu_bitrate", "menu_controller_mode"}
+
+
+def test_setup_cascading_submenus_mirror_and_drive_the_acquisition_bar_combos(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    setup_menu = next(
+        menu.menu()
+        for menu in window.menuBar().actions()
+        if menu.menu() is not None and menu.text().replace("&", "") == "Setup"
+    )
+    channel_submenu = next(
+        action.menu()
+        for action in setup_menu.actions()
+        if action.menu() is not None and action.menu().objectName() == "menu_channel"
+    )
+    choices = channel_submenu.actions()
+    assert len(choices) == window.acquisition_bar.channel_selector.count()
+    assert choices[0].isChecked()
+
+    choices[1].trigger()
+
+    assert window.acquisition_bar.channel_selector.currentIndex() == 1
+    assert choices[1].isChecked()
+    assert not choices[0].isChecked()
+
+
+def test_header_stop_is_red_only_while_stoppable(qtbot, tmp_path):
+    from peaklive.services.lifecycle import AcquisitionPhase
+
+    window = _window(qtbot, tmp_path)
+    stop_button = window.acquisition_bar.stop_button
+
+    assert stop_button.property("active") in (None, False)
+
+    window.acquisition_bar.set_lifecycle_phase(AcquisitionPhase.RUNNING)
+    assert stop_button.property("active") is True
+
+    window.acquisition_bar.set_lifecycle_phase(AcquisitionPhase.STOPPED)
+    assert stop_button.property("active") is False
 
 
 def test_cursor_and_panel_shortcuts_are_bound(qtbot, tmp_path):

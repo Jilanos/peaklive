@@ -279,6 +279,96 @@ def test_a_live_acquisition_shows_a_zero_based_axis_end_to_end(qtbot, tmp_path):
 # --------------------------------------------------------------------------
 
 
+def test_the_menu_bar_offers_full_and_trailing_follow_live_modes(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    actions = window._follow_live_mode_actions
+    assert set(actions) == {"full", "trailing"}
+    assert actions["full"].isChecked()
+    assert not actions["trailing"].isChecked()
+    assert window.graph_panel.follow_live_mode == "full"
+
+
+def test_choosing_trailing_mode_restores_the_pinned_narrow_window_on_follow(panel):
+    panel.begin_session(live=False)
+    _filled(panel, [(index * 0.1, index) for index in range(500)])
+    panel.zoom(0.1)
+    zoomed_span = panel.visible_window()[1] - panel.visible_window()[0]
+    panel.set_follow_live_mode("trailing")
+
+    panel.follow_checkbox.setChecked(True)
+
+    low, high = panel.visible_window()
+    extent = panel.global_extent()
+    assert high >= extent[1] - 1e-6
+    assert high - low == pytest.approx(zoomed_span)
+
+
+def test_full_mode_shows_the_whole_extent_even_after_a_narrow_zoom(panel):
+    panel.begin_session(live=False)
+    _filled(panel, [(index * 0.1, index) for index in range(500)])
+    panel.zoom(0.1)
+    assert panel.follow_live_mode == "full"
+
+    panel.follow_checkbox.setChecked(True)
+
+    low, high = panel.visible_window()
+    extent = panel.global_extent()
+    assert low <= extent[0]
+    assert high >= extent[1]
+
+
+# --------------------------------------------------------------------------
+# item_137 AC1/AC2 - a shared clamp bounds every manual pan/zoom
+# --------------------------------------------------------------------------
+
+
+def test_manual_navigation_cannot_travel_far_past_either_data_edge(panel):
+    panel.begin_session(live=False)
+    _filled(panel, [(index * 0.1, index) for index in range(1000)])
+    extent = panel.global_extent()
+    span = extent[1] - extent[0]
+
+    panel.anchor_plot.getViewBox().setXRange(-1000.0, -900.0, padding=0)
+
+    low, high = panel.visible_window()
+    assert low >= extent[0] - span * 0.05 - 1e-9
+    assert high <= extent[1] + span * 0.05 + 1e-9
+    # Snapped back to something overlapping real data, not left stranded blank.
+    assert high > extent[0]
+
+
+def test_the_clamp_stays_finite_and_non_degenerate_for_a_single_sample(panel):
+    panel.begin_session(live=False)
+    _filled(panel, [(5.0, 1)])
+
+    panel.anchor_plot.getViewBox().setXRange(100.0, 200.0, padding=0)
+
+    low, high = panel.visible_window()
+    assert high > low
+    assert low == low  # not NaN
+    assert high == high  # not NaN
+
+
+def test_the_clamp_stays_finite_and_non_degenerate_for_an_empty_extent(panel):
+    panel.begin_session(live=False)
+    panel.sync(SeriesStore(), {RAW_PREVIEW})
+
+    # No data at all: nothing to clamp against, and no crash either.
+    panel.anchor_plot.getViewBox().setXRange(100.0, 200.0, padding=0)
+    assert panel.global_extent() is None
+
+
+def test_manual_navigation_within_bounds_is_left_untouched(panel):
+    panel.begin_session(live=False)
+    _filled(panel, [(index * 0.1, index) for index in range(100)])
+    extent = panel.global_extent()
+
+    panel.anchor_plot.getViewBox().setXRange(*extent, padding=0)
+    requested = panel.visible_window()
+
+    assert requested == pytest.approx(extent)
+
+
 def test_fit_zoom_and_cursors_still_operate_on_the_extent(panel):
     panel.begin_session(live=False)
     _filled(panel, [(index * 0.1, index) for index in range(100)])

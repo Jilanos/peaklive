@@ -42,14 +42,15 @@ from peaklive.ui.ingest_controller import WorkspaceIngest
 from peaklive.ui.layout_reflow import WorkspaceReflow
 from peaklive.ui.panels import (
     AcquisitionBar,
-    DbcLibraryPanel,
     InspectorPanel,
     SignalExplorerPanel,
+    SignalSummaryPanel,
 )
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.profile_controller import WorkspaceProfiles
 from peaklive.ui.session_controller import SHUTDOWN_TIMEOUT_MS, WorkspaceSession
 from peaklive.ui.signal_backfill_controller import WorkspaceSignalBackfill
+from peaklive.ui.signal_summary_controller import WorkspaceSignalSummary
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
 from peaklive.ui.window_shutdown import WorkspaceShutdown
@@ -73,6 +74,7 @@ class MainWindow(
     WorkspaceReflow,
     WorkspaceSession,
     WorkspaceSignalBackfill,
+    WorkspaceSignalSummary,
     WorkspaceShutdown,
     QMainWindow,
 ):
@@ -97,6 +99,7 @@ class MainWindow(
         self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
         self._init_presentation_queue()
         self._init_graph_refresh()
+        self._init_signal_summary_refresh()
         self._catalog = DbcCatalog()
         self._catalog_worker: DbcCatalogWorker | None = None
         self._catalog_queue: list[CatalogOperation] = []
@@ -170,11 +173,8 @@ class MainWindow(
         self.workspace = QSplitter(Qt.Orientation.Horizontal, objectName="workspaceSplitter")
 
         self.signals_panel = CollapsiblePanel(translate("workspace.signals"), PANEL_SIGNALS)
-        self.dbc_panel = DbcLibraryPanel()
-        self.dbc_panel.enabled_changed.connect(self._dbc_enabled_changed)
-        self.dbc_panel.remove_requested.connect(self._remove_dbc)
-        self.dbc_panel.conflict_resolved.connect(self._resolve_conflict)
-        self.signals_panel.body_layout.addWidget(self.dbc_panel)
+        self.signal_summary_panel = SignalSummaryPanel()
+        self.signals_panel.body_layout.addWidget(self.signal_summary_panel)
         self.explorer_panel = SignalExplorerPanel()
         self.explorer_panel.filters_changed.connect(self._schedule_signal_explorer_refresh)
         self.explorer_panel.shown_changed.connect(self._signal_shown_changed)

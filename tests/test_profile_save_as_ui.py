@@ -152,9 +152,9 @@ def test_an_unavailable_dbc_is_reported_without_dropping_the_reference(
     window._save()
 
     restarted = _window(qtbot, tmp_path)
-    qtbot.waitUntil(lambda: restarted.dbc_panel.note.level == "error", timeout=5_000)
+    qtbot.waitUntil(lambda: restarted.session_note.level == "error", timeout=5_000)
 
-    assert Path(missing).name in restarted.dbc_panel.note.text()
+    assert Path(missing).name in restarted.session_note.text()
     # The unreadable reference is kept, and the readable database still loaded.
     assert str(missing) in restarted.selected_profile.dbc_paths
     assert any(

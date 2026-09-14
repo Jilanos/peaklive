@@ -63,7 +63,7 @@ def test_the_main_window_composes_panels_rather_than_building_them():
 
     for panel in (
         "AcquisitionBar",
-        "DbcLibraryPanel",
+        "SignalSummaryPanel",
         "GraphStackPanel",
         "InspectorPanel",
         "ReportPanel",

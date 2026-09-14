@@ -104,6 +104,8 @@ class WorkspaceProfiles:
             self._sync_visibility_actions()
             self.graph_panel.restore_cursors(layout.cursor_a, layout.cursor_b)
             self.graph_panel.set_measurement_values_visible(profile.measurement_values_visible)
+            self.graph_panel.set_follow_live_mode(layout.follow_live_mode)
+            self._sync_follow_live_mode_actions(layout.follow_live_mode)
             if layout.fullscreen and not self.isFullScreen():
                 self.showFullScreen()
         finally:
@@ -179,6 +181,7 @@ class WorkspaceProfiles:
         layout.cursor_a = self.graph_panel.cursor_a
         layout.cursor_b = self.graph_panel.cursor_b
         layout.fullscreen = self.isFullScreen()
+        layout.follow_live_mode = self.graph_panel.follow_live_mode
         self._schedule_save()
 
     def _persist_measurement_visibility(self, visible: bool) -> None:
