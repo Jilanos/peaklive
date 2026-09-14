@@ -13,6 +13,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
+from threading import Lock
 from time import perf_counter
 from typing import TypeVar
 
@@ -23,14 +24,24 @@ STAGE_TRACE_PROJECTION = "trace_projection"
 STAGE_SERIES_PROJECTION = "series_projection"
 STAGE_GRAPH_REFRESH = "graph_refresh"
 STAGE_REPORT_REFRESH = "report_refresh"
+#: The background writer's actual SQLite append/summary/commit work
+#: (item_130/item_133) - previously excluded from every stage entirely.
+STAGE_HISTORY_WRITE = "history_write"
+#: How long a producer blocks in `HistoryWriter.submit()` for queue room.
+STAGE_QUEUE_WAIT = "queue_wait"
 
 #: Every stage the audit reports on, in the order a frame passes through them.
+#: `history_write` runs on a different thread than the rest (item_133) and
+#: `queue_wait` is the GUI-thread cost of waiting for it, so both are
+#: reported alongside the others rather than folded into `dispatch`.
 STAGES: tuple[str, ...] = (
     STAGE_PARSE,
     STAGE_DISPATCH,
     STAGE_DECODE,
     STAGE_TRACE_PROJECTION,
     STAGE_SERIES_PROJECTION,
+    STAGE_QUEUE_WAIT,
+    STAGE_HISTORY_WRITE,
     STAGE_GRAPH_REFRESH,
     STAGE_REPORT_REFRESH,
 )
@@ -47,6 +58,8 @@ STAGE_BUDGETS_PER_1K_FRAMES: dict[str, float] = {
     STAGE_DECODE: 0.030,
     STAGE_TRACE_PROJECTION: 0.150,
     STAGE_SERIES_PROJECTION: 0.010,
+    STAGE_QUEUE_WAIT: 0.050,
+    STAGE_HISTORY_WRITE: 0.400,
     STAGE_GRAPH_REFRESH: 0.030,
     STAGE_REPORT_REFRESH: 0.010,
 }
@@ -133,20 +146,30 @@ class StageProfile:
 
 
 class StageProfiler:
-    """Accumulates per-stage wall time, costing nothing while disabled."""
+    """Accumulates per-stage wall time, costing nothing while disabled.
 
-    __slots__ = ("_counts", "_frames", "_totals", "enabled")
+    `add`/`count_frames`/`reset`/`profile` take a lock: the background
+    history writer (item_133) reports into the same shared `PROFILER` as the
+    GUI thread, so a plain dict read-modify-write would risk a lost update
+    under concurrent access. The lock is uncontended in practice (one writer
+    thread, occasional short critical sections) and profiling is disabled by
+    default in production.
+    """
+
+    __slots__ = ("_counts", "_frames", "_lock", "_totals", "enabled")
 
     def __init__(self, *, enabled: bool = False) -> None:
         self.enabled = enabled
+        self._lock = Lock()
         self._totals: dict[str, float] = {}
         self._counts: dict[str, int] = {}
         self._frames = 0
 
     def reset(self) -> None:
-        self._totals = {}
-        self._counts = {}
-        self._frames = 0
+        with self._lock:
+            self._totals = {}
+            self._counts = {}
+            self._frames = 0
 
     @contextmanager
     def _measure(self, stage: str) -> Iterator[None]:
@@ -165,12 +188,14 @@ class StageProfiler:
     def add(self, stage: str, seconds: float) -> None:
         if not self.enabled:
             return
-        self._totals[stage] = self._totals.get(stage, 0.0) + seconds
-        self._counts[stage] = self._counts.get(stage, 0) + 1
+        with self._lock:
+            self._totals[stage] = self._totals.get(stage, 0.0) + seconds
+            self._counts[stage] = self._counts.get(stage, 0) + 1
 
     def count_frames(self, frames: int) -> None:
         if self.enabled:
-            self._frames += frames
+            with self._lock:
+                self._frames += frames
 
     def timed_iter(self, stage: str, source: Iterable[T]) -> Iterator[T]:
         """Attribute the time spent producing each item to `stage`.
@@ -195,7 +220,8 @@ class StageProfiler:
             yield item
 
     def profile(self) -> StageProfile:
-        return StageProfile(dict(self._totals), dict(self._counts), self._frames)
+        with self._lock:
+            return StageProfile(dict(self._totals), dict(self._counts), self._frames)
 
 
 #: The profiler the shipped ingestion path reports into.

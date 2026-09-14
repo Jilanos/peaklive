@@ -27,6 +27,7 @@ from typing import Any
 from PySide6.QtCore import QThread, Signal
 
 from peaklive.analysis.history import HistoricalSignalStore
+from peaklive.analysis.profiling import PROFILER, STAGE_HISTORY_WRITE, STAGE_QUEUE_WAIT
 from peaklive.diagnostics import logger
 
 #: How many accepted-but-not-yet-persisted batches may queue at once. Kept in
@@ -130,16 +131,17 @@ class HistoryWriter(QThread):
         """
         if self._failed.is_set() or self._stop_requested.is_set():
             return False
-        stalled_since = perf_counter()
-        while True:
-            try:
-                self._queue.put(batch, timeout=QUEUE_POLL_TIMEOUT_S)
-                return True
-            except Full:
-                if self._failed.is_set() or self._stop_requested.is_set():
-                    return False
-                if perf_counter() - stalled_since >= QUEUE_STALL_TIMEOUT_S:
-                    return False
+        with PROFILER.stage(STAGE_QUEUE_WAIT):
+            stalled_since = perf_counter()
+            while True:
+                try:
+                    self._queue.put(batch, timeout=QUEUE_POLL_TIMEOUT_S)
+                    return True
+                except Full:
+                    if self._failed.is_set() or self._stop_requested.is_set():
+                        return False
+                    if perf_counter() - stalled_since >= QUEUE_STALL_TIMEOUT_S:
+                        return False
 
     def pending(self) -> int:
         """Return the exact number of batches accepted but not yet settled."""
@@ -166,7 +168,8 @@ class HistoryWriter(QThread):
                     return
                 try:
                     self._admit_or_refuse()
-                    count = store.append_many(batch)
+                    with PROFILER.stage(STAGE_HISTORY_WRITE):
+                        count = store.append_many(batch)
                 except (sqlite3.Error, HistoryWriteRefused) as error:
                     self._fail(error)
                     return
