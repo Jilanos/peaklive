@@ -87,6 +87,8 @@ class WorkspaceProfiles:
         self._restoring = True
         try:
             self.acquisition_bar.show_profile(profile)
+            # Restoration blocks combo signals, including menu rebuild hooks.
+            self._sync_setup_menu_enabled()
             self.trace_panel.apply_columns(profile.trace_columns)
             self.trace_panel.apply_settings(profile.trace_filter)
             layout = profile.layout

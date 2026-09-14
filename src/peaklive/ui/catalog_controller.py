@@ -153,7 +153,6 @@ class WorkspaceCatalog:
             view.references, self._selected_signal_names, self._favorite_signal_names
         )
         self._sync_graphs()
-        self._mark_signal_summary_dirty()
 
     def _reconcile_profile_paths(self, outcome: CatalogOutcome) -> None:
         profile = self.selected_profile
@@ -333,7 +332,6 @@ class WorkspaceCatalog:
             self._series.drop(signal_name)
         self._persist_signal_state()
         self._sync_graphs()
-        self._mark_signal_summary_dirty()
         if shown:
             self._request_signal_backfill(signal_name)
 
@@ -347,6 +345,8 @@ class WorkspaceCatalog:
     def _sync_graphs(self) -> None:
         self.graph_panel._history = self._history if self._historical_view_ready else None
         self.graph_panel.sync(self._series, self._selected_signal_names)
+        # Backfill and session reset also arrive here without an ingest tick.
+        self._mark_signal_summary_dirty()
 
 
 def _operation_message(operation: CatalogOperation) -> str:
