@@ -261,7 +261,7 @@ requires-dist = [
     { name = "pyinstaller", marker = "extra == 'dev'", specifier = ">=6.11" },
     { name = "pyqtgraph", specifier = ">=0.13.7" },
     { name = "pyside6", specifier = ">=6.9" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.1" },
     { name = "pytest-qt", marker = "extra == 'dev'", specifier = ">=4.5" },
     { name = "python-can", specifier = ">=4.5" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
