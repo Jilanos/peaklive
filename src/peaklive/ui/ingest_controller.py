@@ -200,11 +200,19 @@ class WorkspaceIngest:
             # SQL and summary/run-event maintenance happen off this thread
             # (item_133): submit() only blocks long enough to apply the same
             # bounded backpressure ReplayWorker's own batches already use.
-            if self._history_writer.submit(historical):
+            # The close path retires the writer before Qt has necessarily
+            # delivered every already-queued replay drain.  Such a late drain
+            # must not dereference a released writer (nor resurrect a closed
+            # session); shutdown has already made its terminal ownership
+            # decision.
+            writer = self._history_writer
+            if writer is None:
+                return added
+            if writer.submit(historical):
                 self._history_batches_submitted += 1
             else:
                 self._fail_history(
-                    self._history_writer.last_error
+                    writer.last_error
                     or translate("trace.history_queue_stalled").format(
                         seconds=int(QUEUE_STALL_TIMEOUT_S)
                     )
