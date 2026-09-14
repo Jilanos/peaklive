@@ -63,9 +63,13 @@ def test_a_line_far_longer_than_any_real_record_is_read_in_bounded_slices(tmp_pa
 def _run_worker(worker: ReplayWorker, qtbot) -> tuple[list, list]:
     events: list = []
     failures: list = []
-    worker.event_received.connect(events.append)
+
+    def on_records(records: list) -> None:
+        events.extend(record for record in records if isinstance(record, BusEvent))
+        worker.batch_rendered()
+
+    worker.records_received.connect(on_records)
     worker.replay_failed.connect(failures.append)
-    worker.frames_received.connect(lambda batch: worker.batch_rendered())
     # `isRunning()` reflects the OS thread, not whether Qt has delivered the
     # queued signals that thread emitted just before returning; waiting on
     # `finished` itself is what guarantees every prior emission was drained.

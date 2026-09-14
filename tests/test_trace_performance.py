@@ -173,7 +173,7 @@ def test_replay_progress_advances_with_the_consumed_source(qtbot, tmp_path):
     worker.progressed.connect(lambda done, total: reported.append((done, total)))
     # Presentation acknowledges each batch, matching the bounded worker/UI
     # hand-off used by the workspace.
-    worker.frames_received.connect(lambda _: worker.batch_rendered())
+    worker.records_received.connect(lambda _: worker.batch_rendered())
 
     with qtbot.waitSignal(worker.finished, timeout=120_000):
         worker.start()
@@ -191,13 +191,13 @@ def test_a_stopped_replay_stops_within_a_bounded_number_of_batches(qtbot, tmp_pa
     worker = ReplayWorker(capture)
     batches: list[int] = []
 
-    def on_batch(frames):
-        batches.append(len(frames))
+    def on_batch(records):
+        batches.append(len(records))
         if len(batches) == 1:
             worker.request_stop()
         worker.batch_rendered()
 
-    worker.frames_received.connect(on_batch)
+    worker.records_received.connect(on_batch)
     with qtbot.waitSignal(worker.finished, timeout=120_000):
         worker.start()
 

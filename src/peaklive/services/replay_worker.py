@@ -67,10 +67,18 @@ class ImplausibleTraceError(RuntimeError):
 
 
 class ReplayWorker(QThread):
-    """Read ASC/TRC records incrementally and batch presentation notifications."""
+    """Read ASC/TRC records incrementally and batch presentation notifications.
 
-    frames_received = Signal(list)
-    event_received = Signal(object)
+    Frames and valid bus events share one ordered, bounded batch transport:
+    both are appended to the same list in source order and dispatched through
+    the same acknowledged permit, so a bus event can never be delivered ahead
+    of frames that preceded it in the file, and an event-only or event-heavy
+    stretch is bounded by the same `MAX_PENDING_BATCHES` backpressure as
+    frames instead of bypassing it entirely.
+    """
+
+    #: Ordered batch of `CanFrame`/`BusEvent` records, in source order.
+    records_received = Signal(list)
     replay_failed = Signal(str)
     replay_completed = Signal()
     # done/total are source bytes, allowing truthful monotonic progress without
@@ -117,7 +125,7 @@ class ReplayWorker(QThread):
             return self._held_permits
 
     def run(self) -> None:
-        batch: list[CanFrame] = []
+        batch: list[CanFrame | BusEvent] = []
         anomalies: Counter[str] = Counter()
         record_count = 0
         anomaly_count = 0
@@ -131,15 +139,16 @@ class ReplayWorker(QThread):
                     self.replay_failed.emit("Replay cancelled")
                     return
                 record_count += 1
-                if isinstance(record, BusEvent):
-                    if record.kind == "replay_anomaly":
-                        anomaly_count += 1
-                        if len(anomalies) < MAX_ANOMALY_KEYS or record.message in anomalies:
-                            anomalies[record.message] += 1
-                        self._reject_if_implausible(record_count, anomaly_count)
-                    else:
-                        self.event_received.emit(record)
+                if isinstance(record, BusEvent) and record.kind == "replay_anomaly":
+                    anomaly_count += 1
+                    if len(anomalies) < MAX_ANOMALY_KEYS or record.message in anomalies:
+                        anomalies[record.message] += 1
+                    self._reject_if_implausible(record_count, anomaly_count)
                     continue
+                # Valid frames and valid bus events share one ordered batch:
+                # neither may be delivered to the presentation side ahead of
+                # the other, and both are equally subject to the bounded
+                # acknowledged transport below.
                 batch.append(record)
                 if len(batch) >= BATCH_SIZE:
                     if not self._dispatch(batch):
@@ -150,6 +159,14 @@ class ReplayWorker(QThread):
                         return
                     batch = []
                 self._emit_progress(total)
+            # Aggregated anomaly summaries are distinct from authoritative
+            # valid records (they carry a synthesised timestamp, not a source
+            # position) but still flow through the same acknowledged
+            # transport as the trailing partial batch, rather than being
+            # emitted unbounded and out of band.
+            for message, count in anomalies.items():
+                suffix = f" ({count} occurrences)" if count > 1 else ""
+                batch.append(BusEvent(0.0, "replay_anomaly", message + suffix))
             if batch:
                 if not self._dispatch(batch):
                     self.replay_failed.emit(
@@ -157,9 +174,6 @@ class ReplayWorker(QThread):
                         f"{BACKPRESSURE_STALL_TIMEOUT_S:.1f}s"
                     )
                     return
-            for message, count in anomalies.items():
-                suffix = f" ({count} occurrences)" if count > 1 else ""
-                self.event_received.emit(BusEvent(0.0, "replay_anomaly", message + suffix))
             self.progressed.emit(total, total)
             self._succeeded = True
             self.replay_completed.emit()
@@ -183,8 +197,13 @@ class ReplayWorker(QThread):
             f"{anomaly_count} of the first {record_count} records were unparseable."
         )
 
-    def _dispatch(self, batch: list[CanFrame]) -> bool:
-        """Hand one batch to the UI, waiting if it is already several behind.
+    def _dispatch(self, batch: list[CanFrame | BusEvent]) -> bool:
+        """Hand one ordered batch to the UI, waiting if it is already behind.
+
+        `batch` may hold frames, valid bus events, or a mix of both in source
+        order; every record in it is acknowledged (or none are) by the same
+        permit, so an event-only or event-heavy stretch is bounded exactly
+        like a frame-only one.
 
         The wait is deliberately outside the measured stage: time spent held
         back by the display is the display's cost, and attributing it to
@@ -209,8 +228,8 @@ class ReplayWorker(QThread):
         with self._permit_lock:
             self._held_permits += 1
         with PROFILER.stage(STAGE_DISPATCH):
-            PROFILER.count_frames(len(batch))
-            self.frames_received.emit(batch)
+            PROFILER.count_frames(sum(1 for record in batch if isinstance(record, CanFrame)))
+            self.records_received.emit(batch)
         return True
 
     def _emit_progress(self, total: int) -> None:

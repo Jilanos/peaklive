@@ -6,7 +6,6 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QFileDialog
 from peaklive.analysis import DbcSummary
 from peaklive.analysis.profiling import PROFILER, STAGE_REPORT_REFRESH
-from peaklive.domain import CanFrame
 from peaklive.i18n import translate
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.replay_worker import ReplayWorker
@@ -170,11 +169,8 @@ class WorkspaceSession:
         self._replay_worker = ReplayWorker(path)
         self._pending_replay_batches = []
         self._replay_source_completed_generation = None
-        self._replay_worker.frames_received.connect(
-            partial(self._replay_frames_for_generation, generation, self._replay_worker)
-        )
-        self._replay_worker.event_received.connect(
-            partial(self._replay_event_for_generation, generation)
+        self._replay_worker.records_received.connect(
+            partial(self._replay_records_for_generation, generation, self._replay_worker)
         )
         self._replay_worker.replay_failed.connect(
             partial(self._replay_failed_for_generation, generation)
@@ -187,25 +183,21 @@ class WorkspaceSession:
         self._begin_work(translate("trace.opening").format(name=path.name))
         self._replay_worker.start()
         self._update_mode_availability()
-    def _replay_event_for_generation(self, generation: int, event: object) -> None:
-        if generation == getattr(self, "_replay_generation", 0):
-            self._render_replay_event(event)
-    def _replay_frames_for_generation(
-        self, generation: int, worker: ReplayWorker, frames: list[CanFrame]
+    def _replay_records_for_generation(
+        self, generation: int, worker: ReplayWorker, records: list[object]
     ) -> None:
         if generation != getattr(self, "_replay_generation", 0):
             return
-        self._pending_replay_batches.append((generation, worker, frames))
+        self._pending_replay_batches.append((generation, worker, records))
         if not self._replay_presentation_timer.isActive():
             self._replay_presentation_timer.start()
     def _drain_replay_batch(self) -> None:
         """Ingest one worker batch, then yield before accepting the next one."""
         if not self._pending_replay_batches:
             return
-        generation, worker, frames = self._pending_replay_batches.pop(0)
+        generation, worker, records = self._pending_replay_batches.pop(0)
         if generation == getattr(self, "_replay_generation", 0):
-            self._ingest_frames(frames, coalesce=True)
-            self._mark_graphs_dirty()
+            self._ingest_replay_records(records)
         worker.batch_rendered()
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()

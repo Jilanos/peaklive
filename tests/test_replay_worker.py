@@ -1,5 +1,6 @@
 from PySide6.QtCore import QTimer
 
+from peaklive.domain import BusEvent
 from peaklive.services.replay_worker import ReplayWorker
 
 
@@ -12,8 +13,15 @@ def test_replay_worker_streams_frames_and_retains_anomalies(qtbot, tmp_path):
     worker = ReplayWorker(trace)
     frames: list = []
     events: list = []
-    worker.frames_received.connect(frames.extend)
-    worker.event_received.connect(events.append)
+
+    def on_records(records: list) -> None:
+        for record in records:
+            if isinstance(record, BusEvent):
+                events.append(record)
+            else:
+                frames.append(record)
+
+    worker.records_received.connect(on_records)
 
     worker.start()
     # `isRunning()` becomes false as the worker thread exits, but its queued
@@ -31,7 +39,7 @@ def test_replay_preserves_tx_remote_declared_dlc_and_extended_identity(qtbot, tm
     trace.write_text("0.000000 1 18FEF100x Tx r 8\n", encoding="utf-8")
     worker = ReplayWorker(trace)
     frames: list = []
-    worker.frames_received.connect(frames.extend)
+    worker.records_received.connect(frames.extend)
 
     worker.start()
     qtbot.waitUntil(lambda: len(frames) == 1)
@@ -82,7 +90,7 @@ def test_replay_recovers_when_presentation_acknowledgement_is_slow(tmp_path, qtb
         batches.append(batch)
         QTimer.singleShot(400, worker.batch_rendered)
 
-    worker.frames_received.connect(acknowledge_later)
+    worker.records_received.connect(acknowledge_later)
 
     with qtbot.waitSignal(worker.replay_completed, timeout=10_000):
         worker.start()
