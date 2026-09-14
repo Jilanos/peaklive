@@ -26,6 +26,7 @@ class CaptureProfile:
     name: str
     frames: int
     message_count: int = 8
+    frame_interval_s: float = FRAME_INTERVAL_S
 
 
 #: The three volumes the audit covers: a glance, a normal bench capture, and a
@@ -34,6 +35,23 @@ SMALL = CaptureProfile("small", 2_000)
 MEDIUM = CaptureProfile("medium", 20_000)
 LARGE = CaptureProfile("large", 200_000)
 CAPTURE_PROFILES: tuple[CaptureProfile, ...] = (SMALL, MEDIUM, LARGE)
+
+#: The operator's measured local capture density (req_029): 195753923 bytes,
+#: 1755746 frames over 944.788905 seconds. Qualification profiles replay this
+#: density, not the 1kHz microbenchmark fixtures above, because the dominant
+#: historical-write cost scales with frame count and record size, not with
+#: wall-clock pacing.
+OPERATOR_FRAMES_PER_SECOND = 1755746 / 944.788905
+OPERATOR_FRAME_INTERVAL_S = 1.0 / OPERATOR_FRAMES_PER_SECOND
+
+#: Approximately the operator's typical capture (944.8s at the measured
+#: density) and a fifty-minute capture at the same density - the two
+#: qualification workloads req_029 asks for. These are NOT part of
+#: `CAPTURE_PROFILES`: generating and replaying millions of frames is
+#: appropriate for an explicit, scheduled qualification run, not routine CI.
+TYPICAL = CaptureProfile("typical", 1_755_746, frame_interval_s=OPERATOR_FRAME_INTERVAL_S)
+LONG = CaptureProfile("long", 5_575_042, frame_interval_s=OPERATOR_FRAME_INTERVAL_S)
+QUALIFICATION_PROFILES: tuple[CaptureProfile, ...] = (TYPICAL, LONG)
 
 
 def synthetic_dbc(message_count: int = 8) -> str:
@@ -52,7 +70,7 @@ def synthetic_asc_lines(profile: CaptureProfile) -> list[str]:
     """Render one capture as ASC text lines, deterministically."""
     lines = ["date Thu Jan 1 00:00:00 1970", "base hex timestamps absolute", "Begin Triggerblock"]
     for index in range(profile.frames):
-        timestamp = index * FRAME_INTERVAL_S
+        timestamp = index * profile.frame_interval_s
         arbitration_id = BASE_ARBITRATION_ID + index % profile.message_count
         counter = index % 65_536
         level = (index * 7) % 65_536
