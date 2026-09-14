@@ -49,6 +49,7 @@ from peaklive.ui.panels import (
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.profile_controller import WorkspaceProfiles
 from peaklive.ui.session_controller import SHUTDOWN_TIMEOUT_MS, WorkspaceSession
+from peaklive.ui.signal_backfill_controller import WorkspaceSignalBackfill
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
 from peaklive.ui.window_shutdown import WorkspaceShutdown
@@ -71,6 +72,7 @@ class MainWindow(
     WorkspaceProfiles,
     WorkspaceReflow,
     WorkspaceSession,
+    WorkspaceSignalBackfill,
     WorkspaceShutdown,
     QMainWindow,
 ):

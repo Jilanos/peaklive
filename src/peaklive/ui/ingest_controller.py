@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from functools import partial
+import sqlite3
 from itertools import groupby
 
 from PySide6.QtCore import QTimer
@@ -29,12 +29,6 @@ from peaklive.analysis.profiling import (
 )
 from peaklive.domain import BusEvent, CanFrame
 from peaklive.i18n import translate
-from peaklive.services.signal_decode_worker import (
-    DecodedSeries,
-    SignalDecodeWorker,
-    SourceSignalDecodeWorker,
-    decode_series,
-)
 from peaklive.ui.live_handoff import LiveFrameHandoff
 from peaklive.ui.panels.graph_stack import RAW_PREVIEW
 
@@ -53,147 +47,12 @@ class WorkspaceIngest:
         self._historical_view_ready = False
         self._facts = SessionFacts()
         self._replay_source_path = None
-        self._signal_decode_worker: SignalDecodeWorker | SourceSignalDecodeWorker | None = None
-        self._signal_decode_generation = 0
-        self._signal_decode_queue: list[str] = []
+        self._history_failed = False
+        self._history_failure_message: str | None = None
+        self._init_signal_backfill_state()
         # A sustained conflict raises once per frame; the operator only needs
         # to see it once per arbitration ID for the session, not once per frame.
         self._reported_dbc_conflicts: set[tuple[int, bool]] = set()
-
-    # ---- on-demand signal decoding -------------------------------------
-
-    def _request_signal_backfill(self, signal_name: str) -> None:
-        if signal_name == RAW_PREVIEW:
-            return
-        series = self._series.series(signal_name)
-        if series is not None and len(series):
-            return
-        if self._historical_view_ready:
-            bounds = self._history.signal_bounds(signal_name)
-            if bounds is not None:
-                samples = self._history.exact(signal_name, *bounds, limit=20_000)
-                if samples:
-                    self._series.replace(signal_name, samples)
-                    self._sync_graphs()
-                return
-        if not len(self._frames) and not self._replay_source_path:
-            self._report_signal_unavailable(signal_name)
-            return
-        self._signal_decode_queue.append(signal_name)
-        self._pump_signal_backfill()
-
-    def _pump_signal_backfill(self) -> None:
-        if self._signal_decode_worker is not None:
-            return
-        while self._signal_decode_queue:
-            signal_name = self._signal_decode_queue.pop(0)
-            if signal_name not in self._selected_signal_names:
-                continue
-            self._signal_decode_generation += 1
-            generation = self._signal_decode_generation
-            if self._historical_view_ready and self._replay_source_path is not None:
-                worker = SourceSignalDecodeWorker(
-                    self._catalog,
-                    self._replay_source_path,
-                    self._history.path,
-                    signal_name,
-                    generation,
-                )
-                worker.failed.connect(partial(self._signal_backfill_failed, generation))
-                worker.progressed.connect(partial(self._signal_backfill_progressed, generation))
-            else:
-                worker = SignalDecodeWorker(
-                    self._catalog,
-                    self._frames.snapshot(),
-                    signal_name,
-                    self._frames.ingested,
-                    truncated=self._frames.truncated,
-                    generation=generation,
-                )
-            worker.completed.connect(partial(self._signal_backfill_completed, generation))
-            worker.finished.connect(partial(self._signal_backfill_finished, generation))
-            self._signal_decode_worker = worker
-            self.status.showMessage(
-                translate("signals.deriving").format(signal=signal_name)
-            )
-            worker.start()
-            return
-
-    def _cancel_signal_backfill(self, signal_name: str | None = None) -> None:
-        self._signal_decode_queue = [
-            queued for queued in self._signal_decode_queue if queued != signal_name
-        ]
-        worker = self._signal_decode_worker
-        if worker is None:
-            return
-        if signal_name is not None and worker.signal_name != signal_name:
-            return
-        worker.request_cancel()
-        self._signal_decode_generation += 1
-
-    def _signal_backfill_completed(self, generation: int, decoded: DecodedSeries) -> None:
-        if generation != self._signal_decode_generation:
-            return
-        if decoded.signal_name not in self._selected_signal_names:
-            return
-        if decoded.source_count is None:
-            samples = decoded.samples + decode_series(
-                self._catalog, self._frames.frames_after(decoded.ingested), decoded.signal_name
-            )
-        else:
-            samples = decoded.samples
-        if not samples:
-            self._report_signal_unavailable(decoded.signal_name)
-            return
-        self._series.replace(decoded.signal_name, samples, decoded.unit)
-        self._sync_graphs()
-        self.status.showMessage(
-            translate("signals.derived").format(
-                signal=decoded.signal_name, count=decoded.source_count or len(samples)
-            )
-        )
-        if decoded.truncated:
-            self.session_note.show_message(
-                translate("signals.truncated").format(
-                    signal=decoded.signal_name, dropped=self._frames.dropped
-                ),
-                "warning",
-            )
-
-    def _signal_backfill_failed(
-        self, generation: int, message: str, worker_generation: int
-    ) -> None:
-        if generation != self._signal_decode_generation or worker_generation != generation:
-            return
-        self.session_note.show_message(
-            translate("signals.reconstruct_failed").format(message=message), "error"
-        )
-
-    def _signal_backfill_progressed(
-        self, generation: int, count: int, _total: int, worker_generation: int
-    ) -> None:
-        if generation != self._signal_decode_generation or worker_generation != generation:
-            return
-        self.status.showMessage(
-            translate("signals.reconstructing").format(count=count)
-        )
-
-    def _signal_backfill_finished(self, generation: int) -> None:
-        worker = self._signal_decode_worker
-        if worker is None or worker.generation != generation:
-            return
-        self._signal_decode_worker = None
-        self._pump_signal_backfill()
-
-    def _report_signal_unavailable(self, signal_name: str) -> None:
-        """Say plainly that the loaded session holds nothing for this signal."""
-        self.session_note.show_message(
-            translate("signals.unavailable").format(signal=signal_name), "info"
-        )
-
-    def _set_historical_view_ready(self, ready: bool) -> None:
-        self._historical_view_ready = ready
-        self._sync_graphs()
 
     # ---- coalesced graph refresh ---------------------------------------
 
@@ -321,7 +180,17 @@ class WorkspaceIngest:
                 if not self._selected_signal_names and frame.data:
                     self._series.append(RAW_PREVIEW, frame.timestamp, float(frame.data[0]))
         self._frames.extend(frames)
-        self._history.append_many(historical)
+        # Once a persistence failure is recorded, this session's store is
+        # presumed poisoned until the next reset/reopen: retrying the same
+        # write would only repeat the same exception, and a retry that
+        # happened to half-succeed could double-count an already-accepted
+        # batch. Trace/series projection above is unaffected, so inspection
+        # of already-ingested and newly-arriving frames keeps working.
+        if not self._history_failed:
+            try:
+                self._history.append_many(historical)
+            except sqlite3.Error as error:
+                self._fail_history(str(error))
         if coalesce:
             self._pending_trace_records.extend(added)
         else:
@@ -329,8 +198,13 @@ class WorkspaceIngest:
                 self.trace_panel.append_records(added)
         return added
 
-    def _ingest_replay_records(self, records: list[object]) -> None:
-        """Ingest one ordered replay batch, preserving source frame/event order."""
+    def _ingest_replay_records(self, records: list[object]) -> bool:
+        """Ingest one ordered replay batch, preserving source frame/event order.
+
+        Returns whether historical persistence failed while processing this
+        batch, so the caller can put the replay generation into an explicit
+        failed terminal state instead of continuing to accept records.
+        """
         ingested_frames = False
         for is_event, group in groupby(records, key=lambda record: isinstance(record, BusEvent)):
             if is_event:
@@ -341,6 +215,7 @@ class WorkspaceIngest:
                 ingested_frames = True
         if ingested_frames:
             self._mark_graphs_dirty()
+        return self._history_failed
 
     def _render_frames(self, frames: list[CanFrame]) -> None:
         """Ingest every queued frame and repaint the plots immediately.
@@ -351,8 +226,48 @@ class WorkspaceIngest:
         upstream, not by discarding frames here.
         """
         self._ingest_frames(frames)
+        if self._history_failed:
+            self._acquisition_history_failed(self._history_failure_message or "")
+            return
         self._graph_dirty = True
         self._flush_graph_refresh()
+
+    def _reset_history_store(self) -> None:
+        """Clear historical storage for a new session, replacing a poisoned store.
+
+        A store that already failed once may no longer accept `clear()`
+        either (a still-broken backing file); discarding it for a fresh
+        temporary store is what actually guarantees the next open succeeds,
+        rather than depending on whatever caused the failure having cleared.
+        """
+        if not self._history_failed:
+            try:
+                self._history.clear()
+                return
+            except sqlite3.Error:
+                pass
+        self._history.close()
+        self._history = HistoricalSignalStore()
+        self._history_failed = False
+        self._history_failure_message = None
+
+    def _fail_history(self, message: str) -> None:
+        """Record one terminal historical-persistence failure, exactly once.
+
+        The store is presumed poisoned for the rest of this session: further
+        writes are skipped (see `_ingest_frames`) rather than retried, and the
+        overview is marked incomplete so a stale/partial history is never
+        mistaken for a complete one. The caller (replay or acquisition) is
+        responsible for stopping further source consumption.
+        """
+        if self._history_failed:
+            return
+        self._history_failed = True
+        self._history_failure_message = message
+        self._historical_view_ready = False
+        self.session_note.show_message(
+            translate("trace.history_failed").format(message=message), "error"
+        )
 
     def _render_acquisition_event(self, event: object) -> None:
         if not isinstance(event, BusEvent):

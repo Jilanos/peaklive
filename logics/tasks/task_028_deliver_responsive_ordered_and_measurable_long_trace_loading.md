@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 14%
+> Progress: 28%
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -69,10 +69,11 @@
 
 # Validation
 - Corpus preparation baseline: 626 Linux/offscreen tests passed in 197.18s; initial and shown-window probes reproduce the history bottleneck. Ordered event and SQLite error probes reproduce the reported gaps.
-- Wave 1 (item_131, 2026-09-14): see `item_131`'s own Validation entry. `tests/test_replay_ordered_transport.py` added (3 new tests); full-suite proof recorded there.
+- Wave 1 (item_131, 2026-09-14): see `item_131`'s own Validation entry. `tests/test_replay_ordered_transport.py` added (3 new tests).
+- Wave 2 (item_132, 2026-09-14): see `item_132`'s own Validation entry. `tests/test_history_write_failures.py` added (6 new tests). Full suite after wave 2: `uv run pytest -ra` -> 637 passed; Ruff clean across `src/peaklive` and `tests`.
 
 # Report
-- Wave 1 landed item_131 (ordered bounded replay transport unifying frames and valid bus events). Implementation order was adjusted from the plan's literal step numbering: the ordering fix was implemented before the item_130 measurement harness, since it is a self-contained, independently testable correctness fix, and the harness (still pending) will measure the post-fix pipeline rather than needing to precede every other change. Remaining: item_130 (harness), item_132 (failure containment), item_133 (bounded writer), item_134 (qualification, native Windows evidence out of reach from this session).
+- Wave 1 landed item_131 (ordered bounded replay transport unifying frames and valid bus events). Wave 2 landed item_132 (historical-persistence failure containment: read-only/locked/disk-full SQLite failures now produce one explicit terminal state instead of an uncaught exception escaping a Qt slot, with no-retry-after-failure and guaranteed-successful-reopen guarantees). Implementation order was adjusted from the plan's literal step numbering: the ordering and failure-containment fixes were implemented before the item_130 measurement harness, since both are self-contained, independently testable correctness fixes, and the harness (still pending) will measure the post-fix pipeline rather than needing to precede every other change. Wave 2 also extracted `ingest_controller.py`'s signal-backfill section into a new `signal_backfill_controller.py` mixin to stay under the repo's 400-line-per-UI-module budget with room for item_133's writer work. Remaining: item_130 (harness), item_133 (bounded writer), item_134 (qualification, native Windows evidence out of reach from this session).
 
 # Links
 - Request: `req_029_make_long_trace_loading_responsive_ordered_and_failure_explicit`
