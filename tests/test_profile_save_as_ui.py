@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtWidgets import QInputDialog
+from PySide6.QtWidgets import QInputDialog, QMenu
 
 from peaklive.adapters import FakeCanAdapter
+from peaklive.domain import ControllerMode
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
 
@@ -29,6 +30,29 @@ def _answer(monkeypatch, text: str, accepted: bool = True):
     monkeypatch.setattr(
         QInputDialog, "getText", staticmethod(lambda *a, **k: (text, accepted))
     )
+
+
+def test_setup_menus_follow_profile_restoration_and_custom_channels(qtbot, tmp_path):
+    window = _window(qtbot, tmp_path)
+    other = window.selected_profile.duplicate("Other setup")
+    other.channel = "custom-channel"
+    other.bitrate = 1_000_000
+    other.controller_mode = ControllerMode.NORMAL_RECEIVE
+    window._state.profiles.append(other)
+    window.profile_selector.addItem(other.name)
+
+    for index in (1, 0):
+        window.profile_selector.setCurrentIndex(index)
+        for key, combo in (
+            ("channel", window.acquisition_bar.channel_selector),
+            ("bitrate", window.acquisition_bar.bitrate_selector),
+            ("controller_mode", window.acquisition_bar.controller_mode_selector),
+        ):
+            menu = window.findChild(QMenu, f"menu_{key}")
+            assert [a.text() for a in menu.actions()] == [
+                combo.itemText(i) for i in range(combo.count())
+            ]
+            assert [a.text() for a in menu.actions() if a.isChecked()] == [combo.currentText()]
 
 
 def test_the_save_as_affordance_is_reachable_and_labelled(qtbot, tmp_path):
