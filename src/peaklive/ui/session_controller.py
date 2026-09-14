@@ -2,6 +2,7 @@
 from __future__ import annotations  # noqa: I001
 from functools import partial
 from pathlib import Path
+from time import monotonic
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QFileDialog
 from peaklive.analysis import DbcSummary
@@ -12,6 +13,14 @@ from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
 from peaklive.ui.worker_lifecycle import abandon_worker
 SHUTDOWN_TIMEOUT_MS = 5_000
+#: How often to re-check whether the background history writer has drained
+#: while finalizing a completed replay.
+HISTORY_DRAIN_POLL_MS = 20
+#: Bound on how long that finalization waits before giving up rather than
+#: polling forever - a working writer with a bounded queue and no ingestion
+#: still adding to it drains in a handful of ticks; anything this slow is
+#: itself worth surfacing rather than silently never finishing.
+HISTORY_DRAIN_TIMEOUT_S = 30.0
 _PHASE_STATUS: dict[AcquisitionPhase, str] = {
     AcquisitionPhase.STARTING: "acquisition.opening",
     AcquisitionPhase.STOPPING: "acquisition.stopping",
@@ -201,23 +210,23 @@ class WorkspaceSession:
         if not self._replay_presentation_timer.isActive():
             self._replay_presentation_timer.start()
     def _drain_replay_batch(self) -> None:
-        """Ingest one worker batch, then yield before accepting the next one."""
+        """Ingest one worker batch, then yield before accepting the next one.
+
+        A historical-persistence failure discovered while ingesting (either
+        synchronously, or asynchronously once the background writer reports
+        it) is handled entirely inside `_fail_history`: it stops and abandons
+        the worker and routes through `_replay_failed_for_generation` itself,
+        which also empties `_pending_replay_batches`. So by the time this
+        resumes below, a fresh failure already looks like an ordinary empty,
+        not-yet-succeeded queue - `_replay_ready_to_complete` correctly
+        declines to complete it.
+        """
         if not self._pending_replay_batches:
             return
         generation, worker, records = self._pending_replay_batches.pop(0)
-        history_failed = False
         if generation == getattr(self, "_replay_generation", 0):
-            history_failed = self._ingest_replay_records(records)
+            self._ingest_replay_records(records)
         worker.batch_rendered()
-        if history_failed:
-            # Stop further source consumption on the same explicit failed
-            # terminal path a parser failure already uses, rather than
-            # continuing to accept records into a store that just proved it
-            # cannot persist them.
-            worker.request_stop()
-            abandon_worker(worker)
-            self._replay_failed_for_generation(generation, self._history_failure_message or "")
-            return
         if self._pending_replay_batches:
             self._replay_presentation_timer.start()
         elif self._replay_ready_to_complete(generation, worker):
@@ -280,7 +289,7 @@ class WorkspaceSession:
         if self._replay_ready_to_complete(generation, worker):
             self._complete_replay(generation)
     def _complete_replay(self, generation: int) -> None:
-        """Finalize only after the queued UI projection has consumed every batch."""
+        """Finalize decoding, then wait for the background writer to settle."""
         if generation != getattr(self, "_replay_generation", 0):
             return
         self.status.showMessage(translate("trace.replay_done"))
@@ -289,9 +298,35 @@ class WorkspaceSession:
         self._end_work()
         self._update_mode_availability()
         self._settle_presentation()
+        # The report reads in-memory facts, not SQL, so it is accurate now;
+        # only the historical view/full extent wait for the writer below.
+        self._refresh_report()
+        self._finish_historical_readiness(generation)
+    def _finish_historical_readiness(self, generation: int, deadline: float | None = None) -> None:
+        if generation != getattr(self, "_replay_generation", 0):
+            return
+        if self._history_writer is None:
+            return  # window closed/shut down since this was scheduled
+        if self._history_failed:
+            # _fail_history already reacted; there is nothing left to settle.
+            return
+        if deadline is None:
+            deadline = monotonic() + HISTORY_DRAIN_TIMEOUT_S
+        if not self._history_fully_drained():
+            if monotonic() >= deadline:
+                self._fail_history(
+                    translate("trace.history_drain_timeout").format(
+                        seconds=int(HISTORY_DRAIN_TIMEOUT_S)
+                    )
+                )
+                return
+            QTimer.singleShot(
+                HISTORY_DRAIN_POLL_MS,
+                partial(self._finish_historical_readiness, generation, deadline),
+            )
+            return
         self._set_historical_view_ready(True)
         self.graph_panel.show_full_extent()
-        self._refresh_report()
     def _reset_session(self, source: str) -> None:
         """Clear every retained projection and adopt the new session's axis.
         A named source is a capture, whose extent is whatever it turns out to

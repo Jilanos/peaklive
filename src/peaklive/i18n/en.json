@@ -186,6 +186,8 @@
     "replay_done": "Trace replay complete",
     "replay_failed": "Trace replay stopped: {message}",
     "history_failed": "Historical data could not be saved: {message}. Trace inspection continues without a persisted analysis.",
+    "history_queue_stalled": "The historical write queue did not drain within {seconds}s",
+    "history_drain_timeout": "Historical persistence did not finish within {seconds}s of the capture finishing",
     "replay_event": "Replay {kind}: {message}",
     "filters": "Filters",
     "more_filters": "More filters",

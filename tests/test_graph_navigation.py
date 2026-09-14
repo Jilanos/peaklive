@@ -7,11 +7,14 @@ data arrives (follow-tail).
 
 from __future__ import annotations
 
+from time import sleep
+
 import pytest
 
 from peaklive.adapters import FakeCanAdapter
 from peaklive.analysis import SeriesStore
 from peaklive.analysis.benchmark import CaptureProfile, synthetic_dbc, write_synthetic_capture
+from peaklive.analysis.history import HistoricalSignalStore
 from peaklive.domain import CanFrame
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
@@ -72,6 +75,42 @@ def test_a_completed_replay_opens_on_the_whole_capture(qtbot, tmp_path):
     # The whole capture is visible, not merely its newest seconds.
     assert low <= extent[0]
     assert high >= extent[1]
+
+
+def test_the_full_extent_waits_for_the_background_writer_to_settle(
+    qtbot, tmp_path, monkeypatch
+):
+    """item_133: parsing/decoding finishing must not be mistaken for the
+    complete history actually being on disk - a slow writer must not let the
+    graph show a partial extent as if it were the whole capture."""
+    window = _window(qtbot, tmp_path)
+    dbc = tmp_path / "synthetic.dbc"
+    dbc.write_text(synthetic_dbc(CAPTURE.message_count), encoding="utf-8")
+    window._load_dbc_path(dbc)
+    window._selected_signal_names = {SIGNAL}
+    window._sync_graphs()
+
+    original_append_many = HistoricalSignalStore.append_many
+
+    def slow_append_many(self, samples):
+        sleep(0.02)
+        return original_append_many(self, samples)
+
+    # Patched at the class level: the write runs on the background writer's
+    # own store instance, not window._history.
+    monkeypatch.setattr(HistoricalSignalStore, "append_many", slow_append_many)
+
+    window._open_trace(write_synthetic_capture(tmp_path / "slow-write.asc", CAPTURE))
+    qtbot.waitUntil(lambda: window._replay_worker is None, timeout=120_000)
+    # Parsing/decoding is done here, but the deliberately slowed writer is
+    # not guaranteed to have drained every accepted batch yet; only waiting
+    # for _historical_view_ready (not just worker completion) may show the
+    # true, complete extent below.
+    qtbot.waitUntil(lambda: window._historical_view_ready, timeout=120_000)
+
+    extent = window.graph_panel.global_extent()
+    assert extent[1] - extent[0] == pytest.approx((CAPTURE.frames - 1) * 0.001, rel=0.01)
+    assert window._history_batches_submitted == window._history_batches_settled
 
 
 def test_an_explicit_zoom_outranks_the_full_extent_on_completion(panel):
