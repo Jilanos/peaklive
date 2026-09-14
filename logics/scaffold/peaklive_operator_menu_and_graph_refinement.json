@@ -21,14 +21,14 @@
     "theme": "Operator workspace organization and bounded graph navigation",
     "needs": [
       "Move acquisition lifecycle and recording configuration out of View into a dedicated Recording menu without removing the compact header lifecycle controls.",
-      "Move measurement-profile setup from File into a Setup menu, including channel, bitrate, and acquisition-mode choices exposed as keyboard-accessible cascading submenus.",
+      "Move the existing profile save-as behavior, labelled Save measurement setup, from File into Setup, alongside channel, bitrate, and acquisition-mode choices exposed as keyboard-accessible cascading submenus.",
       "Move DBC activation and management out of Signals into a dedicated DBC menu, while preserving asynchronous catalog mutations and conflict handling.",
       "Make the Signals panel lead with currently displayed signals and their latest known values.",
       "Keep graph navigation near acquired data, allowing at most five percent of the acquired time span as intentional blank context beyond either end.",
-      "Give the graph canvas more horizontal area, make Follow live span elapsed acquisition time from t=0 to the newest sample, regroup fit controls, and make the header Stop control visibly red while acquisition is active."
+      "Give the graph canvas more horizontal area, offer a View choice between full-span and trailing-window Follow live with full-span as the default, regroup fit controls, and make the header Stop control visibly red while acquisition is active."
     ],
     "context": [
-      "The current File menu owns profile save-as, while View duplicates Start, Stop, and Recording settings that are also represented by compact header controls.",
+      "The operator confirmed three new menu-bar menus named Recording, Setup, and DBC. Save measurement setup retains the current profile save-as behavior.",
       "AcquisitionBar currently owns channel, bitrate, capture-format, and controller-mode combo boxes; capture format is persisted under recording settings, while channel, bitrate, and controller mode are profile settings.",
       "DBC enablement, removal, and conflict resolution are already asynchronous catalog operations, but DbcLibraryPanel is currently embedded above SignalExplorerPanel in Signals.",
       "GraphNavigation already distinguishes capture and live global extents, Fit, and Follow live. Its range updates are currently unconstrained after manual pan or zoom.",
@@ -37,12 +37,12 @@
     ],
     "acceptance_criteria": [
       "AC1: View contains only view/navigation and panel-visibility commands; Recording contains Start and Stop acquisition plus recording settings, while the compact header lifecycle controls remain available and Stop is visually red only in a stoppable acquisition phase.",
-      "AC2: Setup contains Save measurement setup and channel, bitrate, and acquisition-mode parent actions whose choices open in right-hand cascading submenus on pointer hover and are equally usable from the keyboard; changing a choice preserves profile persistence and lifecycle safety gates.",
+      "AC2: Recording, Setup, and DBC are new menu-bar menus. Setup contains Save measurement setup with the existing profile save-as behavior and channel, bitrate, and acquisition-mode parent actions whose choices open in right-hand cascading submenus on pointer hover and are equally usable from the keyboard; changing a choice preserves profile persistence and lifecycle safety gates.",
       "AC3: ASC/TRC format is configured only through Recording settings and no longer consumes top-bar space; the selected format remains profile-scoped and is applied to new recordings only.",
       "AC4: A DBC top-level menu lists loaded DBCs as independently checkable entries and exposes add, remove, and conflict-management commands; it is the sole workspace control for DBC enablement and management, and Signals no longer renders the DBC library or its per-DBC signal count.",
-      "AC5: Signals begins with a compact displayed-signals summary showing each currently displayed signal's identity, last known value, unit, and an explicit unavailable state before any value has been observed; it stays synchronized with shown-state and DBC changes without changing decode or historical-signal semantics.",
+      "AC5: Signals begins with a compact displayed-signals summary showing each currently displayed signal's identity, last known value, unit, and an explicit unavailable state before any value has been observed; it stays synchronized with shown-state and DBC changes without changing decode or historical-signal semantics, and refreshes at most once per second.",
       "AC6: Manual pan and zoom cannot show more than five percent of the acquired time span beyond either edge, with stable behavior for an empty, one-sample, or near-zero-duration session; Fit and Follow live obey the same bound.",
-      "AC7: During live acquisition, Follow live presents t=0 through the newest acquired sample rather than a fixed trailing window; an explicit manual navigation still disables follow-live and remains bounded by AC6.",
+      "AC7: View offers a Follow live mode choice between Full acquisition span and Trailing window. Full acquisition span is the default and presents t=0 through the newest acquired sample; Trailing window retains the existing short-tail behavior. An explicit manual navigation still disables follow-live and remains bounded by AC6."
       "AC8: Graph left-side whitespace is reduced only to the smallest safe shared axis gutter, graph fit controls are regrouped without overlap or clipping, and all graph/lane labels remain legible at 1024x768, 1280x720, and 1600x900.",
       "AC9: Focused and full headless tests cover menu ownership, submenu selection and persistence, lifecycle gating, DBC mutations/conflicts, displayed-signal values, graph boundary clamping, follow-live extent, responsive geometry, and localized text."
     ]
@@ -75,7 +75,7 @@
         "Channel, bitrate, controller mode, and capture format have different profile ownership and safety constraints but are presented together without a clear menu hierarchy."
       ],
       "scope_in": [
-        "Create Recording and Setup top-level menus; remove Start, Stop, and Recording settings from View and move Save measurement setup from File to Setup.",
+        "Create the three confirmed top-level menu-bar menus Recording, Setup, and DBC; remove Start, Stop, and Recording settings from View and move Save measurement setup from File to Setup without changing its profile save-as behavior.",
         "Keep compact header Start/Stop controls as the direct lifecycle surface; style Stop with an explicit destructive/running semantic only while its lifecycle action is enabled.",
         "Represent channel, bitrate, and acquisition mode as Setup cascading menus whose immediate choices are selectable by mouse hover/pointer and keyboard arrows/Enter, with check state or another unambiguous current-value marker.",
         "Move ASC/TRC selection into Recording settings and remove its top-bar selector; persist it with the existing recording profile contract and prevent mid-session edits from mutating an active worker profile.",
@@ -85,10 +85,10 @@
       "scope_out": [
         "Adding hardware channel discovery, arbitrary custom bitrates, or additional controller modes beyond the supported profile model.",
         "Changing acquisition worker ownership, recording file contents, or adapter connection behavior.",
-        "Changing the meaning of Save measurement setup without an explicit migration decision."
+        "Changing the profile save-as behavior behind Save measurement setup."
       ],
       "acceptance_criteria": [
-        "AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; their new menu homes expose the same lifecycle and recording behavior.",
+        "AC1: File no longer contains Save measurement setup and View no longer contains Start, Stop, or Recording settings; Recording, Setup, and DBC are top-level menu-bar menus, and the relocated commands preserve their existing behavior.",
         "AC2: Setup's channel, bitrate, and mode choices are cascading submenus with persistent current selection, keyboard navigation, accessible labels, and disabled/gated states while a session makes edits unsafe.",
         "AC3: Recording settings own ASC/TRC selection; no capture-format selector remains in the top bar and a recording starts with the stored selected format.",
         "AC4: Header Stop is red and enabled only in a stoppable acquisition phase, returns to its non-running appearance outside that phase, and menu and header actions remain synchronized.",
@@ -109,7 +109,7 @@
         "Create a DBC top-level menu beside View that lists each loaded definition as a checkable action and contains explicit add, remove, and conflict-management entry points.",
         "Reuse DbcCatalogWorker and WorkspaceCatalog asynchronous operations; menu state must remain correct while an add, remove, enable, disable, or conflict-resolution operation is pending or fails.",
         "Remove DbcLibraryPanel from Signals and avoid duplicating DBC enable/disable, remove, conflict, or count controls elsewhere in that panel.",
-        "Add a compact displayed-signals section at the top of Signals, ordered deterministically, showing display name/qualified identity, last value, unit, and unavailable/stale state without requiring a graph redraw per frame.",
+        "Add a compact displayed-signals section at the top of Signals, ordered deterministically, showing display name/qualified identity, last value, unit, and unavailable/stale state without requiring a graph redraw per frame; coalesce updates to at most one refresh per second.",
         "Synchronize this summary with shown/favorite changes, DBC enable/disable/remove, session reset, replay, live acquisition, and profile restoration while retaining raw preview behavior when no decoded signal is shown.",
         "Preserve conflict diagnostics and all existing selected-signal provenance rules."
       ],
@@ -134,25 +134,25 @@
       "request_acs": ["AC6", "AC7", "AC8", "AC9"],
       "problem": [
         "Manual graph pan and zoom may travel beyond the time that was acquired, leaving an unhelpful blank canvas.",
-        "Follow live is expected to show elapsed acquisition from zero through the newest frame, while graph controls and a fixed left gutter compete with drawable width."
+        "The operator wants View to offer both full-acquisition-span and existing trailing-window Follow live modes, with full acquisition span from zero through the newest frame as the default; graph controls and a fixed left gutter compete with drawable width."
       ],
       "scope_in": [
         "Define one shared X-range clamp used by wheel zoom, pan, Fit, Follow live, programmatic range synchronization, replay, and live acquisition.",
         "Allow at most five percent of the acquired span beyond each data edge; define an explicit finite minimum-padding rule for empty, one-sample, and near-zero spans without NaN, jitter, or recursive range signals.",
-        "Ensure Follow live uses the live global extent from t=0 to newest sample until an operator deliberately chooses a window; manual navigation disables follow-live but never escapes the clamp.",
+        "Add a View submenu for Follow live mode: Full acquisition span is the default and uses the live global extent from t=0 to newest sample, while Trailing window retains the existing short-tail behavior. Persist the selected profile preference; manual navigation disables follow-live but never escapes the clamp.",
         "Reorder/group Fit, Fit Y, zoom, and Follow live controls according to navigation intent while preserving keyboard shortcuts and A/B cursor controls.",
         "Replace the fixed excess left gutter with a measured shared axis width derived from required labels plus minimal padding; preserve lane-title and axis-label legibility at supported viewports.",
         "Cover headless geometry and navigation contracts across capture/replay/live sessions and multi-lane graphs."
       ],
       "scope_out": [
         "Changing Y-axis autoscaling semantics, raw/history sampling, graph downsampling, or historical viewport scheduling.",
-        "Changing capture timestamps, introducing an arbitrary trailing-time window, or hiding valid data to gain space.",
+        "Changing capture timestamps, changing the existing trailing-window duration, or hiding valid data to gain space.",
         "Relaxing the existing responsive-layout acceptance owned by active workspace work."
       ],
       "acceptance_criteria": [
         "AC1: Every graph X-range path is clamped to the data extent plus no more than five percent of that extent at either side, including user pan/zoom, Fit, Follow live, capture completion, and plot synchronization.",
         "AC2: Empty, one-sample, and sub-millisecond extents remain finite and stable, and no manual operation causes repeated range-change recursion or an invalid view range.",
-        "AC3: During live acquisition, enabling Follow live presents [0, newest timestamp] subject only to the documented small edge padding; manually zooming or panning disables follow-live without breaking bounds.",
+        "AC3: View offers Full acquisition span and Trailing window Follow live modes. Full acquisition span is the default and presents [0, newest timestamp] subject only to documented small edge padding; Trailing window retains the existing duration; manually zooming or panning disables follow-live without breaking bounds.",
         "AC4: Fit-related controls have a documented compact order and retain their current shortcuts, accessible names, and cursor/measurement behavior.",
         "AC5: The graph canvas gains width from a smaller safe left gutter, while vertical tick labels, lane labels, controls, and graphs remain visible and non-overlapping at supported viewport sizes.",
         "AC6: Tests assert the numerical clamp, follow-live extent, edge cases, control order, and minimum geometry rather than relying solely on screenshots."
@@ -162,10 +162,9 @@
   "orchestration_task": {
     "title": "Deliver PeakLive operator menu, catalog, and graph-canvas refinement",
     "plan": [
-      "Confirm the semantic mapping of Save measurement setup to the existing profile save-as flow and define any migration/shortcut decision before moving commands.",
-      "Deliver the Recording and Setup menu ownership wave, including safe cascading setting menus, recording-format relocation, lifecycle synchronization, i18n, and regression coverage.",
-      "Deliver the DBC menu and displayed-signal summary wave while preserving asynchronous catalog ownership and source-of-truth value semantics.",
-      "Deliver shared graph X-range clamping, full-extent Follow live, fit-control regrouping, and measured gutter reduction without taking over active historical/workspace scope.",
+      "Deliver the confirmed Recording, Setup, and DBC menu-bar ownership wave, preserving Save measurement setup as the existing profile save-as behavior; include safe cascading setting menus, recording-format relocation, lifecycle synchronization, i18n, and regression coverage.",
+      "Deliver the DBC menu and displayed-signal summary wave with at-most-once-per-second summary refreshes, while preserving asynchronous catalog ownership and source-of-truth value semantics.",
+      "Deliver shared graph X-range clamping, View-selectable Follow live modes with Full acquisition span as default, fit-control regrouping, and measured gutter reduction without taking over active historical/workspace scope.",
       "Run focused and full headless suites, Windows offscreen UI coverage, Ruff, i18n validation, Logics validation, lint, and audit. Record each completed wave with the evidence actually run; this corpus creation does not start implementation."
     ]
   },

@@ -2,8 +2,8 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Ready
-> Understanding: 90%
-> Confidence: 85%
+> Understanding: 95%
+> Confidence: 95%
 > Progress: 0%
 > Complexity: High
 > Theme: DBC catalog and signal observability
@@ -24,7 +24,7 @@
   - Create a DBC top-level menu beside View that lists each loaded definition as a checkable action and contains explicit add, remove, and conflict-management entry points.
   - Reuse DbcCatalogWorker and WorkspaceCatalog asynchronous operations; menu state must remain correct while an add, remove, enable, disable, or conflict-resolution operation is pending or fails.
   - Remove DbcLibraryPanel from Signals and avoid duplicating DBC enable/disable, remove, conflict, or count controls elsewhere in that panel.
-  - Add a compact displayed-signals section at the top of Signals, ordered deterministically, showing display name/qualified identity, last value, unit, and unavailable/stale state without requiring a graph redraw per frame.
+  - Add a compact displayed-signals section at the top of Signals, ordered deterministically, showing display name/qualified identity, last value, unit, and unavailable/stale state without requiring a graph redraw per frame; coalesce updates to at most one refresh per second.
   - Synchronize this summary with shown/favorite changes, DBC enable/disable/remove, session reset, replay, live acquisition, and profile restoration while retaining raw preview behavior when no decoded signal is shown.
   - Preserve conflict diagnostics and all existing selected-signal provenance rules.
 - Out:
@@ -35,14 +35,14 @@
 # Acceptance criteria
 - AC1: The DBC menu presents every loaded DBC with a checked/unchecked activation state and provides add, remove, and conflict-management paths without embedding DBC controls in Signals.
 - AC2: Menu-driven enable, disable, remove, and conflict resolution preserve the current async catalog operation, profile persistence, selected-signal reconciliation, and failure-notification behavior.
-- AC3: Signals displays every currently shown decoded signal with its most recent value and unit, marks an unobserved value explicitly, and removes or updates entries on catalog and shown-state changes.
+- AC3: Signals displays every currently shown decoded signal with its most recent value and unit, marks an unobserved value explicitly, removes or updates entries on catalog and shown-state changes, and refreshes at most once per second.
 - AC4: The summary does not invent values, alter retained series/history samples, reorder source data, or prevent use of raw preview when no decoded signal is shown.
 - AC5: Tests cover multiple DBCs, conflict state, pending mutations, session reset, replay/live updates, persistence, and accessible menu/summary labels.
 
 # AC Traceability
 - request-AC4 -> This backlog slice. Proof: AC1: The DBC menu presents every loaded DBC with a checked/unchecked activation state and provides add, remove, and conflict-management paths without embedding DBC controls in Signals.
-- request-AC5 -> This backlog slice. Proof: AC2: Menu-driven enable, disable, remove, and conflict resolution preserve the current async catalog operation, profile persistence, selected-signal reconciliation, and failure-notification behavior.
-- request-AC9 -> This backlog slice. Proof: AC3: Signals displays every currently shown decoded signal with its most recent value and unit, marks an unobserved value explicitly, and removes or updates entries on catalog and shown-state changes.
+- request-AC5 -> This backlog slice. Proof: AC3: Signals displays every currently shown decoded signal with its most recent value and unit, marks an unobserved value explicitly, removes or updates entries on catalog and shown-state changes, and refreshes at most once per second.
+- request-AC9 -> This backlog slice. Proof: AC5: Tests cover multiple DBCs, conflict state, pending mutations, session reset, replay/live updates, persistence, and accessible menu/summary labels.
 
 # Decision framing
 - Product framing: Not needed
