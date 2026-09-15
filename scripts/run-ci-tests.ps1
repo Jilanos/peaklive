@@ -12,12 +12,17 @@ $ErrorActionPreference = 'Stop'
 
 $testFiles = Get-ChildItem -LiteralPath tests -Filter 'test_*.py' -File |
     Sort-Object -Property Name
+$python = Join-Path $PWD '.venv\Scripts\python.exe'
+
+if (-not (Test-Path -LiteralPath $python)) {
+    throw "Expected the uv-synchronised interpreter at $python."
+}
 
 foreach ($testFile in $testFiles) {
     $resultFile = "test-results-$($testFile.BaseName).xml"
     Write-Host "::group::pytest $($testFile.Name)"
     try {
-        & uv run python -m pytest $testFile.FullName -vv -ra `
+        & $python -m pytest $testFile.FullName -vv -ra `
             "--junitxml=$resultFile" `
             -o faulthandler_timeout=120 `
             -o faulthandler_exit_on_timeout=true
