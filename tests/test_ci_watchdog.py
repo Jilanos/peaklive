@@ -3,6 +3,19 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
+from runpy import run_path
+
+
+def test_external_watchdog_terminates_pytest_without_internal_watchdog(tmp_path, monkeypatch):
+    runner = run_path(str(Path(__file__).parents[1] / "scripts" / "bounded_pytest.py"))
+    stalled = tmp_path / "test_stalled.py"
+    stalled.write_text(
+        "from threading import Event\ndef test_stalled():\n    Event().wait()\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("PYTEST_DISABLE_PLUGIN_AUTOLOAD", "1")
+    assert runner["run"]([str(stalled), "-p", "no:faulthandler"], timeout=3) == 124
 
 
 def test_native_pytest_watchdog_exits_and_reports_a_stalled_test(tmp_path):

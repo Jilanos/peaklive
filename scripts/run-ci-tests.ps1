@@ -36,7 +36,7 @@ for ($index = $Shard; $index -lt $testFiles.Count; $index += $ShardCount) {
     $resultFile = "test-results-$($testFile.BaseName).xml"
     Write-Host "::group::pytest $($testFile.Name)"
     try {
-        & $python -m pytest $testFile.FullName -vv -ra `
+        & $python scripts/bounded_pytest.py $testFile.FullName -vv -ra `
             "--junitxml=$resultFile" `
             -o faulthandler_timeout=120 `
             -o faulthandler_exit_on_timeout=true

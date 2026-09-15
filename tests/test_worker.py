@@ -1,3 +1,5 @@
+from threading import Event
+
 import pytest
 
 from peaklive.adapters import FakeCanAdapter
@@ -10,6 +12,26 @@ from peaklive.services.worker import (
     MAX_RECONNECT_ATTEMPTS,
     AcquisitionWorker,
 )
+
+
+def test_idle_adapter_yields_after_flushing_and_stop_interrupts_wait():
+    received = []
+    profile = MeasurementProfile(name="Idle", recording=RecordingSettings(enabled=False))
+    worker = AcquisitionWorker(
+        FakeCanAdapter(), profile, presentation_sink=lambda _, batch: received.extend(batch)
+    )
+
+    class StopOnIdle(Event):
+        def wait(self, timeout=None):
+            assert len(received) == 32
+            assert timeout is not None and 0 < timeout <= 0.01
+            self.set()
+            return super().wait(timeout)
+
+    worker._stop_requested = StopOnIdle()
+    worker.run()
+    assert worker.stop_requested
+    assert len(received) == 32
 
 
 class EventAdapter(FakeCanAdapter):
