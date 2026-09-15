@@ -7,14 +7,20 @@ on:
 
 jobs:
   test:
-    # Windows runs every Qt test module in a fresh interpreter, then packages
-    # the executable.  Keep a finite but realistic bound for that complete
-    # qualification instead of cancelling a healthy job mid-suite.
-    timeout-minutes: 45
+    # Each Windows shard runs its Qt modules in fresh interpreters, then the
+    # first shard packages the executable.  The finite bound catches a true
+    # native stall without cancelling a healthy shard mid-suite.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            shard: all
+          - os: windows-latest
+            shard: 0
+          - os: windows-latest
+            shard: 1
     runs-on: ${{ matrix.os }}
     env:
       QT_QPA_PLATFORM: offscreen
@@ -35,7 +41,7 @@ jobs:
       - name: Run tests
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ./scripts/run-ci-tests.ps1
+        run: ./scripts/run-ci-tests.ps1 -Shard ${{ matrix.shard }} -ShardCount 2
       - name: Run tests
         if: runner.os != 'Windows'
         run: uv run python -m pytest -vv -ra --junitxml=test-results.xml -o faulthandler_timeout=120 -o faulthandler_exit_on_timeout=true
@@ -43,15 +49,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.os }}
+          name: test-results-${{ matrix.os }}-${{ matrix.shard }}
           path: test-results*.xml
           if-no-files-found: warn
       - name: Build Windows executable
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.shard == 0
         shell: pwsh
         run: ./scripts/build-windows.ps1 -SkipValidation
       - name: Upload Windows executable
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.shard == 0
         uses: actions/upload-artifact@v4
         with:
           name: PeakLive-windows-x64
