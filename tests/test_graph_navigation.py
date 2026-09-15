@@ -67,6 +67,9 @@ def test_a_completed_replay_opens_on_the_whole_capture(qtbot, tmp_path):
 
     window._open_trace(write_synthetic_capture(tmp_path / "navigation.asc", CAPTURE))
     qtbot.waitUntil(lambda: window._replay_worker is None, timeout=120_000)
+    # The decoder may finish before the background writer persists its tail.
+    # The complete graph extent is published only after that writer settles.
+    qtbot.waitUntil(lambda: window._historical_view_ready, timeout=120_000)
 
     extent = window.graph_panel.global_extent()
     low, high = window.graph_panel.visible_window()
