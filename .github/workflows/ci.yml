@@ -28,17 +28,22 @@ jobs:
       - run: uv python install 3.13
       - run: uv sync --all-extras --python 3.13
       - run: uv run ruff check .
-      # Report the narrow Windows offscreen layout quarantine, including XPASS.
-      # A traceback alone leaves a deadlocked Qt test running until the 25m
-      # job limit (run 34858021301). The native watchdog must also exit, and
-      # verbose output identifies the test even if JUnit cannot be finalized.
-      - run: uv run python -m pytest -vv -ra --junitxml=test-results.xml -o faulthandler_timeout=120 -o faulthandler_exit_on_timeout=true
+      # Qt's native teardown can retain state across test modules on Windows
+      # (run 34867528670).  A fresh interpreter per module avoids that
+      # cross-module deadlock while retaining the complete test suite.
+      - name: Run tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/run-ci-tests.ps1
+      - name: Run tests
+        if: runner.os != 'Windows'
+        run: uv run python -m pytest -vv -ra --junitxml=test-results.xml -o faulthandler_timeout=120 -o faulthandler_exit_on_timeout=true
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.os }}
-          path: test-results.xml
+          path: test-results*.xml
           if-no-files-found: warn
       - name: Build Windows executable
         if: runner.os == 'Windows'
