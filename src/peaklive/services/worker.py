@@ -119,6 +119,10 @@ class AcquisitionWorker(QThread):
                     if batch:
                         self._flush(session, batch)
                         batch = []
+                    # Some adapters return immediately when idle. Yield the
+                    # GIL so Qt can process timers/Stop instead of spinning.
+                    # Event.wait also wakes immediately on a stop request.
+                    self._stop_requested.wait(0.001)
                     continue
                 if isinstance(record, BusEvent):
                     if batch:
