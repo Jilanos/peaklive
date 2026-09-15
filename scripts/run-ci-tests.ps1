@@ -1,3 +1,13 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory)]
+    [ValidateRange(0, [int]::MaxValue)]
+    [int]$Shard,
+    [Parameter(Mandatory)]
+    [ValidateRange(1, [int]::MaxValue)]
+    [int]$ShardCount
+)
+
 <#!
 .SYNOPSIS
 Runs each Windows pytest module in a separate interpreter for CI.
@@ -17,8 +27,12 @@ $python = Join-Path $PWD '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $python)) {
     throw "Expected the uv-synchronised interpreter at $python."
 }
+if ($Shard -ge $ShardCount) {
+    throw "Shard $Shard is outside the configured count of $ShardCount."
+}
 
-foreach ($testFile in $testFiles) {
+for ($index = $Shard; $index -lt $testFiles.Count; $index += $ShardCount) {
+    $testFile = $testFiles[$index]
     $resultFile = "test-results-$($testFile.BaseName).xml"
     Write-Host "::group::pytest $($testFile.Name)"
     try {
