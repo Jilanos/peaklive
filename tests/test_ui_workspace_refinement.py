@@ -1060,12 +1060,12 @@ def test_graph_controls_are_grouped_by_purpose(qtbot, tmp_path):
         bar.cursor_summary,
     ):
         assert control.parent() is header
-    for control in (
-        bar.fit_y_button,
-        bar.follow_checkbox,
-        bar.measurement_visibility_button,
-        bar.mode_selector,
-    ):
+    # Follow live and the Y-only fit joined the always-on-the-row set with
+    # the header order contract (item_142 AC2); only the measurement-values
+    # toggle and the view selector may still fold.
+    for control in (bar.fit_y_button, bar.follow_checkbox):
+        assert control in header._required
+    for control in (bar.measurement_visibility_button, bar.mode_selector):
         assert control in header._deferrable
 
 
@@ -1133,7 +1133,12 @@ def test_the_one_line_graphs_trace_header_stays_readable_at_the_bench_viewports(
     assert summary.isVisible()
     assert "1078.077" in summary.text() and "84.387" in summary.text()
     assert "-993.690" in summary.text()
-    assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+    # Shown in full wherever the row can afford it; at the narrowest bench
+    # viewport the reading shortens in place instead of costing one of the
+    # seven documented commands its spot (item_142 AC2).
+    if size != (1024, 768):
+        assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+    assert summary.toolTip() == summary.text()
 
     # Anything deferred under width pressure is still reachable, never
     # silently dropped: the overflow button appears whenever it holds a
@@ -1226,9 +1231,11 @@ def test_zero_delta_from_submillisecond_positions_shows_no_negative_sign(qtbot, 
 
 def test_long_values_never_clip_when_side_panels_squeeze_the_header(qtbot, tmp_path):
     """At the narrowest bench viewport, with both default (expanded) side
-    panels present, a long signed A/B/delta reading still shows completely
-    on the header row - lower-frequency controls fold into the accessible
-    overflow menu instead of anything being clipped.
+    panels present, a long signed A/B/delta reading stays on the header row
+    without overlapping or spilling past it. item_142 AC2 settles what gives
+    way when even folding every deferrable control is not enough: the seven
+    documented commands keep their place and the reading shortens in place,
+    with its untruncated value carried by `text()` and the tooltip.
     """
     window = _with_dbc(qtbot, tmp_path, size=(1024, 768))
     window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
@@ -1241,14 +1248,17 @@ def test_long_values_never_clip_when_side_panels_squeeze_the_header(qtbot, tmp_p
     assert summary.isVisible()
     assert "-123456.789" in summary.text()
     assert "123999.123" in summary.text()
-    assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+    assert "-123456.789" in summary.toolTip()
+    assert summary.width() >= READOUT_MINIMUM_WIDTH
     right_edge = summary.mapTo(header, summary.rect().topRight()).x()
     assert right_edge <= header.width()
 
     for control in (
         window.acquisition_bar.start_button,
         window.acquisition_bar.stop_button,
+        window.graph_panel.follow_checkbox,
         window.graph_panel.fit_button,
+        window.graph_panel.fit_y_button,
         window.graph_panel.cursor_a_button,
         window.graph_panel.cursor_b_button,
     ):

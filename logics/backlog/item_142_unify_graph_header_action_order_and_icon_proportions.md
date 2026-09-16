@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Header interaction and visual consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -37,6 +37,22 @@
 - AC2: All seven requested controls remain on one line at supported geometry with coherent icon size/padding and no overlap or clipping.
 - AC3: Play and Follow live, and Fit XY and Fit Y, are visibly distinct with localized explanatory tooltips, accessible names and keyboard focus.
 - AC4: Automated layout/action assertions and recorded visual review demonstrate the result across supported sizes/scaling.
+
+# Findings
+
+## Delivered
+- `src/peaklive/ui/icons.py` draws every header action from vector paths through a `QIconEngine`, so an icon is repainted at whatever size and device pixel ratio is asked for rather than scaled from artwork. `apply_header_icon` applies the shared contract: a 28 logical-pixel button box, a 16 logical-pixel icon canvas, a single stroke weight, and no text (the accessible name and tooltip already carry the name).
+- Follow live is a trace pinned to its newest sample, no longer a second play triangle. Fit XY is arrows out on both axes; Fit Y is a vertical double arrow between two fixed time edges. Cursor A and B are a cursor line carrying their own letter.
+- The header now registers controls in the request's documented order, and a control returning from the overflow menu is re-inserted by its canonical rank instead of appended - the defect that let a resize permute the row. Three one-pixel rules separate the four groups.
+
+## Width priority when the row cannot hold everything
+- The four-step order is: fold the deferrable commands (measurement values, then the view selector); drop the group rules; shorten elidable prose; shorten the A/B/delta reading. The seven documented commands are never folded.
+- This supersedes the earlier no-elide assertion for the reading (item_055 AC3, item_129). At 1024x768 with both side panels expanded the centre column can be given at most 654 px - the side panels' own Qt minimums (228 and 110) bound it - which leaves the header 538 px against a 544 px demand. The reading therefore shortens by a few pixels there, with its untruncated value in `text()` and in its tooltip, exactly the fallback this slice's scope names. It is shown in full at 1280x720 and 1600x900.
+
+## Visual review
+- Offscreen Qt, dark theme, 1024x768 / 1280x720 / 1600x900, and 100 / 150 / 200 percent scaling. All seven commands stay on one line at every viewport with no overlap and nothing past the row edge. At 200 percent the icons are repainted rather than upscaled, with no visible softening.
+- States reviewed: Play enabled and disabled, Stop enabled with its red active treatment while running and disabled otherwise, Follow live checked and unchecked, and the keyboard focus ring on each action.
+- Platform gap: the review ran on Linux with the offscreen platform plugin. Native Windows rendering at those scalings is not covered here, and the repository's existing Windows offscreen layout quarantine still applies.
 
 # AC Traceability
 - request-AC6 -> This backlog slice. Proof: AC1: Layout order matches request AC6 and remains stable after repeated narrow/wide resize and center-view changes.

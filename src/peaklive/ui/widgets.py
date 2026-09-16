@@ -44,13 +44,30 @@ class ElidingLabel(QLabel):
         super().__init__(text, parent)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         self.setToolTip(text)
+        self._preferred_width: int | None = None
 
     def setText(self, text: str) -> None:  # noqa: N802 - Qt override
         super().setText(text)
         self.setToolTip(text)
 
+    def set_preferred_width(self, width: int) -> None:
+        """Ask for this much room without refusing to shorten below it.
+
+        A readout that must be fully legible when there is room asks here
+        rather than through `setMinimumWidth`: a minimum is a refusal to
+        shrink, and on a row too narrow for every documented command that
+        refusal is paid by a command losing its place instead of by the text
+        eliding, with the untruncated value one hover away.
+        """
+        if self._preferred_width == width:
+            return
+        self._preferred_width = width
+        self.updateGeometry()
+
     def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
         hint = super().sizeHint()
+        if self._preferred_width is not None:
+            return QSize(self._preferred_width, hint.height())
         return QSize(min(hint.width(), READOUT_PREFERRED_WIDTH), hint.height())
 
     def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override

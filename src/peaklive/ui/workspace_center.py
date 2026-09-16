@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSizePolicy, QSplitter
 
 from peaklive.i18n import translate
+from peaklive.ui.icons import apply_header_icon
 from peaklive.ui.layout_reflow import (
     DEFAULT_DIVIDER_SIZES,
     GRAPH_MINIMUM_HEIGHT,
@@ -62,11 +63,24 @@ class WorkspaceCenter:
         for value, key in WORKSPACE_MODES:
             self.workspace_mode_selector.addItem(translate(key), value)
         self.workspace_mode_selector.currentIndexChanged.connect(self._workspace_mode_changed)
-        # Required: A/B/delta, Start/Stop, cursor placement, and the primary
-        # fit action stay directly on the row (request AC7/AC8) no matter how
-        # much the side panels squeeze it. Everything else is lower-frequency
-        # and may fold into the overflow menu under width pressure.
-        self.workspace_header.add(controls.fit_button)
+        for button, icon in (
+            (self.acquisition_bar.start_button, "play"),
+            (self.acquisition_bar.stop_button, "stop"),
+            (controls.follow_checkbox, "follow_live"),
+            (controls.fit_button, "fit_xy"),
+            (controls.fit_y_button, "fit_y"),
+            (controls.cursor_a_button, "cursor_a"),
+            (controls.cursor_b_button, "cursor_b"),
+            (controls.measurement_visibility_button, "measurement_values"),
+        ):
+            apply_header_icon(button, icon)
+        # The documented order (request AC6), in four groups: the view
+        # selector; acquisition and its bus state; follow and the two fits;
+        # the cursors and what they measure. Registration order *is* row
+        # order, and a control returning from the overflow menu is restored
+        # by that rank, so resizing cannot permute the row.
+        self.workspace_header.add(self.workspace_mode_selector, deferrable=True)
+        self.workspace_header.add_group_rule()
         self.workspace_header.add(self.acquisition_bar.start_button)
         self.workspace_header.add(self.acquisition_bar.stop_button)
         # One bus indicator for the whole centre column (item_141 AC3): this
@@ -76,21 +90,22 @@ class WorkspaceCenter:
         # Hidden outside a timed-out shutdown, so it claims no row width until
         # it is the one action the operator needs.
         self.workspace_header.add(self.acquisition_bar.recover_button)
+        self.workspace_header.add_group_rule()
+        self.workspace_header.add(controls.follow_checkbox)
+        self.workspace_header.add(controls.fit_button)
+        self.workspace_header.add(controls.fit_y_button)
+        self.workspace_header.add_group_rule()
         self.workspace_header.add(controls.cursor_a_button)
         self.workspace_header.add(controls.cursor_b_button)
+        self.workspace_header.add(controls.measurement_visibility_button, deferrable=True)
         self.workspace_header.add(controls.cursor_summary)
         # empty_state_label's own visibility already reflects real
         # application state (whether a sample has been captured yet) rather
         # than width pressure, so it stays required even though it claims no
-        # width while hidden (`refresh_overflow` excludes hidden widgets from
-        # the budget either way).
-        self.workspace_header.add(controls.empty_state_label)
-        # Deferred in this order - least important first - so the mode
-        # selector (the one most operators reach for) is the last to fold.
-        self.workspace_header.add(controls.measurement_visibility_button, deferrable=True)
-        self.workspace_header.add(controls.follow_checkbox, deferrable=True)
-        self.workspace_header.add(controls.fit_y_button, deferrable=True)
-        self.workspace_header.add(self.workspace_mode_selector, deferrable=True)
+        # width while hidden. It is explanatory prose, though, and the graph
+        # panel states the same thing in full below: it may shorten in place
+        # rather than cost a command its documented place on the row.
+        self.workspace_header.add(controls.empty_state_label, elidable=True)
         self.trace_graph_panel.insert_into_header(self.workspace_header)
         # GraphControlsBar's own row now holds nothing - every control moved
         # into the shared header above (item_129) - so hiding it reclaims

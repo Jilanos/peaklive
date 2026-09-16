@@ -352,7 +352,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _refresh_cursor_summary(self) -> None:
         if self.cursor_a is None and self.cursor_b is None:
             self.cursor_summary.setText(translate("graph.cursor_summary_empty"))
-            self.cursor_summary.setMinimumWidth(0)
+            self.cursor_summary.set_preferred_width(0)
             return
         summary_format = translate("graph.cursor_summary")
         text = summary_format.format(
@@ -362,7 +362,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         )
         self.cursor_summary.setText(text)
         width = self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4
-        self.cursor_summary.setMinimumWidth(width)
+        self.cursor_summary.set_preferred_width(width)
     @property
     def cursor_range(self) -> tuple[float, float] | None:
         cursors = self.cursor_a, self.cursor_b
