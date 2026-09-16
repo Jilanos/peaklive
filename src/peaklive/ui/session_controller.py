@@ -12,7 +12,6 @@ from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.replay_worker import ReplayWorker
 from peaklive.services.worker import AcquisitionWorker
 from peaklive.ui.worker_lifecycle import abandon_worker
-SHUTDOWN_TIMEOUT_MS = 5_000
 #: How often to re-check whether the background history writer has drained
 #: while finalizing a completed replay.
 HISTORY_DRAIN_POLL_MS = 20
@@ -38,6 +37,11 @@ class WorkspaceSession:
         if self._replay_worker is not None and self._replay_worker.isRunning():
             self.session_note.show_message(
                 translate("acquisition.start_blocked_by_replay"), "warning"
+            )
+            return
+        if self._finalizing_generation is not None:
+            self.session_note.show_message(
+                translate("acquisition.start_blocked_by_finalization"), "warning"
             )
             return
         if not self._lifecycle.can_start:
@@ -83,14 +87,6 @@ class WorkspaceSession:
         self.session_note.show_message(translate("acquisition.recovering_driver"), "warning")
         self._show_lifecycle_phase()
         self._start_acquisition()
-    def _stop_acquisition(self) -> None:
-        """Ask the worker to wind down and put a bound on how long that may take."""
-        if self._worker is None or not self._lifecycle.can_stop:
-            return
-        self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.STOPPING)
-        self._show_lifecycle_phase()
-        self._shutdown_timer.start(self._shutdown_timeout_ms)
-        self._worker.request_stop()
     def _worker_phase_changed(self, generation: int, phase: str) -> None:
         """Adopt a worker phase, ignoring one from an abandoned generation."""
         if not self._lifecycle.advance(generation, AcquisitionPhase(phase)):
@@ -108,51 +104,28 @@ class WorkspaceSession:
         """
         self._acquisition_failed(message)
         self._stop_acquisition()
-    def _acquisition_finished(self, generation: int) -> None:
-        """Retire one generation's worker. A stale finish is dropped on the floor."""
-        if generation != self._lifecycle.generation:
-            return
-        recovered = self._lifecycle.phase is AcquisitionPhase.TIMED_OUT
-        self._shutdown_timer.stop()
-        self._settle_acquisition_generation(generation)
-        self._invalidate_presentation_generation(generation)
-        self._worker = None
-        self._end_work()
-        if recovered:
-            self._lifecycle.advance(generation, AcquisitionPhase.STOPPED)
-            self.session_note.show_message(translate("acquisition.shutdown_recovered"), "info")
-        self._show_lifecycle_phase()
-    def _shutdown_timed_out(self) -> None:
-        """Refuse to wait any longer for a driver that has not come back."""
-        if self._worker is None or self._lifecycle.settled:
-            return
-        if not self._lifecycle.advance(self._lifecycle.generation, AcquisitionPhase.TIMED_OUT):
-            return
-        self._end_work()
-        self._show_lifecycle_phase()
-        self.session_note.show_message(
-            translate("acquisition.shutdown_timeout").format(
-                seconds=self._shutdown_timeout_ms // 1000
-            ),
-            "warning",
-        )
     def _show_lifecycle_phase(self) -> None:
-        """Reflect the current phase in the bar, the status line, and progress."""
+        """Reflect the current phase in the bar, the status line, and progress.
+
+        A generation whose worker has ended but whose samples are still being
+        settled keeps reading as `FINALIZING` rather than `STOPPED`: the
+        wind-down is not yet a result the operator can act on, and that phase
+        is also what keeps Start and the bus indicator honest meanwhile.
+        """
         phase = self._lifecycle.phase
-        self.acquisition_bar.set_lifecycle_phase(phase)
+        finalizing = self._finalizing_generation is not None
+        self.acquisition_bar.set_lifecycle_phase(
+            AcquisitionPhase.FINALIZING if finalizing else phase
+        )
         self._sync_setup_menu_enabled()
-        message = _PHASE_STATUS.get(phase)
+        message = "acquisition.finalizing" if finalizing else _PHASE_STATUS.get(phase)
         if message is not None:
             self.status.showMessage(translate(message))
-        if phase in {AcquisitionPhase.STOPPING, AcquisitionPhase.FINALIZING}:
-            self.progress.setVisible(True)
+        if finalizing or phase in {AcquisitionPhase.STOPPING, AcquisitionPhase.FINALIZING}:
+            self._show_finalization_progress()
         elif phase is not AcquisitionPhase.RUNNING:
             self._end_work()
         self._update_mode_availability()
-    def _settle_acquisition_generation(self, generation: int) -> None:
-        del generation
-        while self._presentation_queue_pending():
-            self._drain_presentation_frames()
     def _update_mode_availability(self) -> None:
         """Grey out Start and Open Trace while the other session mode is running.
         Live and replay must never ingest into the same buffers at once,
@@ -161,9 +134,10 @@ class WorkspaceSession:
         """
         replay_active = self._replay_worker is not None and self._replay_worker.isRunning()
         acquisition_active = self._worker is not None and self._worker.isRunning()
-        self.start_action.setEnabled(not replay_active)
+        finalizing = self._finalizing_generation is not None
+        self.start_action.setEnabled(not replay_active and not finalizing)
         self.stop_action.setEnabled(acquisition_active)
-        self.open_trace_action.setEnabled(not acquisition_active)
+        self.open_trace_action.setEnabled(not acquisition_active and not finalizing)
     def _choose_trace(self) -> None:
         selected, _ = QFileDialog.getOpenFileName(
             self, translate("trace.open_dialog"), "", translate("trace.open_filter")
@@ -335,6 +309,7 @@ class WorkspaceSession:
         and grows with the session.
         """
         self.session_note.clear_message()
+        self._cancel_finalization()
         if not source:
             self._replay_source_path = None
         self.graph_panel.cancel_history_refresh()

@@ -131,7 +131,8 @@ class WorkspaceIngest:
     # ---- presentation queue --------------------------------------------
 
     def _init_presentation_queue(self) -> None:
-        self._live_handoff = LiveFrameHandoff(self, self._render_frames)
+        self._history_backpressure_since: float | None = None
+        self._live_handoff = LiveFrameHandoff(self, self._render_frames, self._presentation_ready)
 
     def _begin_presentation_generation(self, generation: int) -> None:
         self._live_handoff.begin(generation)
@@ -145,8 +146,14 @@ class WorkspaceIngest:
     def _presentation_queue_pending(self) -> bool:
         return self._live_handoff.pending()
 
+    def _presentation_queue_depth(self) -> int:
+        return self._live_handoff.count()
+
     def _drain_presentation_frames(self) -> None:
         self._live_handoff.drain()
+
+    def _take_presentation_frames(self) -> list[CanFrame]:
+        return self._live_handoff.take()
 
     def _ingest_frames(
         self, frames: list[CanFrame], *, coalesce: bool = False
@@ -303,6 +310,7 @@ class WorkspaceIngest:
         self._history_settled_samples = 0
         self._history_batches_submitted = 0
         self._history_batches_settled = 0
+        self._history_backpressure_since = None
         self._start_history_writer()
 
     def _fail_history(self, message: str) -> None:

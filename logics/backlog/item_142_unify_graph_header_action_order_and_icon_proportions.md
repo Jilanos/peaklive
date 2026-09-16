@@ -1,14 +1,14 @@
 ## item_142_unify_graph_header_action_order_and_icon_proportions - Unify graph header action order and icon proportions
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Medium
 > Theme: Header interaction and visual consistency
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 12:17:41
+> Indicators reviewed: 2026-09-16 14:38:21
 
 # AI Context
 - Summary: Unify graph header action order and icon proportions.
