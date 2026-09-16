@@ -13,6 +13,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QMenu
 
 from peaklive.adapters import FakeCanAdapter
+from peaklive.domain import CanFrame
 from peaklive.services.lifecycle import AcquisitionPhase
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
@@ -180,6 +181,23 @@ def test_the_indicator_names_every_state_in_words_not_only_colour(qtbot, tmp_pat
         assert "Bus" in label.accessibleName()
 
     assert len(set(seen.values())) == len(seen)
+
+
+def test_arriving_frames_read_as_running_only_while_the_session_is_running(qtbot, tmp_path):
+    """Frames keep arriving all through a stop; they must not undo the phase."""
+    window = _window(qtbot, tmp_path)
+    generation = window._lifecycle.begin()
+    window._lifecycle.advance(generation, AcquisitionPhase.RUNNING)
+    window.acquisition_bar.set_lifecycle_phase(AcquisitionPhase.RUNNING)
+
+    window._ingest_frames([CanFrame(0.0, 0x123, b"\x01" * 8)])
+    assert window.bus_state == "running"
+
+    window._lifecycle.advance(generation, AcquisitionPhase.STOPPING)
+    window.acquisition_bar.set_lifecycle_phase(AcquisitionPhase.STOPPING)
+
+    window._ingest_frames([CanFrame(0.001, 0x123, b"\x02" * 8)])
+    assert window.bus_state == "stopping"
 
 
 def test_the_indicator_tooltip_still_carries_the_read_only_channel_summary(qtbot, tmp_path):

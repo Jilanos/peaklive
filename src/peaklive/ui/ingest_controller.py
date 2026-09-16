@@ -165,7 +165,12 @@ class WorkspaceIngest:
         follows is allowed to be coalesced, and only when the caller says the
         batches are arriving faster than a display can usefully follow.
         """
-        if frames:
+        # Arriving frames mean the bus is running - but not once the operator
+        # has asked the session to wind down. Frames keep being projected
+        # through the whole stop, so claiming "running" for each one is how
+        # the indicator ended up contradicting the phase the shell was
+        # actually in.
+        if frames and not self._lifecycle.is_shutting_down and self._finalizing_generation is None:
             self.acquisition_bar.set_bus_state("running")
         added = []
         historical: list[tuple[str, float, object, str | None]] = []
