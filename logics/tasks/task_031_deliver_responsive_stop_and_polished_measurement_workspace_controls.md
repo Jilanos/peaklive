@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -27,10 +27,10 @@
 - [x] 1. Wave 1 (High): inspect the external acquisition/sidecar candidates, reproduce and instrument the stop stall, implement the evidence-based repair and saving/finalization feedback, and prove the less-than-3-seconds-or-visible-progress contract with responsive GUI and lifecycle/data integrity.
 - [x] 2. Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.
 - [x] 3. Wave 3 (Medium): inventory and preserve remaining profile-row actions, remove its visible layout and relocate the single bus indicator.
-- [ ] 4. Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.
-- [ ] 5. For each meaningful wave, update affected Logics evidence and commit the completed wave under ADR 009. Do not mark this scaffold implemented.
+- [x] 4. Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.
+- [x] 5. For each meaningful wave, update affected Logics evidence and commit the completed wave under ADR 009. Do not mark this scaffold implemented.
 - [ ] 6. Run targeted tests then repository CI checks, record before/after latency and visual evidence, validate Logics lint/audit/traceability and close via the CLI only after acceptance criteria are proven.
-- [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
+- [x] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
 - [ ] Keep commit creation under operator control; do not force one commit per micro-step.
 - [ ] GATE: do not close until lint, audit, and scaffold validation pass.
 

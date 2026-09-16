@@ -5,20 +5,26 @@ The controls it lays out are still owned and wired by their original panels
 into one row, the same pattern the workspace mode selector already used, so
 no control gains a second, drifting copy of itself.
 
-Width policy (request AC8): the row never silently clips a control. Controls
-registered as required (A/B/delta, Start/Stop, the primary fit action, cursor
-placement) always stay directly on the row. Controls registered as
-deferrable (the mode selector, Follow live, the secondary Y-only fit, the
-measurement-visibility toggle, the empty-state note) move into an overflow
-menu, in reverse-priority order, only once the row is too narrow to show
-everything at once - so a side-panel-pressured window degrades to an
-accessible "more commands" button instead of clipping a timestamp.
+Order and width policy: controls sit in the order the request documents -
+view selector; Play, Stop, bus state; Follow live and the two fits; the
+cursors and what they measure - separated by a rule per group, and a control
+returning from the overflow menu is restored by that rank rather than
+appended, so no sequence of resizes can permute the row.
+
+The row never silently clips a control. Required controls (every one of those
+commands, plus the A/B/delta reading) always stay directly on the row.
+Deferrable ones - the measurement-values toggle and the view selector - move
+into an overflow menu, least important first, once the row runs out of width.
+When even that is not enough, decoration and prose give way before a command
+does: the group rules disappear and elidable text shortens in place, with its
+untruncated value on its own tooltip.
 """
 
 from __future__ import annotations
 
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QMenu,
     QToolButton,
@@ -28,6 +34,11 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.i18n import translate
+from peaklive.ui.icons import BUTTON_BOX
+
+#: Box width of the rule that separates one group of header actions from the
+#: next: a margin, the one-pixel line the stylesheet draws, and a margin.
+GROUP_RULE_WIDTH = 7
 
 
 def _width_demand(widget: QWidget) -> int:
@@ -36,9 +47,14 @@ def _width_demand(widget: QWidget) -> int:
     `ElidingLabel.sizeHint()` (used by the cursor summary) caps itself at a
     small preferred width and instead forces a real minimum through
     `setMinimumWidth` once it knows its text - a plain `sizeHint()` read
-    would under-count exactly the readout AC8 must not clip.
+    would under-count exactly the readout AC8 must not clip. A control with
+    a fixed box, on the other hand, can never be wider than that box however
+    large its own content hint is, so the cap is honoured too.
     """
-    return max(widget.sizeHint().width(), widget.minimumWidth())
+    return min(
+        max(widget.sizeHint().width(), widget.minimumWidth()),
+        widget.maximumWidth(),
+    )
 
 
 class WorkspaceHeaderBar(QWidget):
@@ -53,6 +69,15 @@ class WorkspaceHeaderBar(QWidget):
         # Least-important first: this is the order controls are pushed into
         # the overflow menu when the row runs out of width.
         self._deferrable: list[QWidget] = []
+        # The canonical left-to-right order, independent of which controls
+        # happen to be folded right now. A control returning from the
+        # overflow menu is re-inserted by this rank rather than appended, so
+        # the row reads the same however it got to its current width.
+        self._order: list[QWidget] = []
+        self._rules: list[QWidget] = []
+        # Text that is allowed to shorten in place rather than push a control
+        # off the row: its demand is what it needs to stay readable elided.
+        self._elidable: set[QWidget] = set()
         self._overflow_panel = QWidget(objectName="workspaceHeaderOverflowPanel")
         self._overflow_panel_layout = QVBoxLayout(self._overflow_panel)
         self._overflow_panel_layout.setContentsMargins(6, 6, 6, 6)
@@ -69,20 +94,91 @@ class WorkspaceHeaderBar(QWidget):
         self._overflow_button.setToolTip(translate("workspace.header_overflow"))
         self._overflow_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self._overflow_button.setMenu(self._overflow_menu)
+        # The same box every other header action uses, so the width it always
+        # reserves is the contract's box and not whatever its own glyph and
+        # the platform's padding happen to add up to.
+        self._overflow_button.setProperty("headerIcon", True)
+        self._overflow_button.setFixedSize(BUTTON_BOX, BUTTON_BOX)
         self._overflow_button.setVisible(False)
         self.row.addWidget(self._overflow_button)
         self._refreshing_overflow = False
 
-    def add(self, widget: QWidget, *, deferrable: bool = False) -> QWidget:
-        """Register a control on the row.
+    def add(
+        self, widget: QWidget, *, deferrable: bool = False, elidable: bool = False
+    ) -> QWidget:
+        """Register a control on the row, in its canonical left-to-right place.
 
         `deferrable=True` marks a lower-frequency control that may move into
         the overflow menu under width pressure; everything else is required
-        and always stays directly visible.
+        and always stays directly visible. `elidable=True` marks explanatory
+        text that shortens in place instead, so it claims only what it needs
+        to stay readable rather than its full preferred width.
         """
+        self._order.append(widget)
         self.row.insertWidget(self.row.count() - 1, widget)
         (self._deferrable if deferrable else self._required).append(widget)
+        if elidable:
+            self._elidable.add(widget)
         return widget
+
+    def _demand(self, widget: QWidget) -> int:
+        if widget in self._elidable:
+            return min(widget.minimumSizeHint().width(), _width_demand(widget))
+        return _width_demand(widget)
+
+    def add_group_rule(self) -> QWidget:
+        """Mark where one group of actions ends and the next begins.
+
+        It disappears whenever everything on one of its sides has folded into
+        the overflow menu, so a rule never ends up floating against the edge
+        of the row or doubled against another rule.
+        """
+        # Drawn by the stylesheet as a left border rather than by QFrame's
+        # own VLine shape: a styled QFrame ignores its frame shape, so the
+        # shape would render nothing at all here.
+        rule = QFrame(self, objectName="workspaceHeaderGroupRule")
+        rule.setFixedWidth(GROUP_RULE_WIDTH)
+        self._rules.append(rule)
+        return self.add(rule)
+
+    def _sync_group_rules(self, available: int) -> None:
+        """Show the rules only while they cost no control its place on the row."""
+        spacing = self.row.spacing()
+        crowded = self._required_floor_width() + len(self._rules) * (
+            GROUP_RULE_WIDTH + spacing
+        ) > available
+        for rule in self._rules:
+            rank = self._order.index(rule)
+            rule.setVisible(
+                not crowded
+                and self._any_on_row(self._order[:rank])
+                and self._any_on_row(self._order[rank + 1 :])
+            )
+
+    def _any_on_row(self, widgets: list[QWidget]) -> bool:
+        return any(
+            widget.parent() is self and not widget.isHidden()
+            for widget in widgets
+            if widget not in self._rules
+        )
+
+    def _restore_to_row(self, widget: QWidget) -> None:
+        """Put a returning control back at its canonical place, not at the end.
+
+        Appending it instead is what made the row's order depend on the
+        sequence of width changes it happened to live through: fold the mode
+        selector, widen the window, and it came back on the far right of the
+        cursor readout it is supposed to precede.
+        """
+        rank = self._order.index(widget)
+        position = 0
+        for index in range(self.row.count()):
+            other = self.row.itemAt(index).widget()
+            if other is None or other is self._overflow_button:
+                continue
+            if other in self._order and self._order.index(other) < rank:
+                position = index + 1
+        self.row.insertWidget(position, widget)
 
     def refresh_overflow(self) -> None:
         """Recompute which deferrable controls fit, moving the rest to the menu.
@@ -131,11 +227,25 @@ class WorkspaceHeaderBar(QWidget):
         folded, there is nothing left that can still shrink it.
         """
         spacing = self.row.spacing()
-        required = [widget for widget in self._required if not widget.isHidden()]
-        width = sum(_width_demand(widget) for widget in required)
+        required = self._visible_required()
+        width = sum(self._demand(widget) for widget in required)
         width += spacing * len(required)
         width += _width_demand(self._overflow_button)
         return width
+
+    def _visible_required(self) -> list[QWidget]:
+        """Required controls competing for row width right now.
+
+        The group rules are decoration, not content: they are dropped before
+        anything else when the row is crowded (see `_sync_group_rules`), so
+        they never contribute to the width the centre column is obliged to
+        provide.
+        """
+        return [
+            widget
+            for widget in self._required
+            if not widget.isHidden() and widget not in self._rules
+        ]
 
     def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
         return QSize(self._required_floor_width(), super().minimumSizeHint().height())
@@ -170,10 +280,11 @@ class WorkspaceHeaderBar(QWidget):
             return
         for widget in self._deferrable:
             if widget.parent() is not self:
-                self.row.insertWidget(self.row.count() - 1, widget)
+                self._restore_to_row(widget)
                 # Reparenting always leaves Qt's own hidden flag set; this
                 # widget is meant to be shown once it is back on the row.
                 widget.show()
+        self._sync_group_rules(available)
         spacing = self.row.spacing()
         # A control that is already explicitly hidden (e.g. the empty-state
         # note outside the empty state) claims no row width and never needs
@@ -181,13 +292,13 @@ class WorkspaceHeaderBar(QWidget):
         # space count towards the budget.
         required = [widget for widget in self._required if not widget.isHidden()]
         deferrable = [widget for widget in self._deferrable if not widget.isHidden()]
-        required_width = sum(_width_demand(widget) for widget in required)
+        required_width = sum(self._demand(widget) for widget in required)
         required_width += spacing * max(len(required) - 1, 0)
         overflowed: list[QWidget] = []
         total = required_width
         if deferrable:
             total += spacing
-            total += sum(_width_demand(widget) for widget in deferrable)
+            total += sum(self._demand(widget) for widget in deferrable)
             total += spacing * (len(deferrable) - 1)
         if total > available and deferrable:
             # The overflow button is about to appear and claims row width of
@@ -199,7 +310,7 @@ class WorkspaceHeaderBar(QWidget):
         for widget in deferrable:
             if total <= available:
                 break
-            total -= _width_demand(widget) + spacing
+            total -= self._demand(widget) + spacing
             self.row.removeWidget(widget)
             self._overflow_panel_layout.addWidget(widget)
             overflowed.append(widget)

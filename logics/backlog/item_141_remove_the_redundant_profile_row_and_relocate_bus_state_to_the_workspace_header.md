@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 75%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Workspace ownership and lifecycle status
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -33,6 +33,23 @@
 - AC1: The Measurement profile strip is absent and its height is reclaimed for the workspace.
 - AC2: Profile selection/save and all previously unique commands remain reachable with their existing persistence and lifecycle gates.
 - AC3: One bus status remains visible by Play/Stop in every center view and accurately reflects running, stopping, errors and timeout without relying only on color.
+
+# Findings
+
+## Inventory of the removed row, and where each control went
+| Removed from the strip | Where it is now |
+| --- | --- |
+| Measurement profile selector | Setup > Measurement profile, checkable choices driving the same combo |
+| Save setup as | Setup > Save measurement setup as (already there) |
+| Channel, bitrate, controller mode | Setup submenus (already there) |
+| Load DBC, Open trace, Export | File menu (already there) |
+| Play, Stop | Workspace header (already there) and Recording menu |
+| Bus indicator | Workspace header, beside Play/Stop |
+| Recover acquisition | Workspace header, shown only while the shutdown is timed out |
+| Read-only channel summary | The bus indicator's tooltip |
+
+- The `AcquisitionBar` itself survives as a hidden child of the central widget: it stays the single owner of the profile/lifecycle wiring, so nothing gains a second copy that could drift. It is no longer in the root layout, so it claims no height.
+- The indicator reads as the state word alone. "Bus" and the read-only channel summary moved to its accessible name and tooltip, which is what let the one-line header keep Play, Stop, Follow live, both fits and the A/B readout at 1024x768.
 
 # AC Traceability
 - request-AC5 -> This backlog slice. Proof: AC1: The Measurement profile strip is absent and its height is reclaimed for the workspace.

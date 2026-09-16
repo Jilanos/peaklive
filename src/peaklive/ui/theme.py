@@ -134,6 +134,13 @@ QToolButton#collapseButton[collapsed="true"] {{ min-width: 18px; min-height: 18p
 QToolButton[navButton="true"] {{ background: #202b3a; color: {TEXT_BODY};
                                 min-width: 22px; padding: 0 2px; }}
 QToolButton[fitGlyph="true"] {{ font-size: 13px; }}
+/* The shared header box (item_142 AC2): the icon is centred in the whole
+   28px square, so no padding may shrink the content rect under it. */
+QPushButton[headerIcon="true"], QToolButton[headerIcon="true"] {{
+    min-width: 28px; min-height: 28px; padding: 0;
+}}
+QFrame#workspaceHeaderGroupRule {{ border: none; border-left: 1px solid {BORDER};
+                                   margin: 5px 3px; }}
 QPushButton#chipButton {{ background: #1d2a3b; border: 1px solid {BORDER}; color: {ACCENT_SOFT};
                           font-weight: 600; min-height: 22px; padding: 0 8px; }}
 QPushButton:disabled, QToolButton:disabled {{ background: #334155; color: {TEXT_MUTED}; }}
