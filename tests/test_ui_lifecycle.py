@@ -116,6 +116,18 @@ def _phase(window) -> AcquisitionPhase:
     return window._lifecycle.phase
 
 
+def _settled(window, qtbot, timeout: int = 10_000) -> None:
+    """Wait out the wind-down that follows a generation ending.
+
+    A generation reaches its terminal phase while its accepted frames and
+    history writes are still being settled, in bounded slices, off the
+    blocking path (item_139). Start stays gated until that finishes, so a
+    caller asking about a "usable state" has to wait for it rather than for
+    the phase alone.
+    """
+    qtbot.waitUntil(lambda: window._finalizing_generation is None, timeout=timeout)
+
+
 # --------------------------------------------------------------------------
 # AC1 - the window stays interactive under delayed lifecycle operations
 # --------------------------------------------------------------------------
@@ -281,6 +293,7 @@ def test_a_connect_failure_restores_a_usable_state(qtbot, tmp_path):
 
     window._start_acquisition()
     qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.FAILED)
+    _settled(window, qtbot)
 
     assert window.bus_state == "bus_error"
     assert window.start_button.isEnabled()
@@ -295,6 +308,7 @@ def test_a_receive_failure_restores_a_usable_state(qtbot, tmp_path):
 
     window._start_acquisition()
     qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.FAILED)
+    _settled(window, qtbot)
 
     # The driver was still closed on the way out, despite the receive error.
     assert adapter.disconnect_calls == 1
@@ -311,6 +325,7 @@ def test_a_disconnect_failure_restores_a_usable_state(qtbot, tmp_path):
 
     window._stop_acquisition()
     qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.FAILED)
+    _settled(window, qtbot)
 
     assert window.start_button.isEnabled()
     assert not window.stop_button.isEnabled()
@@ -323,6 +338,7 @@ def test_a_failed_generation_can_be_started_again(qtbot, tmp_path):
 
     window._start_acquisition()
     qtbot.waitUntil(lambda: _phase(window) is AcquisitionPhase.FAILED)
+    _settled(window, qtbot)
 
     adapter.connect_error = None
     window._start_acquisition()
