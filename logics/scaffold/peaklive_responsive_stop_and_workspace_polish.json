@@ -1,0 +1,209 @@
+{
+  "title": "Restore responsive acquisition stop and polish the measurement workspace",
+  "references": [
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/live_handoff.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/services/worker.py",
+    "src/peaklive/ui/gui_gc.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/measurement.py",
+    "src/peaklive/analysis/dbc.py",
+    "src/peaklive/ui/panels/acquisition_bar.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/panels/workspace_header.py",
+    "src/peaklive/ui/panels/graph_controls.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/actions.py",
+    "src/peaklive/ui/theme.py",
+    "tests/test_ui_lifecycle.py",
+    "tests/test_graph_navigation.py",
+    "tests/test_ui_workspace_refinement.py",
+    "logics/tasks/task_029_deliver_peaklive_operator_menu_catalog_and_graph_canvas_refinement.md",
+    "logics/tasks/task_030_eliminate_the_qt_python_garbage_collection_lock_inversion.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Acquisition responsiveness and measurement workspace clarity",
+    "needs": [
+      "Diagnose and fix application unresponsiveness when stopping acquisition; the operator suspects Follow live makes it more likely, which remains a hypothesis to test.",
+      "Remove technical provenance suffixes from signal titles in the A/B/delta/statistics table.",
+      "Remove the redundant visible row beginning with Measurement profile now that configuration belongs in the top menus; move the bus status into the shared Graphs/Trace/Report header.",
+      "Reorganize Play, Stop, Follow live, cursors A/B and both Fit actions on one line, with coherent icon shapes and icon-to-button proportions."
+    ],
+    "context": [
+      "Baseline main d9b2f40 includes completed menu/navigation work (task_029) and GUI-owned cyclic GC (task_030); this request is a follow-up, not evidence those changes caused the reported freeze.",
+      "_stop_acquisition already requests stop asynchronously and starts a shutdown timer. Investigate completion, ingestion draining, history readiness, graph refresh, A/B statistics, range-signal recursion and GC using measurements before choosing a repair.",
+      "MeasurementPanel.refresh renders signal_label while graph lane titles and SignalSummaryPanel already use signal_display_title. Example anonymized unwanted title: PowerStatus.Voltage [a1b2c3d4 0x123]; intended title: PowerStatus.Voltage. This is internal identifier exposure in presentation, not a claim of external data exfiltration.",
+      "AcquisitionBar still owns the profile selector, bus state and lifecycle wiring; removing its visible row must first preserve any remaining unique profile selection, recovery, import/export or status access in the existing top menus/header.",
+      "WorkspaceHeaderBar currently assembles Fit, Play, Stop, A/B and readouts before deferrable Follow live/Fit Y; its overflow implementation reparents controls. Review stable ordering after shrink/expand as part of this change.",
+      "Existing text glyphs reuse a play triangle for Follow live and rely on font sizing; use code-native Qt/vector icons with a consistent visual language."
+    ],
+    "acceptance_criteria": [
+      "AC1: Record a reproducible before/after stop investigation comparing Follow live off, full-span and trailing-window modes, with timings and stack evidence identifying the cause or explicitly documenting remaining reproduction limits.",
+      "AC2: Stop immediately transitions to Stopping and the GUI continues processing input and paint events throughout drain/finalization, including delayed or stuck workers. On a documented deterministic stress fixture, Stop feedback appears within 200 ms and a 50 ms GUI heartbeat has no gap above 250 ms; record machine, load and measured maxima, separating GUI latency from total shutdown duration.",
+      "AC3: Repeated start/stop, empty acquisition, populated multi-lane acquisition, recording on/off, delayed history writes and shutdown timeout preserve accepted data, recording finalization, stale-generation rejection and safe restart gating. After a successful stop the final samples remain navigable, with a stable viewport and no continuing live-update loop.",
+      "AC4: Every measurement-table Signal cell shows Message.Signal without a DBC hash or arbitration-ID suffix; A/B, delta and statistics remain correct, and duplicate human-readable names retain distinct internal keys and inspectable provenance.",
+      "AC5: No visible Measurement profile row or empty reserved strip remains. Existing profile/configuration and other unique commands remain accessible from the top menus/header, and one bus status indicator lives in the shared Graphs/Trace/Report header, synchronized through idle, starting, running, stopping, stopped, timeout and error states.",
+      "AC6: The shared header uses the documented order: view selector; Play, Stop, bus status; Follow live, Fit XY, Fit Y; cursor A, cursor B, measurement visibility and A/B/delta readout. Groups are visually separated on a single line, with stable order after resize and view changes.",
+      "AC7: Play, Stop, Follow live, A/B and both Fits stay directly accessible on the same header line at supported 1024x768, 1280x720 and 1600x900 windows. A common 28 logical-pixel button box and 16 logical-pixel icon canvas is the starting contract; any adjustment must be shared and documented with visual evidence. Icons are centered, crisp at 100/150/200 percent scaling, with distinct Play/Follow and Fit XY/Fit Y meanings, consistent strokes and clear checked/disabled/hover/focus states.",
+      "AC8: Focused regression tests and visual review cover responsiveness, name collisions, bus state, removed-row geometry, header order, overflow restoration, shortcuts, localized tooltips and accessible names; existing full CI checks pass or pre-existing limitations are explicitly recorded."
+    ]
+  },
+  "product": {
+    "title": "PeakLive responsive stop and readable measurement controls",
+    "overview": "Make stopping a live acquisition trustworthy and keep the analysis workspace compact, legible and consistent after menu consolidation.",
+    "goals": [
+      "Keep the GUI responsive throughout acquisition stop and make lifecycle progress visible.",
+      "Show clean signal titles while preserving exact measurement identity.",
+      "Reclaim the redundant setup row and group coherent header controls around acquisition, navigation and measurement."
+    ],
+    "non_goals": [
+      "Changing CAN decode semantics, data retention policy, recording formats or passive-listen-only behavior.",
+      "Redesigning the whole application, replacing the plotting library or adding new navigation modes.",
+      "Removing technical provenance from diagnostics or changing A/B and Fit computation semantics."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Diagnose and repair acquisition stop stalls with Follow live",
+      "priority": "High - an unresponsive stop blocks the operator and obscures acquisition safety.",
+      "complexity": "High",
+      "theme": "Stop responsiveness and lifecycle correctness",
+      "request_acs": [
+        "AC1",
+        "AC2",
+        "AC3",
+        "AC8"
+      ],
+      "problem": [
+        "The operator reports a freeze when stopping acquisition, apparently more often with Follow live; no root cause is confirmed.",
+        "An asynchronous stop request alone does not prove the GUI remains responsive during completion and historical rendering."
+      ],
+      "scope_in": [
+        "Build a repeatable synthetic/fake-adapter reproduction with bounded timeouts, many frames and multiple displayed lanes; compare all three follow configurations and visible/hidden measurement statistics.",
+        "Instrument click-to-feedback, GUI heartbeat, worker stop acknowledgment, ingestion backlog/drain, recording flush, history readiness and final graph/statistics rendering. Capture thread stacks on a stall and distinguish deadlock, starvation and expensive GUI computation.",
+        "Choose the smallest repair justified by evidence; keep GUI widget access on its thread, prevent unbounded GUI waits and bound/coalesce presentation work without discarding accepted acquisition/history/recording data.",
+        "Define terminal follow behavior: stop scheduling live presentation after completion, retain the final extent/samples and current follow preference, and preserve a manually selected viewport.",
+        "Exercise delayed completion, worker timeout/recovery, recording on/off, history failure, empty sessions, rapid duplicate Stop and repeated restarts; retain GUI-owned GC and generation fencing.",
+        "Record before/after evidence and add a regression that exposes the diagnosed defect. Hardware confirmation is supplementary if the original adapter is unavailable; state that limitation."
+      ],
+      "scope_out": [
+        "Assuming Follow live or GC is the cause without evidence.",
+        "Suppressing the symptom by globally disabling Follow live or dropping retained samples.",
+        "Unrelated worker or plotting rewrites."
+      ],
+      "acceptance_criteria": [
+        "AC1: A documented fixture compares Follow off/full/trailing and records diagnostic stage timings and stack evidence.",
+        "AC2: Under the recorded stress fixture, feedback is at most 200 ms and maximum GUI heartbeat gap is at most 250 ms during stop; driver latency can exceed these bounds without blocking the GUI.",
+        "AC3: Final data and recording checks match accepted input; a timeout keeps unsafe restart disabled and stale callbacks cannot change a newer generation.",
+        "AC4: A meaningful regression fails without the repair and passes with it; final graph access, A/B values and subsequent start/stop remain usable."
+      ]
+    },
+    {
+      "title": "Use clean signal display titles in the A B measurement table",
+      "priority": "Medium - technical identifiers obscure the values analysts need to read.",
+      "complexity": "Low",
+      "theme": "Measurement presentation",
+      "request_acs": [
+        "AC4",
+        "AC8"
+      ],
+      "problem": [
+        "MeasurementPanel uses signal_label, exposing hash and frame ID beside Signal/A/B/delta values although a clean formatter already exists."
+      ],
+      "scope_in": [
+        "Render Signal cells with the shared signal_display_title helper; preserve canonical signal keys for data lookups and distinct rows.",
+        "Keep technical provenance in an explicit tooltip/details affordance, including enough information to distinguish two identical Message.Signal titles.",
+        "Cover qualified names, legacy/plain names, duplicate display names, missing values and numeric/textual measurements."
+      ],
+      "scope_out": [
+        "Renaming stored keys, changing exports or changing A/B/statistics calculations.",
+        "Globally stripping provenance from diagnostics."
+      ],
+      "acceptance_criteria": [
+        "AC1: A qualified sample renders PowerStatus.Voltage, with no bracketed hash or frame ID in the visible Signal cell.",
+        "AC2: Two sources with the same display title retain separate correct values and inspectable source identity.",
+        "AC3: A/B, delta, units and existing statistics remain unchanged in focused tests."
+      ]
+    },
+    {
+      "title": "Remove the redundant profile row and relocate bus state to the workspace header",
+      "priority": "Medium - duplicated setup presentation consumes graph space and separates bus state from acquisition controls.",
+      "complexity": "Medium",
+      "theme": "Workspace ownership and lifecycle status",
+      "request_acs": [
+        "AC5",
+        "AC8"
+      ],
+      "problem": [
+        "The visible AcquisitionBar row remains after configuration moved into menus, but still owns live controls and state wiring."
+      ],
+      "scope_in": [
+        "Inventory visible row widgets against existing menu/header equivalents. Put any unique profile selector in Setup as persistent checkable choices; preserve save-as, import/export and recovery through existing appropriate menu/header actions before removing the visible row.",
+        "Remove the row and its layout allocation; retaining an internal compatibility controller is acceptable if it creates no visible/blank strip.",
+        "Move the single bus marker and localized status text next to Play/Stop in the shared header and synchronize the same lifecycle source across Graphs, Trace and Report.",
+        "Preserve profile persistence, setup safety gates, timeout recovery, keyboard access and status messages; test exact-once signal connections after reparenting."
+      ],
+      "scope_out": [
+        "Duplicating lifecycle state or introducing a second set of independent acquisition controls.",
+        "Changing profile storage or recording configuration semantics."
+      ],
+      "acceptance_criteria": [
+        "AC1: The Measurement profile strip is absent and its height is reclaimed for the workspace.",
+        "AC2: Profile selection/save and all previously unique commands remain reachable with their existing persistence and lifecycle gates.",
+        "AC3: One bus status remains visible by Play/Stop in every center view and accurately reflects running, stopping, errors and timeout without relying only on color."
+      ]
+    },
+    {
+      "title": "Unify graph header action order and icon proportions",
+      "priority": "Medium - current glyphs and ordering make acquisition and navigation actions difficult to distinguish.",
+      "complexity": "Medium",
+      "theme": "Header interaction and visual consistency",
+      "request_acs": [
+        "AC6",
+        "AC7",
+        "AC8"
+      ],
+      "problem": [
+        "Fit precedes lifecycle controls, Follow live duplicates a play glyph, and differing button/font conventions create inconsistent apparent icon sizes.",
+        "Overflow reparenting can disrupt ordering and must honor the requested one-line primary controls."
+      ],
+      "scope_in": [
+        "Use the request AC6 order and group gaps: view; acquisition/status; follow/fit; cursors/readouts. Keep Play/Stop adjacent, both Fits adjacent and A/B adjacent; retain existing action semantics and shortcuts.",
+        "Replace font-dependent pictograms with reusable Qt/vector icons: play triangle, stop square, a distinct live-follow/time-tracking symbol, fit-both-axes and vertical-fit symbols, and cursor markers labeled A/B.",
+        "Use a shared 28 logical-pixel box, 16 logical-pixel icon canvas, centered artwork, consistent stroke weight and padding as the initial sizing specification; retain red Stop only when stoppable and a clearly checked Follow state.",
+        "Keep all seven requested controls directly on one row at supported window sizes; allocate center-panel minimum width accordingly, elide secondary text or defer secondary commands first, and preserve full readouts via accessible tooltips when needed.",
+        "Preserve canonical group order when overflow restores controls; below supported geometry provide accessible fallback without a second row or overlapping controls.",
+        "Review screenshots at the specified window sizes and 100/150/200 percent scaling, including enabled, disabled, checked and keyboard-focus states; record any platform-specific validation gap."
+      ],
+      "scope_out": [
+        "Raster image generation, decorative animation or a new icon dependency without need.",
+        "New zoom/follow modes or changes to cursor and fit mathematics."
+      ],
+      "acceptance_criteria": [
+        "AC1: Layout order matches request AC6 and remains stable after repeated narrow/wide resize and center-view changes.",
+        "AC2: All seven requested controls remain on one line at supported geometry with coherent icon size/padding and no overlap or clipping.",
+        "AC3: Play and Follow live, and Fit XY and Fit Y, are visibly distinct with localized explanatory tooltips, accessible names and keyboard focus.",
+        "AC4: Automated layout/action assertions and recorded visual review demonstrate the result across supported sizes/scaling."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver responsive stop and polished measurement workspace controls",
+    "plan": [
+      "Wave 1 (High): reproduce and instrument the stop stall, implement the evidence-based repair, and prove bounded GUI latency and lifecycle/data integrity.",
+      "Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.",
+      "Wave 3 (Medium): inventory and preserve remaining profile-row actions, remove its visible layout and relocate the single bus indicator.",
+      "Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.",
+      "For each meaningful wave, update affected Logics evidence and commit the completed wave under ADR 009. Do not mark this scaffold implemented.",
+      "Run targeted tests then repository CI checks, record before/after latency and visual evidence, validate Logics lint/audit/traceability and close via the CLI only after acceptance criteria are proven."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_responsive_stop_and_workspace_polish.json",
+    "mode": "summary-only",
+    "profile": "deep"
+  }
+}
