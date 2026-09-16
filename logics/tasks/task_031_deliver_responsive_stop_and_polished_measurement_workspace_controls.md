@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-16 12:17:42
+> Indicators reviewed: 2026-09-16 13:45:26
 
 # AI Context
 - Summary: Deliver responsive stop and polished measurement workspace controls.
@@ -19,8 +19,11 @@
 # Context
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
+- Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive.
+- Evidence handoff: consult the external capture inventory in the linked request before selecting the Wave 1 reproduction fixture.
+
 # Plan
-- [ ] 1. Wave 1 (High): reproduce and instrument the stop stall, implement the evidence-based repair, and prove bounded GUI latency and lifecycle/data integrity.
+- [ ] 1. Wave 1 (High): inspect the external acquisition/sidecar candidates, reproduce and instrument the stop stall, implement the evidence-based repair and saving/finalization feedback, and prove the less-than-3-seconds-or-visible-progress contract with responsive GUI and lifecycle/data integrity.
 - [ ] 2. Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.
 - [ ] 3. Wave 3 (Medium): inventory and preserve remaining profile-row actions, remove its visible layout and relocate the single bus indicator.
 - [ ] 4. Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.

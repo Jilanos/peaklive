@@ -38,11 +38,13 @@
       "MeasurementPanel.refresh renders signal_label while graph lane titles and SignalSummaryPanel already use signal_display_title. Example anonymized unwanted title: PowerStatus.Voltage [a1b2c3d4 0x123]; intended title: PowerStatus.Voltage. This is internal identifier exposure in presentation, not a claim of external data exfiltration.",
       "AcquisitionBar still owns the profile selector, bus state and lifecycle wiring; removing its visible row must first preserve any remaining unique profile selection, recovery, import/export or status access in the existing top menus/header.",
       "WorkspaceHeaderBar currently assembles Fit, Play, Stop, A/B and readouts before deferrable Follow live/Fit Y; its overflow implementation reparents controls. Review stable ordering after shrink/expand as part of this change.",
-      "Existing text glyphs reuse a play triangle for Follow live and rely on font sizing; use code-native Qt/vector icons with a consistent visual language."
+      "Existing text glyphs reuse a play triangle for Follow live and rely on font sizing; use code-native Qt/vector icons with a consistent visual language.",
+      "Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive.",
+      "Read-only evidence inventory: the operator-provided directory ../WORK/roulages/peaklive data contains four ASC/event-sidecar pairs dated 2026-09-16. Locate candidates by timestamp prefix to avoid embedding source-specific names: 10-24-19 has a 12,596,471-byte .asc.partial and .peaklive-events.jsonl.partial with 11 events (connected and 10 error_frame, no disconnected); 10-31-03 has a 5,395,683-byte ASC and 30 events (connected, one error_frame, 27 driver_overrun, disconnected). The connected-to-disconnected interval of the latter is 2202.833 seconds; it is session duration, not measured stop latency. The 10-29-12 and 10-30-28 pairs provide shorter comparison captures. No stop-click timestamp or Follow live state is present in these sidecars; none is yet confirmed as the reported freeze."
     ],
     "acceptance_criteria": [
       "AC1: Record a reproducible before/after stop investigation comparing Follow live off, full-span and trailing-window modes, with timings and stack evidence identifying the cause or explicitly documenting remaining reproduction limits.",
-      "AC2: Stop immediately transitions to Stopping and the GUI continues processing input and paint events throughout drain/finalization, including delayed or stuck workers. On a documented deterministic stress fixture, Stop feedback appears within 200 ms and a 50 ms GUI heartbeat has no gap above 250 ms; record machine, load and measured maxima, separating GUI latency from total shutdown duration.",
+      "AC2: Stop immediately transitions to Stopping with feedback within 200 ms. The operation either completes in less than 3 seconds or presents a saving/finalization popup or progress bar by 3 seconds and keeps it visible until success or an explicit timeout/error. The GUI continues processing input and paint events throughout drain/finalization, including delayed or stuck workers; on a documented stress fixture a 50 ms GUI heartbeat has no gap above 250 ms. Record machine, load, click-to-feedback, total shutdown duration and progress visibility separately. A frozen popup or more than 30 seconds of unexplained unresponsiveness fails acceptance.",
       "AC3: Repeated start/stop, empty acquisition, populated multi-lane acquisition, recording on/off, delayed history writes and shutdown timeout preserve accepted data, recording finalization, stale-generation rejection and safe restart gating. After a successful stop the final samples remain navigable, with a stable viewport and no continuing live-update loop.",
       "AC4: Every measurement-table Signal cell shows Message.Signal without a DBC hash or arbitration-ID suffix; A/B, delta and statistics remain correct, and duplicate human-readable names retain distinct internal keys and inspectable provenance.",
       "AC5: No visible Measurement profile row or empty reserved strip remains. Existing profile/configuration and other unique commands remain accessible from the top menus/header, and one bus status indicator lives in the shared Graphs/Trace/Report header, synchronized through idle, starting, running, stopping, stopped, timeout and error states.",
@@ -55,7 +57,7 @@
     "title": "PeakLive responsive stop and readable measurement controls",
     "overview": "Make stopping a live acquisition trustworthy and keep the analysis workspace compact, legible and consistent after menu consolidation.",
     "goals": [
-      "Keep the GUI responsive throughout acquisition stop and make lifecycle progress visible.",
+      "Keep the GUI responsive throughout stop: finish in less than 3 seconds or present explicit saving/finalization progress by 3 seconds, with initial feedback within 200 ms.",
       "Show clean signal titles while preserving exact measurement identity.",
       "Reclaim the redundant setup row and group coherent header controls around acquisition, navigation and measurement."
     ],
@@ -79,15 +81,18 @@
       ],
       "problem": [
         "The operator reports a freeze when stopping acquisition, apparently more often with Follow live; no root cause is confirmed.",
-        "An asynchronous stop request alone does not prove the GUI remains responsive during completion and historical rendering."
+        "An asynchronous stop request alone does not prove the GUI remains responsive during completion and historical rendering.",
+        "Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive."
       ],
       "scope_in": [
+        "Start diagnosis from the external timestamp-prefix candidates and their matching sidecars, inspect any adjacent save-directory logs, and preserve original files unchanged. Use the existing freeze-diagnostics runbook as an investigation aid. Replaying an ASC alone does not reproduce live stop: feed representative data through the acquisition/fake-adapter lifecycle, compare Follow off/full/trailing, and record which original settings remain unknown. Do not commit raw captures; record anonymized metadata and derive a bounded regression fixture.",
         "Build a repeatable synthetic/fake-adapter reproduction with bounded timeouts, many frames and multiple displayed lanes; compare all three follow configurations and visible/hidden measurement statistics.",
         "Instrument click-to-feedback, GUI heartbeat, worker stop acknowledgment, ingestion backlog/drain, recording flush, history readiness and final graph/statistics rendering. Capture thread stacks on a stall and distinguish deadlock, starvation and expensive GUI computation.",
         "Choose the smallest repair justified by evidence; keep GUI widget access on its thread, prevent unbounded GUI waits and bound/coalesce presentation work without discarding accepted acquisition/history/recording data.",
         "Define terminal follow behavior: stop scheduling live presentation after completion, retain the final extent/samples and current follow preference, and preserve a manually selected viewport.",
         "Exercise delayed completion, worker timeout/recovery, recording on/off, history failure, empty sessions, rapid duplicate Stop and repeated restarts; retain GUI-owned GC and generation fencing.",
-        "Record before/after evidence and add a regression that exposes the diagnosed defect. Hardware confirmation is supplementary if the original adapter is unavailable; state that limitation."
+        "Record before/after evidence and add a regression that exposes the diagnosed defect. Hardware confirmation is supplementary if the original adapter is unavailable; state that limitation.",
+        "Implement a localized popup or progress bar for saving/finalization that is visible no later than 3 seconds after Stop if finalization is still pending; an inline progress bar is the default implementation choice. Show the actual phase, use measured progress when a total is known and indeterminate activity otherwise, and keep repaint/input processing alive. Never display fake percentages or success before durable recording/history completion; dismiss on success and show actionable timeout/error state on failure. Test both completion below 3 seconds and a deliberately delayed path beyond 30 seconds with visible ongoing feedback, plus the existing stuck-worker timeout policy. A progress indicator does not excuse blocking the GUI."
       ],
       "scope_out": [
         "Assuming Follow live or GC is the cause without evidence.",
@@ -96,7 +101,7 @@
       ],
       "acceptance_criteria": [
         "AC1: A documented fixture compares Follow off/full/trailing and records diagnostic stage timings and stack evidence.",
-        "AC2: Under the recorded stress fixture, feedback is at most 200 ms and maximum GUI heartbeat gap is at most 250 ms during stop; driver latency can exceed these bounds without blocking the GUI.",
+        "AC2: Under the recorded stress fixture, feedback is at most 200 ms and maximum GUI heartbeat gap is at most 250 ms during stop. Completion takes less than 3 seconds or an explicit saving/finalization popup or progress bar appears by 3 seconds and stays responsive until completion or a surfaced timeout/error. Verify fast, delayed-over-30-second and stuck-worker paths; never report success before durable finalization.",
         "AC3: Final data and recording checks match accepted input; a timeout keeps unsafe restart disabled and stale callbacks cannot change a newer generation.",
         "AC4: A meaningful regression fails without the repair and passes with it; final graph access, A/B values and subsequent start/stop remain usable."
       ]
@@ -193,7 +198,7 @@
   "orchestration_task": {
     "title": "Deliver responsive stop and polished measurement workspace controls",
     "plan": [
-      "Wave 1 (High): reproduce and instrument the stop stall, implement the evidence-based repair, and prove bounded GUI latency and lifecycle/data integrity.",
+      "Wave 1 (High): inspect the external acquisition/sidecar candidates, reproduce and instrument the stop stall, implement the evidence-based repair and saving/finalization feedback, and prove the less-than-3-seconds-or-visible-progress contract with responsive GUI and lifecycle/data integrity.",
       "Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.",
       "Wave 3 (Medium): inventory and preserve remaining profile-row actions, remove its visible layout and relocate the single bus indicator.",
       "Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.",
