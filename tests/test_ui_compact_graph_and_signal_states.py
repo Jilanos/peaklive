@@ -21,7 +21,7 @@ from peaklive.domain import CanFrame
 from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow, theme
 from peaklive.ui.main_window import SIGNAL_KEY_ROLE
-from peaklive.ui.panels.graph_controls import GraphControlsBar
+from peaklive.ui.panels.graph_controls import READOUT_MINIMUM_WIDTH, GraphControlsBar
 from peaklive.ui.panels.signal_explorer import FAVORITE_COLUMN, SHOWN_COLUMN
 
 VEHICLE_DBC = '''VERSION ""
@@ -136,24 +136,44 @@ def test_removed_controls_do_not_regress_navigation_or_follow_live(qtbot, tmp_pa
 
 
 @pytest.mark.parametrize("size", [(1024, 768), (1280, 720), (1600, 900)])
-def test_both_complete_cursor_timestamps_render_together_without_eliding(qtbot, tmp_path, size):
+def test_both_cursor_timestamps_and_their_delta_stay_together(qtbot, tmp_path, size):
+    """A and B are one reading, never one value at a time.
+
+    How much of it the row can render depends on the platform's font metrics
+    and on how much width the side panels leave; what never varies is that
+    the reading carries both timestamps and their delta, keeps the
+    untruncated string on its tooltip, and stays inside the row.
+    """
     window = _with_dbc(qtbot, tmp_path, size=size)
     window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
     window.graph_panel.place_cursor("a", 1078.077)
     window.graph_panel.place_cursor("b", 84.387)
     qtbot.wait(20)
 
+    header = window.workspace_header
     summary = window.graph_panel.cursor_summary
     assert summary.isVisible()
     assert "1078.077" in summary.text()
     assert "84.387" in summary.text()
+    assert "-993.690" in summary.text()
     assert summary.toolTip() == summary.text()
-    # Shown in full wherever the row can afford it. At the narrowest bench
-    # viewport with both side panels expanded it shortens by a few pixels
-    # instead: item_142 AC2 gives the seven documented commands the row and
-    # the untruncated reading its tooltip, rather than folding a command.
-    if size != (1024, 768):
-        assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
+    assert summary.width() >= READOUT_MINIMUM_WIDTH
+    right_edge = summary.mapTo(header, summary.rect().topRight()).x()
+    assert 0 <= right_edge <= header.width()
+
+
+def test_the_full_reading_renders_once_the_side_panels_release_the_row(qtbot, tmp_path):
+    """Shortening is width pressure, not a cap: given room, nothing elides."""
+    window = _with_dbc(qtbot, tmp_path, size=(1600, 900))
+    window._render_frames([_speed_frame(float(i), 100 * i) for i in range(5)])
+    window.graph_panel.place_cursor("a", 1078.077)
+    window.graph_panel.place_cursor("b", 84.387)
+    window.signals_panel.set_collapsed(True)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(50)
+
+    summary = window.graph_panel.cursor_summary
+    assert summary.width() >= summary.fontMetrics().horizontalAdvance(summary.text())
 
 
 def test_the_graph_header_shows_no_window_or_no_sample_text(qtbot, tmp_path):

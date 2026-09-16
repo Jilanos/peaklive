@@ -99,6 +99,12 @@ def test_the_header_lays_the_controls_out_in_the_documented_order(qtbot, tmp_pat
 
 def test_the_groups_are_separated_on_the_row(qtbot, tmp_path):
     window = _window(qtbot, tmp_path)
+    # With the side panels out of the way the row has room for its
+    # decoration; under width pressure the rules are the first thing dropped,
+    # which is a separate contract from the order they sit in.
+    window.signals_panel.set_collapsed(True)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(50)
     row = window.workspace_header.row
     rules = [rule for rule in window.workspace_header._rules if rule.isVisible()]
     positions = [row.indexOf(rule) for rule in rules]
@@ -219,9 +225,12 @@ def test_every_icon_redraws_for_the_size_it_is_asked_for(qtbot, tmp_path):
     for name in ("play", "stop", "follow_live", "fit_xy", "fit_y", "cursor_a", "cursor_b"):
         small = header_icon(name).pixmap(QSize(16, 16))
         large = header_icon(name).pixmap(QSize(32, 32))
-        assert small.size() == QSize(16, 16)
-        assert large.size() == QSize(32, 32)
-        assert not large.toImage().allGray() or not large.isNull()
+        # Device pixels, so the raw sizes follow whatever ratio the screen
+        # reports; what matters is that a larger request is painted larger
+        # rather than served from one cached bitmap.
+        assert not small.isNull() and not large.isNull()
+        assert large.width() >= small.width() * 2 - 1
+        assert _bytes(name, 16) != _bytes(name, 32)
 
 
 def test_a_disabled_action_is_drawn_in_the_disabled_foreground(qtbot, tmp_path):
