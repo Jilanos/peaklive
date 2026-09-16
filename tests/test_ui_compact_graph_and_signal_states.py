@@ -194,6 +194,13 @@ def test_the_graph_header_shows_no_window_or_no_sample_text(qtbot, tmp_path):
 
 def test_the_combo_drop_down_is_not_an_unexplained_white_rectangle(qtbot, tmp_path):
     window = _with_dbc(qtbot, tmp_path)
+    # The setup strip that used to hold four combos is gone (item_141), and
+    # the one left - the view selector - folds into the overflow menu on a
+    # crowded row. Release the row so there is something to photograph
+    # wherever the platform's font metrics land.
+    window.signals_panel.set_collapsed(True)
+    window.inspector_panel.set_collapsed(True)
+    qtbot.wait(50)
     combos = [combo for combo in window.findChildren(QComboBox) if combo.isVisible()]
     assert combos
     for combo in combos:
