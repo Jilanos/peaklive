@@ -1,14 +1,14 @@
 ## item_140_use_clean_signal_display_titles_in_the_a_b_measurement_table - Use clean signal display titles in the A B measurement table
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Low
 > Theme: Measurement presentation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 14:38:21
+> Indicators reviewed: 2026-09-16 15:24:02
 
 # AI Context
 - Summary: Use clean signal display titles in the A B measurement table.
@@ -50,3 +50,9 @@
 # Priority
 - Priority: Medium - technical identifiers obscure the values analysts need to read.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`
+
+# Notes
+- Task `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls` was finished via `logics-manager flow finish task` on 2026-09-16.

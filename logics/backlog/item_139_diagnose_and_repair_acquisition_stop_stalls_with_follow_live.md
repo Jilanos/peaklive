@@ -1,14 +1,14 @@
 ## item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live - Diagnose and repair acquisition stop stalls with Follow live
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: High
 > Theme: Stop responsiveness and lifecycle correctness
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 14:38:21
+> Indicators reviewed: 2026-09-16 15:24:02
 
 # AI Context
 - Summary: Diagnose and repair acquisition stop stalls with Follow live.
@@ -91,3 +91,9 @@
 # Priority
 - Priority: High - an unresponsive stop blocks the operator and obscures acquisition safety.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`
+
+# Notes
+- Task `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls` was finished via `logics-manager flow finish task` on 2026-09-16.

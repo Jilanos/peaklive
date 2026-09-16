@@ -1,14 +1,14 @@
 ## item_141_remove_the_redundant_profile_row_and_relocate_bus_state_to_the_workspace_header - Remove the redundant profile row and relocate bus state to the workspace header
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Workspace ownership and lifecycle status
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 14:38:21
+> Indicators reviewed: 2026-09-16 15:24:02
 
 # AI Context
 - Summary: Remove the redundant profile row and relocate bus state to the workspace header.
@@ -68,3 +68,9 @@
 # Priority
 - Priority: Medium - duplicated setup presentation consumes graph space and separates bus state from acquisition controls.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`
+
+# Notes
+- Task `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls` was finished via `logics-manager flow finish task` on 2026-09-16.
