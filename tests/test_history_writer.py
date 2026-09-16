@@ -44,21 +44,26 @@ def test_submitted_samples_are_persisted_with_exact_values_and_settled_is_report
 def test_the_queue_bounds_pending_batches_and_submit_blocks_until_drained(qtbot, tmp_path):
     seed = HistoricalSignalStore()
     writer = HistoryWriter(seed.path)
+    settled: list[int] = []
+    writer.settled.connect(settled.append)
     writer.start()
     _wait_for_store(writer, qtbot)
 
     # A single-item batch settles almost instantly, so this proves submit()
     # keeps accepting well past MAX_QUEUE_BATCHES rather than blocking
     # forever - the queue drains as fast as (or faster than) it fills here.
-    accepted = sum(
-        writer.submit([("s", float(i), i, None)]) for i in range(MAX_QUEUE_BATCHES * 5)
-    )
-    assert accepted == MAX_QUEUE_BATCHES * 5
+    total = MAX_QUEUE_BATCHES * 5
+    accepted = sum(writer.submit([("s", float(i), i, None)]) for i in range(total))
+    assert accepted == total
 
+    # "Accepted" and "on disk" are deliberately different milestones: read
+    # back only once the writer says every batch has settled, rather than
+    # racing a slow runner's remaining commits.
+    qtbot.waitUntil(lambda: len(settled) == total, timeout=15_000)
     writer.request_stop()
-    writer.wait(5_000)
+    assert writer.wait(15_000)
     with HistoricalSignalStore(seed.path, read_only=True) as reader:
-        assert reader.bounds() == (0.0, float(MAX_QUEUE_BATCHES * 5 - 1))
+        assert reader.bounds() == (0.0, float(total - 1))
     seed.close()
 
 

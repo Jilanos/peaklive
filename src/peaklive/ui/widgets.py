@@ -59,9 +59,10 @@ class ElidingLabel(QLabel):
         refusal is paid by a command losing its place instead of by the text
         eliding, with the untruncated value one hover away.
         """
-        if self._preferred_width == width:
+        preferred = width or None
+        if self._preferred_width == preferred:
             return
-        self._preferred_width = width
+        self._preferred_width = preferred
         self.updateGeometry()
 
     def sizeHint(self) -> QSize:  # noqa: N802 - Qt override

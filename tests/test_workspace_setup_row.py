@@ -62,7 +62,10 @@ def test_the_strip_claims_no_layout_band_above_the_workspace(qtbot, tmp_path):
     layout = root.layout()
     widgets = {layout.itemAt(index).widget() for index in range(layout.count())}
     assert window.acquisition_bar not in widgets
-    assert window.workspace.y() <= window.session_note.y() + window.session_note.height() + 12
+    # The workspace now starts above where a strip of the bar's own height
+    # would have pushed it, so that band really is reclaimed rather than
+    # merely hidden behind an empty widget.
+    assert window.workspace.y() < window.acquisition_bar.sizeHint().height()
 
 
 # --------------------------------------------------------------------------
