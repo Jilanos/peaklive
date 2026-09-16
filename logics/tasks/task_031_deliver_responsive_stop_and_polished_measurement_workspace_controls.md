@@ -1,14 +1,15 @@
 ## task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls - Deliver responsive stop and polished measurement workspace controls
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-16 13:45:26
+> Indicators reviewed: 2026-09-16 14:38:21
+> Owner: maintainer@example.invalid
 
 # AI Context
 - Summary: Deliver responsive stop and polished measurement workspace controls.
@@ -23,8 +24,8 @@
 - Evidence handoff: consult the external capture inventory in the linked request before selecting the Wave 1 reproduction fixture.
 
 # Plan
-- [ ] 1. Wave 1 (High): inspect the external acquisition/sidecar candidates, reproduce and instrument the stop stall, implement the evidence-based repair and saving/finalization feedback, and prove the less-than-3-seconds-or-visible-progress contract with responsive GUI and lifecycle/data integrity.
-- [ ] 2. Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.
+- [x] 1. Wave 1 (High): inspect the external acquisition/sidecar candidates, reproduce and instrument the stop stall, implement the evidence-based repair and saving/finalization feedback, and prove the less-than-3-seconds-or-visible-progress contract with responsive GUI and lifecycle/data integrity.
+- [x] 2. Wave 2 (Medium): clean measurement titles with duplicate-identity coverage.
 - [ ] 3. Wave 3 (Medium): inventory and preserve remaining profile-row actions, remove its visible layout and relocate the single bus indicator.
 - [ ] 4. Wave 4 (Medium; after Wave 3): apply the header order, reusable icons and sizing contract, then verify primary controls and stable overflow restoration.
 - [ ] 5. For each meaningful wave, update affected Logics evidence and commit the completed wave under ADR 009. Do not mark this scaffold implemented.

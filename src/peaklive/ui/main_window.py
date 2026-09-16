@@ -49,9 +49,10 @@ from peaklive.ui.panels import (
 )
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.profile_controller import WorkspaceProfiles
-from peaklive.ui.session_controller import SHUTDOWN_TIMEOUT_MS, WorkspaceSession
+from peaklive.ui.session_controller import WorkspaceSession
 from peaklive.ui.signal_backfill_controller import WorkspaceSignalBackfill
 from peaklive.ui.signal_summary_controller import WorkspaceSignalSummary
+from peaklive.ui.stop_finalization import SHUTDOWN_TIMEOUT_MS, WorkspaceStopFinalization
 from peaklive.ui.theme import APP_STYLE
 from peaklive.ui.widgets import CollapsiblePanel, StateNote
 from peaklive.ui.window_shutdown import WorkspaceShutdown
@@ -77,6 +78,7 @@ class MainWindow(
     WorkspaceSignalBackfill,
     WorkspaceSignalSummary,
     WorkspaceShutdown,
+    WorkspaceStopFinalization,
     QMainWindow,
 ):
     def __init__(
@@ -100,6 +102,7 @@ class MainWindow(
         self._shutdown_timer.setSingleShot(True)
         self._shutdown_timer.timeout.connect(self._shutdown_timed_out)
         self._init_presentation_queue()
+        self._init_stop_finalization()
         self._init_graph_refresh()
         self._init_signal_summary_refresh()
         self._catalog = DbcCatalog()

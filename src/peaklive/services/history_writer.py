@@ -147,6 +147,16 @@ class HistoryWriter(QThread):
         """Return the exact number of batches accepted but not yet settled."""
         return self._queue.qsize()
 
+    def has_room(self) -> bool:
+        """Whether `submit()` would return without waiting for queue room.
+
+        The GUI thread is the only producer, so a caller that sees room here
+        can submit one batch without blocking its event loop. A failed or
+        stopping writer also reports room: `submit()` refuses it immediately,
+        and that refusal is the caller's failure signal, not a stall.
+        """
+        return self._failed.is_set() or self._stop_requested.is_set() or not self._queue.full()
+
     def run(self) -> None:
         try:
             store = HistoricalSignalStore(self._path, timeout=WRITE_LOCK_TIMEOUT_S)

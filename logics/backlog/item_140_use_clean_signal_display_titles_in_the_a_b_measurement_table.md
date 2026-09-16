@@ -1,14 +1,14 @@
 ## item_140_use_clean_signal_display_titles_in_the_a_b_measurement_table - Use clean signal display titles in the A B measurement table
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Low
 > Theme: Measurement presentation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 12:17:38
+> Indicators reviewed: 2026-09-16 14:38:21
 
 # AI Context
 - Summary: Use clean signal display titles in the A B measurement table.

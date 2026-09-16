@@ -32,11 +32,15 @@
     "mode_accessible": "Controller acknowledge mode",
     "starting": "Starting acquisition…",
     "finalizing": "Finalizing recording…",
+    "finalizing_driver": "Stopping acquisition — closing the CAN channel…",
+    "finalizing_frames": "Saving acquisition — %v of %m frames",
+    "finalizing_history": "Saving acquisition — writing historical data…",
     "stopped": "Acquisition stopped",
     "shutdown_timeout": "Shutdown did not complete within {seconds}s. The CAN driver has not returned. The capture was kept as recoverable .partial files; close PeakLive to release the adapter.",
     "shutdown_recovered": "Shutdown completed after the timeout; the capture was finalized.",
     "start_blocked": "Acquisition cannot restart until the previous shutdown returns. Close PeakLive to release the adapter.",
     "start_blocked_by_replay": "Cannot start acquisition while a trace replay is in progress. Wait for it to finish, or close it first.",
+    "start_blocked_by_finalization": "The previous acquisition is still being saved. Wait for finalization to finish before starting a new one.",
     "recovering_driver": "Starting with a fresh adapter. The previous CAN driver handle may still be held until it returns."
   },
   "bus": {

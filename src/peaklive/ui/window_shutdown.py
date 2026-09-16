@@ -43,6 +43,7 @@ class WorkspaceShutdown:
         # A debounced edit still waiting out its window must not be lost to
         # a close that lands before the timer would otherwise have fired.
         self._flush_save()
+        self._cancel_finalization()
         self._shutdown_timer.stop()
         deadline = monotonic() + self._shutdown_timeout_ms / 1000
 

@@ -15,6 +15,12 @@ from peaklive.services.profiles import ProfileStore
 from peaklive.ui import MainWindow
 
 
+def _settle(window: MainWindow) -> None:
+    """Drain the handoff the way the wind-down does, one bounded slice at a time."""
+    while window._presentation_queue_pending():
+        window._drain_presentation_frames()
+
+
 def _window(qtbot, tmp_path) -> MainWindow:
     window = MainWindow(ProfileStore(tmp_path / "settings"), adapter_factory=FakeCanAdapter)
     qtbot.addWidget(window)
@@ -36,7 +42,7 @@ def test_a_saturated_acquisition_stream_ingests_every_queued_frame(qtbot, tmp_pa
         window._queue_acquisition_frames(1, _synthetic_frames(64, start=index * 64))
     total_frames = batch_count * 64
 
-    window._settle_acquisition_generation(1)
+    _settle(window)
 
     assert window._facts.report().frame_count == total_frames
     assert window._frames.ingested == total_frames
@@ -53,7 +59,7 @@ def test_facts_and_cache_see_every_frame_even_when_the_trace_window_is_smaller(q
         window._queue_acquisition_frames(1, _synthetic_frames(64, start=index * 64))
     total_frames = batch_count * 64
 
-    window._settle_acquisition_generation(1)
+    _settle(window)
 
     # The retained window is bounded, but every frame still reached facts,
     # the frame cache, and the series projection that feeds deferred decode.
@@ -82,5 +88,5 @@ def test_one_live_presentation_tick_has_a_deterministic_frame_bound(qtbot, tmp_p
     window._drain_presentation_frames()
 
     assert window._facts.report().frame_count == 256
-    window._settle_acquisition_generation(1)
+    _settle(window)
     assert window._facts.report().frame_count == 512

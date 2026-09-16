@@ -1,14 +1,14 @@
 ## item_141_remove_the_redundant_profile_row_and_relocate_bus_state_to_the_workspace_header - Remove the redundant profile row and relocate bus state to the workspace header
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Medium
 > Theme: Workspace ownership and lifecycle status
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 12:17:39
+> Indicators reviewed: 2026-09-16 14:38:21
 
 # AI Context
 - Summary: Remove the redundant profile row and relocate bus state to the workspace header.
