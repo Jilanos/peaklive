@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Acquisition responsiveness and measurement workspace clarity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 12:17:35
+> Indicators reviewed: 2026-09-16 13:45:23
 
 # AI Context
 - Summary: Restore responsive acquisition stop and polish the measurement workspace.
@@ -29,9 +29,12 @@
 - WorkspaceHeaderBar currently assembles Fit, Play, Stop, A/B and readouts before deferrable Follow live/Fit Y; its overflow implementation reparents controls. Review stable ordering after shrink/expand as part of this change.
 - Existing text glyphs reuse a play triangle for Follow live and rely on font sizing; use code-native Qt/vector icons with a consistent visual language.
 
+- Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive.
+- Read-only evidence inventory: the operator-provided directory ../WORK/roulages/peaklive data contains four ASC/event-sidecar pairs dated 2026-09-16. Locate candidates by timestamp prefix to avoid embedding source-specific names: 10-24-19 has a 12,596,471-byte .asc.partial and .peaklive-events.jsonl.partial with 11 events (connected and 10 error_frame, no disconnected); 10-31-03 has a 5,395,683-byte ASC and 30 events (connected, one error_frame, 27 driver_overrun, disconnected). The connected-to-disconnected interval of the latter is 2202.833 seconds; it is session duration, not measured stop latency. The 10-29-12 and 10-30-28 pairs provide shorter comparison captures. No stop-click timestamp or Follow live state is present in these sidecars; none is yet confirmed as the reported freeze.
+
 # Acceptance criteria
 - AC1: Record a reproducible before/after stop investigation comparing Follow live off, full-span and trailing-window modes, with timings and stack evidence identifying the cause or explicitly documenting remaining reproduction limits.
-- AC2: Stop immediately transitions to Stopping and the GUI continues processing input and paint events throughout drain/finalization, including delayed or stuck workers. On a documented deterministic stress fixture, Stop feedback appears within 200 ms and a 50 ms GUI heartbeat has no gap above 250 ms; record machine, load and measured maxima, separating GUI latency from total shutdown duration.
+- AC2: Stop immediately transitions to Stopping with feedback within 200 ms. The operation either completes in less than 3 seconds or presents a saving/finalization popup or progress bar by 3 seconds and keeps it visible until success or an explicit timeout/error. The GUI continues processing input and paint events throughout drain/finalization, including delayed or stuck workers; on a documented stress fixture a 50 ms GUI heartbeat has no gap above 250 ms. Record machine, load, click-to-feedback, total shutdown duration and progress visibility separately. A frozen popup or more than 30 seconds of unexplained unresponsiveness fails acceptance.
 - AC3: Repeated start/stop, empty acquisition, populated multi-lane acquisition, recording on/off, delayed history writes and shutdown timeout preserve accepted data, recording finalization, stale-generation rejection and safe restart gating. After a successful stop the final samples remain navigable, with a stable viewport and no continuing live-update loop.
 - AC4: Every measurement-table Signal cell shows Message.Signal without a DBC hash or arbitration-ID suffix; A/B, delta and statistics remain correct, and duplicate human-readable names retain distinct internal keys and inspectable provenance.
 - AC5: No visible Measurement profile row or empty reserved strip remains. Existing profile/configuration and other unique commands remain accessible from the top menus/header, and one bus status indicator lives in the shared Graphs/Trace/Report header, synchronized through idle, starting, running, stopping, stopped, timeout and error states.
