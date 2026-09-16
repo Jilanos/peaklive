@@ -42,11 +42,19 @@ class WorkspaceActions:
         )
 
         setup_menu = bar.addMenu(translate("menu.setup"))
+        self._setup_menu_refreshers = [
+            # The setup strip that used to carry this selector is gone
+            # (item_141); the combo still owns selection and persistence, so
+            # this submenu drives it rather than duplicating it.
+            self._build_choice_submenu(
+                setup_menu, "menu.profile", self.acquisition_bar.profile_selector
+            ),
+        ]
         setup_menu.addAction(
             self._action("menu.save_profile_as", self._save_profile_as, "Ctrl+Shift+S")
         )
         setup_menu.addSeparator()
-        self._setup_menu_refreshers = [
+        self._setup_menu_refreshers += [
             self._build_choice_submenu(
                 setup_menu, "menu.channel", self.acquisition_bar.channel_selector
             ),

@@ -170,7 +170,14 @@ class MainWindow(
         self.acquisition_bar.start_requested.connect(self._start_acquisition)
         self.acquisition_bar.stop_requested.connect(self._stop_acquisition)
         self.acquisition_bar.recover_requested.connect(self._recover_timed_out_acquisition)
-        root_layout.addWidget(self.acquisition_bar)
+        # The visible setup strip is gone (item_141) and its height belongs to
+        # the workspace: profile, channel, bitrate and controller mode live in
+        # Setup, the file commands in File, and Play/Stop, bus state and
+        # recovery are reparented into the shared workspace header. The bar
+        # itself stays, unshown, as the single owner of that wiring - a second
+        # copy of it is exactly what would drift out of sync.
+        self.acquisition_bar.setParent(root)
+        self.acquisition_bar.hide()
 
         self.session_note = StateNote()
         root_layout.addWidget(self.session_note)

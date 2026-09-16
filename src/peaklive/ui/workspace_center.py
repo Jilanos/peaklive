@@ -46,6 +46,8 @@ class WorkspaceCenter:
             (controls.view_group.layout(), controls.follow_checkbox),
             (self.acquisition_bar.layout(), self.acquisition_bar.start_button),
             (self.acquisition_bar.layout(), self.acquisition_bar.stop_button),
+            (self.acquisition_bar.layout(), self.acquisition_bar.bus_state_frame),
+            (self.acquisition_bar.layout(), self.acquisition_bar.recover_button),
             (controls.cursor_group.layout(), controls.cursor_a_button),
             (controls.cursor_group.layout(), controls.cursor_b_button),
             (controls.cursor_group.layout(), controls.measurement_visibility_button),
@@ -67,6 +69,13 @@ class WorkspaceCenter:
         self.workspace_header.add(controls.fit_button)
         self.workspace_header.add(self.acquisition_bar.start_button)
         self.workspace_header.add(self.acquisition_bar.stop_button)
+        # One bus indicator for the whole centre column (item_141 AC3): this
+        # header sits above Graphs, Trace and Report alike, so the state is
+        # the same object in every view rather than a per-view copy.
+        self.workspace_header.add(self.acquisition_bar.bus_state_frame)
+        # Hidden outside a timed-out shutdown, so it claims no row width until
+        # it is the one action the operator needs.
+        self.workspace_header.add(self.acquisition_bar.recover_button)
         self.workspace_header.add(controls.cursor_a_button)
         self.workspace_header.add(controls.cursor_b_button)
         self.workspace_header.add(controls.cursor_summary)
