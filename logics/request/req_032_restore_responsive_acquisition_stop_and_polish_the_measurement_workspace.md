@@ -1,13 +1,13 @@
 ## req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace - Restore responsive acquisition stop and polish the measurement workspace
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: High
 > Theme: Acquisition responsiveness and measurement workspace clarity
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-16 13:45:23
+> Indicators reviewed: 2026-09-16 15:24:01
 
 # AI Context
 - Summary: Restore responsive acquisition stop and polish the measurement workspace.
@@ -41,6 +41,16 @@
 - AC6: The shared header uses the documented order: view selector; Play, Stop, bus status; Follow live, Fit XY, Fit Y; cursor A, cursor B, measurement visibility and A/B/delta readout. Groups are visually separated on a single line, with stable order after resize and view changes.
 - AC7: Play, Stop, Follow live, A/B and both Fits stay directly accessible on the same header line at supported 1024x768, 1280x720 and 1600x900 windows. A common 28 logical-pixel button box and 16 logical-pixel icon canvas is the starting contract; any adjustment must be shared and documented with visual evidence. Icons are centered, crisp at 100/150/200 percent scaling, with distinct Play/Follow and Fit XY/Fit Y meanings, consistent strokes and clear checked/disabled/hover/focus states.
 - AC8: Focused regression tests and visual review cover responsiveness, name collisions, bus state, removed-row geometry, header order, overflow restoration, shortcuts, localized tooltips and accessible names; existing full CI checks pass or pre-existing limitations are explicitly recorded.
+
+# AC Traceability
+- request-AC1 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC2 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC3 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC4 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC5 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC6 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC7 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
+- request-AC8 -> This task. Proof: proven by `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`; see its `# AC Traceability` for the evidence.
 
 # Definition of Ready (DoR)
 - [x] Problem statement is explicit and user impact is clear.

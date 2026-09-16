@@ -1,12 +1,12 @@
 ## prod_030_peaklive_responsive_stop_and_readable_measurement_controls - PeakLive responsive stop and readable measurement controls
 > Date: 2026-09-16
-> Status: Proposed
+> Status: Settled
 > Related request: `req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace`
-> Related backlog: `item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live`, `item_140_use_clean_signal_display_titles_in_the_a_b_measurement_table`, `item_141_remove_the_redundant_profile_row_and_relocate_bus_state_to_the_workspace_header`, `item_142_unify_graph_header_action_order_and_icon_proportions`
+> Related backlog: `item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live`
 > Related task: `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-16 13:45:25
+> Indicators reviewed: 2026-09-16 15:24:02
 
 # Overview
 Make stopping a live acquisition trustworthy and keep the analysis workspace compact, legible and consistent after menu consolidation.
@@ -51,5 +51,5 @@ flowchart LR
 ```
 
 # References
-- Product back-reference: `req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace`
+- Product back-reference: `item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live`
 - Task back-reference: `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`
