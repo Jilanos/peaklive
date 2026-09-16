@@ -138,15 +138,18 @@ class AcquisitionBar(QFrame):
         self.mode_label = QLabel(objectName="statusPill")
         layout.addWidget(self.mode_label)
 
-        bus_state = QFrame(objectName="busState")
-        bus_layout = QHBoxLayout(bus_state)
-        bus_layout.setContentsMargins(8, 2, 10, 2)
+        # Reparented into the shared workspace header (item_141) so one bus
+        # indicator sits beside Play/Stop in every centre view.
+        self.bus_state_frame = QFrame(objectName="busState")
+        bus_layout = QHBoxLayout(self.bus_state_frame)
+        bus_layout.setContentsMargins(4, 0, 4, 0)
+        bus_layout.setSpacing(4)
         self.bus_led = BusStateLed()
         bus_layout.addWidget(self.bus_led)
         self.bus_state_label = QLabel(objectName="busStateLabel")
         self.bus_state_label.setAccessibleName(translate("bus.accessible"))
         bus_layout.addWidget(self.bus_state_label)
-        layout.addWidget(bus_state)
+        layout.addWidget(self.bus_state_frame)
         self.lifecycle_phase = AcquisitionPhase.IDLE
         self.set_bus_state("idle")
 
@@ -208,14 +211,27 @@ class AcquisitionBar(QFrame):
         return button
 
     def set_bus_state(self, state: str) -> None:
-        """Show the bus condition as both a colored marker and a text label."""
+        """Show the bus condition as both a colored marker and a text label.
+
+        The read-only channel summary rides along as the indicator's tooltip:
+        with the setup strip gone it is the one place that description stays
+        reachable without opening a menu.
+        """
         if state not in BUS_STATE_COLORS:
             state = "idle"
         self.bus_state = state
         self.bus_led.set_state(state)
         label = translate(f"bus.{state}")
-        self.bus_state_label.setText(f"{translate('bus.label').upper()} {label}")
-        self.bus_state_label.setToolTip(label)
+        # The state word alone on a one-line header that must also keep
+        # Play/Stop, both fits and the A/B readout unclipped; "Bus" is carried
+        # by the accessible name and the tooltip instead of by row width.
+        self.bus_state_label.setText(label)
+        qualified = f"{translate('bus.label')} · {label}"
+        self.bus_state_label.setAccessibleName(qualified)
+        summary = self.mode_label.text()
+        detail = f"{qualified} · {summary}" if summary else qualified
+        self.bus_state_label.setToolTip(detail)
+        self.bus_state_frame.setToolTip(detail)
 
     def set_lifecycle_phase(self, phase: AcquisitionPhase) -> None:
         """Gate the lifecycle buttons and the bus indicator from one phase.
@@ -280,6 +296,7 @@ class AcquisitionBar(QFrame):
                 recording=recording,
             )
         )
+        self.set_bus_state(self.bus_state)
 
     def apply_to_profile(self, profile: MeasurementProfile) -> None:
         profile.channel = self.channel_selector.currentText() or "channel-1"

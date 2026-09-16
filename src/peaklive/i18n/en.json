@@ -359,6 +359,7 @@
     "about_packaged": "Running from the packaged Windows executable.",
     "about_source": "Running from source.",
     "about_test_rebuild": "This is a tagged test rebuild ({tag}).",
+    "profile": "Measurement &profile",
     "save_profile_as": "Save measurement setup &as…",
     "view_signals": "&Signals panel",
     "view_graphs_trace": "&Graphs · Trace panel",

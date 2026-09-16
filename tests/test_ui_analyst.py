@@ -855,7 +855,12 @@ def test_recording_and_setup_menus_own_the_relocated_commands(qtbot, tmp_path):
     submenu_titles = {
         action.menu().objectName() for action in top_menus["Setup"].actions() if action.menu()
     }
-    assert submenu_titles == {"menu_channel", "menu_bitrate", "menu_controller_mode"}
+    assert submenu_titles == {
+        "menu_profile",
+        "menu_channel",
+        "menu_bitrate",
+        "menu_controller_mode",
+    }
 
 
 def test_setup_cascading_submenus_mirror_and_drive_the_acquisition_bar_combos(qtbot, tmp_path):
@@ -999,8 +1004,10 @@ def test_the_layout_stays_usable_at_the_bench_viewports(qtbot, tmp_path, size):
 
     assert window.minimumWidth() <= size[0]
     assert window.minimumHeight() <= size[1]
+    # The setup strip is gone (item_141); the header that took over its
+    # lifecycle controls is what has to stay on screen at every viewport.
     for widget in (
-        window.acquisition_bar,
+        window.workspace_header,
         window.signals_panel,
         window.trace_graph_panel,
         window.inspector_panel,
