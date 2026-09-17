@@ -34,7 +34,7 @@
           "- Qualify the real user symptom with reproducible timings and explicit platform limits."
         ],
         "Key product decisions": [
-          "- Prioritize the reported six-curve full-extent live session on build v0.1.2+b202609161508; the first click reveals poor responsiveness with or without the measurement table.",
+          "- Prioritize the reported six-curve full-extent live session on build v0.1.2+b202609161508, Windows 11, with recording active; the first click sometimes occurs before 15 seconds of acquisition and reveals poor responsiveness with or without the measurement table. Cover startup interactions as well as sustained operation; this is not a measured fixed onset threshold.",
           "- The operator confirms continuously updated points with an axis that advances in 30-second steps when proven effective. Blank future space represents no measured values.",
           "- Preserve a short trailing window's width and reduce its advance. The proposed engineering cap is min(30 seconds, one quarter of its span).",
           "- Preserve the entire deferred replay scope from req_033. Data ingestion, display cadence and automatic axis movement have separate responsibilities."
@@ -177,7 +177,7 @@
       "schema_version": "1.0",
       "sections": {
         "Acceptance criteria": [
-          "- AC1: Record an identical-workload before/after matrix for Follow off/full/trailing during steady acquisition, enable/disable transitions, replay and Stop; prioritize the reported six-lane full-extent live session and first-click latency, then include no lanes, one lane and nine dense lanes, visible/hidden measurements and recording on/off. Record build, platform, lane count, rate, session age, input latency, heartbeat, data freshness, CPU, queue depth, X-range updates and relevant stage timings. Separate observed causes from hypotheses.",
+          "- AC1: Record an identical-workload before/after matrix for Follow off/full/trailing during steady acquisition, enable/disable transitions, replay and Stop; prioritize the reported six-lane full-extent live session on Windows 11 with recording active and a first interaction before 15 seconds of acquisition, then include no lanes, one lane and nine dense lanes, visible/hidden measurements and recording on/off. Record build, platform, lane count, rate, session age, input latency, heartbeat, data freshness, CPU, queue depth, X-range updates and relevant stage timings. Separate observed causes from hypotheses.",
           "- AC2: Replay never waits for historical writer capacity on the GUI thread: a 50 ms heartbeat has no gap above 250 ms under deliberately slow-but-progressing persistence. Mixed frame/event batches retain order, each frame/sample/event is projected exactly once, permits remain exact and bounded, and completion awaits durable final settlement.",
           "- AC3: Replay cancellation, close, restart and stale generations remain bounded and safe; a writer with no durable progress fails through existing _fail_history containment within the documented stall budget plus one responsive timer turn. A slowly progressing writer is not failed merely because total load time exceeds that budget.",
           "- AC4: At the documented supported stress load, Follow live keeps menu opening, view switching, Follow toggle and Stop feedback within 200 ms, maximum 50 ms-heartbeat gap within 250 ms and incoming-point display age within 500 ms. Measure across at least ten real 30-second boundaries (five minutes), including boundary spikes; do not qualify from only average timings or a six-second stop test.",
@@ -505,7 +505,8 @@
       "schema_version": "1.0",
       "sections": {
         "Context": [
-          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked.",
+          "- Confirmed reproduction: Windows 11, build v0.1.2+b202609161508, six curves, full-extent Follow live and recording active. Exercise the first interaction before 15 seconds of acquisition, with the measurement table shown and hidden, then retain the sustained five-minute qualification."
         ],
         "Validation": [
           "- (no validation recorded yet)"
@@ -542,11 +543,11 @@
     }
   ],
   "estimates": {
-    "char_count": 30864,
+    "char_count": 31417,
     "companion_doc_count": 3,
     "doc_count": 10
   },
-  "generated_at": "2026-09-17T10:50:50Z",
+  "generated_at": "2026-09-17T11:22:02Z",
   "handoff": {
     "companion_doc_count": 3,
     "enabled": true,

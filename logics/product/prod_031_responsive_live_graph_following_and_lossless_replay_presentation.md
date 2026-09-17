@@ -6,6 +6,7 @@
 > Related task: `task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-17 13:22:17
 
 # Overview
 Keep the whole workstation interactive while following live curves or loading dense traces, combining the deferred replay handoff fix with a measured automatic-axis policy that keeps new data visible.
@@ -37,7 +38,7 @@ flowchart LR
 ```
 
 # Key product decisions
-- Prioritize the reported six-curve full-extent live session on build v0.1.2+b202609161508; the first click reveals poor responsiveness with or without the measurement table.
+- Prioritize the reported six-curve full-extent live session on build v0.1.2+b202609161508, Windows 11, with recording active; the first click sometimes occurs before 15 seconds of acquisition and reveals poor responsiveness with or without the measurement table. Cover startup interactions as well as sustained operation; this is not a measured fixed onset threshold.
 - The operator confirms continuously updated points with an axis that advances in 30-second steps when proven effective. Blank future space represents no measured values.
 - Preserve a short trailing window's width and reduce its advance. The proposed engineering cap is min(30 seconds, one quarter of its span).
 - Preserve the entire deferred replay scope from req_033. Data ingestion, display cadence and automatic axis movement have separate responsibilities.
@@ -48,7 +49,7 @@ flowchart LR
 - Replay meets unchanged queue_wait budgets with exact ordered records and truthful durable completion; hosted and packaged Windows evidence supports qualification.
 
 # Open questions and delivery gates
-- Nonblocking reproduction details: recording state, OS/hardware, traffic rate, acquisition age before the first click and the effect of disabling Follow remain unconfirmed.
+- Nonblocking reproduction details: hardware specifications, traffic rate and the effect of disabling Follow remain unconfirmed. Recording active, Windows 11 and first clicks sometimes before 15 seconds of acquisition are confirmed.
 - The optimal axis cadence and exact short-window cap are measurement-dependent engineering choices; use the documented defaults for the prototype.
 - Packaged/operator confirmation and demonstrated latency/data integrity are closeout gates. Missing evidence must remain visible and must not be presented as passing.
 
