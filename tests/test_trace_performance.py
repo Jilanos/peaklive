@@ -100,7 +100,7 @@ def test_the_audit_attributes_a_representative_load_to_every_stage(qtbot, tmp_pa
         PROFILER.enabled = False
 
     assert measured.frames == AUDIT_PROFILE.frames
-    for stage in (STAGE_PARSE, STAGE_DECODE, STAGE_TRACE_PROJECTION):
+    for stage in (STAGE_PARSE, STAGE_DECODE, STAGE_TRACE_PROJECTION, STAGE_QUEUE_WAIT):
         assert measured.totals.get(stage, 0.0) > 0, f"{stage} was never measured"
     assert measured.dominant in STAGES
     # Windows-hosted runners occasionally lose a scheduler slice while Qt and
@@ -115,12 +115,12 @@ def test_the_audit_attributes_a_representative_load_to_every_stage(qtbot, tmp_pa
         # desktop scheduler after the full Qt suite has run. Keep the
         # product budget unchanged; this is measurement-harness tolerance.
         budgets[STAGE_TRACE_PROJECTION] = 0.350
-        # The background writer can lose a Windows scheduler slice after a
-        # batch is submitted.  `queue_wait` then includes that hosted-runner
-        # delay even though the writer's own measured SQL time remains within
-        # its product budget.  Keep the production limit at 50 ms/1k and use
-        # a bounded CI stopwatch tolerance, matching trace projection above.
-        budgets[STAGE_QUEUE_WAIT] = 0.200
+        # `queue_wait` used to need a 200 ms/1k tolerance here because replay
+        # called `submit()` with a full queue and paid the writer's whole
+        # drain, hosted-runner scheduler slice included, on the GUI thread
+        # (item_143).  Admission is now checked before the call, so the stage
+        # measures a put into a queue with known room and is held to the
+        # unchanged 50 ms/1k product budget on every operating system.
     else:
         from peaklive.analysis.profiling import STAGE_BUDGETS_PER_1K_FRAMES
 
