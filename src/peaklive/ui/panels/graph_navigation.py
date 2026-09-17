@@ -38,6 +38,17 @@ X_RANGE_PADDING_FRACTION = 0.05
 #: instead of one a fraction of a millisecond wide (item_137 AC2).
 X_RANGE_MIN_PADDING_SECONDS = 0.5
 
+#: How far ahead of the newest sample Follow live reserves blank canvas
+#: (item_144). The axis then stays still until data reaches that edge instead
+#: of moving on every refresh, which is what made following cost a range
+#: change - and its whole notification fan-out - per incoming slice.
+FOLLOW_LOOK_AHEAD_SECONDS = 30.0
+
+#: In trailing mode the reserved space is taken out of the operator's own
+#: window, so it is capped at a quarter of it: the selected span is preserved
+#: and at least three quarters of it still shows recent history.
+FOLLOW_LOOK_AHEAD_SPAN_FRACTION = 0.25
+
 
 def _clamp_x_range(
     low: float, high: float, extent: tuple[float, float]
@@ -70,6 +81,7 @@ class GraphNavigation:
         self._axis_mode = AXIS_LIVE if live else AXIS_CAPTURE
         self._live_extent_end = 0.0
         self._window_chosen = False
+        self._release_reserved_axis()
 
     def global_extent(self) -> tuple[float, float] | None:
         """The whole time span the operator should be able to navigate.
@@ -106,7 +118,7 @@ class GraphNavigation:
         self.fit()
 
     def _apply_follow(self, extent: tuple[float, float]) -> None:
-        """Keep the extent in view, or the tail if in trailing mode and zoomed in.
+        """Keep the newest data in view, moving the axis only at a reserved edge.
 
         `FOLLOW_MODE_FULL` (the default) always shows the whole extent, so
         re-enabling follow-live after a manual zoom jumps back to the whole
@@ -117,6 +129,14 @@ class GraphNavigation:
         current span alone was the old defect: a plot that has never been
         ranged reports the library's own default, so a fresh session showed a
         one-second tail of a capture it should have been showing whole.
+
+        On a live session both modes reserve blank canvas ahead of the newest
+        sample rather than tracking it continuously. Between boundaries the
+        target range is the one already displayed and nothing is set at all,
+        so incoming points keep being drawn into space the axis has already
+        made for them. The reserved edge is display only: it is computed from
+        session data time, it never reaches `global_extent`, and it therefore
+        cannot widen the sample or history bounds A/B and Fit are read from.
         """
         anchor = getattr(self, "anchor_plot", None)
         if anchor is None:
@@ -126,23 +146,57 @@ class GraphNavigation:
         span = current[1] - current[0]
         full = extent[1] - extent[0]
         mode = getattr(self, "follow_live_mode", FOLLOW_MODE_FULL)
+        newest = extent[1]
+        # Only a live session has a future to reserve. A capture's extent is a
+        # fixed thing to read, so reserving ahead of it would squeeze the whole
+        # recording into part of the width for no responsiveness gained.
+        reserve = self._axis_mode is AXIS_LIVE
+        padding = 0.0
+        if mode != FOLLOW_MODE_TRAILING or not self._window_chosen or span <= 0 or span >= full:
+            low = extent[0]
+            if reserve:
+                high = self._reserved_edge(newest, FOLLOW_LOOK_AHEAD_SECONDS)
+            else:
+                high, padding = newest, 0.02
+        else:
+            look_ahead = min(FOLLOW_LOOK_AHEAD_SECONDS, span * FOLLOW_LOOK_AHEAD_SPAN_FRACTION)
+            high = self._reserved_edge(newest, look_ahead) if reserve else newest
+            low = high - span
+        if not padding and (low, high) == (current[0], current[1]):
+            return
         self._applying_range = True
         try:
-            if (
-                mode != FOLLOW_MODE_TRAILING
-                or not self._window_chosen
-                or span <= 0
-                or span >= full
-            ):
-                view.setXRange(extent[0], extent[1], padding=0.02)
-                return
-            view.setXRange(extent[1] - span, extent[1], padding=0)
+            view.setXRange(low, high, padding=padding)
         finally:
             self._applying_range = False
+
+    def _reserved_edge(self, newest: float, look_ahead: float) -> float:
+        """The right edge to display, advanced only once data reaches it.
+
+        A large timestamp jump is absorbed by this one computation rather than
+        one catch-up step per missed interval, because the new edge is derived
+        from the newest sample itself and not from the previous edge.
+        """
+        reserved = getattr(self, "_reserved_axis_end", None)
+        if reserved is None or newest > reserved or newest + look_ahead < reserved:
+            reserved = newest + look_ahead
+            self._reserved_axis_end = reserved
+        return reserved
+
+    def _release_reserved_axis(self) -> None:
+        """Drop the reserved edge so the next follow update recomputes it.
+
+        Called wherever the axis stops meaning what it meant: a new session, a
+        mode change, and re-enabling Follow after manual navigation - which is
+        what makes re-enabling catch up at once instead of waiting out an edge
+        reserved for an earlier window.
+        """
+        self._reserved_axis_end = None
 
     def set_follow_live_mode(self, mode: str) -> None:
         """Adopt a Follow-live mode and, if following now, reapply it at once."""
         self.follow_live_mode = mode
+        self._release_reserved_axis()
         extent = self.global_extent()
         if extent is not None and self.follow_live:
             self._apply_follow(extent)
@@ -172,6 +226,12 @@ class GraphNavigation:
         if anchor is None or extent is None:
             return
         self._window_chosen = False
+        # Fit is a deliberate "show exactly what there is", so it reserves no
+        # future: the axis holds the real extent until data actually passes it,
+        # at which point following resumes with a fresh look-ahead. Releasing
+        # the edge instead would let the next refresh immediately re-expand the
+        # window the operator just asked to see, including after a Stop.
+        self._reserved_axis_end = extent[1]
         self._applying_range = True
         try:
             anchor.getViewBox().setXRange(extent[0], extent[1], padding=0.02)
@@ -197,6 +257,8 @@ class GraphNavigation:
         if self.follow_live == enabled:
             return
         self.follow_live = enabled
+        if enabled:
+            self._release_reserved_axis()
         self.follow_checkbox.blockSignals(True)
         self.follow_checkbox.setChecked(enabled)
         self.follow_checkbox.blockSignals(False)
@@ -204,6 +266,7 @@ class GraphNavigation:
     def _follow_toggled(self, enabled: bool) -> None:
         self.follow_live = enabled
         if enabled:
+            self._release_reserved_axis()
             self.refresh_data()
 
     def visible_window(self) -> tuple[float, float] | None:
@@ -221,6 +284,14 @@ class GraphNavigation:
         it programmatically. Only the former is a manual navigation choice
         that must disable follow-live; the latter would otherwise be
         immediately undone by the very update that caused it.
+
+        Only the anchor lane is connected to this (see `GraphStackPanel.sync`).
+        A linked lane also emits when it is merely mirroring the anchor -
+        including from its own resizeEvent, which pyqtgraph routes through
+        linkedViewChanged outside the `_applying_range` guard - and that read
+        as a manual navigation, silently clearing Follow live on any relayout
+        of a multi-lane stack. A real gesture on a linked lane still
+        propagates to the anchor, so nothing the operator does is lost.
         """
         if not self._applying_range:
             self.set_follow_live(False)

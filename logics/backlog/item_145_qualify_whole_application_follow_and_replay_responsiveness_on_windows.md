@@ -1,14 +1,14 @@
 ## item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows - Qualify whole-application follow and replay responsiveness on Windows
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 65%
 > Complexity: Medium
 > Theme: Performance and integrity qualification
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-17 13:22:02
+> Indicators reviewed: 2026-09-17 13:27:21
 
 # AI Context
 - Summary: Prove sustained live-follow latency, replay integrity and Windows performance against the reported workload.

@@ -146,9 +146,9 @@ class GraphStackPanel(GraphNavigation, QWidget):
             plot._peaklive_cursor_b = line_b  # type: ignore[attr-defined]
             if anchor is None:
                 anchor = plot
-            else:
+                plot.getViewBox().sigXRangeChanged.connect(self._x_range_changed)
+            else:  # linked lanes mirror the anchor; see _x_range_changed
                 plot.setXLink(anchor)
-            plot.getViewBox().sigXRangeChanged.connect(self._x_range_changed)
             lane, header = build_lane(
                 object_name=object_name,
                 colour=colour,
