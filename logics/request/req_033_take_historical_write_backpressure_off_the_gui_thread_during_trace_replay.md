@@ -1,11 +1,12 @@
 ## req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay - Take historical write backpressure off the GUI thread during trace replay
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Obsolete
 > Understanding: 85
 > Confidence: 80
 > Complexity: Medium
 > Theme: Replay responsiveness
+> Indicators reviewed: 2026-09-17 12:50:29
 
 # AI Context
 - Summary: Replay still blocks the GUI thread inside `HistoryWriter.submit` when the disk is slow; apply the same non-blocking backpressure the acquisition wind-down already uses.
@@ -69,3 +70,6 @@
 
 # Backlog
 - none
+
+# Links
+- Superseded by: `req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history`
