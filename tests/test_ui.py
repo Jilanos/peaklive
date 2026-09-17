@@ -38,9 +38,20 @@ def test_main_window_has_accessible_workspace_and_explicit_lifecycle(qtbot, tmp_
     qtbot.mouseClick(window.start_button, Qt.MouseButton.LeftButton)
     assert not window.start_button.isEnabled()
     assert window.stop_button.isEnabled()
+    # The table and the curve are projected on alternating presentation ticks
+    # (see `_flush_presentation`), so the graph is one tick behind the table by
+    # design. Wait for both rather than assuming they land together.
+    #
+    # `xData` is what ingestion handed the curve; `getData()` is what pyqtgraph
+    # would paint after clipping and auto-downsampling, which collapses to
+    # nothing when a handful of frames span microseconds - as they do here on a
+    # fast machine, whatever the axis range. The subject is that every frame
+    # reached the graph, so assert on the former.
     qtbot.waitUntil(lambda: window.trace_table.rowCount() == 32)
+    qtbot.waitUntil(lambda: window._plot_curve.xData is not None)
+    qtbot.waitUntil(lambda: len(window._plot_curve.xData) == 32)
     assert window.trace_table.rowCount() == 32
-    assert len(window._plot_curve.getData()[0]) == 32
+    assert len(window._plot_curve.xData) == 32
 
     qtbot.mouseClick(window.stop_button, Qt.MouseButton.LeftButton)
     qtbot.waitUntil(lambda: window.start_button.isEnabled())
