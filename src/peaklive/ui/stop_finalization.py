@@ -173,6 +173,10 @@ class WorkspaceStopFinalization:
         self._cancel_finalization()
         self._settle_presentation()
         self._invalidate_presentation_generation(generation)
+        # A stopped session has no future to reserve, so the axis settles on
+        # what it actually holds - but only if Follow is still on, because a
+        # viewport the operator chose by hand outranks this (item_144).
+        self.graph_panel.show_full_extent()
         self._end_work()
         if self._finalizing_recovered:
             self._lifecycle.advance(generation, AcquisitionPhase.STOPPED)
