@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Performance and integrity qualification
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-17 12:50:49
+> Indicators reviewed: 2026-09-17 13:22:02
 
 # AI Context
 - Summary: Prove sustained live-follow latency, replay integrity and Windows performance against the reported workload.
@@ -21,7 +21,7 @@
 
 # Scope
 - In:
-  - Create deterministic synthetic traffic/DBC fixtures with one, six and nine lanes, mixed events, slow-progressing and stuck persistence; prioritize six-lane full-extent live acquisition and first-click latency, retain an off/full/trailing comparator and no-lane control.
+  - Create deterministic synthetic traffic/DBC fixtures with one, six and nine lanes, mixed events, slow-progressing and stuck persistence; prioritize six-lane full-extent live acquisition on Windows 11 with recording active, measuring first-click latency before 15 seconds of acquisition as well as sustained operation, retain an off/full/trailing comparator and no-lane control.
   - Use a fake clock for exact boundary semantics and a real event-loop run of at least five minutes for performance; record input feedback, heartbeat max/p95, point age, CPU, queue peaks, worker counts and range-update rate.
   - Exercise menus, view switches, visible/hidden measurements, recording, manual navigation, enable/disable, Stop, repeated starts and replay completion; compare exact retained records and final bounds.
   - Run the reduced/removed queue_wait tolerance on hosted Windows and qualify the packaged executable with build and fixture metadata; record any missing hardware/user evidence as an open gate.

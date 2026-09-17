@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-17 12:49:57
+> Indicators reviewed: 2026-09-17 13:22:02
 
 # AI Context
 - Summary: Orchestrate replay admission, measured live-follow correction and sustained Windows qualification.
@@ -18,6 +18,7 @@
 
 # Context
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
+- Confirmed reproduction: Windows 11, build v0.1.2+b202609161508, six curves, full-extent Follow live and recording active. Exercise the first interaction before 15 seconds of acquisition, with the measurement table shown and hidden, then retain the sustained five-minute qualification.
 
 # Priority
 - Priority: High
