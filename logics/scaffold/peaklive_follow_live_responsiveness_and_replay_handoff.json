@@ -1,0 +1,170 @@
+{
+  "title": "Restore application responsiveness with Follow live and nonblocking replay history",
+  "references": [
+    "logics/request/req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay.md",
+    "logics/tasks/task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls.md",
+    "logics/backlog/item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live.md",
+    "logics/backlog/item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states.md",
+    "logics/runbook/run_001_capture_a_peaklive_freeze_with_local_diagnostics.md",
+    "src/peaklive/ui/session_controller.py",
+    "src/peaklive/ui/ingest_controller.py",
+    "src/peaklive/ui/stop_finalization.py",
+    "src/peaklive/ui/live_handoff.py",
+    "src/peaklive/ui/panels/graph_navigation.py",
+    "src/peaklive/ui/panels/graph_stack.py",
+    "src/peaklive/ui/panels/graph_history.py",
+    "src/peaklive/ui/panels/measurement.py",
+    "src/peaklive/services/history_writer.py",
+    "src/peaklive/services/history_worker.py",
+    "src/peaklive/services/replay_worker.py",
+    "src/peaklive/analysis/profiling.py",
+    "tests/test_trace_performance.py",
+    "tests/test_stop_responsiveness.py",
+    "tests/test_graph_navigation.py",
+    "tests/test_replay_integrity.py"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Whole-application live and replay responsiveness",
+    "needs": [
+      "Deliver the replay historical-write backpressure work documented but not implemented after task_031, retaining all five acceptance criteria of req_033.",
+      "Correct the operator-confirmed loss of responsiveness across the application once Follow live is enabled, including steady acquisition and ordinary controls rather than only Stop.",
+      "Measure and implement the proposed 30-second look-ahead axis policy if it effectively restores responsiveness while keeping incoming samples visible and all accepted data intact.",
+      "Keep the remaining operator questions, provisional defaults and evidence-dependent release gates explicit so implementation can start without inventing a confirmed root cause."
+    ],
+    "context": [
+      "Operator report on 2026-09-17: testing confirms the entire application becomes much less responsive once Follow live is enabled. The proposed alternative is to reserve 30 seconds ahead of the curve and repeat every 30 seconds if effective. The report establishes a symptom and correlation, not an isolated root cause or a measured fix.",
+      "Repository baseline: 108c88d records req_033 after completed task_031. Its deferred replay scope is incorporated here; retire req_033 through the workflow CLI with this request as its replacement after verifying coverage. Do not reopen or erase the delivered stop evidence.",
+      "item_139 compared off/full/trailing during a six-second synthetic stop experiment and repaired an unbounded wind-down drain. Its statement that Follow live was not a factor is limited to that fixture and stop path; it does not disprove this new steady-state or long-session operator report.",
+      "Confirmed code path: _drain_replay_batch pops a batch then _ingest_replay_records may call _ingest_frames several times for interleaved frame/event groups. Each group can submit history. A single queue-capacity check before an entire mixed batch is insufficient unless capacity for all submissions is guaranteed. Deferred consumption must resume at an exact ordered position without replaying projections or acknowledging early.",
+      "HistoryWriter currently bounds its queue to eight batches and submit can block the caller; replay has its own four-batch permit bound. Preserve both bounds and exact ownership. The current 5-second no-progress stall budget must become event-loop-friendly, reset on durable progress, and remain an explicit failure for a genuinely stuck writer.",
+      "Confirmed candidate graph path: live _render_frames flushes graphs; GraphStackPanel.refresh_data applies _apply_follow to the in-memory path, which calls setXRange and emits view_changed. The historical path schedules/cancels HistoryViewportWorker and has a 75 ms viewport timer. Profile signal fan-out, shared-axis relayout, curve preparation, measurement refresh and worker scheduling separately before attributing the slowdown.",
+      "req_033 evidence: queue_wait was 0.49 versus 0.48 ms/1k frames on the same Linux fixture after/before task_031; on hosted Windows it reached 322 ms/1k while history_write was 367 ms/1k within its 400 ms/1k budget. The product queue_wait budget is 50 ms/1k; the existing 200 ms/1k Windows tolerance is not a product target and must not be widened.",
+      "Operator-confirmed axis behavior: incoming points continue updating while automatic X-axis movement advances in 30-second steps with blank future space. This is neither future-value prediction nor a 30-second delay in acquisition, persistence or curve refresh. Adoption still depends on measured effectiveness.",
+      "Operator-confirmed reproduction: build v0.1.2+b202609161508, live CAN acquisition, full-extent Follow from the beginning, six displayed curves, slowdown perceptible at the first click on the screen. No Follow-disable comparison has been performed; do not claim immediate recovery. The report does not establish whether the click causes the slowdown or merely reveals it.",
+      "Operator clarification: the same slowdown occurs with the A/B/statistics table visible and hidden, so hiding it is not an accepted remedy. Remaining reproduction questions: recording active or inactive; OS and hardware; approximate CAN frame rate and elapsed acquisition duration before the first click; whether disabling Follow restores responsiveness. File loading and trailing mode are regression coverage, not operator-reported reproductions. These unknowns do not block a synthetic six-lane reproduction; record fixture defaults explicitly.",
+      "Operator-confirmed short-window behavior: preserve the trailing span and reduce the advance instead of widening it. Engineering default to validate: min(30 seconds, one quarter of the selected span), leaving at least three quarters for recent history.",
+      "Provisional acceptance targets reuse the previous 200 ms input-feedback and 250 ms maximum heartbeat-gap contract and add a 500 ms maximum incoming-point display age at supported load. Record fixture capacity explicitly. Missing operator hardware details do not block synthetic diagnosis, but operator-machine/packaged-Windows confirmation remains a qualification gate and cannot be replaced by a Linux pass.",
+      "No implementation or performance measurement is claimed by this corpus. Existing local deletions under logics/external are operator-owned; use generated/anonymized fixtures and never require or commit those removed files. Coordinate any overlap with item_123's existing viewport scheduling scope and record which acceptance work this task actually delivers."
+    ],
+    "acceptance_criteria": [
+      "AC1: Record an identical-workload before/after matrix for Follow off/full/trailing during steady acquisition, enable/disable transitions, replay and Stop; prioritize the reported six-lane full-extent live session and first-click latency, then include no lanes, one lane and nine dense lanes, visible/hidden measurements and recording on/off. Record build, platform, lane count, rate, session age, input latency, heartbeat, data freshness, CPU, queue depth, X-range updates and relevant stage timings. Separate observed causes from hypotheses.",
+      "AC2: Replay never waits for historical writer capacity on the GUI thread: a 50 ms heartbeat has no gap above 250 ms under deliberately slow-but-progressing persistence. Mixed frame/event batches retain order, each frame/sample/event is projected exactly once, permits remain exact and bounded, and completion awaits durable final settlement.",
+      "AC3: Replay cancellation, close, restart and stale generations remain bounded and safe; a writer with no durable progress fails through existing _fail_history containment within the documented stall budget plus one responsive timer turn. A slowly progressing writer is not failed merely because total load time exceeds that budget.",
+      "AC4: At the documented supported stress load, Follow live keeps menu opening, view switching, Follow toggle and Stop feedback within 200 ms, maximum 50 ms-heartbeat gap within 250 ms and incoming-point display age within 500 ms. Measure across at least ten real 30-second boundaries (five minutes), including boundary spikes; do not qualify from only average timings or a six-second stop test.",
+      "AC5: Compare the existing continuous-axis policy with a 30-second look-ahead prototype on the same fixture. Ship the stepwise policy if it meets AC4 and materially reduces measured follow-related work; target at least 50 percent fewer range/layout operations as supporting evidence, not a replacement for latency. If ineffective or damaging to graph semantics, implement an evidence-backed bounded alternative and record why; do not merely disable Follow or leave the reported slowdown unresolved.",
+      "AC6: With the stepwise policy, full mode starts at zero and keeps all acquired history visible with a future right edge; new points remain visible between moves. Trailing mode preserves the selected span with bounded look-ahead. Manual pan/zoom disables Follow, re-enable catches up immediately, Fit/Fit Y and A/B remain correct, and gaps, timestamp jumps, empty sessions, mode changes and restarts cannot create catch-up loops or move another session's viewport. Blank future space never changes actual sample/history bounds or produces fabricated values.",
+      "AC7: No accepted frames, samples, bus events or recording records are dropped, duplicated or reordered to improve responsiveness. Historical envelopes and rare events keep existing fidelity, queues/caches/workers stay explicitly bounded, and stopped/replayed sessions expose their real final extent with truthful durable-completion status. Preserve the prior less-than-3-seconds-or-visible-finalization-feedback stop contract.",
+      "AC8: Meaningful regressions fail against the baseline and pass with the repair; before/after replay evidence includes queue_wait and history_write. Product budgets remain unchanged, the 200 ms/1k Windows queue_wait tolerance is removed or reduced toward the 50 ms/1k product budget, and hosted Windows passes the revised audit. Run focused suites, Ruff and repository CI checks, and record packaged-Windows/operator qualification or leave the corresponding gate open with the specific missing evidence."
+    ]
+  },
+  "product": {
+    "title": "Responsive live graph following and lossless replay presentation",
+    "overview": "Keep the whole workstation interactive while following live curves or loading dense traces, combining the deferred replay handoff fix with a measured automatic-axis policy that keeps new data visible.",
+    "goals": [
+      "Maintain bounded operator interaction latency throughout acquisition, replay and finalization.",
+      "Use a 30-second look-ahead axis when proven effective, preserving continuous observation of incoming points.",
+      "Preserve every accepted record and honest historical, measurement and completion semantics.",
+      "Qualify the real user symptom with reproducible timings and explicit platform limits."
+    ],
+    "non_goals": [
+      "Reimplementing the already delivered workspace cosmetics or acquisition Stop fix.",
+      "Predicting future signal values, delaying all display updates by 30 seconds, or changing recorded timestamps.",
+      "Raising performance budgets, dropping retained data, removing Follow live or rewriting unrelated adapters, decoding or storage formats.",
+      "Introducing a new public configuration surface unless diagnosis establishes a product need."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Complete nonblocking ordered replay admission to historical persistence",
+      "priority": "High - the last development explicitly deferred a GUI-blocking replay path and Windows audit gap.",
+      "complexity": "High",
+      "theme": "Replay backpressure and integrity",
+      "request_acs": ["AC2", "AC3", "AC7", "AC8"],
+      "problem": [
+        "The replay consumer removes a batch before calling a potentially blocking writer submit, so a valid slow disk still stalls the GUI.",
+        "Mixed event/frame groups can produce multiple submissions per replay batch; naive whole-batch retries duplicate already applied projections."
+      ],
+      "scope_in": [
+        "Implement nonblocking admission and resumable ordered consumption with explicit ownership of deferred records/samples; choose the smallest safe approach from measured code paths.",
+        "Document hard bounds for deferred work, the writer queue and replay permits, including at most one extra bounded in-flight projection if needed; never acknowledge before ownership has safely transferred.",
+        "Track actual writer progress for timeout detection without GUI waits, busy retry loops or unbounded timer events; preserve error cause, containment and generation fencing.",
+        "Keep source-consumed, projected and durably-persisted milestones distinct and final completion truthful.",
+        "Carry forward req_033 AC1-AC5 without weakening them: heartbeat, integrity, stuck-writer containment, Windows queue_wait audit and before/after evidence."
+      ],
+      "scope_out": ["Changing SQL summary algorithms, on-disk formats or disk admission rules.", "Assuming replay repair alone fixes live-follow rendering."],
+      "acceptance_criteria": [
+        "AC1: Slow persistence saturates the bounded queue without any GUI-thread capacity wait; heartbeat maximum is 250 ms and queue_wait meets the unchanged 50 ms/1k product budget.",
+        "AC2: Interleaved frame/event records, full queues and repeated retries preserve exact order/counts, sample bounds and permit ownership, with no premature durable completion.",
+        "AC3: Never-draining writer, writer failure between admission and submission, cancellation, stale completion and restart terminate safely; a progressing load longer than five seconds remains valid.",
+        "AC4: Existing replay/integrity/stop tests plus a regression exposing the original block pass; same-fixture before/after queue_wait/history_write and revised Windows audit are recorded."
+      ]
+    },
+    {
+      "title": "Bound live-follow rendering and qualify a thirty-second axis look-ahead",
+      "priority": "High - the operator reports that enabling Follow live slows the entire application.",
+      "complexity": "High",
+      "theme": "Live graph responsiveness",
+      "request_acs": ["AC1", "AC4", "AC5", "AC6", "AC7"],
+      "problem": [
+        "The previous stop-focused experiment does not cover sustained live-follow responsiveness; axis changes can fan out into layout, viewport and measurement work.",
+        "Moving only the axis every 30 seconds may reduce work, but delaying points, starving refresh, growing worker queues or hiding the latest data would not satisfy the operator need."
+      ],
+      "scope_in": [
+        "Profile the actual acquisition and replay graph routes and their range-change callbacks; distinguish CPU-bound painting, historical reads, measurements and queue stalls.",
+        "Separate ingestion, incoming-point presentation and automatic axis movement; coalesce redundant presentation and range notifications at bounded cadence. Reuse existing viewport work where appropriate and avoid an unrelated scheduler rewrite.",
+        "Prototype full-mode [0, newest timestamp + 30 seconds] on enable and keep it fixed until data reaches the reserved edge, then advance directly to newest + 30 seconds. Drive boundaries from session data time, using monotonic time only for scheduling and latency. Idle acquisition does not fabricate data or advance the actual extent.",
+        "For trailing mode use the existing selected span W, with proposed look-ahead min(30 seconds, W/4), and right edge newest + look-ahead; keep W fixed. Advance at the right-edge boundary without clipping the newest sample. Operator answers can revise this provisional policy before implementation.",
+        "Handle large timestamp jumps in one update, never one catch-up iteration per missed interval. Reset reserved range on mode/session changes; re-enable catches up once and manual navigation cancels pending automatic moves.",
+        "Ensure actual history/sample bounds remain independent of display padding; A/B beyond the newest real sample must retain truthful no-data behavior, not extrapolation.",
+        "On Stop/final replay settle to the real final extent only if Follow remains enabled, retain the follow preference, preserve a manually chosen viewport, and stop periodic follow work.",
+        "Ship the prototype when measured effective; otherwise repair the measured bottleneck with a bounded alternative and record the decision, latency and range-work comparison."
+      ],
+      "scope_out": ["Freezing curves for 30 seconds, globally disabling Follow, altering capture timestamps or discarding acquisition data.", "Silently widening a manually selected short trailing window."],
+      "acceptance_criteria": [
+        "AC1: Reproducible off/full/trailing evidence isolates the dominant work and records whether turning Follow off removes the slowdown.",
+        "AC2: The delivered policy meets 200 ms control feedback, 250 ms maximum heartbeat gap and 500 ms point freshness across ten real boundaries, with bounded queues and background work.",
+        "AC3: An effective look-ahead implementation updates points between axis moves and covers short/long trailing spans, empty/first sample, idle gaps, jumps, toggles, manual zoom, Fit/Fit Y and finalization without false sample bounds.",
+        "AC4: Before/after continuous-versus-stepwise evidence justifies the selected implementation; exact retained data, A/B values and historical event fidelity remain correct."
+      ]
+    },
+    {
+      "title": "Qualify whole-application follow and replay responsiveness on Windows",
+      "priority": "High - prior short stop tests did not establish sustained responsiveness on the operator platform.",
+      "complexity": "Medium",
+      "theme": "Performance and integrity qualification",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8"],
+      "problem": ["A local headless pass cannot establish interactive behavior on the packaged Windows workstation, and average timings can hide 30-second boundary stalls."],
+      "scope_in": [
+        "Create deterministic synthetic traffic/DBC fixtures with one, six and nine lanes, mixed events, slow-progressing and stuck persistence; prioritize six-lane full-extent live acquisition and first-click latency, retain an off/full/trailing comparator and no-lane control.",
+        "Use a fake clock for exact boundary semantics and a real event-loop run of at least five minutes for performance; record input feedback, heartbeat max/p95, point age, CPU, queue peaks, worker counts and range-update rate.",
+        "Exercise menus, view switches, visible/hidden measurements, recording, manual navigation, enable/disable, Stop, repeated starts and replay completion; compare exact retained records and final bounds.",
+        "Run the reduced/removed queue_wait tolerance on hosted Windows and qualify the packaged executable with build and fixture metadata; record any missing hardware/user evidence as an open gate.",
+        "Update affected Logics proof and the handoff pack, reconcile any delivered overlapping item_123 work via the CLI, and close only when every applicable acceptance gate is proven."
+      ],
+      "scope_out": ["Claiming Windows/operator success from synthetic Linux tests.", "Committing raw external captures or changing unrelated historical workflow statuses."],
+      "acceptance_criteria": [
+        "AC1: Baseline and delivered measurements use identical documented fixtures and include boundary maxima and build/platform identifiers.",
+        "AC2: Functional regressions expose original defects, supported-load latency/freshness budgets hold, and exact data/recording integrity passes across lifecycle transitions.",
+        "AC3: Ruff, relevant tests, full CI checks and the revised hosted-Windows audit pass; packaged/operator evidence is present or qualification remains explicitly incomplete.",
+        "AC4: Each request AC has concrete proof at closeout; root-cause limits, selected axis policy and outstanding operator questions are documented without invented results."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver responsive Follow live and complete the deferred replay handoff",
+    "plan": [
+      "Wave 1 (High): record operator answers or retain the explicit provisional defaults; capture baseline reproduction and off/full/trailing timings before modifying either path. Read the prior stop evidence and freeze runbook; inventory overlapping item_123 obligations.",
+      "Wave 2 (High): implement and verify nonblocking replay history admission with exact mixed-record resume/permit accounting, bounded retries, durable completion and failure/cancellation containment; preserve all req_033 criteria.",
+      "Wave 3 (High): profile live Follow fan-out, compare continuous movement with the 30-second look-ahead prototype, implement the effective bounded policy, and verify fresh points, short trailing windows and navigation/session semantics.",
+      "Wave 4 (High, depends on Waves 2-3): run real five-minute responsiveness and exact integrity qualification, hosted-Windows queue_wait audit and packaged/operator checks. Keep unavailable evidence visibly pending instead of closing on a Linux-only pass.",
+      "At each meaningful implementation wave, update affected evidence and commit code/tests/docs together under ADR 009. Start the task through flow start only when implementation actually begins; this corpus creates no implementation proof.",
+      "Before any new UI copy, run i18n status and honor the existing contract. Run repository checks and Logics lint/audit/validate, refresh the context pack, and close via flow closeout only with complete acceptance proof and a settled product brief."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_follow_live_responsiveness_and_replay_handoff.json",
+    "mode": "full",
+    "profile": "deep"
+  }
+}

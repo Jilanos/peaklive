@@ -1,0 +1,648 @@
+{
+  "budgets": {
+    "max_docs": 48,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows prod_031_responsive_live_graph_following_and_lossless_replay_presentation --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+          "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+          "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/product/prod_031_responsive_live_graph_following_and_lossless_replay_presentation.md",
+      "ref": "prod_031_responsive_live_graph_following_and_lossless_replay_presentation",
+      "sections": {
+        "Goals": [
+          "- Maintain bounded operator interaction latency throughout acquisition, replay and finalization.",
+          "- Use a 30-second look-ahead axis when proven effective, preserving continuous observation of incoming points.",
+          "- Preserve every accepted record and honest historical, measurement and completion semantics.",
+          "- Qualify the real user symptom with reproducible timings and explicit platform limits."
+        ],
+        "Key product decisions": [
+          "- Prioritize the reported six-curve full-extent live session on build v0.1.2+b202609161508; the first click reveals poor responsiveness with or without the measurement table.",
+          "- The operator confirms continuously updated points with an axis that advances in 30-second steps when proven effective. Blank future space represents no measured values.",
+          "- Preserve a short trailing window's width and reduce its advance. The proposed engineering cap is min(30 seconds, one quarter of its span).",
+          "- Preserve the entire deferred replay scope from req_033. Data ingestion, display cadence and automatic axis movement have separate responsibilities."
+        ],
+        "Overview": [
+          "Keep the whole workstation interactive while following live curves or loading dense traces, combining the deferred replay handoff fix with a measured automatic-axis policy that keeps new data visible."
+        ],
+        "References": [
+          "- Product back-reference: `req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history`",
+          "- Task back-reference: `task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "Responsive live graph following and lossless replay presentation"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_121_make_historical_summary_coverage_complete_and_independent_of_ingest_batches",
+          "item_122_render_dense_envelopes_and_rare_event_anchors_without_a_second_lossy_reduction",
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_124_qualify_long_view_rare_event_fidelity_on_the_packaged_windows_application",
+          "item_125_make_the_application_build_identifier_selectable_and_copyable"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/product/prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views.md",
+      "ref": "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views",
+      "sections": {
+        "Goals": [
+          "- Prevent zoom-out from turning populated historical lanes into blank graphs.",
+          "- Make isolated diagnostic events discoverable rather than silently losing them to display reduction.",
+          "- Keep the native desktop stack, complete source evidence and bounded responsive interaction.",
+          "- Tie operator observations to a copyable, unambiguous build identifier."
+        ],
+        "Key product decisions": [
+          "```mermaid",
+          "flowchart LR",
+          "    Source[Original samples and timecodes] --> Summary[Complete committed summaries]",
+          "    Source --> Events[Transitions and event anchors]",
+          "    Source --> Exact[Exact zoom and measurements]",
+          "    Summary --> View[Single bounded display reduction]"
+        ],
+        "Overview": [
+          "A corrective extension of the existing historical-navigation brief: dense curves retain truthful coverage and very short diagnostic events remain findable with exact timecodes, while the build identity can be copied for qualification."
+        ],
+        "References": [
+          "- Product back-reference: `req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events`",
+          "- Task back-reference: `task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "Discoverable rare diagnostic events in dense historical views"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live"
+        ],
+        "prod": [
+          "prod_030_peaklive_responsive_stop_and_readable_measurement_controls"
+        ],
+        "req": [
+          "req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace"
+        ],
+        "task": [
+          "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+        ]
+      },
+      "path": "logics/product/prod_030_peaklive_responsive_stop_and_readable_measurement_controls.md",
+      "ref": "prod_030_peaklive_responsive_stop_and_readable_measurement_controls",
+      "sections": {
+        "Goals": [
+          "- Keep the GUI responsive throughout stop: finish in less than 3 seconds or present explicit saving/finalization progress by 3 seconds, with initial feedback within 200 ms.",
+          "- Show clean signal titles while preserving exact measurement identity.",
+          "- Reclaim the redundant setup row and group coherent header controls around acquisition, navigation and measurement."
+        ],
+        "Key product decisions": [
+          "- Treat Follow live as a reproduction variable until diagnostic evidence identifies the stop bottleneck.",
+          "- Prioritize the stop repair before the three Medium-priority presentation slices.",
+          "- Keep acquisition, navigation and cursor actions in distinct groups on one header line; preserve remaining unique profile commands in the top menus.",
+          "- Use reusable vector/Qt icons with a shared sizing contract and distinct Play and Follow live meanings.",
+          "- Longer finalization must expose an actual phase and honest progress/activity by 3 seconds; a popup must not block event processing or disguise a hung worker."
+        ],
+        "Overview": [
+          "Make stopping a live acquisition trustworthy and keep the analysis workspace compact, legible and consistent after menu consolidation."
+        ],
+        "References": [
+          "- Product back-reference: `item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live`",
+          "- Task back-reference: `task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls`"
+        ]
+      },
+      "status": "Settled",
+      "title": "PeakLive responsive stop and readable measurement controls"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "restore, application, responsiveness, follow, live, nonblocking, replay, history",
+        "skip when": "Changing unrelated workspace cosmetics, adapters or recording formats.",
+        "summary": "Consolidate deferred replay admission and the reported six-curve full-extent live-follow slowdown.",
+        "use when": "Delivering or qualifying the consolidated replay and live-follow responsiveness correction."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+          "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live",
+          "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+          "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+          "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay",
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "run": [
+          "run_001_capture_a_peaklive_freeze_with_local_diagnostics"
+        ],
+        "task": [
+          "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+        ]
+      },
+      "path": "logics/request/req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history.md",
+      "ref": "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Record an identical-workload before/after matrix for Follow off/full/trailing during steady acquisition, enable/disable transitions, replay and Stop; prioritize the reported six-lane full-extent live session and first-click latency, then include no lanes, one lane and nine dense lanes, visible/hidden measurements and recording on/off. Record build, platform, lane count, rate, session age, input latency, heartbeat, data freshness, CPU, queue depth, X-range updates and relevant stage timings. Separate observed causes from hypotheses.",
+          "- AC2: Replay never waits for historical writer capacity on the GUI thread: a 50 ms heartbeat has no gap above 250 ms under deliberately slow-but-progressing persistence. Mixed frame/event batches retain order, each frame/sample/event is projected exactly once, permits remain exact and bounded, and completion awaits durable final settlement.",
+          "- AC3: Replay cancellation, close, restart and stale generations remain bounded and safe; a writer with no durable progress fails through existing _fail_history containment within the documented stall budget plus one responsive timer turn. A slowly progressing writer is not failed merely because total load time exceeds that budget.",
+          "- AC4: At the documented supported stress load, Follow live keeps menu opening, view switching, Follow toggle and Stop feedback within 200 ms, maximum 50 ms-heartbeat gap within 250 ms and incoming-point display age within 500 ms. Measure across at least ten real 30-second boundaries (five minutes), including boundary spikes; do not qualify from only average timings or a six-second stop test.",
+          "- AC5: Compare the existing continuous-axis policy with a 30-second look-ahead prototype on the same fixture. Ship the stepwise policy if it meets AC4 and materially reduces measured follow-related work; target at least 50 percent fewer range/layout operations as supporting evidence, not a replacement for latency. If ineffective or damaging to graph semantics, implement an evidence-backed bounded alternative and record why; do not merely disable Follow or leave the reported slowdown unresolved.",
+          "- AC6: With the stepwise policy, full mode starts at zero and keeps all acquired history visible with a future right edge; new points remain visible between moves. Trailing mode preserves the selected span with bounded look-ahead. Manual pan/zoom disables Follow, re-enable catches up immediately, Fit/Fit Y and A/B remain correct, and gaps, timestamp jumps, empty sessions, mode changes and restarts cannot create catch-up loops or move another session's viewport. Blank future space never changes actual sample/history bounds or produces fabricated values."
+        ],
+        "Needs": [
+          "- Deliver the replay historical-write backpressure work documented but not implemented after task_031, retaining all five acceptance criteria of req_033.",
+          "- Correct the operator-confirmed loss of responsiveness across the application once Follow live is enabled, including steady acquisition and ordinary controls rather than only Stop.",
+          "- Measure and implement the proposed 30-second look-ahead axis policy if it effectively restores responsiveness while keeping incoming samples visible and all accepted data intact.",
+          "- Keep the remaining operator questions, provisional defaults and evidence-dependent release gates explicit so implementation can start without inventing a confirmed root cause."
+        ]
+      },
+      "status": "Ready",
+      "title": "Restore application responsiveness with Follow live and nonblocking replay history"
+    },
+    {
+      "ai_context": {
+        "keywords": "replay, backpressure, history writer, gui thread, queue wait, responsiveness",
+        "skip when": "Changing acquisition stop behaviour (already delivered by task_031), decoding, or recording formats.",
+        "summary": "Replay still blocks the GUI thread inside `HistoryWriter.submit` when the disk is slow; apply the same non-blocking backpressure the acquisition wind-down already uses.",
+        "use when": "Working on trace replay responsiveness, historical persistence backpressure, or the `queue_wait` profiling budget."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live"
+        ],
+        "req": [
+          "req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay",
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+        ]
+      },
+      "path": "logics/request/req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay.md",
+      "ref": "req_033_take_historical_write_backpressure_off_the_gui_thread_during_trace_replay",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Ingesting a replay batch never blocks the GUI thread on historical-write backpressure. Under a fixture whose per-batch write cost is deliberately inflated, a 50 ms GUI heartbeat has no gap above 250 ms for the whole load, and `queue_wait` stays within its product budget rather than a CI tolerance.",
+          "- AC2: No accepted frame, sample or bus event is dropped, reordered or double-counted by the deferral; a completed replay still reports the same frame count, trace window, series extent and historical bounds as before.",
+          "- AC3: A writer that genuinely never drains is still surfaced as an explicit historical-persistence failure within a bounded budget, with the existing containment (`_fail_history`) and the existing stop/abandon of the replay worker unchanged.",
+          "- AC4: The Windows CI tolerance for `queue_wait` in the trace-performance audit is removed or reduced rather than widened, and the audit passes on a hosted runner without it.",
+          "- AC5: Before/after evidence records the GUI heartbeat, `queue_wait` and `history_write` for the same synthetic capture, and states any remaining reproduction limit."
+        ],
+        "Needs": [
+          "- Stop the GUI thread from waiting inside `HistoryWriter.submit` while a trace replay ingests, the way `task_031` already stopped it for the acquisition wind-down. Loading a capture onto a slow disk must not cost the operator a frozen window."
+        ]
+      },
+      "status": "Obsolete",
+      "title": "Take historical write backpressure off the GUI thread during trace replay"
+    },
+    {
+      "ai_context": {
+        "keywords": "bound, viewport, scheduling, expose, truthful, loading, measurement, states",
+        "skip when": "Changing acquisition transport or recovering unrecorded live frames.",
+        "summary": "Bound workers and caches while preserving current results and analytical truthfulness.",
+        "use when": "Implementing cancellable latest-viewport requests, revision isolation and nonmodal states."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states"
+        ],
+        "prod": [
+          "prod_025_discoverable_rare_diagnostic_events_in_dense_historical_views"
+        ],
+        "req": [
+          "req_026_restore_dense_historical_curves_and_preserve_rare_diagnostic_signal_events"
+        ],
+        "task": [
+          "task_026_restore_dense_historical_overview_coverage_and_rare_event_discoverability"
+        ]
+      },
+      "path": "logics/backlog/item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states.md",
+      "ref": "item_123_bound_viewport_scheduling_and_expose_truthful_loading_and_measurement_states",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Rapid reverse zoom and cache hits cannot install an empty or stale result over valid current data.",
+          "- AC5: Queue, cancellation, revision and memory invariants hold over 1000 gestures; measured reference-machine latency/heartbeat targets hold with three and eight lanes.",
+          "- AC6: Pending/error state clears on completion/cancel, historical analytical overflow is explicit, and pure navigation does not issue hidden/unchanged measurement queries. Compare preselected and late-selected versions of the same signal against a full-file raw oracle beyond 50000 aggregate frames, including rare events early in the file. Verify identical timecodes/values, rendered full coverage and event discoverability; assert zoom/cursors/other lanes and session counters stay unchanged. Exercise cancellation/retry, duplicate selection, source missing/changed, DBC change, reload, shutdown and stale empty-cache completion. Qualify the reported after-load case in the Windows artifact.",
+          "- AC8: Regressions exercise real in-flight workers, source resets and failure delivery rather than only finished-signal flags."
+        ],
+        "Problem": [
+          "- A new QThread can start for every refresh, while cancellation is checked only between signals. Cache-hit callbacks rebuild keys from current UI state and can leave incompatible requests active.",
+          "- Bounds and historical measurements still perform SQL on the UI thread; the worker failed signal is not presented to the operator."
+        ]
+      },
+      "status": "In progress",
+      "title": "Bound viewport scheduling and expose truthful loading and measurement states"
+    },
+    {
+      "ai_context": {
+        "keywords": "diagnose, repair, acquisition, stalls, follow, live",
+        "skip when": "Changing unrelated decoding, recording formats, or data retention policies.",
+        "summary": "Diagnose and repair acquisition stop stalls with Follow live.",
+        "use when": "Implementing or validating the responsive-stop and measurement-workspace follow-up to task_029 and task_030."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live"
+        ],
+        "prod": [
+          "prod_030_peaklive_responsive_stop_and_readable_measurement_controls"
+        ],
+        "req": [
+          "req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace"
+        ],
+        "task": [
+          "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+        ]
+      },
+      "path": "logics/backlog/item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live.md",
+      "ref": "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A documented fixture compares Follow off/full/trailing and records diagnostic stage timings and stack evidence.",
+          "- AC2: Under the recorded stress fixture, feedback is at most 200 ms and maximum GUI heartbeat gap is at most 250 ms during stop. Completion takes less than 3 seconds or an explicit saving/finalization popup or progress bar appears by 3 seconds and stays responsive until completion or a surfaced timeout/error. Verify fast, delayed-over-30-second and stuck-worker paths; never report success before durable finalization.",
+          "- AC3: Final data and recording checks match accepted input; a timeout keeps unsafe restart disabled and stale callbacks cannot change a newer generation.",
+          "- AC4: A meaningful regression fails without the repair and passes with it; final graph access, A/B values and subsequent start/stop remain usable."
+        ],
+        "Problem": [
+          "- The operator reports a freeze when stopping acquisition, apparently more often with Follow live; no root cause is confirmed.",
+          "- An asynchronous stop request alone does not prove the GUI remains responsive during completion and historical rendering.",
+          "- Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive."
+        ]
+      },
+      "status": "Done",
+      "title": "Diagnose and repair acquisition stop stalls with Follow live"
+    },
+    {
+      "ai_context": {
+        "keywords": "complete, nonblocking, ordered, replay, admission, historical, persistence",
+        "skip when": "Changing unrelated workspace cosmetics, adapters or recording formats.",
+        "summary": "Complete req_033 with nonblocking, ordered and bounded replay history admission.",
+        "use when": "Delivering or qualifying the consolidated replay and live-follow responsiveness correction."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/backlog/item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence.md",
+      "ref": "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Slow persistence saturates the bounded queue without any GUI-thread capacity wait; heartbeat maximum is 250 ms and queue_wait meets the unchanged 50 ms/1k product budget.",
+          "- AC2: Interleaved frame/event records, full queues and repeated retries preserve exact order/counts, sample bounds and permit ownership, with no premature durable completion.",
+          "- AC3: Never-draining writer, writer failure between admission and submission, cancellation, stale completion and restart terminate safely; a progressing load longer than five seconds remains valid.",
+          "- AC4: Existing replay/integrity/stop tests plus a regression exposing the original block pass; same-fixture before/after queue_wait/history_write and revised Windows audit are recorded."
+        ],
+        "Problem": [
+          "- The replay consumer removes a batch before calling a potentially blocking writer submit, so a valid slow disk still stalls the GUI.",
+          "- Mixed event/frame groups can produce multiple submissions per replay batch; naive whole-batch retries duplicate already applied projections."
+        ]
+      },
+      "status": "Ready",
+      "title": "Complete nonblocking ordered replay admission to historical persistence"
+    },
+    {
+      "ai_context": {
+        "keywords": "bound, live, follow, rendering, qualify, thirty, second, axis, look, ahead",
+        "skip when": "Changing unrelated workspace cosmetics, adapters or recording formats.",
+        "summary": "Restore live-follow responsiveness and evaluate a 30-second stepped axis with continuously updated points.",
+        "use when": "Delivering or qualifying the consolidated replay and live-follow responsiveness correction."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/backlog/item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead.md",
+      "ref": "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Reproducible off/full/trailing evidence isolates the dominant work and records whether turning Follow off removes the slowdown.",
+          "- AC2: The delivered policy meets 200 ms control feedback, 250 ms maximum heartbeat gap and 500 ms point freshness across ten real boundaries, with bounded queues and background work.",
+          "- AC3: An effective look-ahead implementation updates points between axis moves and covers short/long trailing spans, empty/first sample, idle gaps, jumps, toggles, manual zoom, Fit/Fit Y and finalization without false sample bounds.",
+          "- AC4: Before/after continuous-versus-stepwise evidence justifies the selected implementation; exact retained data, A/B values and historical event fidelity remain correct."
+        ],
+        "Problem": [
+          "- The previous stop-focused experiment does not cover sustained live-follow responsiveness; axis changes can fan out into layout, viewport and measurement work.",
+          "- Moving only the axis every 30 seconds may reduce work, but delaying points, starving refresh, growing worker queues or hiding the latest data would not satisfy the operator need."
+        ]
+      },
+      "status": "Ready",
+      "title": "Bound live-follow rendering and qualify a thirty-second axis look-ahead"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, whole, application, follow, replay, responsiveness, windows",
+        "skip when": "Changing unrelated workspace cosmetics, adapters or recording formats.",
+        "summary": "Prove sustained live-follow latency, replay integrity and Windows performance against the reported workload.",
+        "use when": "Delivering or qualifying the consolidated replay and live-follow responsiveness correction."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/backlog/item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows.md",
+      "ref": "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Baseline and delivered measurements use identical documented fixtures and include boundary maxima and build/platform identifiers.",
+          "- AC2: Functional regressions expose original defects, supported-load latency/freshness budgets hold, and exact data/recording integrity passes across lifecycle transitions.",
+          "- AC3: Ruff, relevant tests, full CI checks and the revised hosted-Windows audit pass; packaged/operator evidence is present or qualification remains explicitly incomplete.",
+          "- AC4: Each request AC has concrete proof at closeout; root-cause limits, selected axis policy and outstanding operator questions are documented without invented results."
+        ],
+        "Problem": [
+          "- A local headless pass cannot establish interactive behavior on the packaged Windows workstation, and average timings can hide 30-second boundary stalls."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify whole-application follow and replay responsiveness on Windows"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, responsive, polished, measurement, workspace, controls",
+        "skip when": "Changing unrelated decoding, recording formats, or data retention policies.",
+        "summary": "Deliver responsive stop and polished measurement workspace controls.",
+        "use when": "Implementing or validating the responsive-stop and measurement-workspace follow-up to task_029 and task_030."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_139_diagnose_and_repair_acquisition_stop_stalls_with_follow_live",
+          "item_140_use_clean_signal_display_titles_in_the_a_b_measurement_table",
+          "item_141_remove_the_redundant_profile_row_and_relocate_bus_state_to_the_workspace_header",
+          "item_142_unify_graph_header_action_order_and_icon_proportions"
+        ],
+        "prod": [
+          "prod_030_peaklive_responsive_stop_and_readable_measurement_controls"
+        ],
+        "req": [
+          "req_032_restore_responsive_acquisition_stop_and_polish_the_measurement_workspace"
+        ],
+        "task": [
+          "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+        ]
+      },
+      "path": "logics/tasks/task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls.md",
+      "ref": "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked.",
+          "- Operator clarification (2026-09-16): the observed stop can leave the application unresponsive for more than 30 seconds. Feedback within 200 ms is accepted. The operation must either finish in less than 3 seconds or show an explicit saving/finalization popup or progress bar by the 3-second mark, while the GUI remains responsive.",
+          "- Evidence handoff: consult the external capture inventory in the linked request before selecting the Wave 1 reproduction fixture."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)",
+          "- ruff check . and QT_QPA_PLATFORM=offscreen pytest passed on 2026-09-16: All checks passed; 733 passed",
+          "- Finish workflow executed on 2026-09-16.",
+          "- Linked backlog/request close verification passed."
+        ]
+      },
+      "status": "Done",
+      "title": "Deliver responsive stop and polished measurement workspace controls"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, responsive, follow, live, complete, deferred, replay, handoff",
+        "skip when": "Changing unrelated workspace cosmetics, adapters or recording formats.",
+        "summary": "Orchestrate replay admission, measured live-follow correction and sustained Windows qualification.",
+        "use when": "Delivering or qualifying the consolidated replay and live-follow responsiveness correction."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+          "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+          "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/tasks/task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff.md",
+      "ref": "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver responsive Follow live and complete the deferred replay handoff"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+          "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+          "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows"
+        ],
+        "prod": [
+          "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+        ],
+        "req": [
+          "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history"
+        ],
+        "task": [
+          "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+        ]
+      },
+      "path": "logics/product/prod_031_responsive_live_graph_following_and_lossless_replay_presentation.md",
+      "ref": "prod_031_responsive_live_graph_following_and_lossless_replay_presentation",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "Responsive live graph following and lossless replay presentation"
+    }
+  ],
+  "estimates": {
+    "char_count": 30864,
+    "companion_doc_count": 3,
+    "doc_count": 10
+  },
+  "generated_at": "2026-09-17T10:50:50Z",
+  "handoff": {
+    "companion_doc_count": 3,
+    "enabled": true,
+    "source_refs": [
+      "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history",
+      "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff",
+      "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+      "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+      "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows",
+      "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+    ],
+    "validation_summary_count": 2
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 334
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history,task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff,item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence,item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead,item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows,prod_031_responsive_live_graph_following_and_lossless_replay_presentation",
+  "refs": [
+    "req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history",
+    "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff",
+    "item_143_complete_nonblocking_ordered_replay_admission_to_historical_persistence",
+    "item_144_bound_live_follow_rendering_and_qualify_a_thirty_second_axis_look_ahead",
+    "item_145_qualify_whole_application_follow_and_replay_responsiveness_on_windows",
+    "prod_031_responsive_live_graph_following_and_lossless_replay_presentation"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)",
+        "- ruff check . and QT_QPA_PLATFORM=offscreen pytest passed on 2026-09-16: All checks passed; 733 passed",
+        "- Finish workflow executed on 2026-09-16.",
+        "- Linked backlog/request close verification passed."
+      ],
+      "path": "logics/tasks/task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls.md",
+      "ref": "task_031_deliver_responsive_stop_and_polished_measurement_workspace_controls"
+    },
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff.md",
+      "ref": "task_032_deliver_responsive_follow_live_and_complete_the_deferred_replay_handoff"
+    }
+  ]
+}
