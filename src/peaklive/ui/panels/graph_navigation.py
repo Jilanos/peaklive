@@ -154,10 +154,16 @@ class GraphNavigation:
         padding = 0.0
         if mode != FOLLOW_MODE_TRAILING or not self._window_chosen or span <= 0 or span >= full:
             low = extent[0]
-            if reserve:
-                high = self._reserved_edge(newest, FOLLOW_LOOK_AHEAD_SECONDS)
-            else:
-                high, padding = newest, 0.02
+            high = self._reserved_edge(newest, FOLLOW_LOOK_AHEAD_SECONDS) if reserve else newest
+            if high <= newest:
+                # Nothing reserved ahead - a capture, or a live session Fit has
+                # just settled on its real extent. Leave a window that already
+                # shows all of it alone, so Fit's own edge margin survives the
+                # next refresh instead of being trimmed flush to the last
+                # sample; otherwise adopt that same margin.
+                if current[0] <= extent[0] and current[1] >= newest:
+                    return
+                padding = 0.02
         else:
             look_ahead = min(FOLLOW_LOOK_AHEAD_SECONDS, span * FOLLOW_LOOK_AHEAD_SPAN_FRACTION)
             high = self._reserved_edge(newest, look_ahead) if reserve else newest

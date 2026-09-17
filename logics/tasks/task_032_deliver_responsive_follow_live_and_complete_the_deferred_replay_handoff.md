@@ -2,9 +2,9 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: In progress
-> Understanding: 90%
-> Confidence: 85%
-> Progress: 65%
+> Understanding: 95%
+> Confidence: 90%
+> Progress: 85%
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -28,7 +28,7 @@
 - [x] 1. Wave 1 (High): record operator answers or retain the explicit provisional defaults; capture baseline reproduction and off/full/trailing timings before modifying either path. Read the prior stop evidence and freeze runbook; inventory overlapping item_123 obligations.
 - [x] 2. Wave 2 (High): implement and verify nonblocking replay history admission with exact mixed-record resume/permit accounting, bounded retries, durable completion and failure/cancellation containment; preserve all req_033 criteria.
 - [x] 3. Wave 3 (High): profile live Follow fan-out, compare continuous movement with the 30-second look-ahead prototype, implement the effective bounded policy, and verify fresh points, short trailing windows and navigation/session semantics.
-- [ ] 4. Wave 4 (High, depends on Waves 2-3): run real five-minute responsiveness and exact integrity qualification, hosted-Windows queue_wait audit and packaged/operator checks. Keep unavailable evidence visibly pending instead of closing on a Linux-only pass.
+- [ ] 4. Wave 4 (High, depends on Waves 2-3, partly open): run real five-minute responsiveness and exact integrity qualification, hosted-Windows queue_wait audit and packaged/operator checks. Keep unavailable evidence visibly pending instead of closing on a Linux-only pass.
 - [ ] 5. At each meaningful implementation wave, update affected evidence and commit code/tests/docs together under ADR 009. Start the task through flow start only when implementation actually begins; this corpus creates no implementation proof.
 - [ ] 6. Before any new UI copy, run i18n status and honor the existing contract. Run repository checks and Logics lint/audit/validate, refresh the context pack, and close via flow closeout only with complete acceptance proof and a settled product brief.
 - [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
@@ -94,6 +94,28 @@
   - Follow trailing, look-ahead policy: (1, 2, 0.077 s)
   The stepped policy removes about 99% of follow-driven range and notification work,
   well beyond the 50% req_034 AC5 asks for as supporting evidence.
+- Wave 4 boundary semantics, `tests/test_follow_axis_boundaries.py` (15 cases, deterministic:
+  the extent is driven directly, so no wall clock decides a boundary). Covers the initial
+  reserve, the axis held still until data reaches the edge, a 10 000 s timestamp jump
+  absorbed in one update, an idle session fabricating nothing, trailing span W preserved
+  with look-ahead capped at W/4, reset on mode/session change, and immediate catch-up on
+  re-enable.
+- Wave 4 lane matrix, `tests/test_follow_live_qualification.py` (7 cases): no lanes, one,
+  six and nine; recording on and off; measurement table shown and hidden; final extent
+  after Stop; three repeated start/stop cycles. All within the 200 ms control-feedback,
+  250 ms heartbeat-gap and 500 ms point-age budgets, with no dropped frames and no
+  historical-persistence failure.
+- Wave 4 sustained run (Linux, offscreen Qt, `PEAKLIVE_QUALIFY=1`, six lanes, recording
+  active, 300 s of real event loop): 1 133 312 frames accepted; 12 axis moves, so at least
+  ten look-ahead boundaries were crossed; heartbeat gap max 0.181 s and p95 0.074 s against
+  the 250 ms budget; slowest control `mode_trailing` at 0.0145 s against the 200 ms budget.
+  Recorded limitation: the point-age metric compares the newest accepted sample with the
+  newest drawn point and read 0.000 s throughout, so it confirms the curve is never left
+  behind but is too coarse to resolve sub-refresh staleness; it is not evidence of
+  zero display latency.
+- The sustained case is opt-in behind `PEAKLIVE_QUALIFY=1`: CI applies a 120 s per-test
+  faulthandler timeout on Linux and a 300 s per-module bound on Windows, so a five-minute
+  test cannot run in the ordinary suite.
 - Full repository suite and Ruff: see the Report below.
 
 # Report
@@ -123,8 +145,15 @@
 - Pre-existing on this Linux/offscreen environment, unchanged by this work and verified
   against 5305b5b in a clean worktree: `test_ui.py::test_main_window_has_accessible_workspace_and_explicit_lifecycle`
   and `test_ui_analyst.py::test_layout_geometry_and_collapse_state_persist_across_a_restart`.
-- Wave 4 is not started: the sustained five-minute qualification, the hosted-Windows
-  revised `queue_wait` audit and the packaged/operator confirmation remain open gates.
+- Wave 4 delivered its Linux half: boundary semantics, the lane matrix and the sustained
+  five-minute run above. A defect the boundary cases exposed is repaired - Fit's own edge
+  margin was trimmed flush to the last sample by the next follow refresh, so a window that
+  already shows the whole extent is now left alone.
+- Wave 4 open gates, which a synthetic Linux pass cannot close and which are not claimed:
+  the revised hosted-Windows `queue_wait` audit (the 200 ms/1k tolerance was removed on
+  Linux evidence and hosted Windows must confirm it), qualification of the packaged
+  `PeakLive.exe`, and confirmation on the operator's own machine against the reported
+  build v0.1.2+b202609161508.
 
 # Links
 - Request: `req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history`
