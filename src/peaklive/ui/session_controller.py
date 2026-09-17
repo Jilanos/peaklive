@@ -176,41 +176,6 @@ class WorkspaceSession:
         self._begin_work(translate("trace.opening").format(name=path.name))
         self._replay_worker.start()
         self._update_mode_availability()
-    def _replay_records_for_generation(
-        self, generation: int, worker: ReplayWorker, records: list[object]
-    ) -> None:
-        if generation != getattr(self, "_replay_generation", 0):
-            return
-        self._pending_replay_batches.append((generation, worker, records))
-        if not self._replay_presentation_timer.isActive():
-            self._replay_presentation_timer.start()
-    def _drain_replay_batch(self) -> None:
-        """Ingest one worker batch, then yield before accepting the next one.
-
-        A historical-persistence failure discovered while ingesting (either
-        synchronously, or asynchronously once the background writer reports
-        it) is handled entirely inside `_fail_history`: it stops and abandons
-        the worker and routes through `_replay_failed_for_generation` itself,
-        which also empties `_pending_replay_batches`. So by the time this
-        resumes below, a fresh failure already looks like an ordinary empty,
-        not-yet-succeeded queue - `_replay_ready_to_complete` correctly
-        declines to complete it.
-        """
-        if not self._pending_replay_batches:
-            return
-        generation, worker, records = self._pending_replay_batches.pop(0)
-        if generation == getattr(self, "_replay_generation", 0):
-            self._ingest_replay_records(records)
-        worker.batch_rendered()
-        if self._pending_replay_batches:
-            self._replay_presentation_timer.start()
-        elif self._replay_ready_to_complete(generation, worker):
-            self._complete_replay(generation)
-    def _clear_pending_replay_batches(self) -> None:
-        timer = getattr(self, "_replay_presentation_timer", None)
-        if timer is not None:
-            timer.stop()
-        self._pending_replay_batches = []
     def _replay_progressed(self, generation: int, done: int, total: int) -> None:
         """Show determinate parse progress for the current replay only."""
         if generation != getattr(self, "_replay_generation", 0):

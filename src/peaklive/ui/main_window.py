@@ -49,6 +49,7 @@ from peaklive.ui.panels import (
 )
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.profile_controller import WorkspaceProfiles
+from peaklive.ui.replay_admission import WorkspaceReplayAdmission
 from peaklive.ui.session_controller import WorkspaceSession
 from peaklive.ui.signal_backfill_controller import WorkspaceSignalBackfill
 from peaklive.ui.signal_summary_controller import WorkspaceSignalSummary
@@ -74,6 +75,7 @@ class MainWindow(
     WorkspaceIngest,
     WorkspaceProfiles,
     WorkspaceReflow,
+    WorkspaceReplayAdmission,
     WorkspaceSession,
     WorkspaceSignalBackfill,
     WorkspaceSignalSummary,
@@ -117,9 +119,9 @@ class MainWindow(
         self._replay_source_completed_generation: int | None = None
         self._replay_generation = 0
         self._replay_failed_generation: int | None = None
+        self._replay_backpressure_mark = 0
         self._replay_presentation_timer = QTimer(self)
         self._replay_presentation_timer.setSingleShot(True)
-        self._replay_presentation_timer.setInterval(1)
         self._replay_presentation_timer.timeout.connect(self._drain_replay_batch)
         self._selected_signal_names: set[str] = set(self.selected_profile.displayed_signals)
         self._favorite_signal_names: set[str] = set(self.selected_profile.favorite_signals)

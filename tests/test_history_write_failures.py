@@ -41,7 +41,7 @@ def _queue_one_owned_batch(window: MainWindow, worker: ReplayWorker, generation:
     worker._held_permits = 1
     window._replay_worker = worker
     window._replay_generation = generation
-    window._pending_replay_batches = [(generation, worker, [CanFrame(0.0, 0x300, bytes(8))])]
+    window._pending_replay_batches = [(generation, worker, [CanFrame(0.0, 0x300, bytes(8))], 0)]
 
 
 def _install_readonly_writer(window: MainWindow, qtbot) -> None:

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from itertools import groupby
-
 from PySide6.QtCore import QTimer
 
 from peaklive.analysis import (
@@ -236,25 +234,6 @@ class WorkspaceIngest:
             with PROFILER.stage(STAGE_TRACE_PROJECTION):
                 self.trace_panel.append_records(added)
         return added
-
-    def _ingest_replay_records(self, records: list[object]) -> bool:
-        """Ingest one ordered replay batch, preserving source frame/event order.
-
-        Returns whether historical persistence has failed as of this call
-        (`_fail_history` already reacted to it if so); a caller that does not
-        need that state may ignore the return value.
-        """
-        ingested_frames = False
-        for is_event, group in groupby(records, key=lambda record: isinstance(record, BusEvent)):
-            if is_event:
-                for event in group:
-                    self._render_replay_event(event)
-            else:
-                self._ingest_frames(list(group), coalesce=True)
-                ingested_frames = True
-        if ingested_frames:
-            self._mark_graphs_dirty()
-        return self._history_failed
 
     def _render_frames(self, frames: list[CanFrame]) -> None:
         """Ingest every queued frame and repaint the plots immediately.
