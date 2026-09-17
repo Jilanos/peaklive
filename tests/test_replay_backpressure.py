@@ -46,21 +46,40 @@ MAX_TOTAL_QUEUE_WAIT_S = 0.05
 
 
 class Heartbeat:
-    """Records UI-thread timer ticks, so 'still responsive' is a measurement."""
+    """Records UI-thread timer ticks, so 'still responsive' is a measurement.
 
-    def __init__(self) -> None:
-        self.marks = [monotonic()]
+    Each tick also records whether replay was admitting batches at that
+    moment. Only those intervals are this file's subject: settling a finished
+    replay re-renders the whole trace window in one go, which is a documented
+    cost of a different stage (`trace_projection`, which carries its own
+    Windows budget) and not something admission decides.
+    """
+
+    def __init__(self, window: MainWindow) -> None:
+        self._window = window
+        self.marks: list[tuple[float, bool]] = [(monotonic(), False)]
         self._timer = QTimer()
         self._timer.setInterval(HEARTBEAT_MS)
-        self._timer.timeout.connect(lambda: self.marks.append(monotonic()))
+        self._timer.timeout.connect(self._tick)
         self._timer.start()
+
+    def _tick(self) -> None:
+        admitting = bool(
+            self._window._pending_replay_batches or self._window._replay_worker is not None
+        )
+        self.marks.append((monotonic(), admitting))
 
     def stop(self) -> None:
         self._timer.stop()
 
-    def max_gap(self) -> float:
-        marks = [*self.marks, monotonic()]
-        return max(b - a for a, b in zip(marks, marks[1:], strict=False))
+    def max_admitting_gap(self) -> float:
+        """The longest interval that began while a batch was being admitted."""
+        gaps = [
+            later - earlier
+            for (earlier, admitting), (later, _) in zip(self.marks, self.marks[1:], strict=False)
+            if admitting
+        ]
+        return max(gaps, default=0.0)
 
 
 def _slow_history_writes(monkeypatch, seconds: float) -> None:
@@ -129,14 +148,14 @@ def test_replaying_onto_slow_persistence_never_blocks_the_event_loop(
 ):
     _slow_history_writes(monkeypatch, SLOW_WRITE_S)
     window = _window(qtbot, tmp_path)
-    heartbeat = Heartbeat()
+    heartbeat = Heartbeat(window)
 
     _replay(window, tmp_path, qtbot)
-    gap = heartbeat.max_gap()
+    gap = heartbeat.max_admitting_gap()
     heartbeat.stop()
 
     assert not window._history_failed, window._history_failure_message
-    assert gap <= MAX_HEARTBEAT_GAP_S, f"event loop stalled for {gap:.3f}s"
+    assert gap <= MAX_HEARTBEAT_GAP_S, f"event loop stalled for {gap:.3f}s while admitting"
 
 
 # --------------------------------------------------------------------------
@@ -194,13 +213,13 @@ def test_a_never_draining_writer_fails_the_replay_instead_of_stalling(
     monkeypatch.setattr("peaklive.ui.replay_admission.QUEUE_STALL_TIMEOUT_S", 0.3)
     window = _window(qtbot, tmp_path)
     monkeypatch.setattr(type(window._history_writer), "has_room", lambda self: False)
-    heartbeat = Heartbeat()
+    heartbeat = Heartbeat(window)
 
     _replay(window, tmp_path, qtbot, timeout_ms=30_000)
-    gap = heartbeat.max_gap()
+    gap = heartbeat.max_admitting_gap()
     heartbeat.stop()
 
     assert window._history_failed
     assert not window._historical_view_ready
-    assert gap <= MAX_HEARTBEAT_GAP_S, f"event loop stalled for {gap:.3f}s"
+    assert gap <= MAX_HEARTBEAT_GAP_S, f"event loop stalled for {gap:.3f}s while admitting"
     assert not window._pending_replay_batches

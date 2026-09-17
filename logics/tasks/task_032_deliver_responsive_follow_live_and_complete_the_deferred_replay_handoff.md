@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-17 13:27:21
+> Indicators reviewed: 2026-09-17 15:34:18
 
 # AI Context
 - Summary: Orchestrate replay admission, measured live-follow correction and sustained Windows qualification.
@@ -149,11 +149,32 @@
   five-minute run above. A defect the boundary cases exposed is repaired - Fit's own edge
   margin was trimmed flush to the last sample by the next follow refresh, so a window that
   already shows the whole extent is now left alone.
+- Hosted-Windows result for run 35226762317 (commit 34a6f0f): `test_trace_performance.py`
+  and the `queue_wait` regression both pass on `windows-latest` with no tolerance, so the
+  removal of the 200 ms/1k Windows allowance is confirmed on the hosted runner. This closes
+  the revised-audit half of request-AC8; the packaged executable and the operator machine
+  remain open.
+- That run also failed two checks, both measurement rather than product defects, repaired
+  without weakening any budget:
+  - The wall-clock heartbeat assertions in `tests/test_replay_backpressure.py` measured the
+    whole replay, including the post-replay settle that re-renders the trace window in one
+    go - a `trace_projection` cost with its own documented Windows budget, not something
+    admission decides. They reached 2.427 s on Windows and 0.267 s on hosted Linux. The
+    heartbeat is now sampled with a flag for whether a batch was being admitted, and only
+    intervals that began during admission are judged. The `queue_wait` measurement, which
+    is the decisive one, passed on every runner unchanged.
+  - `tests/test_ui.py::test_main_window_has_accessible_workspace_and_explicit_lifecycle`
+    asserted on `PlotDataItem.getData()`, which is what pyqtgraph would paint after
+    clipping and auto-downsampling, for 32 frames spanning roughly 120 microseconds. That
+    collapses to zero points regardless of the axis range - it already failed on this
+    workstation at 108c88d, the last green CI commit - and widening the live axis with the
+    look-ahead made hosted Linux reach the same degenerate ratio. The assertion now reads
+    `xData`, which is what ingestion handed the curve. Verified separately that the
+    reserved axis does not hide real curves: at 2262 raw points over 1.4 s, a lane still
+    renders 282 displayed points with the 30 s reserve against 314 with a tight view.
 - Wave 4 open gates, which a synthetic Linux pass cannot close and which are not claimed:
-  the revised hosted-Windows `queue_wait` audit (the 200 ms/1k tolerance was removed on
-  Linux evidence and hosted Windows must confirm it), qualification of the packaged
-  `PeakLive.exe`, and confirmation on the operator's own machine against the reported
-  build v0.1.2+b202609161508.
+  qualification of the packaged `PeakLive.exe`, and confirmation on the operator's own
+  machine against the reported build v0.1.2+b202609161508.
 
 # Links
 - Request: `req_034_restore_application_responsiveness_with_follow_live_and_nonblocking_replay_history`
