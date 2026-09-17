@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 85%
+> Progress: 90%
 > Complexity: High
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -172,6 +172,17 @@
     `xData`, which is what ingestion handed the curve. Verified separately that the
     reserved axis does not hide real curves: at 2262 raw points over 1.4 s, a lane still
     renders 282 displayed points with the 30 s reserve against 314 with a tight view.
+- CI run 35228082739 (commit fc44831) is green on `ubuntu-latest` and both `windows-latest`
+  shards, and produced the `PeakLive-windows-x64` artefact. Ruff passes on every runner.
+- One Windows-only flake was observed and deliberately not "fixed":
+  `test_ui_lifecycle.py::test_busy_burst_coalesces_visual_work_so_stop_stays_responsive`
+  counted 3 event-loop ticks against its `>= 10` expectation on the first attempt and
+  passed on a rerun of the same commit. Its probe ticks every 5 ms, so it is a wall-clock
+  liveness check on a shared runner. Measured locally, Follow live on versus off makes no
+  difference to it (76 versus 72 ticks in 500 ms), so the expectation was not recalibrated
+  and no budget was relaxed. Worth watching: if it recurs, the candidate mechanism is that
+  repairing the silent Follow-live disable restored curve drawing that a stuck narrow axis
+  and `setClipToView` had been skipping.
 - Wave 4 open gates, which a synthetic Linux pass cannot close and which are not claimed:
   qualification of the packaged `PeakLive.exe`, and confirmation on the operator's own
   machine against the reported build v0.1.2+b202609161508.
