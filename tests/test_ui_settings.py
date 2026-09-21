@@ -50,6 +50,15 @@ def test_malformed_settings_recover_to_english(tmp_path, content):
     assert store.load().locale == SOURCE_LOCALE
 
 
+def test_a_byte_order_mark_does_not_make_the_preference_unreadable(tmp_path):
+    """Windows tooling adds one; the file is still perfectly good JSON."""
+    store = UiSettingsStore(tmp_path)
+    store.path.parent.mkdir(parents=True, exist_ok=True)
+    store.path.write_bytes(b"\xef\xbb\xbf" + json.dumps({"locale": "fr"}).encode("utf-8"))
+
+    assert store.load().locale == "fr"
+
+
 def test_recovering_from_damaged_settings_leaves_measurement_setups_alone(tmp_path):
     profiles = ProfileStore(tmp_path)
     state = profiles.load()

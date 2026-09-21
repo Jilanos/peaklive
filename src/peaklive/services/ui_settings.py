@@ -46,7 +46,10 @@ class UiSettingsStore:
         if not self.path.exists():
             return {}
         try:
-            loaded = json.loads(self.path.read_text(encoding="utf-8"))
+            # utf-8-sig, not utf-8: on Windows anything that has passed through
+            # Notepad or PowerShell carries a byte-order mark, and a preference
+            # file edited by hand must not read as corrupt because of it.
+            loaded = json.loads(self.path.read_text(encoding="utf-8-sig"))
         except (OSError, json.JSONDecodeError):
             logger().warning("Interface settings %s were unreadable; using defaults.", self.path)
             return {}
