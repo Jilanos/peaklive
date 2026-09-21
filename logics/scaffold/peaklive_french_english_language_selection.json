@@ -1,0 +1,221 @@
+{
+  "title": "Add persistent French and English language selection across PeakLive",
+  "references": [
+    "src/peaklive/i18n.py",
+    "src/peaklive/i18n/en.json",
+    "logics/i18n/contract.json",
+    "src/peaklive/app.py",
+    "src/peaklive/services/profiles.py",
+    "src/peaklive/ui/main_window.py",
+    "src/peaklive/ui/actions.py",
+    "src/peaklive/ui/profile_controller.py",
+    "src/peaklive/ui/workspace_center.py",
+    "src/peaklive/ui/widgets.py",
+    "src/peaklive/ui/panels/inspector.py",
+    "src/peaklive/ui/panels/report.py",
+    "src/peaklive/analysis/session.py",
+    "src/peaklive/analysis/trace.py",
+    "tests/test_i18n.py",
+    "tests/test_ui_structure.py",
+    "tests/test_ui_analyst.py",
+    "tests/test_ui_menu_lifecycle.py",
+    "tests/test_profiles.py",
+    "tests/test_session_report.py",
+    "docs/product-scope.md",
+    "README.md"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Complete French and English interface localization with safe runtime switching",
+    "needs": [
+      "Let an operator choose French or English and make every application-owned interface text use that language immediately, without restarting PeakLive.",
+      "Keep the selected language between launches as an application preference independent of measurement profiles.",
+      "Cover menus, panels, dialogs, table and graph labels, tooltips, accessibility names, prompts, validation, status and error messages, inspector prose and session reports, including already visible and subsequently created content.",
+      "Preserve the ongoing acquisition, recording, replay, analysis state and all original measurement data when switching languages."
+    ],
+    "context": [
+      "The user's reference to a game is interpreted as this repository's PeakLive desktop application; no game or separate application is introduced.",
+      "src/peaklive/i18n.py exposes translate(key), backed by one cached en.json file. It has no selected-locale state, locale-aware cache or language-change notification. Many widgets evaluate translations only during construction.",
+      "The existing Logics i18n contract is valid, lists only en, and declares English as source, default and fallback. Extend this contract to en and fr during implementation; this planning corpus does not change the runtime contract.",
+      "ReportRenderer in analysis/session.py hardcodes English prose; ProfileNameError messages are shown through str(error); internal decode status codes and other dynamic content require a presentation mapping rather than translating domain identities.",
+      "The existing profile store owns measurement setups, revision-aware atomic saves and corruption recovery. Language must be application-scoped; a small separately owned ui-settings.json in the same application data directory is the planned persistence boundary, avoiding a profile-schema migration solely for language.",
+      "Setup already groups application configuration. Add Setup > Language / Configuration > Langue with the stable autonyms Français and English, represented by locale codes fr and en. The selected entry is checked and keyboard accessible.",
+      "Keep English as the initial default and fallback for compatibility. Do not automatically follow the OS language in this scope. Load the persisted choice before constructing the main window and app-owned dialogs.",
+      "Active workspace and replay work touches actions.py, main_window.py and presentation controllers. Reconcile with their current APIs at implementation time; avoid replacing the application shell or duplicating their worker and lifecycle ownership.",
+      "Medium priority: this is a complete operator-facing capability, sequenced after existing higher-priority acquisition and replay integrity work. Within this chain the locale foundation precedes runtime retranslation and completeness qualification."
+    ],
+    "acceptance_criteria": [
+      "AC1: Setup > Language / Configuration > Langue provides exactly Français and English as mutually exclusive, keyboard-accessible choices; en is the initial default, fr and en are stable stored codes, and the current language is always marked.",
+      "AC2: Choosing a language immediately updates all visible application-owned text and subsequently created views without restart, including open non-modal dialogs, collapsed or hidden panels when reopened, menus and overflow actions, static and dynamic content, tooltips, accessibility descriptions, table headers, graph axes, inspector prose, status messages and report text. Modal dialogs opened afterward inherit the current language; app-owned standard dialog buttons and file-dialog chrome also follow it.",
+      "AC3: The app-scoped preference is loaded before first UI construction and survives restart, profile switching and Save setup as. Missing settings use en; unknown locale values or malformed settings recover safely to en without changing profiles. A failed save leaves the selected runtime language usable and displays a localized persistence warning without claiming it was saved.",
+      "AC4: en.json and fr.json have identical leaf-key sets, nonempty string values and compatible formatting placeholders and specifications. All application-owned user-facing prose, including hardcoded report and profile validation strings, is inventoried and localized; release validation rejects accidental English leftovers in French through targeted expectations and a reviewed technical-literal allowlist.",
+      "AC5: Repeated en-to-fr-to-en switching during live acquisition/recording, replay loading, DBC loading and signal export neither starts, stops nor replaces workers, loses or duplicates frames, resets progress, changes session identity or connects to the bus. Filters, shown signals, favorites, selected trace record, cursors, zoom, scroll position, panel state, input edits and enabled/checked action states are retained.",
+      "AC6: CAN/DBC identifiers, message and signal names, DBC enumeration text, units, file paths, operator-entered names and labels, stored filter keys and all numeric values remain unchanged. Raw ASC/TRC and sidecar formats, CSV/Parquet schemas and machine-readable status codes remain stable. Translate their presentation labels only; numerical/date formatting stays as currently defined in this scope.",
+      "AC7: Application-generated warnings and errors, currently displayed states and newly arriving worker outcomes render in the selected language; diagnostic details from a driver, OS or DBC remain verbatim inside a translated explanation. The on-screen and newly exported human-readable session report use the selected language with identical facts; already written files and technical logs are not rewritten.",
+      "AC8: Missing French resources or keys fall back deterministically to the English source without crashing the live UI; fallback is observable in diagnostics, while complete catalog parity remains mandatory for a delivered build. A key absent from both catalogs is detected by validation and has a safe non-crashing runtime diagnostic presentation.",
+      "AC9: Both languages remain readable and operable at 1024x768, 1280x720 and 1600x900, with correct accented characters, discoverable menu mnemonics, existing shortcuts and no inaccessible commands or overlapping controls. Windows packaging includes both catalogs and the selected Qt translations or controlled app-owned dialog equivalent.",
+      "AC10: Focused automated tests cover catalog completeness, placeholders, startup/persistence/recovery, two-way runtime retranslation, deferred UI, dynamic errors, unchanged data/export contracts and session continuity. Headless regression tests, Ruff, i18n validation and Logics checks pass; a Windows smoke run covers French/English menus, dialogs and a live simulated or replay session without claiming physical CAN qualification. README and product scope describe bilingual behavior and its data boundaries."
+    ]
+  },
+  "product": {
+    "title": "PeakLive French and English operator experience",
+    "overview": "Offer a complete, persistent French or English interface with immediate state-preserving language changes, while keeping CAN data, operator content and interchange formats independent of presentation language.",
+    "goals": [
+      "Give French-speaking and English-speaking operators an equally complete workflow from setup to analysis and human-readable reporting.",
+      "Make language discoverable under Setup and independent of vehicle or measurement profiles.",
+      "Extend the existing semantic-key translation mechanism with complete catalogs and a controlled retranslation lifecycle.",
+      "Prove that changing presentation language cannot disturb a running capture or silently alter data and exports."
+    ],
+    "non_goals": [
+      "Implementing a game, translating repository source code, or translating every developer document.",
+      "Adding languages beyond French and English, OS-driven automatic locale selection, remote translation services or account synchronization.",
+      "Translating operator-authored text, DBC names and enum values, paths, raw driver diagnostics or machine-readable recording/export fields.",
+      "Changing unit systems, decimal separators, date/time formats, numeric algorithms, CAN drivers or recording semantics.",
+      "Adding signal aliases such as those used only for README screenshots, or changing the operating system language.",
+      "Starting implementation or claiming delivery evidence during corpus creation."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Establish bilingual catalogs and an application-scoped locale preference",
+      "priority": "Medium - required foundation for the bilingual workflow; schedule after higher-priority capture integrity work.",
+      "complexity": "Medium",
+      "theme": "Locale service, complete catalogs and durable application preferences",
+      "request_acs": ["AC1", "AC3", "AC4", "AC6", "AC8", "AC10"],
+      "problem": [
+        "translate(key) reads only en.json and the application has no locale preference or notification contract.",
+        "Storing language in measurement profiles would make changing a vehicle setup unexpectedly change the UI language."
+      ],
+      "scope_in": [
+        "Add a locale-aware translation service retaining the semantic translate(key) entry point, with en/fr validation, locale-indexed caching, deterministic source fallback and an explicit language-change notification integrated on the GUI thread.",
+        "Add a complete fr.json based on an inventory of en.json and newly extracted product-owned prose; enforce leaf-key and placeholder parity, encoding and nonempty values. Record unavoidable technical literals in a bounded, justified allowlist.",
+        "Persist the selected locale in a dedicated ui-settings.json under the app data directory, honoring PEAKLIVE_DATA_DIR; use atomic writes, preserve unrelated future settings, recover invalid/unsupported values safely, and surface write failures without corrupting profiles.",
+        "Initialize the selected locale before window construction, use en for fresh installs and invalid preferences, and keep it stable across measurement profile selection or duplication.",
+        "Extend logics/i18n/contract.json during implementation to list en and fr, retaining en as source/default/fallback; include startup and failure tests and isolated locale reset between tests.",
+        "Allow runtime fallback for damaged deployments while requiring complete translated catalogs in validation; avoid logging a missing-key warning per received frame."
+      ],
+      "scope_out": [
+        "Replacing the profile storage schema or moving measurement settings.",
+        "OS locale inference, locale-specific numerical formatting or a translation service dependency.",
+        "Claiming that changing the catalog alone retranslates already constructed widgets."
+      ],
+      "acceptance_criteria": [
+        "AC1: en and fr translation lookup, cache isolation and two-way locale changes produce the intended text with tested English fallback for missing French content.",
+        "AC2: French and English catalogs pass exact leaf-key, nonempty-value and formatting-placeholder/specification checks; absent keys in both catalogs fail validation and cannot crash an active window.",
+        "AC3: Restart restores the application locale before the first rendered window; profile switches and duplication do not alter it or rewrite profile content.",
+        "AC4: Missing, malformed, unknown-locale and unwritable preference cases have deterministic tested behavior, preserve measurement setups and provide a localized user warning where persistence fails.",
+        "AC5: The updated i18n contract validates both catalogs, tests restore global locale state, and diagnostics for fallback are bounded."
+      ]
+    },
+    {
+      "title": "Add a language menu and retranslate the workspace without resetting sessions",
+      "priority": "Medium - delivers the operator-visible choice after the locale foundation, with live-session safety as its acceptance gate.",
+      "complexity": "High",
+      "theme": "State-preserving runtime UI retranslation",
+      "request_acs": ["AC1", "AC2", "AC3", "AC5", "AC6", "AC9", "AC10"],
+      "problem": [
+        "Most controls capture translated strings during construction, so changing a global catalog would leave the visible application in mixed languages.",
+        "Rebuilding the main window or using translated labels as identities risks losing session state or duplicating worker connections and actions."
+      ],
+      "scope_in": [
+        "After the locale foundation, add Setup > Language / Configuration > Langue with French and English autonyms, exclusive check state, stable en/fr action data, keyboard access and localized accessibility metadata.",
+        "Implement explicit retranslate methods or a Qt language-change event adapter for the existing shell, menus, panels, widgets, overflow actions and dialogs; keep retranslation ownership separate from construction and session-reset paths.",
+        "Update combo display text in place using stable item data, preserve action enabled/checked states and shortcuts, block configuration-changing signals where necessary, and prevent duplicate menu registrations or signal connections.",
+        "Preserve filters, user inputs, trace selection and scroll, expanded tree nodes, shown/favorite signals, layout, cursors and graph viewport; hidden/collapsed views and new dialogs must use the current locale when shown.",
+        "Cover product-owned standard buttons and file/input/message dialogs through packaged Qt translations or app-controlled non-native dialogs when native OS chrome cannot follow the app locale; do not change OS settings.",
+        "Keep language selection available during background work and ensure callbacks reaching the UI after a switch use its new locale without restarting any acquisition/replay/export/DBC worker.",
+        "Test repeated switches with a fake live recorder and replay/export/catalog operations, asserting continuity and retained state rather than only checking changed captions."
+      ],
+      "scope_out": [
+        "Replacing MainWindow, reconnecting the bus or rebuilding graphs as a language-switch shortcut.",
+        "Changing stable object names, stored enum keys, CAN content, profile names or DBC signal identities.",
+        "Rearchitecting unrelated active replay and graph performance work."
+      ],
+      "acceptance_criteria": [
+        "AC1: The localized language submenu has exactly two exclusive choices labelled Français and English, and reflects persisted/current en or fr with unchanged shortcuts and usable keyboard navigation.",
+        "AC2: en-to-fr-to-en updates existing menus, controls, headings, placeholders, tooltips and accessible names immediately, including overflow actions and hidden views on reopening; new dialogs and standard button text use the active language.",
+        "AC3: Switching while live capture, recording, replay, export or DBC loading runs preserves worker identity, operation progress, session identity and capture data, with no new bus connection or duplicated handler.",
+        "AC4: A populated workspace retains exact selected signals, favorites, filters, current trace selection, cursor positions, zoom, layout, scroll and user input after repeated switches.",
+        "AC5: Menus, active/disabled states and profile settings stay coherent; changing translated combo captions does not issue a configuration mutation.",
+        "AC6: Both language layouts pass the three supported size checks, including accented text and long labels, and all commands remain reachable."
+      ]
+    },
+    {
+      "title": "Localize dynamic analysis text, validation and human-readable reports",
+      "priority": "Medium - completes whole-interface coverage beyond static labels and protects language-independent data contracts.",
+      "complexity": "High",
+      "theme": "Dynamic presentation completeness and stable domain data",
+      "request_acs": ["AC2", "AC4", "AC5", "AC6", "AC7", "AC8", "AC10"],
+      "problem": [
+        "Hardcoded report prose, service validation messages and raw status codes can remain English even after widgets adopt a French catalog.",
+        "Mutating domain codes or already-recorded messages to translate their display would compromise filtering, diagnostics and interchange compatibility."
+      ],
+      "scope_in": [
+        "Inventory runtime prose in the UI, analysis renderers and service error paths; map app-owned states and validations to semantic keys with parameters instead of string-matching already formatted English messages.",
+        "Translate display representations of decode states, bus/lifecycle states, progress, empty/loading/error states, filter chips, cursor/statistics headings and inspector descriptions, retaining stable underlying codes and numerical values.",
+        "Retain semantic state for currently visible app-generated messages, inspector content and reports so they can be re-rendered on language change; preserve selected records and dialog input edits.",
+        "Adapt ReportRenderer to produce a localized human-readable report without introducing Qt dependencies into the analysis layer; newly exported text matches the current report locale and unchanged facts.",
+        "Render worker outcomes in the active UI language when delivered, and preserve raw OS/driver/file details inside localized surrounding messages; keep technical logs and previously saved artifacts unchanged.",
+        "Prove raw ASC/TRC and JSON sidecar contracts plus CSV/Parquet names, schema, units and values remain stable; localize only the export dialog and human-readable report prose."
+      ],
+      "scope_out": [
+        "Translating DBC enumeration strings, user-authored setup or recording labels, source filenames or raw exception details supplied by third parties.",
+        "Changing report calculations, timestamps, decimal conventions or measurement units.",
+        "Retroactively rewriting stored captures, reports or developer logs."
+      ],
+      "acceptance_criteria": [
+        "AC1: French and English render all inventoried app-owned runtime messages and analysis prose, including ProfileNameError validation and report headings; a populated inspector/report updates without reselection or a manual refresh.",
+        "AC2: A worker started under en and completed under fr reports its app-owned status in French; existing displayed warnings also update while raw diagnostic details remain verbatim.",
+        "AC3: Human-readable reports in both languages represent identical session facts and newly exported reports use the selected language.",
+        "AC4: Stable identity codes, filters, DBC names, enum text, numerical values and machine-readable capture/export contracts are unchanged by switching language.",
+        "AC5: Coverage tests exercise dynamic key paths, formatted values, error recovery and missing-translation fallback rather than relying solely on scanning literal translate calls."
+      ]
+    },
+    {
+      "title": "Qualify bilingual coverage, Windows packaging and operator documentation",
+      "priority": "Medium - final completeness gate after catalog, UI and dynamic-text delivery; prevents shipping a partially translated workflow.",
+      "complexity": "Medium",
+      "theme": "Bilingual regression proof and Windows handoff",
+      "request_acs": ["AC1", "AC2", "AC3", "AC4", "AC5", "AC6", "AC7", "AC8", "AC9", "AC10"],
+      "problem": [
+        "The current i18n test checks two English strings and the UI structure guard only scans a subset of literal translation calls.",
+        "Source-level catalog success does not prove packaged Windows dialogs, dynamically created views or longer French labels are translated and usable."
+      ],
+      "scope_in": [
+        "Create a complete surface-by-surface localization checklist with explicit technical/user-data exceptions and French/English expected-copy assertions for both normal and failure workflows.",
+        "Parameterize representative UI integration tests by locale, reset locale between tests, verify placeholder parity and catch regression to hardcoded app-owned English prose outside the existing UI-only scan.",
+        "Exercise live and offline workflows, open non-modal dialogs, modal dialogs created after switching, deferred views, repeated language changes and storage failure; record state/data continuity evidence from deterministic adapters and fixtures.",
+        "Verify both catalogs and any required Qt translation resources are included in the Windows bundle; perform a Windows smoke run at supported sizes with French accents and keyboard navigation.",
+        "Run targeted tests, full headless regression tests, Ruff, logics-manager i18n validate, flow validate, lint and audit; record actual outputs and distinguish unavailable Windows evidence from passed checks.",
+        "Update README and docs/product-scope.md during implementation to replace the English-only scope, explain the menu/default/persistence behavior and preserve the distinction between translated UI and untouched user/CAN data."
+      ],
+      "scope_out": [
+        "Physical hardware qualification or performance claims based only on headless/simulated tests.",
+        "Additional languages, a general translation-management platform or rewriting historical product decisions.",
+        "Closing this corpus before all acceptance and packaging evidence is recorded."
+      ],
+      "acceptance_criteria": [
+        "AC1: Every in-scope UI surface has verified French and English copy, with a reviewed allowlist limited to genuine technical literals and externally supplied content.",
+        "AC2: Focused and full regression suites pass for the required scenarios, catalog parity and formatting checks pass, and language changes preserve measured session/data invariants.",
+        "AC3: A built Windows executable includes both catalogs and needed dialog resources; a documented smoke run proves French/English selection, restart persistence, dialogs, layout and a simulated or replay workflow.",
+        "AC4: README and product scope document the delivered bilingual feature and exclusions; the i18n contract and Logics validation are clean before task closeout."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Deliver complete persistent French and English language switching in PeakLive",
+    "plan": [
+      "Preflight: read this request and all four slices, inspect current actions/workers touched by active tasks, and inventory every app-owned text surface. Confirm Medium sequencing behind existing High-priority integrity work. This corpus is planning only; start the task through flow start when implementation begins.",
+      "Wave 1: deliver the locale service, full French/English catalogs, safe app-scoped ui-settings persistence and startup initialization. Extend the i18n contract and validate fallback, key parity and formatting before wiring the selector.",
+      "Wave 2 (depends on wave 1): add Setup > Language, retranslate existing and deferred widgets in place, preserve stable action/item identities and verify no session reset during en/fr switching. Include standard Qt dialog localization and responsive geometry.",
+      "Wave 3 (depends on waves 1 and 2): complete dynamic analysis, error and report rendering, retaining semantic parameters and untranslated technical details. Validate human-readable report language and unchanged machine-readable exports.",
+      "Wave 4 (depends on all earlier waves): complete bilingual coverage tests and operator docs, build and smoke-test the Windows package, run targeted and full regression/Ruff/i18n checks, and capture proof for every request AC and backlog slice.",
+      "At each completed wave, update affected Logics evidence and progress through the CLI and commit a coherent code/tests/docs checkpoint. Use flow closeout only after the final checks and Windows evidence are available, settling the linked product brief through the lifecycle CLI."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/peaklive_french_english_language_selection.json",
+    "mode": "full",
+    "profile": "normal"
+  }
+}

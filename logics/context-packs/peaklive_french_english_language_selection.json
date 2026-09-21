@@ -1,0 +1,430 @@
+{
+  "budgets": {
+    "max_docs": 56,
+    "max_docs_per_ref": 8
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_035_add_persistent_french_and_english_language_selection_across_peaklive prod_032_peaklive_french_and_english_operator_experience item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive --mode full --profile deep --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+          "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+          "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+          "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/product/prod_032_peaklive_french_and_english_operator_experience.md",
+      "ref": "prod_032_peaklive_french_and_english_operator_experience",
+      "sections": {
+        "Goals": [
+          "- Give French-speaking and English-speaking operators an equally complete workflow from setup to analysis and human-readable reporting.",
+          "- Make language discoverable under Setup and independent of vehicle or measurement profiles.",
+          "- Extend the existing semantic-key translation mechanism with complete catalogs and a controlled retranslation lifecycle.",
+          "- Prove that changing presentation language cannot disturb a running capture or silently alter data and exports."
+        ],
+        "Key product decisions": [
+          "- The language selector lives in Setup > Language / Configuration > Langue, with Fran\u00e7ais and English autonyms and stable fr/en codes.",
+          "- English remains the fresh-install default and fallback; no OS autodetection. The preference is global to the application, not one measurement profile.",
+          "- Apply changes immediately, including during background operations, without rebuilding MainWindow or its sessions. Restore the preference before first UI construction.",
+          "- Use the existing semantic-key catalog approach and a dedicated UI preference store; keep analysis renderers independent of Qt.",
+          "- Human-readable report text follows the language; raw captures, CSV/Parquet schemas, numerical formatting and existing saved artifacts do not change.",
+          "- Medium priority with dependency-ordered waves; existing High-priority integrity work is sequenced first."
+        ],
+        "Overview": [
+          "Offer a complete, persistent French or English interface with immediate state-preserving language changes, while keeping CAN data, operator content and interchange formats independent of presentation language."
+        ],
+        "References": [
+          "- Product back-reference: `req_035_add_persistent_french_and_english_language_selection_across_peaklive`",
+          "- Task back-reference: `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "PeakLive French and English operator experience"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "add, persistent, french, english, language, selection, across, peaklive",
+        "skip when": "changing CAN data, signal aliases or adding more locales.",
+        "summary": "Specify complete French/English selection, persistence and safe live retranslation.",
+        "use when": "scoping or implementing PeakLive language selection."
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+          "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+          "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+          "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ]
+      },
+      "path": "logics/request/req_035_add_persistent_french_and_english_language_selection_across_peaklive.md",
+      "ref": "req_035_add_persistent_french_and_english_language_selection_across_peaklive",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Setup > Language / Configuration > Langue provides exactly Fran\u00e7ais and English as mutually exclusive, keyboard-accessible choices; en is the initial default, fr and en are stable stored codes, and the current language is always marked.",
+          "- AC2: Choosing a language immediately updates all visible application-owned text and subsequently created views without restart, including open non-modal dialogs, collapsed or hidden panels when reopened, menus and overflow actions, static and dynamic content, tooltips, accessibility descriptions, table headers, graph axes, inspector prose, status messages and report text. Modal dialogs opened afterward inherit the current language; app-owned standard dialog buttons and file-dialog chrome also follow it.",
+          "- AC3: The app-scoped preference is loaded before first UI construction and survives restart, profile switching and Save setup as. Missing settings use en; unknown locale values or malformed settings recover safely to en without changing profiles. A failed save leaves the selected runtime language usable and displays a localized persistence warning without claiming it was saved.",
+          "- AC4: en.json and fr.json have identical leaf-key sets, nonempty string values and compatible formatting placeholders and specifications. All application-owned user-facing prose, including hardcoded report and profile validation strings, is inventoried and localized; release validation rejects accidental English leftovers in French through targeted expectations and a reviewed technical-literal allowlist.",
+          "- AC5: Repeated en-to-fr-to-en switching during live acquisition/recording, replay loading, DBC loading and signal export neither starts, stops nor replaces workers, loses or duplicates frames, resets progress, changes session identity or connects to the bus. Filters, shown signals, favorites, selected trace record, cursors, zoom, scroll position, panel state, input edits and enabled/checked action states are retained.",
+          "- AC6: CAN/DBC identifiers, message and signal names, DBC enumeration text, units, file paths, operator-entered names and labels, stored filter keys and all numeric values remain unchanged. Raw ASC/TRC and sidecar formats, CSV/Parquet schemas and machine-readable status codes remain stable. Translate their presentation labels only; numerical/date formatting stays as currently defined in this scope."
+        ],
+        "Needs": [
+          "- Let an operator choose French or English and make every application-owned interface text use that language immediately, without restarting PeakLive.",
+          "- Keep the selected language between launches as an application preference independent of measurement profiles.",
+          "- Cover menus, panels, dialogs, table and graph labels, tooltips, accessibility names, prompts, validation, status and error messages, inspector prose and session reports, including already visible and subsequently created content.",
+          "- Preserve the ongoing acquisition, recording, replay, analysis state and all original measurement data when switching languages."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add persistent French and English language selection across PeakLive"
+    },
+    {
+      "ai_context": {
+        "keywords": "establish, bilingual, catalogs, application, scoped, locale, preference",
+        "skip when": "building UI retranslation before the service contract exists.",
+        "summary": "Deliver locale lookup, catalog parity and application-scoped persistence.",
+        "use when": "implementing the locale foundation and startup behavior."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/backlog/item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference.md",
+      "ref": "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: en and fr translation lookup, cache isolation and two-way locale changes produce the intended text with tested English fallback for missing French content.",
+          "- AC2: French and English catalogs pass exact leaf-key, nonempty-value and formatting-placeholder/specification checks; absent keys in both catalogs fail validation and cannot crash an active window.",
+          "- AC3: Restart restores the application locale before the first rendered window; profile switches and duplication do not alter it or rewrite profile content.",
+          "- AC4: Missing, malformed, unknown-locale and unwritable preference cases have deterministic tested behavior, preserve measurement setups and provide a localized user warning where persistence fails.",
+          "- AC5: The updated i18n contract validates both catalogs, tests restore global locale state, and diagnostics for fallback are bounded."
+        ],
+        "Problem": [
+          "- translate(key) reads only en.json and the application has no locale preference or notification contract.",
+          "- Storing language in measurement profiles would make changing a vehicle setup unexpectedly change the UI language."
+        ]
+      },
+      "status": "Ready",
+      "title": "Establish bilingual catalogs and an application-scoped locale preference"
+    },
+    {
+      "ai_context": {
+        "keywords": "add, language, menu, retranslate, workspace, resetting, sessions",
+        "skip when": "changing worker ownership or rebuilding sessions.",
+        "summary": "Deliver a language menu and in-place retranslation with session continuity.",
+        "use when": "wiring locale changes into existing Qt widgets and menus."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/backlog/item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions.md",
+      "ref": "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: The localized language submenu has exactly two exclusive choices labelled Fran\u00e7ais and English, and reflects persisted/current en or fr with unchanged shortcuts and usable keyboard navigation.",
+          "- AC2: en-to-fr-to-en updates existing menus, controls, headings, placeholders, tooltips and accessible names immediately, including overflow actions and hidden views on reopening; new dialogs and standard button text use the active language.",
+          "- AC3: Switching while live capture, recording, replay, export or DBC loading runs preserves worker identity, operation progress, session identity and capture data, with no new bus connection or duplicated handler.",
+          "- AC4: A populated workspace retains exact selected signals, favorites, filters, current trace selection, cursor positions, zoom, layout, scroll and user input after repeated switches.",
+          "- AC5: Menus, active/disabled states and profile settings stay coherent; changing translated combo captions does not issue a configuration mutation.",
+          "- AC6: Both language layouts pass the three supported size checks, including accented text and long labels, and all commands remain reachable."
+        ],
+        "Problem": [
+          "- Most controls capture translated strings during construction, so changing a global catalog would leave the visible application in mixed languages.",
+          "- Rebuilding the main window or using translated labels as identities risks losing session state or duplicating worker connections and actions."
+        ]
+      },
+      "status": "Ready",
+      "title": "Add a language menu and retranslate the workspace without resetting sessions"
+    },
+    {
+      "ai_context": {
+        "keywords": "localize, dynamic, analysis, text, validation, human, readable, reports",
+        "skip when": "altering raw recordings, data schemas or user-authored content.",
+        "summary": "Translate dynamic status, errors and reports while preserving domain identities.",
+        "use when": "localizing runtime messages and analysis presentation."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/backlog/item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports.md",
+      "ref": "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: French and English render all inventoried app-owned runtime messages and analysis prose, including ProfileNameError validation and report headings; a populated inspector/report updates without reselection or a manual refresh.",
+          "- AC2: A worker started under en and completed under fr reports its app-owned status in French; existing displayed warnings also update while raw diagnostic details remain verbatim.",
+          "- AC3: Human-readable reports in both languages represent identical session facts and newly exported reports use the selected language.",
+          "- AC4: Stable identity codes, filters, DBC names, enum text, numerical values and machine-readable capture/export contracts are unchanged by switching language.",
+          "- AC5: Coverage tests exercise dynamic key paths, formatted values, error recovery and missing-translation fallback rather than relying solely on scanning literal translate calls."
+        ],
+        "Problem": [
+          "- Hardcoded report prose, service validation messages and raw status codes can remain English even after widgets adopt a French catalog.",
+          "- Mutating domain codes or already-recorded messages to translate their display would compromise filtering, diagnostics and interchange compatibility."
+        ]
+      },
+      "status": "Ready",
+      "title": "Localize dynamic analysis text, validation and human-readable reports"
+    },
+    {
+      "ai_context": {
+        "keywords": "qualify, bilingual, coverage, windows, packaging, operator, documentation",
+        "skip when": "claiming hardware acceptance from simulated tests.",
+        "summary": "Prove bilingual completeness, packaged Windows behavior and data continuity.",
+        "use when": "qualifying the finished bilingual feature and its documentation."
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/backlog/item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation.md",
+      "ref": "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Every in-scope UI surface has verified French and English copy, with a reviewed allowlist limited to genuine technical literals and externally supplied content.",
+          "- AC2: Focused and full regression suites pass for the required scenarios, catalog parity and formatting checks pass, and language changes preserve measured session/data invariants.",
+          "- AC3: A built Windows executable includes both catalogs and needed dialog resources; a documented smoke run proves French/English selection, restart persistence, dialogs, layout and a simulated or replay workflow.",
+          "- AC4: README and product scope document the delivered bilingual feature and exclusions; the i18n contract and Logics validation are clean before task closeout."
+        ],
+        "Problem": [
+          "- The current i18n test checks two English strings and the UI structure guard only scans a subset of literal translation calls.",
+          "- Source-level catalog success does not prove packaged Windows dialogs, dynamically created views or longer French labels are translated and usable."
+        ]
+      },
+      "status": "Ready",
+      "title": "Qualify bilingual coverage, Windows packaging and operator documentation"
+    },
+    {
+      "ai_context": {},
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+          "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+          "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+          "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/product/prod_032_peaklive_french_and_english_operator_experience.md",
+      "ref": "prod_032_peaklive_french_and_english_operator_experience",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "PeakLive French and English operator experience"
+    },
+    {
+      "ai_context": {
+        "keywords": "deliver, complete, persistent, french, english, language, switching, peaklive",
+        "skip when": "only changing README screenshot labels or translating DBC content.",
+        "summary": "Orchestrate four implementation waves for complete, state-preserving French/English language selection.",
+        "use when": "delivering and validating the bilingual feature end to end."
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+          "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+          "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+          "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation"
+        ],
+        "prod": [
+          "prod_032_peaklive_french_and_english_operator_experience"
+        ],
+        "req": [
+          "req_035_add_persistent_french_and_english_language_selection_across_peaklive"
+        ],
+        "task": [
+          "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+        ]
+      },
+      "path": "logics/tasks/task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive.md",
+      "ref": "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Deliver the request's ten acceptance criteria through four ordered implementation slices. Existing English semantic keys are a foundation, not proof that already constructed widgets, dynamic messages or report prose support switching.",
+          "- Keep acquisition/replay workers, source data and profile ownership independent from UI locale. English remains the first-run default; language is a persistent application preference."
+        ],
+        "Validation": [
+          "- Planning validation on 2026-09-21: request-chain dry-run and scaffold passed; flow validate reported zero findings; lint --require-status passed. Implementation, automated feature tests and Windows packaging smoke tests have not been started. Record feature evidence during delivery, not from corpus generation."
+        ]
+      },
+      "status": "Ready",
+      "title": "Deliver complete persistent French and English language switching in PeakLive"
+    }
+  ],
+  "estimates": {
+    "char_count": 19353,
+    "companion_doc_count": 1,
+    "doc_count": 7
+  },
+  "generated_at": "2026-09-21T11:37:45Z",
+  "handoff": {
+    "companion_doc_count": 1,
+    "enabled": true,
+    "source_refs": [
+      "req_035_add_persistent_french_and_english_language_selection_across_peaklive",
+      "prod_032_peaklive_french_and_english_operator_experience",
+      "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+      "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+      "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+      "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation",
+      "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Keep catalogs valid with logics-manager i18n validate in the project quality gate."
+    ],
+    "applicable": true,
+    "catalogs": {
+      "en": 334
+    },
+    "configured": true,
+    "contract": {
+      "applicability": "applicable",
+      "catalog": {
+        "path": "src/peaklive/i18n/{locale}.json"
+      },
+      "default_locale": "en",
+      "fallback_locale": "en",
+      "locales": [
+        "en"
+      ],
+      "schema_version": "1.0",
+      "source_locale": "en"
+    },
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "The i18n contract is valid.",
+    "ok": true,
+    "state": "valid"
+  },
+  "mode": "full",
+  "profile": "deep",
+  "ref": "req_035_add_persistent_french_and_english_language_selection_across_peaklive,prod_032_peaklive_french_and_english_operator_experience,item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference,item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions,item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports,item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation,task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive",
+  "refs": [
+    "req_035_add_persistent_french_and_english_language_selection_across_peaklive",
+    "prod_032_peaklive_french_and_english_operator_experience",
+    "item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference",
+    "item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions",
+    "item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports",
+    "item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation",
+    "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- Planning validation on 2026-09-21: request-chain dry-run and scaffold passed; flow validate reported zero findings; lint --require-status passed. Implementation, automated feature tests and Windows packaging smoke tests have not been started. Record feature evidence during delivery, not from corpus generation."
+      ],
+      "path": "logics/tasks/task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive.md",
+      "ref": "task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive"
+    }
+  ]
+}
