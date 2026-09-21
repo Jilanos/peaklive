@@ -3,6 +3,7 @@ LOGICS.md
 
 # Python and test environments
 .venv/
+.venv-win/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -31,3 +32,6 @@ artifacts/windows-qualification/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Windows download-provenance metadata; never project content.
+*Zone.Identifier*
