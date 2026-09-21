@@ -49,6 +49,12 @@ class WorkspaceRetranslation:
         self.graph_panel.retranslate()
         self.trace_panel.retranslate()
         self.report_panel.retranslate()
+        # The panels re-caption themselves but hold no copy of the session
+        # data: cyclic collection runs on this thread, so a second reference to
+        # the series store or the report would be paid back as event-loop
+        # latency on every sweep. The shell re-drives them from what it owns.
+        self.signal_summary_panel.refresh(self._series, self._selected_signal_names)
+        self._refresh_report()
         # Rewritten by stable item data: the selector must not change index,
         # which would persist a workspace-mode change nobody asked for.
         for value, key in WORKSPACE_MODES:

@@ -22,6 +22,7 @@ class GraphStackText:
     def retranslate(self) -> None:
         self.controls.retranslate()
         self.measurement.retranslate()
+        self.refresh_measurements()
         self.note.retranslate()
         for index, (signal_name, plot) in enumerate(self._plots.items()):
             title, detail = lane_identity(self._store, signal_name)

@@ -45,7 +45,6 @@ class MeasurementPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self._inputs: tuple[Any, tuple[str, ...], float | None, float | None] | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.range_label = QLabel(translate("measure.needs_cursors"), objectName="rangeLabel")
@@ -78,7 +77,6 @@ class MeasurementPanel(QWidget):
         cursor_a: float | None,
         cursor_b: float | None,
     ) -> None:
-        self._inputs = (store, signal_names, cursor_a, cursor_b)
         self.table.clearSpans()
         self.table.setRowCount(0)
         cursor_range = (
@@ -130,13 +128,15 @@ class MeasurementPanel(QWidget):
             self._write_statistics(row, range_statistics(series, *cursor_range))
 
     def retranslate(self) -> None:
-        """Re-head the table and recompute its cells from the retained inputs."""
+        """Re-head the table. The owner re-drives the values from its own store.
+
+        This panel deliberately keeps no reference to the series store: cyclic
+        collection runs on the GUI thread here, so a second reference to the
+        sample data would be paid back as event-loop latency on every sweep.
+        """
         self.table.setAccessibleName(translate("measure.accessible"))
         self.table.setHorizontalHeaderLabels([translate(key) for key in MEASURE_COLUMNS])
-        if self._inputs is None:
-            self.range_label.setText(translate("measure.needs_cursors"))
-            return
-        self.refresh(*self._inputs)
+        self.range_label.setText(translate("measure.needs_cursors"))
 
     def _write_statistics(self, row: int, stats: RangeStatistics) -> None:
         self.table.setItem(row, 4, QTableWidgetItem(str(stats.count)))

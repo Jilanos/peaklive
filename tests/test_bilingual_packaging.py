@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from PySide6.QtCore import QCoreApplication
 
 from peaklive.i18n import SOURCE_LOCALE, SUPPORTED_LOCALES, catalog_path
@@ -11,6 +12,17 @@ from peaklive.ui.qt_translations import apply_qt_translations, qt_translations_p
 
 ROOT = Path(__file__).parents[1]
 SPEC = ROOT / "peaklive.spec"
+
+
+@pytest.fixture(autouse=True)
+def _uninstall_qt_translator():
+    """Leave no translator installed on the shared QApplication.
+
+    Installing one is process-wide state that outlives the test, so the cleanup
+    belongs here rather than depending on a later case happening to undo it.
+    """
+    yield
+    apply_qt_translations(SOURCE_LOCALE)
 
 
 def test_every_supported_catalog_is_package_data_the_spec_collects():

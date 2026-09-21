@@ -25,7 +25,6 @@ class ReportPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.text = ""
-        self._report: SessionReport | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -52,7 +51,6 @@ class ReportPanel(QWidget):
         layout.addWidget(self.note)
 
     def show_report(self, report: SessionReport) -> None:
-        self._report = report
         self.text = ReportRenderer(report).render()
         self.view.setPlainText(self.text)
         if report.is_empty:
@@ -72,5 +70,3 @@ class ReportPanel(QWidget):
             button.setAccessibleName(translate(key))
         self.view.setAccessibleName(translate("report.accessible"))
         self.note.retranslate()
-        if self._report is not None:
-            self.show_report(self._report)

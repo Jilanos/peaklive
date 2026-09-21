@@ -24,8 +24,6 @@ class SignalSummaryPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self._store: SeriesStore | None = None
-        self._shown: set[str] = set()
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -48,8 +46,6 @@ class SignalSummaryPanel(QWidget):
         the order signals were selected in, matching the deterministic
         ordering the backlog calls for.
         """
-        self._store = store
-        self._shown = set(shown_signal_names)
         self.tree.clear()
         for name in sorted(shown_signal_names, key=signal_display_title):
             title = signal_display_title(name)
@@ -74,7 +70,6 @@ class SignalSummaryPanel(QWidget):
                 translate("signals.summary_column_unit"),
             ]
         )
-        self.refresh(self._store, self._shown)
 
 
 def _format_value(value: object) -> str:
