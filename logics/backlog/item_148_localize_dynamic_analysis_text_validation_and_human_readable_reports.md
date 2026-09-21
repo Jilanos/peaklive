@@ -1,14 +1,14 @@
 ## item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports - Localize dynamic analysis text, validation and human-readable reports
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: High
 > Theme: Dynamic presentation completeness and stable domain data
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:59:59
+> Indicators reviewed: 2026-09-21 16:04:44
 
 # AI Context
 - Summary: Translate dynamic status, errors and reports while preserving domain identities.
@@ -62,3 +62,9 @@
 # Priority
 - Priority: Medium - completes whole-interface coverage beyond static labels and protects language-independent data contracts.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`
+
+# Notes
+- Task `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive` was finished via `logics-manager flow finish task` on 2026-09-21.

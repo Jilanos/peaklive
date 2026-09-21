@@ -1,14 +1,14 @@
 ## item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference - Establish bilingual catalogs and an application-scoped locale preference
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Locale service, complete catalogs and durable application preferences
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:59:59
+> Indicators reviewed: 2026-09-21 16:04:44
 
 # AI Context
 - Summary: Deliver locale lookup, catalog parity and application-scoped persistence.
@@ -61,3 +61,9 @@
 # Priority
 - Priority: Medium - required foundation for the bilingual workflow; schedule after higher-priority capture integrity work.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`
+
+# Notes
+- Task `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive` was finished via `logics-manager flow finish task` on 2026-09-21.

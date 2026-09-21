@@ -1,12 +1,12 @@
 ## prod_032_peaklive_french_and_english_operator_experience - PeakLive French and English operator experience
 > Date: 2026-09-21
-> Status: Proposed
+> Status: Settled
 > Related request: `req_035_add_persistent_french_and_english_language_selection_across_peaklive`
-> Related backlog: `item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference`, `item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions`, `item_148_localize_dynamic_analysis_text_validation_and_human_readable_reports`, `item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation`
+> Related backlog: `item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference`
 > Related task: `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:37:31
+> Indicators reviewed: 2026-09-21 16:04:44
 
 # Overview
 Offer a complete, persistent French or English interface with immediate state-preserving language changes, while keeping CAN data, operator content and interchange formats independent of presentation language.
@@ -62,5 +62,5 @@ flowchart TD
 - Tests, package smoke evidence and operator documentation cover the delivered behavior; no untranslated app-owned runtime path is left outside the coverage inventory.
 
 # References
-- Product back-reference: `req_035_add_persistent_french_and_english_language_selection_across_peaklive`
+- Product back-reference: `item_146_establish_bilingual_catalogs_and_an_application_scoped_locale_preference`
 - Task back-reference: `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`

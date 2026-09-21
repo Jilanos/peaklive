@@ -1,14 +1,14 @@
 ## item_149_qualify_bilingual_coverage_windows_packaging_and_operator_documentation - Qualify bilingual coverage, Windows packaging and operator documentation
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Bilingual regression proof and Windows handoff
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:59:59
+> Indicators reviewed: 2026-09-21 16:04:44
 
 # AI Context
 - Summary: Prove bilingual completeness, packaged Windows behavior and data continuity.
@@ -64,3 +64,9 @@
 # Priority
 - Priority: Medium - final completeness gate after catalog, UI and dynamic-text delivery; prevents shipping a partially translated workflow.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`
+
+# Notes
+- Task `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive` was finished via `logics-manager flow finish task` on 2026-09-21.

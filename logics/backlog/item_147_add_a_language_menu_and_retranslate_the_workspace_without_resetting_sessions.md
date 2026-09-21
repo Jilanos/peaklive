@@ -1,14 +1,14 @@
 ## item_147_add_a_language_menu_and_retranslate_the_workspace_without_resetting_sessions - Add a language menu and retranslate the workspace without resetting sessions
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 45%
+> Progress: 100%
 > Complexity: High
 > Theme: State-preserving runtime UI retranslation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:59:59
+> Indicators reviewed: 2026-09-21 16:04:44
 
 # AI Context
 - Summary: Deliver a language menu and in-place retranslation with session continuity.
@@ -64,3 +64,9 @@
 # Priority
 - Priority: Medium - delivers the operator-visible choice after the locale foundation, with live-session safety as its acceptance gate.
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive`
+
+# Notes
+- Task `task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive` was finished via `logics-manager flow finish task` on 2026-09-21.
