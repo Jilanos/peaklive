@@ -15,9 +15,10 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import RangeStatistics, SeriesStore, range_statistics
-from peaklive.analysis.dbc import signal_display_title, signal_label
+from peaklive.analysis.dbc import signal_label
 from peaklive.analysis.statistics import numeric_delta
 from peaklive.i18n import translate
+from peaklive.ui.panels.graph_lane_header import display_title
 
 MEASURE_COLUMNS = (
     "measure.column_signal",
@@ -102,7 +103,7 @@ class MeasurementPanel(QWidget):
             # The cell reads as the operator names the signal; its DBC hash and
             # arbitration ID are what tell two identically-titled sources apart,
             # so they stay one hover away rather than in every row.
-            name_item = QTableWidgetItem(signal_display_title(signal_name))
+            name_item = QTableWidgetItem(display_title(signal_name))
             name_item.setToolTip(signal_label(signal_name))
             self.table.setItem(row, 0, name_item)
             self.table.item(row, 0).setTextAlignment(Qt.AlignmentFlag.AlignLeft)

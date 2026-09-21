@@ -22,6 +22,7 @@ from peaklive.services.profiles import ProfileStore
 from peaklive.services.ui_settings import UiSettingsStore
 from peaklive.ui import MainWindow
 from peaklive.ui.dialogs import ExportDialog, RecordingSettingsDialog
+from peaklive.ui.panels.graph_lane_header import RAW_PREVIEW_KEY
 
 VEHICLE_DBC = '''VERSION ""
 NS_ :
@@ -421,6 +422,23 @@ def test_switching_language_leaves_can_identities_and_values_untouched(qtbot, tm
     # The prose around those facts is what changed.
     assert french.splitlines()[0] == translate("inspector.frame_heading").upper()
     assert french != english
+
+
+def test_the_raw_preview_lane_is_named_the_same_way_everywhere(qtbot, tmp_path):
+    """One synthetic lane, one name: the graph and the measurement row agree."""
+    window = _window(qtbot, tmp_path)
+    window._render_frames([CanFrame(float(index), 0x100, bytes([index])) for index in range(4)])
+
+    window._select_locale("fr")
+    window.graph_panel._flush_measurements()
+    table = window.graph_panel.measurement.table
+    row_title = table.item(0, 0).text()
+    lane_header = next(iter(window.graph_panel._lane_headers.values()))
+
+    assert row_title == translate("graph.raw_preview") == "Octet brut 0"
+    assert lane_header.toolTip() == RAW_PREVIEW_KEY
+    # The series key itself is a stored identity and stays ASCII English.
+    assert RAW_PREVIEW_KEY in window.graph_panel._plots
 
 
 def test_the_session_report_states_the_same_facts_in_both_languages():

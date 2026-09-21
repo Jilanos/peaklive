@@ -47,6 +47,18 @@ TITLE_OVERLAY_MAX_WIDTH_FRACTION = 0.6
 TITLE_OVERLAY_STYLE = theme.LANE_TITLE_OVERLAY_STYLE
 
 
+def display_title(signal_name: str) -> str:
+    """The operator-facing name for one series key.
+
+    DBC-backed signals read as their own names, untranslated. The synthetic raw
+    preview is the one lane PeakLive names itself, so it is the one lane whose
+    title follows the interface language — while its series key does not.
+    """
+    if signal_name == RAW_PREVIEW_KEY:
+        return translate("graph.raw_preview")
+    return signal_display_title(signal_name)
+
+
 def lane_identity(store: SeriesStore | None, signal_name: str) -> tuple[str, str]:
     """Return `(title, detail)`: the concise operator title and full technical id.
 
@@ -55,8 +67,8 @@ def lane_identity(store: SeriesStore | None, signal_name: str) -> tuple[str, str
     DBC-hash-qualified identity, kept for the lane header's own tooltip.
     """
     if signal_name == RAW_PREVIEW_KEY:
-        return translate("graph.raw_preview"), signal_name
-    title = signal_display_title(signal_name)
+        return display_title(signal_name), signal_name
+    title = display_title(signal_name)
     series = store.series(signal_name) if store is not None else None
     if series is not None and series.unit:
         title = f"{title} ({series.unit})"
