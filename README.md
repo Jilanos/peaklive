@@ -308,6 +308,7 @@ d'[essai véhicule de dix minutes](docs/vehicle-test-10m.md) décrivent les preu
 - [Périmètre produit et limites initiales](docs/product-scope.md)
 - [Architecture](docs/architecture.md)
 - [Identité des builds](docs/build-identity.md)
+- [Vérification bilingue sous Windows](docs/bilingual-windows-smoke.md)
 - [Choix de Python et Qt](docs/adr/0001-native-python-qt-stack.md)
 - [Enregistrement et projections bornées](docs/adr/0002-lossless-recording-bounded-projections.md)
 - [Interface d'adaptation matérielle](docs/adr/0003-hardware-adapter-boundary.md)
