@@ -534,9 +534,12 @@ def test_both_languages_stay_operable_at_every_supported_viewport(
     assert window.width() <= size.width()
     # Every registered command stays reachable: on the row, or in the overflow
     # menu the row folds it into, never simply gone.
+    # Group rules are decoration that folds away with the group it separates,
+    # and Recover is hidden outside a timed-out shutdown. Neither is a command,
+    # and both behave the same in either language.
+    decoration = set(header._rules) | {window.acquisition_bar.recover_button}
     for widget in header._order:
-        if widget is window.acquisition_bar.recover_button:
-            # Hidden outside a timed-out shutdown by design, in both languages.
+        if widget in decoration:
             continue
         assert widget.isVisibleTo(window) or widget.parent() is header._overflow_panel
     for panel in window._layout_panels:
