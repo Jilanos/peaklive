@@ -24,7 +24,13 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from peaklive.analysis import SeriesStore
 from peaklive.analysis.dbc import signal_display_title, signal_label
+from peaklive.i18n import translate
 from peaklive.ui import theme
+
+#: The series key of the synthetic lane shown before any DBC is loaded. It is a
+#: stored identity, so it stays this exact ASCII string in every language; only
+#: the lane's title is translated.
+RAW_PREVIEW_KEY = "Raw byte 0"
 
 #: A restrained boundary between stacked lanes (item_112 AC2): visible enough
 #: to separate adjacent axes/traces, subtle enough not to read as a divider.
@@ -48,6 +54,8 @@ def lane_identity(store: SeriesStore | None, signal_name: str) -> tuple[str, str
     sample has been decoded and the store knows one. `detail` is the full
     DBC-hash-qualified identity, kept for the lane header's own tooltip.
     """
+    if signal_name == RAW_PREVIEW_KEY:
+        return translate("graph.raw_preview"), signal_name
     title = signal_display_title(signal_name)
     series = store.series(signal_name) if store is not None else None
     if series is not None and series.unit:

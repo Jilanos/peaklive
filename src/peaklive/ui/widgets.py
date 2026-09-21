@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from peaklive.i18n import translate
+from peaklive.i18n import render, translate
 
 #: Width of a collapsed panel: the toggle plus the rotated title, nothing more.
 #: Everything beyond it goes back to the splitter.
@@ -124,10 +124,15 @@ class CollapsiblePanel(QFrame):
     #: changes it, mirroring `collapsed_changed`.
     visibility_changed = Signal(bool)
 
-    def __init__(self, title: str, key: str, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, title: str, key: str, parent: QWidget | None = None, *, title_key: str = ""
+    ) -> None:
         super().__init__(parent, objectName="instrument")
         self.key = key
         self._title = title
+        #: The catalog key the title came from, so the panel can rename itself
+        #: in another language without the shell re-reaching into its widgets.
+        self.title_key = title_key
         # Explicit state: a panel inside a window that was never shown is not
         # collapsed, it is simply not on screen yet.
         self._collapsed = False
@@ -232,6 +237,15 @@ class CollapsiblePanel(QFrame):
         self.setVisible(not hidden)
         self.visibility_changed.emit(hidden)
 
+    def retranslate(self) -> None:
+        """Rename the panel, its rail and its toggle in the active language."""
+        if self.title_key:
+            self._title = translate(self.title_key)
+            self.heading.setText(self._title.upper())
+            self.rail.setText(self._title.upper())
+        self.rail.setAccessibleName(translate("panel.rail").format(panel=self._title))
+        self._sync_toggle()
+
     def _sync_toggle(self) -> None:
         collapsed = self.is_collapsed
         self.toggle.setProperty("collapsed", collapsed)
@@ -258,13 +272,35 @@ class StateNote(QLabel):
         "error": "errorNote",
     }
 
-    def __init__(self, text: str = "", parent: QWidget | None = None) -> None:
+    def __init__(self, text: str = "", parent: QWidget | None = None, *, key: str = "") -> None:
         super().__init__(text, parent, objectName="stateNote")
         self.setWordWrap(True)
         self.level = "info"
+        self._key = key
+        self._params: dict[str, object] = {}
         self.setVisible(bool(text))
 
     def show_message(self, text: str, level: str = "info") -> None:
+        """Show prose the caller already rendered; forgets any retained key."""
+        self._key = ""
+        self._params = {}
+        self._apply(text, level)
+
+    def show_key(self, key: str, level: str = "info", **params: object) -> None:
+        """Show a catalog entry and remember it, so a language change re-renders it.
+
+        Parameters stay semantic — a name, a count, a driver's own message — so
+        re-rendering never has to parse prose that was already formatted.
+        """
+        self._key = key
+        self._params = params
+        self._apply(render(key, **params), level)
+
+    def retranslate(self) -> None:
+        if self._key:
+            self._apply(render(self._key, **self._params), self.level)
+
+    def _apply(self, text: str, level: str) -> None:
         self.level = level if level in self.LEVELS else "info"
         self.setObjectName(self.LEVELS[self.level])
         self.setText(text)
@@ -274,6 +310,8 @@ class StateNote(QLabel):
 
     def clear_message(self) -> None:
         self.level = "info"
+        self._key = ""
+        self._params = {}
         self.setObjectName(self.LEVELS["info"])
         self.setText("")
         self.setVisible(False)

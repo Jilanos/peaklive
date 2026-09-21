@@ -56,6 +56,13 @@ class ColumnsDialog(QDialog):
 
         self._rebuild()
 
+    def retranslate(self) -> None:
+        """Re-caption and rebuild the grid; every cell is read back from the model."""
+        self.setWindowTitle(translate("columns.title"))
+        self.reset_button.setText(translate("columns.reset"))
+        self.close_button.setText(translate("columns.close"))
+        self._rebuild()
+
     def _rebuild(self) -> None:
         old_layout = self.grid_host.layout()
         if old_layout is not None:

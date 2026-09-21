@@ -49,7 +49,17 @@ def migrate_profile_store(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 class ProfileNameError(ValueError):
-    """An operator-supplied setup name is blank or already taken."""
+    """An operator-supplied setup name is blank or already taken.
+
+    Carries the catalog key and parameters describing the refusal rather than a
+    finished sentence, so the shell renders it in the operator's language — and
+    can re-render it if the language changes while it is on screen.
+    """
+
+    def __init__(self, key: str, **params: object) -> None:
+        super().__init__(key)
+        self.key = key
+        self.params = params
 
 
 @dataclass(slots=True)
@@ -76,9 +86,9 @@ class ProfileState:
         """
         cleaned = name.strip()
         if not cleaned:
-            raise ProfileNameError("A measurement setup name cannot be blank.")
+            raise ProfileNameError("profile.name_blank")
         if any(profile.name.casefold() == cleaned.casefold() for profile in self.profiles):
-            raise ProfileNameError(f"A measurement setup named {cleaned!r} already exists.")
+            raise ProfileNameError("profile.name_taken", name=cleaned)
         copy = self.selected.duplicate(cleaned)
         self.profiles.append(copy)
         self.last_profile_id = copy.identifier

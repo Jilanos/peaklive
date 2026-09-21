@@ -8,7 +8,9 @@ from PySide6.QtGui import QColor, QIcon, QPalette
 from PySide6.QtWidgets import QApplication
 
 from peaklive.diagnostics import install_exception_hooks
+from peaklive.i18n import set_locale
 from peaklive.resources import application_icon_path
+from peaklive.services.ui_settings import UiSettingsStore
 from peaklive.ui import MainWindow
 from peaklive.ui.theme import BACKGROUND, CONTROL_HOVER, POPUP_SURFACE, SURFACE_DEEP, TEXT
 from peaklive.ui.worker_lifecycle import drain_abandoned_workers_at_exit
@@ -48,6 +50,11 @@ def apply_application_theme(app: QApplication) -> None:
 
 def main() -> int:
     install_exception_hooks()
+    # The interface language has to be live before any widget, dialog or
+    # standard-button text is constructed, so it is read ahead of the
+    # QApplication rather than inside the window.
+    ui_settings = UiSettingsStore()
+    set_locale(ui_settings.load().locale)
     app = QApplication(sys.argv)
     apply_application_theme(app)
     apply_application_identity(app)
@@ -55,6 +62,6 @@ def main() -> int:
     # is the one further, final chance before the interpreter tears down
     # whatever a stuck driver left running in the abandoned-worker set.
     app.aboutToQuit.connect(drain_abandoned_workers_at_exit)
-    window = MainWindow()
+    window = MainWindow(ui_settings=ui_settings)
     window.show()
     return app.exec()

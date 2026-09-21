@@ -103,6 +103,10 @@ class WorkspaceHeaderBar(QWidget):
         self.row.addWidget(self._overflow_button)
         self._refreshing_overflow = False
 
+    def retranslate(self) -> None:
+        self._overflow_button.setAccessibleName(translate("workspace.header_overflow"))
+        self._overflow_button.setToolTip(translate("workspace.header_overflow"))
+
     def add(
         self, widget: QWidget, *, deferrable: bool = False, elidable: bool = False
     ) -> QWidget:

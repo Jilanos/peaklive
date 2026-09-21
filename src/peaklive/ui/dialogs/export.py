@@ -32,6 +32,14 @@ SCOPE_WINDOW = "window"
 SCOPE_ALL = "all"
 
 
+class RangeUnavailable(ValueError):
+    """The chosen scope has no range to export; `key` names the reason."""
+
+    def __init__(self, key: str) -> None:
+        super().__init__(key)
+        self.key = key
+
+
 class ExportDialog(QDialog):
     """Streams the selected signals over a chosen range to CSV or Parquet."""
 
@@ -59,6 +67,7 @@ class ExportDialog(QDialog):
         self.destination: Path | None = None
         self.written = 0
 
+        self._row_labels: list[tuple[QLabel, str]] = []
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
@@ -70,13 +79,13 @@ class ExportDialog(QDialog):
             item.setData(Qt.ItemDataRole.UserRole, name)
             self.signal_list.addItem(item)
         self.signal_list.selectAll()
-        form.addRow(QLabel(translate("export.signals")), self.signal_list)
+        form.addRow(self._row_label("export.signals"), self.signal_list)
 
         self.format_selector = QComboBox(objectName="exportFormat")
         self.format_selector.setAccessibleName(translate("export.format"))
         self.format_selector.addItem(translate("export.format_csv"), "csv")
         self.format_selector.addItem(translate("export.format_parquet"), "parquet")
-        form.addRow(QLabel(translate("export.format")), self.format_selector)
+        form.addRow(self._row_label("export.format"), self.format_selector)
 
         self.scope_selector = QComboBox(objectName="exportScope")
         self.scope_selector.setAccessibleName(translate("export.scope"))
@@ -85,7 +94,7 @@ class ExportDialog(QDialog):
         self.scope_selector.addItem(translate("export.scope_all"), SCOPE_ALL)
         if cursor_range is None:
             self.scope_selector.setCurrentIndex(self.scope_selector.findData(SCOPE_ALL))
-        form.addRow(QLabel(translate("export.scope")), self.scope_selector)
+        form.addRow(self._row_label("export.scope"), self.scope_selector)
 
         destination_row = QHBoxLayout()
         self.destination_label = QLabel("—", objectName="exportDestination")
@@ -95,7 +104,7 @@ class ExportDialog(QDialog):
         destination_row.addWidget(self.browse_button)
         destination_host = QWidget()
         destination_host.setLayout(destination_row)
-        form.addRow(QLabel(translate("export.destination")), destination_host)
+        form.addRow(self._row_label("export.destination"), destination_host)
         layout.addLayout(form)
 
         self.progress = QProgressBar(objectName="exportProgress")
@@ -120,6 +129,40 @@ class ExportDialog(QDialog):
         self.close_button.clicked.connect(self.reject)
         actions.addWidget(self.close_button)
         layout.addLayout(actions)
+
+    def _row_label(self, key: str) -> QLabel:
+        label = QLabel(translate(key))
+        self._row_labels.append((label, key))
+        return label
+
+    def retranslate(self) -> None:
+        """Re-caption the dialog in place; the chosen signals and file are kept."""
+        self.setWindowTitle(translate("export.title"))
+        for label, key in self._row_labels:
+            label.setText(translate(key))
+        self.signal_list.setAccessibleName(translate("export.signals"))
+        self.format_selector.setAccessibleName(translate("export.format"))
+        self.scope_selector.setAccessibleName(translate("export.scope"))
+        for combo, entries in (
+            (self.format_selector, (("csv", "export.format_csv"),
+                                    ("parquet", "export.format_parquet"))),
+            (self.scope_selector, ((SCOPE_CURSORS, "export.scope_cursors"),
+                                   (SCOPE_WINDOW, "export.scope_window"),
+                                   (SCOPE_ALL, "export.scope_all"))),
+        ):
+            for data, key in entries:
+                index = combo.findData(data)
+                if index >= 0:
+                    combo.setItemText(index, translate(key))
+        for button, key in (
+            (self.browse_button, "export.browse"),
+            (self.run_button, "export.run"),
+            (self.cancel_button, "export.cancel"),
+            (self.close_button, "export.close"),
+        ):
+            button.setText(translate(key))
+        self.progress.setAccessibleName(translate("progress.accessible"))
+        self.note.retranslate()
 
     # ---- inputs -------------------------------------------------------
 
@@ -152,13 +195,19 @@ class ExportDialog(QDialog):
             self.set_destination(Path(selected))
 
     def resolve_range(self) -> tuple[float | None, float | None]:
+        """The range to export, or a `RangeUnavailable` naming why there is none.
+
+        The refusal carries a catalog key rather than finished prose, so the
+        dialog can show it — and re-show it after a language change — without
+        parsing a sentence it produced earlier.
+        """
         if self.scope == SCOPE_CURSORS:
             if self._cursor_range is None:
-                raise ValueError(translate("export.no_cursors"))
+                raise RangeUnavailable("export.no_cursors")
             return self._cursor_range
         if self.scope == SCOPE_WINDOW:
             if self._visible_window is None:
-                raise ValueError(translate("export.no_range"))
+                raise RangeUnavailable("export.no_range")
             return self._visible_window
         return None, None
 
@@ -173,15 +222,15 @@ class ExportDialog(QDialog):
         """
         names = self.selected_signals
         if not names:
-            self.note.show_message(translate("export.no_signal"), "error")
+            self.note.show_key("export.no_signal", "error")
             return -1
         if self.destination is None:
-            self.note.show_message(translate("export.no_destination"), "error")
+            self.note.show_key("export.no_destination", "error")
             return -1
         try:
             start, end = self.resolve_range()
-        except ValueError as error:
-            self.note.show_message(str(error), "error")
+        except RangeUnavailable as error:
+            self.note.show_key(error.key, "error")
             return -1
         # Series caches are maintained by the UI thread.  Materialise the
         # selected range before crossing the thread boundary so the worker can
@@ -226,24 +275,22 @@ class ExportDialog(QDialog):
 
     def _show_progress(self, written: int) -> None:
         self.written = written
-        self.note.show_message(translate("export.running").format(written=written), "info")
+        self.note.show_key("export.running", "info", written=written)
 
     def _finished(self, written: int) -> None:
         self.written = written
         destination = self.destination
         name = destination.name if destination is not None else ""
         if written == 0:
-            self.note.show_message(translate("export.no_range"), "warning")
+            self.note.show_key("export.no_range", "warning")
             return
-        self.note.show_message(
-            translate("export.done").format(written=written, name=name), "info"
-        )
+        self.note.show_key("export.done", "info", written=written, name=name)
 
     def _failed(self, message: str) -> None:
-        self.note.show_message(translate("export.failed").format(message=message), "error")
+        self.note.show_key("export.failed", "error", message=message)
 
     def _cancelled(self) -> None:
-        self.note.show_message(translate("export.cancelled"), "warning")
+        self.note.show_key("export.cancelled", "warning")
 
     def keyPressEvent(self, event) -> None:  # type: ignore[no-untyped-def]  # noqa: N802
         # Escape must close the dialog, never silently discard a running export.

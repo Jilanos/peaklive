@@ -125,29 +125,34 @@ class TraceFilterSettings:
     def is_active(self) -> bool:
         return bool(self.active_chips())
 
-    def active_chips(self) -> list[tuple[str, str]]:
-        """Return (field, label) pairs for the removable active-filter chips."""
-        chips: list[tuple[str, str]] = []
+    def active_chips(self) -> list[tuple[str, str, str]]:
+        """Return (field, caption key, value) triples for the active-filter chips.
+
+        The domain names what is filtered and on which value; it does not word
+        it. The caption is a catalog key so the chip reads in whichever language
+        the interface is showing, while the value stays exactly as entered.
+        """
+        chips: list[tuple[str, str, str]] = []
         if self.arbitration_id:
-            chips.append(("arbitration_id", f"ID {self.arbitration_id}"))
+            chips.append(("arbitration_id", "trace.filter_id", self.arbitration_id))
         if self.message:
-            chips.append(("message", f"Message {self.message}"))
+            chips.append(("message", "trace.filter_message", self.message))
         if self.signal:
-            chips.append(("signal", f"Signal {self.signal}"))
+            chips.append(("signal", "trace.filter_signal", self.signal))
         if self.direction != TRACE_DIRECTION_ANY:
-            chips.append(("direction", f"Direction {self.direction.upper()}"))
+            chips.append(("direction", "trace.filter_direction", self.direction.upper()))
         if self.event_kind:
-            chips.append(("event_kind", f"Event {self.event_kind}"))
+            chips.append(("event_kind", "trace.filter_event", self.event_kind))
         if self.decode_status != TRACE_DECODE_ANY:
-            chips.append(("decode_status", f"Decode {self.decode_status}"))
+            chips.append(("decode_status", "trace.filter_status", self.decode_status))
         if self.time_start is not None:
-            chips.append(("time_start", f"From {self.time_start:.6f}s"))
+            chips.append(("time_start", "trace.filter_from", f"{self.time_start:.6f}s"))
         if self.time_end is not None:
-            chips.append(("time_end", f"To {self.time_end:.6f}s"))
+            chips.append(("time_end", "trace.filter_to", f"{self.time_end:.6f}s"))
         if not self.show_frames:
-            chips.append(("show_frames", "Events only"))
+            chips.append(("show_frames", "trace.chip_events_only", ""))
         if not self.show_events:
-            chips.append(("show_events", "Frames only"))
+            chips.append(("show_events", "trace.chip_frames_only", ""))
         return chips
 
     def reset_field(self, field_name: str) -> None:

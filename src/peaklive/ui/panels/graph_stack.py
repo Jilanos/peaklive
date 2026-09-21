@@ -7,19 +7,19 @@ from peaklive.analysis import HistoricalSignalStore, SeriesStore
 from peaklive.i18n import translate
 from peaklive.services.history_worker import HistoryViewportWorker
 from peaklive.ui import theme
-from peaklive.ui.panels import graph_controls
 from peaklive.ui.panels.graph_controls import GraphControlsBar
 from peaklive.ui.panels.graph_history import curve_points, viewport
-from peaklive.ui.panels.graph_lane_header import build_lane, lane_identity
+from peaklive.ui.panels.graph_lane_header import RAW_PREVIEW_KEY, build_lane, lane_identity
 from peaklive.ui.panels.graph_navigation import AXIS_CAPTURE, FOLLOW_MODE_FULL, GraphNavigation
+from peaklive.ui.panels.graph_stack_text import GraphStackText
 from peaklive.ui.panels.measurement import MeasurementPanel
 from peaklive.ui.widgets import StateNote
 from peaklive.ui.worker_lifecycle import abandon_worker
-RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, MEASUREMENT_REFRESH_INTERVAL_MS = ("Raw byte 0", 180, 250)
+RAW_PREVIEW, PLOT_AREA_MINIMUM_HEIGHT, MEASUREMENT_REFRESH_INTERVAL_MS = (RAW_PREVIEW_KEY, 180, 250)
 SHARED_LEFT_AXIS_WIDTH = 64  # sign + 4 digits + 2 decimals + tick clearance (item_137 AC5)
 
 
-class GraphStackPanel(GraphNavigation, QWidget):
+class GraphStackPanel(GraphStackText, GraphNavigation, QWidget):
     cursors_changed = Signal()
     view_changed = Signal()
     measurement_visibility_changed = Signal(bool)
@@ -77,7 +77,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.container_layout.setContentsMargins(0, 0, 0, 0)
         self.container_layout.setSpacing(0)
         layout.addWidget(self.scroll, 1)
-        self.note = StateNote(translate("graph.empty"))
+        self.note = StateNote(translate("graph.empty"), key="graph.empty")
         layout.addWidget(self.note)
         self.measurement = MeasurementPanel()
         layout.addWidget(self.measurement)
@@ -244,7 +244,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
         self.note.setVisible(not has_sample)
         self.empty_state_label.setVisible(not has_sample)
         if not has_sample:
-            self.note.show_message(translate("graph.empty"), "info")
+            self.note.show_key("graph.empty", "info")
             self.empty_state_label.setText(translate("graph.empty"))
         self._mark_measurements_dirty()
     def _historical_refresh_completed(self, points_by_signal: dict, generation: int) -> None:
@@ -293,7 +293,7 @@ class GraphStackPanel(GraphNavigation, QWidget):
     def _historical_refresh_failed(self, _error: str, generation: int) -> None:
         if generation != self._history_generation:
             return
-        self.note.show_message(translate("graph.history_error"), "error")
+        self.note.show_key("graph.history_error", "error")
         self.note.setVisible(True)
     def _history_worker_finished(self) -> None:
         worker = self._history_worker
@@ -349,20 +349,6 @@ class GraphStackPanel(GraphNavigation, QWidget):
         finally:
             self._updating_cursors = False
         self._refresh_cursor_summary()
-    def _refresh_cursor_summary(self) -> None:
-        if self.cursor_a is None and self.cursor_b is None:
-            self.cursor_summary.setText(translate("graph.cursor_summary_empty"))
-            self.cursor_summary.set_preferred_width(0)
-            return
-        summary_format = translate("graph.cursor_summary")
-        text = summary_format.format(
-            cursor_a=graph_controls.format_cursor_time(self.cursor_a),
-            cursor_b=graph_controls.format_cursor_time(self.cursor_b),
-            delta=graph_controls.format_cursor_delta(self.cursor_a, self.cursor_b),
-        )
-        self.cursor_summary.setText(text)
-        width = self.cursor_summary.fontMetrics().horizontalAdvance(text) + 4
-        self.cursor_summary.set_preferred_width(width)
     @property
     def cursor_range(self) -> tuple[float, float] | None:
         cursors = self.cursor_a, self.cursor_b

@@ -42,6 +42,7 @@ class TraceViewPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.columns: list[TraceColumn] = []
+        self._state: tuple[int, int, int, int] | None = None
         self.follow_tail = True
         self._selected_record: int | None = None
         self._buffer: TraceBuffer | None = None
@@ -77,10 +78,10 @@ class TraceViewPanel(QWidget):
         self.table.customContextMenuRequested.connect(self._context_menu)
         layout.addWidget(self.table, 1)
 
-        self.tail_note = StateNote(translate("trace.tail_paused"))
+        self.tail_note = StateNote(translate("trace.tail_paused"), key="trace.tail_paused")
         self.tail_note.setVisible(False)
         layout.addWidget(self.tail_note)
-        self.note = StateNote(translate("trace.empty"))
+        self.note = StateNote(translate("trace.empty"), key="trace.empty")
         layout.addWidget(self.note)
         self.summary = QLabel("", objectName="traceSummary")
         layout.addWidget(self.summary)
@@ -309,17 +310,46 @@ class TraceViewPanel(QWidget):
             self.set_follow_tail(False)
 
     def _refresh_state(self, total: int, shown: int, hidden: int, capacity: int) -> None:
+        self._state = (total, shown, hidden, capacity)
         if total == 0:
-            self.note.show_message(translate("trace.empty"), "info")
+            self.note.show_key("trace.empty", "info")
         elif shown == 0:
-            self.note.show_message(
-                translate("trace.filtered_empty").format(hidden=hidden), "warning"
-            )
+            self.note.show_key("trace.filtered_empty", "warning", hidden=hidden)
         else:
             self.note.clear_message()
         self.summary.setText(
             translate("trace.summary").format(shown=shown, total=total, capacity=capacity)
         )
+
+    def retranslate(self) -> None:
+        """Re-caption the table and its state text; rows are never rebuilt.
+
+        Re-heading the columns in place is deliberate: `apply_columns` would
+        re-render every row and lose the selected record and the scroll
+        position, which a language change has to keep.
+        """
+        self.filter_bar.retranslate()
+        self.follow_checkbox.setText(translate("trace.follow_tail"))
+        self.follow_checkbox.setToolTip(translate("trace.follow_tail"))
+        self.follow_checkbox.setAccessibleName(translate("trace.follow_tail"))
+        self.table.setAccessibleName(translate("trace.table"))
+        visible = [column for column in self.columns if column.visible]
+        self.table.setHorizontalHeaderLabels(
+            [translate(f"trace.column_{column.key}") for column in visible]
+        )
+        capacity = self._buffer.capacity if self._buffer is not None else DEFAULT_TRACE_CAPACITY
+        for index, column in enumerate(visible):
+            if column.key != "frame":
+                continue
+            header_item = self.table.horizontalHeaderItem(index)
+            if header_item is not None:
+                header_item.setToolTip(
+                    translate("trace.column_frame_help").format(capacity=capacity)
+                )
+        self.tail_note.retranslate()
+        self.note.retranslate()
+        if self._state is not None:
+            self._refresh_state(*self._state)
 
     def selected_index(self) -> int | None:
         row = self.table.currentRow()

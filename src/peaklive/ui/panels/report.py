@@ -25,6 +25,7 @@ class ReportPanel(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.text = ""
+        self._report: SessionReport | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -47,14 +48,29 @@ class ReportPanel(QWidget):
         self.view.setReadOnly(True)
         layout.addWidget(self.view, 1)
 
-        self.note = StateNote(translate("report.empty"))
+        self.note = StateNote(translate("report.empty"), key="report.empty")
         layout.addWidget(self.note)
 
     def show_report(self, report: SessionReport) -> None:
+        self._report = report
         self.text = ReportRenderer(report).render()
         self.view.setPlainText(self.text)
         if report.is_empty:
-            self.note.show_message(translate("report.empty"), "info")
+            self.note.show_key("report.empty")
         else:
             self.note.clear_message()
         self.export_button.setEnabled(not report.is_empty)
+
+    def retranslate(self) -> None:
+        """Re-caption the controls and re-render the report from retained facts."""
+        for button, key in (
+            (self.refresh_button, "report.refresh"),
+            (self.export_button, "report.export"),
+        ):
+            button.setText(translate(key))
+            button.setToolTip(translate(key))
+            button.setAccessibleName(translate(key))
+        self.view.setAccessibleName(translate("report.accessible"))
+        self.note.retranslate()
+        if self._report is not None:
+            self.show_report(self._report)

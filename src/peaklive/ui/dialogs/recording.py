@@ -47,6 +47,7 @@ class RecordingSettingsDialog(QDialog):
         self._profile = profile
         self._naming = naming or RecordingNaming()
 
+        self._row_labels: list[tuple[QLabel, str]] = []
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
@@ -55,7 +56,7 @@ class RecordingSettingsDialog(QDialog):
         self.enabled_checkbox.setToolTip(translate("recording.enabled_tooltip"))
         self.enabled_checkbox.setChecked(profile.recording.enabled)
         self.enabled_checkbox.toggled.connect(self._set_enabled)
-        form.addRow(QLabel(translate("recording.enabled")), self.enabled_checkbox)
+        form.addRow(self._row_label("recording.enabled"), self.enabled_checkbox)
 
         self.capture_format_selector = QComboBox(objectName="recordingCaptureFormat")
         self.capture_format_selector.setAccessibleName(
@@ -68,7 +69,7 @@ class RecordingSettingsDialog(QDialog):
             max(0, self.capture_format_selector.findData(profile.recording.capture_format))
         )
         self.capture_format_selector.currentIndexChanged.connect(self._set_capture_format)
-        form.addRow(QLabel(translate("recording.capture_format")), self.capture_format_selector)
+        form.addRow(self._row_label("recording.capture_format"), self.capture_format_selector)
 
         directory_row = QHBoxLayout()
         self.directory_edit = QLineEdit(
@@ -87,7 +88,7 @@ class RecordingSettingsDialog(QDialog):
         directory_row.addWidget(self.browse_button)
         directory_host = QWidget()
         directory_host.setLayout(directory_row)
-        form.addRow(QLabel(translate("recording.directory")), directory_host)
+        form.addRow(self._row_label("recording.directory"), directory_host)
 
         self.template_edit = QLineEdit(
             profile.recording.filename_template, objectName="recordingTemplate"
@@ -95,7 +96,7 @@ class RecordingSettingsDialog(QDialog):
         self.template_edit.setAccessibleName(translate("recording.template"))
         self.template_edit.setToolTip(translate("recording.template_tooltip"))
         self.template_edit.textChanged.connect(self._set_template)
-        form.addRow(QLabel(translate("recording.template")), self.template_edit)
+        form.addRow(self._row_label("recording.template"), self.template_edit)
 
         iteration_row = QHBoxLayout()
         self.iteration_spin = QSpinBox(objectName="recordingIteration")
@@ -112,19 +113,19 @@ class RecordingSettingsDialog(QDialog):
         iteration_row.addWidget(self.reset_button)
         iteration_host = QWidget()
         iteration_host.setLayout(iteration_row)
-        form.addRow(QLabel(translate("recording.iteration")), iteration_host)
+        form.addRow(self._row_label("recording.iteration"), iteration_host)
 
         self.text_edit = QLineEdit(profile.recording.text, objectName="recordingText")
         self.text_edit.setAccessibleName(translate("recording.text"))
         self.text_edit.setToolTip(translate("recording.text_tooltip"))
         self.text_edit.setPlaceholderText(translate("recording.text_placeholder"))
         self.text_edit.textChanged.connect(self._set_text)
-        form.addRow(QLabel(translate("recording.text")), self.text_edit)
+        form.addRow(self._row_label("recording.text"), self.text_edit)
 
         self.preview_label = QLabel(objectName="recordingPreview")
         self.preview_label.setAccessibleName(translate("recording.preview"))
         self.preview_label.setToolTip(translate("recording.preview_tooltip"))
-        form.addRow(QLabel(translate("recording.preview")), self.preview_label)
+        form.addRow(self._row_label("recording.preview"), self.preview_label)
 
         layout.addLayout(form)
 
@@ -139,6 +140,47 @@ class RecordingSettingsDialog(QDialog):
         actions.addWidget(self.close_button)
         layout.addLayout(actions)
 
+        self._refresh_preview()
+
+    def _row_label(self, key: str) -> QLabel:
+        label = QLabel(translate(key))
+        self._row_labels.append((label, key))
+        return label
+
+    def retranslate(self) -> None:
+        """Re-caption the dialog; the folder, template and label edits are kept."""
+        self.setWindowTitle(translate("recording.title"))
+        for label, key in self._row_labels:
+            label.setText(translate(key))
+        self.enabled_checkbox.setAccessibleName(translate("recording.enabled"))
+        self.enabled_checkbox.setToolTip(translate("recording.enabled_tooltip"))
+        accessible = translate("recording.capture_format_accessible")
+        self.capture_format_selector.setAccessibleName(accessible)
+        self.capture_format_selector.setToolTip(accessible)
+        for data, key in (("asc", "recording.capture_format_asc"),
+                          ("trc", "recording.capture_format_trc")):
+            index = self.capture_format_selector.findData(data)
+            if index >= 0:
+                self.capture_format_selector.setItemText(index, translate(key))
+        self.directory_edit.setAccessibleName(translate("recording.directory"))
+        self.directory_edit.setToolTip(translate("recording.directory_tooltip"))
+        self.directory_edit.setPlaceholderText(translate("recording.directory_default"))
+        self.browse_button.setText(translate("recording.browse"))
+        self.browse_button.setAccessibleName(translate("recording.browse"))
+        self.template_edit.setAccessibleName(translate("recording.template"))
+        self.template_edit.setToolTip(translate("recording.template_tooltip"))
+        self.iteration_spin.setAccessibleName(translate("recording.iteration"))
+        self.iteration_spin.setToolTip(translate("recording.iteration_tooltip"))
+        self.reset_button.setText(translate("recording.reset"))
+        self.reset_button.setAccessibleName(translate("recording.reset"))
+        self.reset_button.setToolTip(translate("recording.reset_tooltip"))
+        self.text_edit.setAccessibleName(translate("recording.text"))
+        self.text_edit.setToolTip(translate("recording.text_tooltip"))
+        self.text_edit.setPlaceholderText(translate("recording.text_placeholder"))
+        self.preview_label.setAccessibleName(translate("recording.preview"))
+        self.preview_label.setToolTip(translate("recording.preview_tooltip"))
+        self.close_button.setText(translate("recording.close"))
+        self.note.retranslate()
         self._refresh_preview()
 
     # ---- field mutation -------------------------------------------------

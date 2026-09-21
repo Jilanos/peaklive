@@ -35,18 +35,16 @@ class WorkspaceSession:
     def _start_acquisition(self) -> None:
         """Open a new acquisition generation, or explain why it is refused."""
         if self._replay_worker is not None and self._replay_worker.isRunning():
-            self.session_note.show_message(
-                translate("acquisition.start_blocked_by_replay"), "warning"
-            )
+            self.session_note.show_key("acquisition.start_blocked_by_replay", "warning")
             return
         if self._finalizing_generation is not None:
-            self.session_note.show_message(
-                translate("acquisition.start_blocked_by_finalization"), "warning"
+            self.session_note.show_key(
+                "acquisition.start_blocked_by_finalization", "warning"
             )
             return
         if not self._lifecycle.can_start:
             if self._lifecycle.phase is AcquisitionPhase.TIMED_OUT:
-                self.session_note.show_message(translate("acquisition.start_blocked"), "warning")
+                self.session_note.show_key("acquisition.start_blocked", "warning")
             return
         generation = self._lifecycle.begin()
         self._reset_session("")
@@ -84,7 +82,7 @@ class WorkspaceSession:
             abandon_worker(previous)
         self._worker = None
         self._lifecycle.recover_timed_out()
-        self.session_note.show_message(translate("acquisition.recovering_driver"), "warning")
+        self.session_note.show_key("acquisition.recovering_driver", "warning")
         self._show_lifecycle_phase()
         self._start_acquisition()
     def _worker_phase_changed(self, generation: int, phase: str) -> None:
@@ -94,7 +92,7 @@ class WorkspaceSession:
         self._show_lifecycle_phase()
     def _acquisition_failed(self, message: str) -> None:
         self.acquisition_bar.set_bus_state("bus_error")
-        self.status.showMessage(translate("acquisition.failed").format(message=message))
+        self._set_status("acquisition.failed", message=message)
     def _acquisition_history_failed(self, message: str) -> None:
         """Wind live acquisition down after historical persistence failed once.
 
@@ -120,7 +118,7 @@ class WorkspaceSession:
         self._sync_setup_menu_enabled()
         message = "acquisition.finalizing" if finalizing else _PHASE_STATUS.get(phase)
         if message is not None:
-            self.status.showMessage(translate(message))
+            self._set_status(message)
         if finalizing or phase in {AcquisitionPhase.STOPPING, AcquisitionPhase.FINALIZING}:
             self._show_finalization_progress()
         elif phase is not AcquisitionPhase.RUNNING:
@@ -146,9 +144,7 @@ class WorkspaceSession:
             self._open_trace(Path(selected))
     def _open_trace(self, path: Path) -> None:
         if self._worker is not None and self._worker.isRunning():
-            self.session_note.show_message(
-                translate("trace.open_blocked_by_acquisition"), "warning"
-            )
+            self.session_note.show_key("trace.open_blocked_by_acquisition", "warning")
             return
         previous = self._replay_worker
         if previous is not None and previous.isRunning():
@@ -173,7 +169,7 @@ class WorkspaceSession:
         )
         self._replay_worker.progressed.connect(partial(self._replay_progressed, generation))
         self._replay_worker.finished.connect(partial(self._replay_finished, generation))
-        self._begin_work(translate("trace.opening").format(name=path.name))
+        self._begin_work("trace.opening", name=path.name)
         self._replay_worker.start()
         self._update_mode_availability()
     def _replay_progressed(self, generation: int, done: int, total: int) -> None:
@@ -207,7 +203,7 @@ class WorkspaceSession:
             return
         self._replay_failed_generation = generation
         self.acquisition_bar.set_bus_state("stopped")
-        self.status.showMessage(translate("trace.replay_failed").format(message=message))
+        self._set_status("trace.replay_failed", message=message)
         self._clear_pending_replay_batches()
         self._replay_source_completed_generation = None
         self._replay_worker = None
@@ -232,7 +228,7 @@ class WorkspaceSession:
         """Finalize decoding, then wait for the background writer to settle."""
         if generation != getattr(self, "_replay_generation", 0):
             return
-        self.status.showMessage(translate("trace.replay_done"))
+        self._set_status("trace.replay_done")
         self._clear_pending_replay_batches()
         self._replay_worker = None
         self._end_work()
@@ -291,9 +287,9 @@ class WorkspaceSession:
         self.trace_panel.refresh()
         self._sync_graphs()
         self._refresh_report()
-    def _begin_work(self, message: str) -> None:
+    def _begin_work(self, key: str, **params: object) -> None:
         self.progress.setVisible(True)
-        self.status.showMessage(message)
+        self._set_status(key, **params)
     def _end_work(self) -> None:
         self.progress.setVisible(False)
         self.progress.setRange(0, 0)
@@ -335,4 +331,4 @@ class WorkspaceSession:
         except OSError as error:
             self.report_panel.note.show_message(str(error), "error")
             return
-        self.status.showMessage(translate("report.exported").format(name=path.name))
+        self._set_status("report.exported", name=path.name)

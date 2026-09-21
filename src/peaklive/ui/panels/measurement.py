@@ -44,6 +44,7 @@ class MeasurementPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._inputs: tuple[Any, tuple[str, ...], float | None, float | None] | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.range_label = QLabel(translate("measure.needs_cursors"), objectName="rangeLabel")
@@ -76,6 +77,7 @@ class MeasurementPanel(QWidget):
         cursor_a: float | None,
         cursor_b: float | None,
     ) -> None:
+        self._inputs = (store, signal_names, cursor_a, cursor_b)
         self.table.clearSpans()
         self.table.setRowCount(0)
         cursor_range = (
@@ -125,6 +127,15 @@ class MeasurementPanel(QWidget):
             if cursor_range is None:
                 continue
             self._write_statistics(row, range_statistics(series, *cursor_range))
+
+    def retranslate(self) -> None:
+        """Re-head the table and recompute its cells from the retained inputs."""
+        self.table.setAccessibleName(translate("measure.accessible"))
+        self.table.setHorizontalHeaderLabels([translate(key) for key in MEASURE_COLUMNS])
+        if self._inputs is None:
+            self.range_label.setText(translate("measure.needs_cursors"))
+            return
+        self.refresh(*self._inputs)
 
     def _write_statistics(self, row: int, stats: RangeStatistics) -> None:
         self.table.setItem(row, 4, QTableWidgetItem(str(stats.count)))

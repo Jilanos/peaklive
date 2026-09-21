@@ -33,6 +33,7 @@ from peaklive.services.export_worker import ExportWorker
 from peaklive.services.lifecycle import AcquisitionLifecycle
 from peaklive.services.profiles import ProfileState, ProfileStore
 from peaklive.services.replay_worker import ReplayWorker
+from peaklive.services.ui_settings import UiSettingsStore
 from peaklive.services.worker import AcquisitionWorker
 from peaklive.ui.actions import WorkspaceActions
 from peaklive.ui.addressing import WorkspaceAddressing
@@ -41,6 +42,7 @@ from peaklive.ui.dialogs import ColumnsDialog, ExportDialog, RecordingSettingsDi
 from peaklive.ui.gui_gc import ensure_gui_garbage_collection
 from peaklive.ui.ingest_controller import WorkspaceIngest
 from peaklive.ui.layout_reflow import WorkspaceReflow
+from peaklive.ui.locale_controller import WorkspaceLocale
 from peaklive.ui.panels import (
     AcquisitionBar,
     InspectorPanel,
@@ -50,6 +52,7 @@ from peaklive.ui.panels import (
 from peaklive.ui.panels.signal_explorer import SIGNAL_KEY_ROLE
 from peaklive.ui.profile_controller import WorkspaceProfiles
 from peaklive.ui.replay_admission import WorkspaceReplayAdmission
+from peaklive.ui.retranslation import WorkspaceRetranslation
 from peaklive.ui.session_controller import WorkspaceSession
 from peaklive.ui.signal_backfill_controller import WorkspaceSignalBackfill
 from peaklive.ui.signal_summary_controller import WorkspaceSignalSummary
@@ -73,9 +76,11 @@ class MainWindow(
     WorkspaceCatalog,
     WorkspaceCenter,
     WorkspaceIngest,
+    WorkspaceLocale,
     WorkspaceProfiles,
     WorkspaceReflow,
     WorkspaceReplayAdmission,
+    WorkspaceRetranslation,
     WorkspaceSession,
     WorkspaceSignalBackfill,
     WorkspaceSignalSummary,
@@ -87,9 +92,11 @@ class MainWindow(
         self,
         profile_store: ProfileStore | None = None,
         adapter_factory: Callable[[], CanAdapter] = default_adapter,
+        ui_settings: UiSettingsStore | None = None,
     ) -> None:
         ensure_gui_garbage_collection()
         super().__init__()
+        self._init_locale(ui_settings)
         self.setWindowTitle(translate("app.title"))
         self.setMinimumSize(1024, 680)
         self._store = profile_store or ProfileStore()
@@ -132,9 +139,8 @@ class MainWindow(
         if self._state.recovered_from is not None:
             QMessageBox.warning(
                 self,
-                "Profile store reset",
-                "The measurement profile store could not be read and has been reset to "
-                f"defaults.\n\nThe previous file was saved to:\n{self._state.recovered_from}",
+                translate("profile.store_reset_title"),
+                translate("profile.store_reset_body").format(path=self._state.recovered_from),
             )
         self._install_shortcuts()
         self._select_last_profile()
@@ -186,7 +192,9 @@ class MainWindow(
 
         self.workspace = QSplitter(Qt.Orientation.Horizontal, objectName="workspaceSplitter")
 
-        self.signals_panel = CollapsiblePanel(translate("workspace.signals"), PANEL_SIGNALS)
+        self.signals_panel = CollapsiblePanel(
+            translate("workspace.signals"), PANEL_SIGNALS, title_key="workspace.signals"
+        )
         self.signal_summary_panel = SignalSummaryPanel()
         self.signals_panel.body_layout.addWidget(self.signal_summary_panel)
         self.explorer_panel = SignalExplorerPanel()
@@ -196,11 +204,13 @@ class MainWindow(
         self.signals_panel.body_layout.addWidget(self.explorer_panel, 1)
 
         self.trace_graph_panel = CollapsiblePanel(
-            translate("workspace.graphs_trace"), PANEL_CENTER
+            translate("workspace.graphs_trace"), PANEL_CENTER, title_key="workspace.graphs_trace"
         )
         self._build_center_panel()
 
-        self.inspector_panel = CollapsiblePanel(translate("workspace.inspector"), PANEL_INSPECTOR)
+        self.inspector_panel = CollapsiblePanel(
+            translate("workspace.inspector"), PANEL_INSPECTOR, title_key="workspace.inspector"
+        )
         self.inspector = InspectorPanel()
         self.inspector_panel.body_layout.addWidget(self.inspector)
 
@@ -234,7 +244,7 @@ class MainWindow(
         self.status = QStatusBar(self)
         self.status.addPermanentWidget(self.build)
         self.status.addPermanentWidget(self.progress)
-        self.status.showMessage(translate("acquisition.disconnected"))
+        self._set_status("acquisition.disconnected")
         self.setStatusBar(self.status)
         self._build_menu()
 

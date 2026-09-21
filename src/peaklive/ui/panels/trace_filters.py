@@ -36,6 +36,8 @@ class TraceFilterBar(QWidget):
         super().__init__(parent)
         self.settings = TraceFilterSettings()
         self._updating = False
+        self._captions: list[tuple[QLabel, str, bool]] = []
+        self._lines: list[tuple[QLineEdit, str]] = []
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -45,7 +47,7 @@ class TraceFilterBar(QWidget):
         # reserve the combined width of the entire header.
         self.header = QWidget(objectName="traceFilterHeader")
         header = FlowLayout(self.header, spacing=8)
-        header.addWidget(QLabel(translate("trace.filters").upper()))
+        header.addWidget(self._caption("trace.filters"))
         self.id_filter = self._line("traceIdFilter", "trace.filter_id")
         header.addWidget(self.id_filter)
         self.message_filter = self._line("traceMessageFilter", "trace.filter_message")
@@ -103,7 +105,7 @@ class TraceFilterBar(QWidget):
         self.secondary = QWidget(objectName="secondaryFilters")
         secondary_layout = QGridLayout(self.secondary)
         secondary_layout.setContentsMargins(0, 0, 0, 0)
-        secondary_layout.addWidget(QLabel(translate("trace.filter_direction")), 0, 0)
+        secondary_layout.addWidget(self._caption("trace.filter_direction", upper=False), 0, 0)
         self.direction_filter = QComboBox(objectName="traceDirectionFilter")
         self.direction_filter.setAccessibleName(translate("trace.filter_direction"))
         self.direction_filter.setToolTip(translate("trace.filter_direction"))
@@ -112,7 +114,7 @@ class TraceFilterBar(QWidget):
         self.direction_filter.addItem(translate("trace.direction_event"), "EVENT")
         self.direction_filter.currentIndexChanged.connect(self._read_filters)
         secondary_layout.addWidget(self.direction_filter, 0, 1)
-        secondary_layout.addWidget(QLabel(translate("trace.filter_status")), 0, 2)
+        secondary_layout.addWidget(self._caption("trace.filter_status", upper=False), 0, 2)
         self.status_filter = QComboBox(objectName="traceStatusFilter")
         self.status_filter.setAccessibleName(translate("trace.filter_status"))
         self.status_filter.setToolTip(translate("trace.filter_status"))
@@ -123,13 +125,13 @@ class TraceFilterBar(QWidget):
         self.status_filter.currentIndexChanged.connect(self._read_filters)
         secondary_layout.addWidget(self.status_filter, 0, 3)
         self.event_filter = self._line("traceEventFilter", "trace.filter_event")
-        secondary_layout.addWidget(QLabel(translate("trace.filter_event")), 0, 4)
+        secondary_layout.addWidget(self._caption("trace.filter_event", upper=False), 0, 4)
         secondary_layout.addWidget(self.event_filter, 0, 5)
         self.time_start_filter = self._line("traceStartFilter", "trace.filter_from")
-        secondary_layout.addWidget(QLabel(translate("trace.filter_from")), 1, 0)
+        secondary_layout.addWidget(self._caption("trace.filter_from", upper=False), 1, 0)
         secondary_layout.addWidget(self.time_start_filter, 1, 1)
         self.time_end_filter = self._line("traceEndFilter", "trace.filter_to")
-        secondary_layout.addWidget(QLabel(translate("trace.filter_to")), 1, 2)
+        secondary_layout.addWidget(self._caption("trace.filter_to", upper=False), 1, 2)
         secondary_layout.addWidget(self.time_end_filter, 1, 3)
         self.secondary.setVisible(False)
         layout.addWidget(self.secondary)
@@ -159,8 +161,14 @@ class TraceFilterBar(QWidget):
 
     # ---- construction -------------------------------------------------
 
+    def _caption(self, key: str, *, upper: bool = True) -> QLabel:
+        label = QLabel(translate(key).upper() if upper else translate(key))
+        self._captions.append((label, key, upper))
+        return label
+
     def _line(self, object_name: str, key: str) -> QLineEdit:
         edit = QLineEdit(objectName=object_name)
+        self._lines.append((edit, key))
         label = translate(key)
         edit.setAccessibleName(label)
         edit.setToolTip(label)
@@ -168,6 +176,57 @@ class TraceFilterBar(QWidget):
         edit.setClearButtonEnabled(True)
         edit.textChanged.connect(self._read_filters)
         return edit
+
+    def retranslate(self) -> None:
+        """Re-caption the bar without disturbing a single filter value.
+
+        Text fields keep their edits: only the placeholder and the description
+        change. Combo entries are rewritten by their stable data, so no index
+        moves and `changed` is never emitted.
+        """
+        for label, key, upper in self._captions:
+            label.setText(translate(key).upper() if upper else translate(key))
+        for edit, key in self._lines:
+            label = translate(key)
+            edit.setAccessibleName(label)
+            edit.setToolTip(label)
+            edit.setPlaceholderText(label)
+        for box, key in (
+            (self.show_frames, "trace.show_frames"),
+            (self.show_events, "trace.show_events"),
+        ):
+            box.setText(translate(key))
+            box.setToolTip(translate(key))
+            box.setAccessibleName(translate(key))
+        showing = self.secondary.isVisible()
+        more = translate("trace.fewer_filters" if showing else "trace.more_filters")
+        self.more_filters_button.setText(more)
+        self.more_filters_button.setToolTip(more)
+        self.more_filters_button.setAccessibleName(more)
+        self.columns_button.setText(translate("trace.columns"))
+        self.columns_button.setToolTip(translate("trace.columns_tooltip"))
+        self.columns_button.setAccessibleName(translate("trace.columns"))
+        self.clear_filters_button.setText(translate("trace.clear_filters"))
+        self.clear_filters_button.setToolTip(translate("trace.clear_filters"))
+        self.clear_filters_button.setAccessibleName(translate("trace.clear_filters"))
+        for combo, key in (
+            (self.direction_filter, "trace.filter_direction"),
+            (self.status_filter, "trace.filter_status"),
+        ):
+            combo.setAccessibleName(translate(key))
+            combo.setToolTip(translate(key))
+        for combo, any_key in (
+            (self.direction_filter, TRACE_DIRECTION_ANY),
+            (self.status_filter, TRACE_DECODE_ANY),
+        ):
+            index = combo.findData(any_key)
+            if index >= 0:
+                combo.setItemText(index, translate("trace.any"))
+        for data, key in (("RX", "trace.direction_rx"), ("EVENT", "trace.direction_event")):
+            index = self.direction_filter.findData(data)
+            if index >= 0:
+                self.direction_filter.setItemText(index, translate(key))
+        self._refresh_chips()
 
     def _toggle_secondary(self) -> None:
         showing = not self.secondary.isVisible()
@@ -243,7 +302,8 @@ class TraceFilterBar(QWidget):
             if widget is not None:
                 widget.setParent(None)
         chips = self.settings.active_chips()
-        for field_name, label in chips:
+        for field_name, caption_key, value in chips:
+            label = f"{translate(caption_key)} {value}".strip()
             chip = QPushButton(f"{label}  ×", objectName="chipButton")
             chip.setAccessibleName(label)
             chip.setToolTip(label)

@@ -17,6 +17,7 @@ class InspectorPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._record: TraceRecord | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.body = QLabel(translate("inspector.empty"), objectName="inspectorBody")
@@ -30,15 +31,22 @@ class InspectorPanel(QWidget):
         layout.addStretch(1)
 
     def clear(self) -> None:
+        self._record = None
         self.body.setText(translate("inspector.empty"))
 
     def show_record(self, record: TraceRecord | None) -> None:
         if record is None:
             self.clear()
             return
+        self._record = record
         self.body.setText(
             _render_event(record) if record.event is not None else _render_frame(record)
         )
+
+    def retranslate(self) -> None:
+        """Re-render the selected record; the selection itself is untouched."""
+        self.body.setAccessibleName(translate("inspector.accessible"))
+        self.show_record(self._record)
 
     # Kept for the older tests and for callers that only have text.
     def text(self) -> str:

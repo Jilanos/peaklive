@@ -64,7 +64,12 @@
     "save_as_prompt": "Name for the new measurement setup:",
     "save_as_saved": "Measurement setup '{name}' saved.",
     "save_as_failed": "Could not save the measurement setup: {message}",
-    "save_as_suggested": "{name} copy"
+    "save_as_suggested": "{name} copy",
+    "name_blank": "A measurement setup name cannot be blank.",
+    "name_taken": "A measurement setup named '{name}' already exists.",
+    "save_failed": "Could not save the measurement setups: {message}",
+    "store_reset_title": "Profile store reset",
+    "store_reset_body": "The measurement profile store could not be read and has been reset to defaults.\n\nThe previous file was saved to:\n{path}"
   },
   "panel": {
     "collapse": "Collapse {panel}",
@@ -195,6 +200,8 @@
     "more_filters": "More filters",
     "fewer_filters": "Fewer filters",
     "clear_filters": "Clear filters",
+    "chip_events_only": "Events only",
+    "chip_frames_only": "Frames only",
     "filter_id": "ID",
     "filter_message": "Message",
     "filter_signal": "Signal",
@@ -347,6 +354,7 @@
     "start": "&Start acquisition",
     "stop": "S&top acquisition",
     "recording_settings": "&Recording settings…",
+    "language": "Lan&guage",
     "channel": "&Channel",
     "bitrate": "&Bitrate",
     "controller_mode": "Controller &mode",
@@ -368,5 +376,9 @@
   "progress": {
     "cancel": "Cancel",
     "accessible": "Background work progress"
+  },
+  "settings": {
+    "language_accessible": "Interface language",
+    "locale_save_failed": "The language changed for this session, but the preference could not be saved: {message}"
   }
 }

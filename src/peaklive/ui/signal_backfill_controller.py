@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from functools import partial
 
-from peaklive.i18n import translate
 from peaklive.services.signal_decode_worker import (
     DecodedSeries,
     SignalDecodeWorker,
@@ -80,9 +79,7 @@ class WorkspaceSignalBackfill:
             worker.completed.connect(partial(self._signal_backfill_completed, generation))
             worker.finished.connect(partial(self._signal_backfill_finished, generation))
             self._signal_decode_worker = worker
-            self.status.showMessage(
-                translate("signals.deriving").format(signal=signal_name)
-            )
+            self._set_status("signals.deriving", signal=signal_name)
             worker.start()
             return
 
@@ -114,17 +111,17 @@ class WorkspaceSignalBackfill:
             return
         self._series.replace(decoded.signal_name, samples, decoded.unit)
         self._sync_graphs()
-        self.status.showMessage(
-            translate("signals.derived").format(
-                signal=decoded.signal_name, count=decoded.source_count or len(samples)
-            )
+        self._set_status(
+            "signals.derived",
+            signal=decoded.signal_name,
+            count=decoded.source_count or len(samples),
         )
         if decoded.truncated:
-            self.session_note.show_message(
-                translate("signals.truncated").format(
-                    signal=decoded.signal_name, dropped=self._frames.dropped
-                ),
+            self.session_note.show_key(
+                "signals.truncated",
                 "warning",
+                signal=decoded.signal_name,
+                dropped=self._frames.dropped,
             )
 
     def _signal_backfill_failed(
@@ -132,18 +129,14 @@ class WorkspaceSignalBackfill:
     ) -> None:
         if generation != self._signal_decode_generation or worker_generation != generation:
             return
-        self.session_note.show_message(
-            translate("signals.reconstruct_failed").format(message=message), "error"
-        )
+        self.session_note.show_key("signals.reconstruct_failed", "error", message=message)
 
     def _signal_backfill_progressed(
         self, generation: int, count: int, _total: int, worker_generation: int
     ) -> None:
         if generation != self._signal_decode_generation or worker_generation != generation:
             return
-        self.status.showMessage(
-            translate("signals.reconstructing").format(count=count)
-        )
+        self._set_status("signals.reconstructing", count=count)
 
     def _signal_backfill_finished(self, generation: int) -> None:
         worker = self._signal_decode_worker
@@ -154,9 +147,7 @@ class WorkspaceSignalBackfill:
 
     def _report_signal_unavailable(self, signal_name: str) -> None:
         """Say plainly that the loaded session holds nothing for this signal."""
-        self.session_note.show_message(
-            translate("signals.unavailable").format(signal=signal_name), "info"
-        )
+        self.session_note.show_key("signals.unavailable", "info", signal=signal_name)
 
     def _set_historical_view_ready(self, ready: bool) -> None:
         self._historical_view_ready = ready

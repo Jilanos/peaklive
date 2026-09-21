@@ -66,11 +66,10 @@ class WorkspaceStopFinalization:
             return
         self._end_work()
         self._show_lifecycle_phase()
-        self.session_note.show_message(
-            translate("acquisition.shutdown_timeout").format(
-                seconds=self._shutdown_timeout_ms // 1000
-            ),
+        self.session_note.show_key(
+            "acquisition.shutdown_timeout",
             "warning",
+            seconds=self._shutdown_timeout_ms // 1000,
         )
 
     # ---- bounded, non-blocking wind-down --------------------------------
@@ -180,7 +179,7 @@ class WorkspaceStopFinalization:
         self._end_work()
         if self._finalizing_recovered:
             self._lifecycle.advance(generation, AcquisitionPhase.STOPPED)
-            self.session_note.show_message(translate("acquisition.shutdown_recovered"), "info")
+            self.session_note.show_key("acquisition.shutdown_recovered", "info")
         self._show_lifecycle_phase()
 
     def _show_finalization_progress(self) -> None:

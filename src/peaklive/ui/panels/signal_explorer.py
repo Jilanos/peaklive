@@ -40,6 +40,7 @@ class SignalExplorerPanel(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._empty_item: QTreeWidgetItem | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -141,11 +142,13 @@ class SignalExplorerPanel(QWidget):
     ) -> None:
         self.tree.blockSignals(True)
         self.tree.clear()
+        self._empty_item = None
         matched = self.filtered(references, shown, favorites)
         if not matched:
             empty = QTreeWidgetItem([translate("signals.empty"), "", ""])
             empty.setDisabled(True)
             self.tree.addTopLevelItem(empty)
+            self._empty_item = empty
             self.tree.blockSignals(False)
             return
         dbc_items: dict[str, QTreeWidgetItem] = {}
@@ -196,6 +199,50 @@ class SignalExplorerPanel(QWidget):
         if first_signal is not None:
             self.tree.setCurrentItem(first_signal)
         self.tree.blockSignals(False)
+
+    def retranslate(self) -> None:
+        """Re-caption the chrome and every row description, in place.
+
+        The tree itself is not rebuilt: a rebuild would discard the current
+        selection, the expanded nodes and the scroll position, which is exactly
+        what a language change must preserve.
+        """
+        self.search.setAccessibleName(translate("signals.search"))
+        self.search.setToolTip(translate("signals.search"))
+        self.search.setPlaceholderText(translate("signals.search_placeholder"))
+        for box, key in (
+            (self.shown_only, "signals.shown_only"),
+            (self.favorites_only, "signals.favorites_only"),
+        ):
+            box.setText(translate(key))
+            box.setToolTip(translate(key))
+            box.setAccessibleName(translate(key))
+        self.tree.setAccessibleName(translate("signals.explorer"))
+        self.tree.setHeaderLabels(
+            [
+                translate("signals.column_signal"),
+                translate("signals.column_shown"),
+                translate("signals.column_favorite"),
+            ]
+        )
+        header_item = self.tree.headerItem()
+        header_item.setToolTip(SHOWN_COLUMN, translate("signals.shown_tooltip"))
+        header_item.setToolTip(FAVORITE_COLUMN, translate("signals.favorite_tooltip"))
+        self._retranslate_rows()
+
+    def _retranslate_rows(self) -> None:
+        root = self.tree.invisibleRootItem()
+        if self._empty_item is not None:
+            blocked = self.tree.blockSignals(True)
+            self._empty_item.setText(0, translate("signals.empty"))
+            self.tree.blockSignals(blocked)
+            return
+        pending = [root.child(index) for index in range(root.childCount())]
+        while pending:
+            item = pending.pop()
+            pending.extend(item.child(index) for index in range(item.childCount()))
+            if item.data(0, SIGNAL_KEY_ROLE):
+                self._describe(item)
 
     def _describe(self, item: QTreeWidgetItem) -> None:
         """Carry the action and its current state without printing it in the row.

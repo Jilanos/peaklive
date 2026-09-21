@@ -317,9 +317,7 @@ class WorkspaceIngest:
         self._history_failed = True
         self._history_failure_message = message
         self._historical_view_ready = False
-        self.session_note.show_message(
-            translate("trace.history_failed").format(message=message), "error"
-        )
+        self.session_note.show_key("trace.history_failed", "error", message=message)
         if self._replay_worker is not None:
             generation = self._replay_generation
             worker = self._replay_worker
@@ -350,9 +348,7 @@ class WorkspaceIngest:
             return
         record = self._trace.add_event(event)
         self._facts.record_event(event)
-        self.status.showMessage(
-            translate("trace.replay_event").format(kind=event.kind, message=event.message)
-        )
+        self._set_status("trace.replay_event", kind=event.kind, message=event.message)
         self.trace_panel.append_records([record])
 
     def _decode(self, frame: CanFrame):

@@ -59,7 +59,8 @@ class WorkspaceCatalog:
         worker.cancelled.connect(partial(self._catalog_cancelled, generation))
         worker.finished.connect(partial(self._catalog_worker_finished, generation))
         self._catalog_worker = worker
-        self._begin_work(_operation_message(operation))
+        key, params = _operation_message(operation)
+        self._begin_work(key, **params)
         self._sync_dbc_menu_busy()
         worker.start()
 
@@ -79,9 +80,7 @@ class WorkspaceCatalog:
             return
         if not name:
             return
-        self.status.showMessage(
-            translate("dbc.load_progress").format(done=done + 1, total=total, name=name)
-        )
+        self._set_status("dbc.load_progress", done=done + 1, total=total, name=name)
 
     def _catalog_completed(self, generation: int, outcome: CatalogOutcome) -> None:
         if generation != self._catalog_generation:
@@ -92,7 +91,7 @@ class WorkspaceCatalog:
         if generation != self._catalog_generation:
             return
         # Nothing was committed, so the catalog and the profile are unchanged.
-        self.status.showMessage(translate("dbc.cancelled"))
+        self._set_status("dbc.cancelled")
 
     def _catalog_worker_finished(self, generation: int) -> None:
         worker = self._catalog_worker
@@ -175,9 +174,7 @@ class WorkspaceCatalog:
     def _announce_outcome(self, outcome: CatalogOutcome) -> None:
         operation = outcome.operation
         if operation.kind is CatalogOperationKind.LOAD and outcome.added_paths:
-            self.status.showMessage(
-                translate("dbc.loaded").format(name=outcome.added_paths[-1].name)
-            )
+            self._set_status("dbc.loaded", name=outcome.added_paths[-1].name)
         elif operation.kind is CatalogOperationKind.RESOLVE:
             name = next(
                 (
@@ -187,14 +184,13 @@ class WorkspaceCatalog:
                 ),
                 operation.content_hash[:8],
             )
-            self.status.showMessage(
-                translate("dbc.conflict_resolved").format(
-                    identifier=(
-                        f"0x{operation.arbitration_id:X}"
-                        f"{'x' if operation.is_extended_id else ''}"
-                    ),
-                    name=name,
-                )
+            self._set_status(
+                "dbc.conflict_resolved",
+                identifier=(
+                    f"0x{operation.arbitration_id:X}"
+                    f"{'x' if operation.is_extended_id else ''}"
+                ),
+                name=name,
             )
 
     # ---- DBC ------------------------------------------------------------
@@ -257,8 +253,8 @@ class WorkspaceCatalog:
 
     def _report_dbc_error(self, path: Path, message: str) -> None:
         self._facts.record_anomaly("dbc_error")
-        self.session_note.show_message(
-            translate("dbc.load_failed").format(name=path.name, message=message), "error"
+        self.session_note.show_key(
+            "dbc.load_failed", "error", name=path.name, message=message
         )
 
     def _dbc_enabled_changed(self, content_hash: str, enabled: bool) -> None:
@@ -349,10 +345,11 @@ class WorkspaceCatalog:
         self._mark_signal_summary_dirty()
 
 
-def _operation_message(operation: CatalogOperation) -> str:
+def _operation_message(operation: CatalogOperation) -> tuple[str, dict[str, object]]:
+    """The catalog key and parameters describing what this operation is doing."""
     if operation.kind in {CatalogOperationKind.LOAD, CatalogOperationKind.RESTORE}:
-        return translate("dbc.loading").format(count=len(operation.paths))
-    return translate(f"dbc.working_{operation.kind.value}")
+        return "dbc.loading", {"count": len(operation.paths)}
+    return f"dbc.working_{operation.kind.value}", {}
 
 
 def _migrate_signal_names(

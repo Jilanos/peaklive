@@ -65,12 +65,10 @@ class WorkspaceProfiles:
         try:
             copy = self._store.save_as(self._state, name)
         except ProfileNameError as error:
-            self.session_note.show_message(str(error), "warning")
+            self.session_note.show_key(error.key, "warning", **error.params)
             return
         except OSError as error:
-            self.session_note.show_message(
-                translate("profile.save_as_failed").format(message=error), "error"
-            )
+            self.session_note.show_key("profile.save_as_failed", "error", message=error)
             logger().exception("Could not save the measurement setup copy")
             return
         selector = self.profile_selector
@@ -81,7 +79,7 @@ class WorkspaceProfiles:
         # the copy is adopted exactly the way a manual switch would adopt it.
         selector.setCurrentIndex(len(self._state.profiles) - 1)
         self.session_note.clear_message()
-        self.status.showMessage(translate("profile.save_as_saved").format(name=copy.name))
+        self._set_status("profile.save_as_saved", name=copy.name)
 
     def _show_profile(self, profile: MeasurementProfile) -> None:
         self._restoring = True
@@ -127,7 +125,7 @@ class WorkspaceProfiles:
         except OSError as error:
             # Persistence is useful, but must never make an input slot take
             # down the interactive session or discard its in-memory state.
-            self.session_note.show_message(str(error), "warning")
+            self.session_note.show_key("profile.save_failed", "warning", message=error)
             logger().exception("Could not save measurement profiles")
 
     @property

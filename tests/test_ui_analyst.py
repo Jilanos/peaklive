@@ -860,6 +860,7 @@ def test_recording_and_setup_menus_own_the_relocated_commands(qtbot, tmp_path):
         "menu_channel",
         "menu_bitrate",
         "menu_controller_mode",
+        "menu_language",
     }
 
 

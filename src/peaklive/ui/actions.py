@@ -6,7 +6,7 @@ from collections.abc import Callable
 from weakref import proxy
 
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
-from PySide6.QtWidgets import QComboBox, QMenu
+from PySide6.QtWidgets import QComboBox, QMenu, QMenuBar
 
 from peaklive.analysis import CatalogView
 from peaklive.i18n import translate
@@ -21,8 +21,14 @@ class WorkspaceActions:
     """
 
     def _build_menu(self) -> None:
+        # Menus, actions and submenus are registered as they are built so a
+        # language change can re-caption the very same objects. Rebuilding the
+        # bar instead would mint new QActions, dropping the enable/check state
+        # the lifecycle maintains and duplicating panel signal connections.
+        self._translated_actions: list[tuple[QAction, str, str]] = []
+        self._translated_menus: list[tuple[QMenu, str]] = []
         bar = self.menuBar()
-        file_menu = bar.addMenu(translate("menu.file"))
+        file_menu = self._menu(bar, "menu.file")
         file_menu.addAction(self._action("menu.load_dbc", self._choose_dbc, "Ctrl+D"))
         self.open_trace_action = self._action("menu.open_trace", self._choose_trace, "Ctrl+O")
         file_menu.addAction(self.open_trace_action)
@@ -31,7 +37,7 @@ class WorkspaceActions:
         file_menu.addSeparator()
         file_menu.addAction(self._action("menu.quit", self.close, "Ctrl+Q"))
 
-        recording_menu = bar.addMenu(translate("menu.recording"))
+        recording_menu = self._menu(bar, "menu.recording")
         self.start_action = self._action("menu.start", self._start_acquisition, "F5")
         recording_menu.addAction(self.start_action)
         self.stop_action = self._action("menu.stop", self._stop_acquisition, "F6")
@@ -41,7 +47,7 @@ class WorkspaceActions:
             self._action("menu.recording_settings", self._open_recording_dialog)
         )
 
-        setup_menu = bar.addMenu(translate("menu.setup"))
+        setup_menu = self._menu(bar, "menu.setup")
         self._setup_menu_refreshers = [
             # The setup strip that used to carry this selector is gone
             # (item_141); the combo still owns selection and persistence, so
@@ -65,8 +71,10 @@ class WorkspaceActions:
                 setup_menu, "menu.controller_mode", self.acquisition_bar.controller_mode_selector
             ),
         ]
+        setup_menu.addSeparator()
+        self._build_language_menu(setup_menu)
 
-        view_menu = bar.addMenu(translate("menu.view"))
+        view_menu = self._menu(bar, "menu.view")
         view_menu.addAction(self._action("menu.fit", self.graph_panel.fit, "Ctrl+0"))
         view_menu.addAction(
             self._action("menu.focus_filter", self._focus_trace_filter, "Ctrl+F")
@@ -76,7 +84,7 @@ class WorkspaceActions:
         self._build_follow_live_menu(view_menu)
         view_menu.addSeparator()
 
-        self._dbc_menu = bar.addMenu(translate("dbc.menu"))
+        self._dbc_menu = self._menu(bar, "dbc.menu")
         self._dbc_menu.setObjectName("menu_dbc")
         self._dbc_menu_entries: dict[str, QAction] = {}
         self._dbc_remove_actions: dict[str, QAction] = {}
@@ -96,7 +104,7 @@ class WorkspaceActions:
         for panel in self._layout_panels:
             view_menu.addAction(self._panel_visibility_actions[panel.key])
 
-        help_menu = bar.addMenu(translate("menu.help"))
+        help_menu = self._menu(bar, "menu.help")
         help_menu.addAction(self._action("menu.about", self._show_about))
 
     def _build_choice_submenu(self, menu: QMenu, key: str, combo: QComboBox) -> Callable[[], None]:
@@ -108,7 +116,7 @@ class WorkspaceActions:
         `currentIndexChanged` keeps the menu correct even when the combo's
         item list itself changes (e.g. an unrecognised profile channel).
         """
-        submenu = menu.addMenu(translate(key))
+        submenu = self._menu(menu, key)
         submenu.setObjectName(key.replace(".", "_"))
         object_prefix = key.replace(".", "_")
         group = QActionGroup(submenu)
@@ -138,7 +146,7 @@ class WorkspaceActions:
 
     def _build_follow_live_menu(self, view_menu: QMenu) -> None:
         """View > Follow live: Full acquisition span (default) or Trailing window."""
-        submenu = view_menu.addMenu(translate("graph.follow_live_menu"))
+        submenu = self._menu(view_menu, "graph.follow_live_menu")
         submenu.setObjectName("menu_follow_live")
         group = QActionGroup(self)
         group.setExclusive(True)
@@ -150,6 +158,7 @@ class WorkspaceActions:
         ):
             action = QAction(translate(key), self)
             action.setObjectName(object_name)
+            self._translated_actions.append((action, key, ""))
             action.setCheckable(True)
             action.setChecked(mode == FOLLOW_MODE_FULL)
             action.triggered.connect(
@@ -273,9 +282,15 @@ class WorkspaceActions:
         for refresh in getattr(self, "_setup_menu_refreshers", ()):
             refresh()
 
+    def _menu(self, parent: QMenuBar | QMenu, key: str) -> QMenu:
+        menu = parent.addMenu(translate(key))
+        self._translated_menus.append((menu, key))
+        return menu
+
     def _action(self, key: str, slot: Callable[[], None], shortcut: str = "") -> QAction:
         action = QAction(translate(key), self)
         action.setObjectName(key.replace(".", "_"))
+        self._translated_actions.append((action, key, shortcut))
         if shortcut:
             action.setShortcut(QKeySequence(shortcut))
             action.setToolTip(f"{translate(key)} ({shortcut})")
@@ -292,6 +307,7 @@ class WorkspaceActions:
         """
         action = QAction(translate(key), self)
         action.setObjectName(key.replace(".", "_"))
+        self._translated_actions.append((action, key, ""))
         action.setCheckable(True)
         action.setChecked(not panel.is_hidden)
         action.toggled.connect(lambda checked, target=panel: target.set_hidden(not checked))

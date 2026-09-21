@@ -91,12 +91,15 @@ def test_filters_intersect_and_can_produce_an_empty_projection():
 def test_active_chips_describe_each_filter_and_can_be_cleared_individually():
     settings = TraceFilterSettings(arbitration_id="0x123", show_events=False)
 
-    fields = [field for field, _ in settings.active_chips()]
-    assert fields == ["arbitration_id", "show_events"]
+    chips = settings.active_chips()
+    assert [field for field, _, _ in chips] == ["arbitration_id", "show_events"]
+    # The chip names what is filtered through a catalog key and carries the
+    # operator's own value untouched; it never holds finished English prose.
+    assert chips[0] == ("arbitration_id", "trace.filter_id", "0x123")
     assert settings.is_active()
 
     settings.reset_field("arbitration_id")
-    assert [field for field, _ in settings.active_chips()] == ["show_events"]
+    assert [field for field, _, _ in settings.active_chips()] == ["show_events"]
 
     settings.clear()
     assert not settings.is_active()

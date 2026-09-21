@@ -1,14 +1,15 @@
 ## task_033_deliver_complete_persistent_french_and_english_language_switching_in_peaklive - Deliver complete persistent French and English language switching in PeakLive
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: High
 > Theme: Bilingual operator interface delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-21 13:37:01
+> Indicators reviewed: 2026-09-21 13:59:59
+> Owner: maintainer@example.invalid
 
 # AI Context
 - Summary: Orchestrate four implementation waves for complete, state-preserving French/English language selection.

@@ -86,8 +86,10 @@ class AcquisitionBar(QFrame):
 
     def __init__(self, profile_names: list[str], parent: QWidget | None = None) -> None:
         super().__init__(parent, objectName="instrument")
+        self._captions: list[tuple[QLabel, str]] = []
+        self._profile: MeasurementProfile | None = None
         layout = QHBoxLayout(self)
-        layout.addWidget(QLabel(translate("profile.label").upper()))
+        layout.addWidget(self._caption("profile.label"))
 
         self.profile_selector = QComboBox(objectName="profileSelector")
         self.profile_selector.setAccessibleName(translate("profile.label"))
@@ -104,7 +106,7 @@ class AcquisitionBar(QFrame):
         self.save_profile_as_button.clicked.connect(self.save_profile_as_requested)
         layout.addWidget(self.save_profile_as_button)
 
-        layout.addWidget(QLabel(translate("acquisition.channel").upper()))
+        layout.addWidget(self._caption("acquisition.channel"))
         self.channel_selector = QComboBox(objectName="channelSelector")
         self.channel_selector.setAccessibleName(translate("acquisition.channel_accessible"))
         self.channel_selector.setToolTip(translate("acquisition.channel_accessible"))
@@ -112,7 +114,7 @@ class AcquisitionBar(QFrame):
         self.channel_selector.currentTextChanged.connect(self.options_changed)
         layout.addWidget(self.channel_selector)
 
-        layout.addWidget(QLabel(translate("acquisition.bitrate").upper()))
+        layout.addWidget(self._caption("acquisition.bitrate"))
         self.bitrate_selector = QComboBox(objectName="bitrateSelector")
         self.bitrate_selector.setAccessibleName(translate("acquisition.bitrate_accessible"))
         self.bitrate_selector.setToolTip(translate("acquisition.bitrate_accessible"))
@@ -203,12 +205,69 @@ class AcquisitionBar(QFrame):
         self.recover_button.setVisible(False)
         layout.addWidget(self.recover_button)
 
+    def _caption(self, key: str) -> QLabel:
+        label = QLabel(translate(key).upper())
+        self._captions.append((label, key))
+        return label
+
     @staticmethod
     def _action(label: str, object_name: str, tooltip: str) -> QPushButton:
         button = QPushButton(label, objectName=object_name)
         button.setAccessibleName(label)
         button.setToolTip(tooltip)
         return button
+
+    def retranslate(self) -> None:
+        """Re-caption every control in place, keeping selections untouched.
+
+        Combo entries are rewritten by their stable item data rather than
+        rebuilt, so no index moves and no `options_changed` mutation is issued.
+        """
+        for label, key in self._captions:
+            label.setText(translate(key).upper())
+        for combo, key in (
+            (self.profile_selector, "profile.label"),
+            (self.channel_selector, "acquisition.channel_accessible"),
+            (self.bitrate_selector, "acquisition.bitrate_accessible"),
+            (self.controller_mode_selector, "acquisition.mode_accessible"),
+        ):
+            combo.setAccessibleName(translate(key))
+            combo.setToolTip(translate(key))
+        for bitrate in COMMON_BITRATES:
+            index = self.bitrate_selector.findData(bitrate)
+            if index >= 0:
+                self.bitrate_selector.setItemText(
+                    index, translate("acquisition.bitrate_value").format(kbit=bitrate // 1000)
+                )
+        for mode, key in (
+            (ControllerMode.PASSIVE_LISTEN_ONLY, "acquisition.mode_passive"),
+            (ControllerMode.NORMAL_RECEIVE, "acquisition.mode_normal"),
+        ):
+            index = self.controller_mode_selector.findData(mode.value)
+            if index >= 0:
+                self.controller_mode_selector.setItemText(index, translate(key))
+        for button, label_key, tooltip_key in (
+            (self.save_profile_as_button, "profile.save_as_button", "profile.save_as_tooltip"),
+            (self.load_dbc_button, "dbc.load", "dbc.load_tooltip"),
+            (self.open_trace_button, "trace.open", "trace.open_tooltip"),
+            (self.export_button, "export.open", "export.tooltip"),
+            (self.recover_button, "acquisition.recover", "acquisition.recover_tooltip"),
+        ):
+            button.setText(translate(label_key))
+            button.setAccessibleName(translate(label_key))
+            button.setToolTip(translate(tooltip_key))
+        for button, label_key, tooltip_key in (
+            (self.start_button, "acquisition.start", "acquisition.start_tooltip"),
+            (self.stop_button, "acquisition.stop", "acquisition.stop_tooltip"),
+        ):
+            # Glyph buttons: only the wording behind them is language-dependent.
+            button.setAccessibleName(translate(label_key))
+            button.setToolTip(translate(tooltip_key))
+        self.bus_state_label.setAccessibleName(translate("bus.accessible"))
+        if self._profile is not None:
+            self.show_profile(self._profile)
+        else:
+            self.set_bus_state(self.bus_state)
 
     def set_bus_state(self, state: str) -> None:
         """Show the bus condition as both a colored marker and a text label.
@@ -256,6 +315,7 @@ class AcquisitionBar(QFrame):
 
     def show_profile(self, profile: MeasurementProfile) -> None:
         """Reflect the profile without echoing option-changed signals back out."""
+        self._profile = profile
         self.channel_selector.blockSignals(True)
         channel_index = self.channel_selector.findText(profile.channel)
         if channel_index < 0:

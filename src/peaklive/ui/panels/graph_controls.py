@@ -57,6 +57,7 @@ class GraphControlsBar(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("graphControls")
+        self._described: list[tuple[QToolButton, str]] = []
         self.row = QHBoxLayout(self)
         self.row.setContentsMargins(0, 0, 0, 0)
         self.row.setSpacing(4)
@@ -108,6 +109,7 @@ class GraphControlsBar(QWidget):
         button.setText(glyph)
         button.setAccessibleName(translate(key))
         button.setToolTip(translate(key))
+        self._described.append((button, key))
         return button
 
     def _readout(self, object_name: str, key: str) -> ElidingLabel:
@@ -121,6 +123,14 @@ class GraphControlsBar(QWidget):
         button.setCheckable(True)
         button.setChecked(True)
         return button
+
+    def retranslate(self) -> None:
+        """Re-describe every glyph command; check states and values are untouched."""
+        self.mode_selector.setAccessibleName(translate("workspace.mode_accessible"))
+        self.mode_selector.setToolTip(translate("workspace.mode_accessible"))
+        for button, key in self._described:
+            button.setAccessibleName(translate(key))
+            button.setToolTip(translate(key))
 
     @property
     def groups(self) -> tuple[QWidget, ...]:
