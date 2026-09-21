@@ -41,8 +41,8 @@ The public source repository is distributed under the Apache License 2.0.
 
 Included:
 
-- Windows 10/11 x64 desktop installation for three internal users, with an
-  English-only MVP interface;
+- Windows 10/11 x64 desktop installation for three internal users, with a
+  French and English interface the operator selects at runtime;
 - one active Classic CAN channel;
 - application-level receive-only operation;
 - normal receive and passive listen-only controller modes when supported;
@@ -53,7 +53,9 @@ Included:
 - multi-DBC decoding, live trace, live plots, and decoded export;
 - local settings, recent sessions, and layout persistence;
 - named measurement profiles and restoration of the last selected profile;
-- a visual language aligned with the companion trace-analysis product.
+- a visual language aligned with the companion trace-analysis product;
+- a complete French and English interface, selected from **Setup > Language** /
+  **Configuration > Langue**.
 
 Excluded from the MVP:
 
@@ -63,6 +65,39 @@ Excluded from the MVP:
 - multi-channel synchronized capture;
 - CAN FD, LIN, and protocol-specific tooling;
 - automatic updates and code-signing infrastructure.
+
+## Interface language
+
+The operator chooses French or English from **Setup > Language**; the two
+entries are named by their own autonyms (*English*, *Français*) and stored as
+the codes `en` and `fr`. English is the first-run default and the fallback, and
+PeakLive does not follow the operating system's language in this scope.
+
+The choice takes effect immediately, with no restart: menus, panels, dialogs,
+table headers, graph axes, tooltips, accessible names, status messages, errors
+and the on-screen session report all change language in place. The session does
+not: switching during a live capture or a replay keeps the same worker, the same
+session identity and every captured frame, and leaves filters, shown signals,
+favorites, the selected trace record, cursors, zoom, scroll position, panel
+layout and unsent input edits exactly as they were.
+
+The language is an application preference stored in `ui-settings.json` in the
+PeakLive data directory, beside — and independent of — the measurement profiles.
+Selecting another measurement setup, or saving one under a new name, therefore
+never changes the interface language, and changing the language never rewrites a
+setup. If the preference cannot be written, the chosen language stays in effect
+for the session and PeakLive says so rather than claiming it was saved.
+
+What the language never touches is the data. CAN and DBC identifiers, message
+and signal names, DBC enumeration text, units, file paths, operator-entered
+names and labels, stored filter keys and every numeric value are unchanged.
+Recorded ASC and TRC files, their JSON sidecars, CSV and Parquet schemas,
+machine-readable status codes and the diagnostic log are unaffected: a capture
+made in French is byte-identical to the same capture made in English. Diagnostic
+detail supplied by a driver, the operating system or a DBC file is reproduced
+verbatim inside the translated message around it, and files already written are
+never rewritten. Numeric and date formatting is unchanged by the selection in
+this scope.
 - detachable/multi-monitor panels, while keeping UI ownership boundaries able
   to support them later.
 
@@ -82,8 +117,9 @@ Cancelling the prompt, or supplying a blank or already-used name, changes
 nothing. A setup that references a DBC file that is missing or unreadable
 reports it and keeps the reference; the rest of the setup still loads.
 
-The MVP uses the unambiguous English labels **Start Acquisition** and **Stop
-Acquisition**. Starting acquisition applies the visible profile and, when that
+The lifecycle commands are named unambiguously in both languages — **Start
+Acquisition** / **Stop Acquisition**, **Démarrer l'acquisition** / **Arrêter
+l'acquisition**. Starting acquisition applies the visible profile and, when that
 profile enables recording, opens the ASC session as part of the same operation.
 Stopping acquisition finalizes it. A monitor-only profile may disable recording.
 

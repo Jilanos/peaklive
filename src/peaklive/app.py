@@ -12,6 +12,7 @@ from peaklive.i18n import set_locale
 from peaklive.resources import application_icon_path
 from peaklive.services.ui_settings import UiSettingsStore
 from peaklive.ui import MainWindow
+from peaklive.ui.qt_translations import apply_qt_translations
 from peaklive.ui.theme import BACKGROUND, CONTROL_HOVER, POPUP_SURFACE, SURFACE_DEEP, TEXT
 from peaklive.ui.worker_lifecycle import drain_abandoned_workers_at_exit
 
@@ -56,6 +57,7 @@ def main() -> int:
     ui_settings = UiSettingsStore()
     set_locale(ui_settings.load().locale)
     app = QApplication(sys.argv)
+    apply_qt_translations(ui_settings.load().locale)
     apply_application_theme(app)
     apply_application_identity(app)
     # Every window's own closeEvent already applies its shutdown budget; this

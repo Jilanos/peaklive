@@ -18,6 +18,7 @@ from peaklive.i18n import (
     translate,
 )
 from peaklive.services.ui_settings import UiSettingsStore
+from peaklive.ui.qt_translations import apply_qt_translations
 
 
 class WorkspaceLocale:
@@ -27,6 +28,7 @@ class WorkspaceLocale:
         """Adopt the stored language before the first widget is constructed."""
         self._ui_settings = ui_settings or UiSettingsStore()
         set_locale(self._ui_settings.load().locale)
+        apply_qt_translations(current_locale())
 
     def _build_language_menu(self, setup_menu: QMenu) -> None:
         """Setup > Language: the two locales, exclusive, the active one checked.
@@ -70,6 +72,7 @@ class WorkspaceLocale:
         if not set_locale(locale):
             self._sync_language_actions()
             return
+        apply_qt_translations(current_locale())
         self.retranslate()
         try:
             self._ui_settings.save_locale(current_locale())

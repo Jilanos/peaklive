@@ -8,9 +8,10 @@ point : observer les signaux en direct, revenir sur un enregistrement, comparer
 des grandeurs physiques et retrouver les trames à l'origine d'une observation.
 
 Conçue pour **Windows 10/11 x64**, elle fonctionne entièrement en local, sans
-compte ni service cloud. Son interface est en anglais. L'acquisition matérielle
-utilise les interfaces **PEAK PCAN** ; un adaptateur simulé permet également de
-développer et d'explorer l'application sans matériel CAN.
+compte ni service cloud. Son interface est disponible en français et en anglais,
+au choix de l'opérateur. L'acquisition matérielle utilise les interfaces
+**PEAK PCAN** ; un adaptateur simulé permet également de développer et
+d'explorer l'application sans matériel CAN.
 
 ![Courbes synchronisées de courant moteur, tension batterie et vitesse entre 370 et 530 secondes](docs/images/graphs.png)
 
@@ -40,7 +41,8 @@ le suivi temporel, les ajustements des axes et les curseurs.
 
 - Un canal **Classic CAN**, avec choix de l'interface et du débit :
   125, 250, 500 ou 1 000 kbit/s.
-- Commandes explicites **Start Acquisition** et **Stop Acquisition**, également
+- Commandes explicites **Démarrer l'acquisition** et **Arrêter l'acquisition**
+  (**Start Acquisition** / **Stop Acquisition** en anglais), également
   accessibles avec `F5` et `F6`.
 - Réception avec contrôleur normal ou écoute passive selon l'adaptateur.
   En mode normal, le contrôleur peut acquitter les trames ; en mode passif,
@@ -198,6 +200,32 @@ décorations de fenêtre peuvent différer de Windows.
 
 Voir la [procédure de reproduction des captures](docs/screenshots.md).
 
+## Interface en français ou en anglais
+
+Le choix se fait dans **Configuration > Langue** (**Setup > Language**), entre
+**Français** et **English**. Le changement est immédiat, sans redémarrage :
+menus, panneaux, boîtes de dialogue, en-têtes de tableaux, axes des graphiques,
+infobulles, descriptions d'accessibilité, messages d'état, erreurs et rapport de
+session affiché suivent la langue choisie.
+
+L'anglais reste la langue par défaut au premier lancement et la langue de
+repli ; PeakLive ne suit pas la langue du système. Le choix est conservé entre
+les lancements dans `ui-settings.json`, à côté des profils de mesure mais
+indépendamment d'eux : changer de profil ne change jamais la langue, et changer
+de langue ne modifie aucun profil.
+
+Changer de langue **ne touche pas à la session ni aux données**. Une acquisition
+ou une relecture en cours conserve son worker, son identité de session et toutes
+ses trames ; les filtres, les signaux affichés, les favoris, la trame
+sélectionnée, les curseurs, le zoom, le défilement, la disposition et les saisies
+en cours restent tels quels. Les identifiants CAN et DBC, les noms de messages et
+de signaux, les énumérations DBC, les unités, les chemins de fichiers, les noms
+saisis par l'opérateur et toutes les valeurs numériques sont inchangés, de même
+que les fichiers ASC/TRC, leurs sidecars JSON, les schémas CSV/Parquet, les codes
+d'état machine et le journal de diagnostic. Les détails techniques fournis par un
+pilote, le système ou un fichier DBC sont repris tels quels à l'intérieur du
+message traduit qui les entoure.
+
 ## Prise en main
 
 ### Analyser un enregistrement
@@ -212,7 +240,8 @@ Voir la [procédure de reproduction des captures](docs/screenshots.md).
 ### Réaliser une acquisition
 
 1. Installer le pilote PEAK et connecter l'interface PCAN.
-2. Choisir le profil, le canal, le débit et le mode du contrôleur dans **Setup**.
+2. Choisir le profil, le canal, le débit et le mode du contrôleur dans
+   **Configuration** (**Setup**).
 3. Charger les DBC et préparer la sélection de signaux.
 4. Configurer l'enregistrement dans le menu **Recording**.
 5. Démarrer avec `F5`, surveiller les courbes et l'état du bus, puis arrêter avec

@@ -21,6 +21,16 @@ print(f"PeakLive build identity: {IDENTIFIER}")
 
 datas = collect_data_files("peaklive", includes=["i18n/*.json", "resources/*"])
 
+# Standard button captions and file-dialog chrome are Qt's own strings, so a
+# packaged French build needs Qt's catalogs alongside the application's.
+from PySide6.QtCore import QLibraryInfo  # noqa: E402
+
+_qt_translations = Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath))
+for _locale in ("fr",):
+    _catalog = _qt_translations / f"qtbase_{_locale}.qm"
+    if _catalog.exists():
+        datas.append((str(_catalog), "PySide6/Qt/translations"))
+
 # The same generated icon the running application loads, so the executable in
 # Explorer and the window it opens cannot show two different marks.
 ICON = str(Path.cwd() / "src" / "peaklive" / "resources" / "peaklive.ico")
