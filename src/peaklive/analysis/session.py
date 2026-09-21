@@ -5,23 +5,28 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass, field
 
+from peaklive.analysis.trace import decode_status_label
 from peaklive.domain import BusEvent, CanFrame
+from peaklive.i18n import render, translate
 
 FrameKey = tuple[int, bool]
 FrameKeyLike = FrameKey | int
 
 MAX_TRACKED_IDS = 512
-ANOMALY_KINDS = {
-    "replay_anomaly": "Malformed replay records",
-    "error_frame": "Bus error frames",
-    "bus_status": "Bus status changes",
-    "trc_event": "TRC events",
-    "recording_warning": "Recording warnings",
-    "dbc_conflict": "DBC conflicts",
-    "dbc_error": "DBC load errors",
-    "decode_invalid": "Invalid DBC payloads",
-    "unknown_id": "Unknown arbitration IDs",
-}
+
+#: The anomaly kinds the report counts. The key is the stored, machine-readable
+#: code carried by captures and sidecars; only its caption is translated.
+ANOMALY_KINDS = (
+    "replay_anomaly",
+    "error_frame",
+    "bus_status",
+    "trc_event",
+    "recording_warning",
+    "dbc_conflict",
+    "dbc_error",
+    "decode_invalid",
+    "unknown_id",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -242,50 +247,73 @@ class ReportRenderer:
     lines: list[str] = field(default_factory=list)
 
     def render(self) -> str:
+        """The report as prose in the active language, over unchanged facts.
+
+        Every heading, state word and empty-state line is translated; every
+        number, timestamp, arbitration ID, DBC name and hash is not, so the
+        French and English renderings of one session state the same facts and
+        can be compared line for line. The compact `field=value` diagnostic row
+        keeps its ASCII field names for that same reason.
+        """
         report = self.report
-        self.lines = ["PeakLive session report", ""]
-        self._add("Source", report.source or "live acquisition")
+        self.lines = [translate("report.heading"), ""]
+        self._add("report.field_source", report.source or translate("report.source_live"))
         if report.first_timestamp is None:
-            self._add("Time range", "no sample captured")
+            self._add("report.field_time_range", translate("report.time_range_empty"))
         else:
             self._add(
-                "Time range",
-                f"{report.first_timestamp:.6f}s to {report.last_timestamp:.6f}s "
-                f"({report.duration:.6f}s)",
+                "report.field_time_range",
+                render(
+                    "report.time_range_value",
+                    first=f"{report.first_timestamp:.6f}",
+                    last=f"{report.last_timestamp:.6f}",
+                    duration=f"{report.duration:.6f}",
+                ),
             )
-        self._add("Frames", str(report.frame_count))
-        self._add("Events", str(report.event_count))
-        self._add("Frames per second", f"{report.frames_per_second:.2f}")
-        self._add("Decode coverage", f"{report.decode_coverage * 100:.1f}%")
+        self._add("report.field_frames", str(report.frame_count))
+        self._add("report.field_events", str(report.event_count))
+        self._add("report.field_frames_per_second", f"{report.frames_per_second:.2f}")
+        self._add("report.field_decode_coverage", f"{report.decode_coverage * 100:.1f}%")
         self.lines.append("")
-        self.lines.append("DBC databases")
+        self.lines.append(translate("report.section_databases"))
         if not report.dbc_summaries:
-            self.lines.append("  none loaded")
+            self.lines.append("  " + translate("report.databases_empty"))
         for summary in report.dbc_summaries:
-            state = "enabled" if summary.enabled else "disabled"
             resolved = (
-                ", resolved " + ", ".join(_frame_key_label(item) for item in summary.resolved_ids)
+                render(
+                    "report.database_resolved",
+                    identifiers=", ".join(
+                        _frame_key_label(item) for item in summary.resolved_ids
+                    ),
+                )
                 if summary.resolved_ids
                 else ""
             )
             self.lines.append(
-                f"  {summary.name} [{summary.short_hash}] {state}, "
-                f"{summary.signal_count} signals{resolved}"
+                "  "
+                + render(
+                    "report.database_entry",
+                    name=summary.name,
+                    short_hash=summary.short_hash,
+                    state=translate("dbc.enabled" if summary.enabled else "dbc.disabled"),
+                    signals=summary.signal_count,
+                    resolved=resolved,
+                )
             )
         self.lines.append("")
-        self.lines.append("Top arbitration IDs")
+        self.lines.append(translate("report.section_top_ids"))
         if not report.top_arbitration_ids:
-            self.lines.append("  no frame captured")
+            self.lines.append("  " + translate("report.top_ids_empty"))
         for frame_key, count in report.top_arbitration_ids:
             self.lines.append(f"  {_frame_key_label(frame_key)}  {count}")
         if report.truncated_ids:
             self.lines.append(
-                f"  (per-ID tracking capped at {report.tracked_id_count} distinct IDs)"
+                "  " + render("report.top_ids_capped", count=report.tracked_id_count)
             )
         self.lines.append("")
-        self.lines.append("Identifier diagnostics")
+        self.lines.append(translate("report.section_identifiers"))
         if not report.identifier_aggregates:
-            self.lines.append("  no identifier captured")
+            self.lines.append("  " + translate("report.identifiers_empty"))
         for row in report.identifier_aggregates:
             latest = row.latest_frame
             latest_text = "-" if latest is None else latest.data.hex(" ").upper()
@@ -294,18 +322,27 @@ class ReportRenderer:
             load = "-" if row.load_contribution is None else f"{row.load_contribution * 100:.2f}%"
             self.lines.append(
                 f"  {_frame_key_label(row.frame_key)} latest={latest_text} count={row.count} "
-                f"mean-period={period} delta-t={delta} load={load} decode={row.decode_status}"
+                f"mean-period={period} delta-t={delta} load={load} "
+                f"decode={decode_status_label(row.decode_status)}"
             )
         self.lines.append("")
-        self.lines.append("Anomalies")
+        self.lines.append(translate("report.section_anomalies"))
         if not report.anomalies:
-            self.lines.append("  none recorded")
+            self.lines.append("  " + translate("report.anomalies_empty"))
         for kind, count in report.anomalies:
-            self.lines.append(f"  {ANOMALY_KINDS.get(kind, kind)}: {count}")
+            self.lines.append(f"  {anomaly_label(kind)}: {count}")
         return "\n".join(self.lines) + "\n"
 
-    def _add(self, label: str, value: str) -> None:
-        self.lines.append(f"{label}: {value}")
+    def _add(self, label_key: str, value: str) -> None:
+        self.lines.append(f"{translate(label_key)}: {value}")
+
+
+def anomaly_label(kind: str) -> str:
+    """How one stored anomaly code reads to an operator; the code is unchanged."""
+    if kind not in ANOMALY_KINDS:
+        return kind
+    return translate(f"report.anomaly_{kind}")
+
 
 
 def _frame_key_label(frame_key: FrameKeyLike) -> str:

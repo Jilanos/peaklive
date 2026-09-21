@@ -14,6 +14,7 @@ from peaklive.domain import (
     CanFrame,
     TraceFilterSettings,
 )
+from peaklive.i18n import translate
 
 DEFAULT_TRACE_CAPACITY = 5_000
 
@@ -22,17 +23,10 @@ DECODE_UNKNOWN = "unknown"
 DECODE_CONFLICT = "conflict"
 DECODE_INVALID = "invalid"
 
-COLUMN_LABELS: dict[str, str] = {
-    "frame": "Frame #",
-    "time": "Time",
-    "id": "ID",
-    "dlc": "DLC",
-    "data": "Data",
-    "channel": "Channel",
-    "direction": "Dir",
-    "message": "Message",
-    "status": "Status",
-}
+
+def decode_status_label(status: str) -> str:
+    """How one stored decode state reads; filters still match the stored code."""
+    return translate(f"trace.decode_{status}") if status else status
 
 
 @dataclass(frozen=True, slots=True)
@@ -258,7 +252,11 @@ def cell_text(record: TraceRecord, column_key: str, value_format: str) -> str:
             return record.event.message
         return record.message_name
     if column_key == "status":
-        return record.kind if record.event is not None else record.decode_status
+        # The cell shows how the state reads; filtering still matches the
+        # stored code, which is what the sidecar and the exports carry.
+        if record.event is not None:
+            return record.kind
+        return decode_status_label(record.decode_status)
     return ""
 
 

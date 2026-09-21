@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
+from peaklive.analysis.session import decode_status_label
 from peaklive.analysis.trace import DECODE_CONFLICT, DECODE_DECODED, TraceRecord
 from peaklive.i18n import translate
 
@@ -81,7 +82,10 @@ def _render_frame(record: TraceRecord) -> str:
     lines.append("")
     if record.message_name:
         lines.append(f"{translate('inspector.message')}: {record.message_name}")
-    lines.append(f"{translate('inspector.decode_status')}: {record.decode_status}")
+    lines.append(
+        f"{translate('inspector.decode_status')}: "
+        f"{decode_status_label(record.decode_status)}"
+    )
     if record.signals:
         database = record.signals[0].database_hash[:8]
         lines.append(f"{translate('inspector.database')}: {database}")

@@ -200,7 +200,7 @@ class WorkspaceActions:
         self._dbc_remove_actions = {}
         self._dbc_conflict_actions = []
 
-        add_action = self._action("dbc.menu_add", self._choose_dbc)
+        add_action = self._action("dbc.menu_add", self._choose_dbc, transient=True)
         add_action.setParent(menu)
         menu.addAction(add_action)
         # Qt owns these callbacks. They must not retain the entire window in
@@ -287,10 +287,24 @@ class WorkspaceActions:
         self._translated_menus.append((menu, key))
         return menu
 
-    def _action(self, key: str, slot: Callable[[], None], shortcut: str = "") -> QAction:
+    def _action(
+        self,
+        key: str,
+        slot: Callable[[], None],
+        shortcut: str = "",
+        *,
+        transient: bool = False,
+    ) -> QAction:
+        """One menu action. `transient` means its owner rebuilds it on demand.
+
+        A transient action is left out of the retranslation registry: the DBC
+        menu retires and recreates its actions from the catalog view, so a
+        registered one would be a dangling pointer by the second switch.
+        """
         action = QAction(translate(key), self)
         action.setObjectName(key.replace(".", "_"))
-        self._translated_actions.append((action, key, shortcut))
+        if not transient:
+            self._translated_actions.append((action, key, shortcut))
         if shortcut:
             action.setShortcut(QKeySequence(shortcut))
             action.setToolTip(f"{translate(key)} ({shortcut})")

@@ -1,9 +1,23 @@
-"""Narrow quarantine for known Windows offscreen layout failures."""
+"""Shared test isolation, plus a narrow quarantine for Windows offscreen layout."""
 
 import os
 import sys
 
 import pytest
+
+from peaklive.i18n import reset_locale_state
+
+
+@pytest.fixture(autouse=True)
+def _isolated_locale():
+    """Leave every test with the process back on the source locale.
+
+    The selected language is process-wide state, so a case that switches to
+    French would otherwise decide what the next case sees.
+    """
+    reset_locale_state()
+    yield
+    reset_locale_state()
 
 # CI run https://github.com/Jilanos/peaklive/actions/runs/34771086526:
 # 614 passed; these seven functions account for all 11 failing cases.

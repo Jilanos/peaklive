@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from peaklive.analysis import DECODE_DECODED, DECODE_UNKNOWN
+from peaklive.analysis.session import decode_status_label
 from peaklive.analysis.trace import DECODE_CONFLICT
 from peaklive.domain import TRACE_DECODE_ANY, TRACE_DIRECTION_ANY, TraceFilterSettings
 from peaklive.i18n import translate
@@ -119,9 +120,8 @@ class TraceFilterBar(QWidget):
         self.status_filter.setAccessibleName(translate("trace.filter_status"))
         self.status_filter.setToolTip(translate("trace.filter_status"))
         self.status_filter.addItem(translate("trace.any"), TRACE_DECODE_ANY)
-        self.status_filter.addItem(DECODE_DECODED, DECODE_DECODED)
-        self.status_filter.addItem(DECODE_UNKNOWN, DECODE_UNKNOWN)
-        self.status_filter.addItem(DECODE_CONFLICT, DECODE_CONFLICT)
+        for code in (DECODE_DECODED, DECODE_UNKNOWN, DECODE_CONFLICT):
+            self.status_filter.addItem(decode_status_label(code), code)
         self.status_filter.currentIndexChanged.connect(self._read_filters)
         secondary_layout.addWidget(self.status_filter, 0, 3)
         self.event_filter = self._line("traceEventFilter", "trace.filter_event")
@@ -226,6 +226,10 @@ class TraceFilterBar(QWidget):
             index = self.direction_filter.findData(data)
             if index >= 0:
                 self.direction_filter.setItemText(index, translate(key))
+        for code in (DECODE_DECODED, DECODE_UNKNOWN, DECODE_CONFLICT):
+            index = self.status_filter.findData(code)
+            if index >= 0:
+                self.status_filter.setItemText(index, decode_status_label(code))
         self._refresh_chips()
 
     def _toggle_secondary(self) -> None:
