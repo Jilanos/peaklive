@@ -35,3 +35,7 @@ Thumbs.db
 
 # Windows download-provenance metadata; never project content.
 *Zone.Identifier*
+
+# Local reference material; keep it out of source control.
+/logics/external/*.png
+/logics/external/dbc/*.dbc
