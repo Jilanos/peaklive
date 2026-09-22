@@ -1,269 +1,171 @@
 # PeakLive
 
-**Du bus CAN aux courbes de mesure, dans un même espace de travail.**
+**Acquérir, décoder et comprendre les données CAN dans un même espace de travail.**
 
-PeakLive est une application de bureau pour acquérir, décoder, enregistrer et
-analyser des données CAN. Elle accompagne les essais véhicule et la mise au
-point : observer les signaux en direct, revenir sur un enregistrement, comparer
-des grandeurs physiques et retrouver les trames à l'origine d'une observation.
+PeakLive réunit les courbes, les trames et les mesures pour suivre un essai en
+direct ou analyser un enregistrement. Chargez vos DBC, choisissez les signaux
+utiles et comparez leurs évolutions sur un axe temporel commun.
 
-Conçue pour **Windows 10/11 x64**, elle fonctionne entièrement en local, sans
-compte ni service cloud. Son interface est disponible en français et en anglais,
-au choix de l'opérateur. L'acquisition matérielle utilise les interfaces
-**PEAK PCAN** ; un adaptateur simulé permet également de développer et
-d'explorer l'application sans matériel CAN.
+Application de bureau pour **Windows 10/11 x64**, interface **français / anglais**,
+fonctionnement **entièrement local**, sans compte ni service cloud.
+L'acquisition utilise les interfaces **PEAK PCAN** ; un adaptateur simulé permet
+d'explorer l'application sans matériel.
 
-![Courbes synchronisées de courant moteur, tension batterie et vitesse entre 370 et 530 secondes](docs/images/graphs.png)
+![Courant moteur, vitesse et tension haute : trois courbes synchronisées avec mesures A/B](docs/images/graphs.png)
 
-*Données réelles de roulage, entre 370 et 530 s. Les trois grandeurs conservent
-leurs unités et partagent le même axe temporel ; les curseurs A/B permettent
-d'examiner un intervalle commun.*
+*Extrait de démonstration entre 370 et 530 s, avec les curseurs à 400 et 480 s.
+Les valeurs décodées sont conservées ; les identifiants et octets bruts sont
+masqués dans les captures.*
 
-## Un espace de travail pour chaque étape de l'essai
+## De la vue d'ensemble au détail
 
-| Vue | Utilisation |
+Gardez les signaux, les courbes et la trace côte à côte, ou donnez toute la place
+à la vue qui vous intéresse. Les panneaux se replient et se redimensionnent ;
+le profil mémorise votre disposition.
+
+![Vue combinée avec sélection de signaux, courbes et trace aux informations sensibles masquées](docs/images/workspace.png)
+
+| Vue | Pour quoi faire ? |
 | --- | --- |
-| **Combo** | Rapprocher les courbes, les trames et le rapport dans un espace partagé. |
-| **Graphs** | Donner toute la place aux signaux et aux mesures A/B. |
-| **Trace** | Filtrer les trames et inspecter les données brutes et décodées. |
-| **Report** | Lire la synthèse de session, la couverture DBC et les anomalies. |
+| **Combiné / Combo** | Rapprocher les courbes, les trames et le rapport. |
+| **Graphiques / Graphs** | Comparer les signaux et mesurer un intervalle. |
+| **Trace** | Filtrer les trames et examiner leur décodage. |
+| **Rapport / Report** | Consulter les volumes, la couverture DBC et les anomalies. |
 
-L'explorateur de signaux et l'inspecteur peuvent être repliés. Les panneaux sont
-redimensionnables, le plein écran facilite la lecture et le profil mémorise la
-disposition. La barre commune regroupe le démarrage et l'arrêt, l'état du bus,
-le suivi temporel, les ajustements des axes et les curseurs.
+## Voir et mesurer les signaux
 
-![Espace de travail PeakLive avec sélection de signaux, courbes et trace CAN](docs/images/workspace.png)
+Chargez une ou plusieurs bases **DBC**, recherchez les signaux, ajoutez-les aux
+favoris et choisissez ceux à afficher. Chaque courbe conserve son unité et son
+axe vertical ; toutes partagent le même axe temporel.
 
-## Fonctionnalités
+- **Navigation** : zoom, déplacement, ajustement X + Y ou Y seulement.
+- **Suivi du direct** : durée complète ou fenêtre glissante. La navigation
+  manuelle suspend le suivi pour garder la zone examinée.
+- **Curseurs A/B** : valeurs aux deux instants, différences et durée commune.
+- **Mesures sur l'intervalle** : nombre d'échantillons, minimum, maximum,
+  moyenne, écart-type et RMS ; distribution pour les valeurs énumérées.
+- **Historique sur disque** : consultation au-delà des points conservés en
+  mémoire, avec chargement selon la fenêtre visible.
 
-### Acquisition CAN en direct
+Le menu **DBC** permet d'activer, désactiver ou retirer une base et de choisir
+la définition à utiliser lorsque plusieurs bases décrivent le même identifiant.
 
-- Un canal **Classic CAN**, avec choix de l'interface et du débit :
-  125, 250, 500 ou 1 000 kbit/s.
-- Commandes explicites **Démarrer l'acquisition** et **Arrêter l'acquisition**
-  (**Start Acquisition** / **Stop Acquisition** en anglais), également
-  accessibles avec `F5` et `F6`.
-- Réception avec contrôleur normal ou écoute passive selon l'adaptateur.
-  En mode normal, le contrôleur peut acquitter les trames ; en mode passif,
-  il n'envoie pas d'acquittement.
-- État du bus visible, signalement des erreurs et des déconnexions, indication
-  de la finalisation et gestion des états de récupération.
-- Réception, écriture et présentation séparées, avec traitement par lots et
-  opérations en arrière-plan.
+## Relier une observation aux trames
 
-Restaurer un profil au lancement ne démarre jamais automatiquement le bus.
-PeakLive ne propose pas d'émission de trames.
+La trace chronologique rassemble les trames et les événements. Filtrez par
+identifiant, message, signal, direction, statut de décodage ou période, puis
+sélectionnez une ligne pour ouvrir l'inspecteur. Les colonnes sont configurables
+et les informations peuvent être copiées.
 
-### Décodage multi-DBC et sélection des signaux
+![Trace et inspecteur avec identifiants, messages, empreinte DBC et octets bruts masqués](docs/images/trace.png)
 
-Chargez plusieurs **DBC**, puis parcourez leurs messages et signaux dans
-l'explorateur. La recherche, les favoris et les commandes d'affichage permettent
-de préparer une sélection adaptée à l'essai. Un récapitulatif présente les
-signaux affichés, leur dernière valeur disponible et leur unité.
+*Les mentions « Masqué » sont appliquées uniquement aux visuels de cette
+documentation. Dans l'application, l'inspecteur affiche les informations
+complètes du fichier chargé. Les filtres d'affichage ne filtrent jamais
+l'enregistrement.*
 
-Le menu **DBC** permet d'activer, désactiver ou retirer une base. Si plusieurs
-bases définissent le même identifiant, une résolution explicite permet de
-choisir la définition. L'identité technique de chaque source reste disponible
-pour distinguer les signaux homonymes.
+## Acquérir et enregistrer
 
-Le décodage fournit les valeurs physiques, les unités et les valeurs énumérées.
-Les signaux ajoutés à l'analyse peuvent être complétés à partir des trames
-encore conservées dans le cache de session.
+PeakLive reçoit un canal **Classic CAN** à 125, 250, 500 ou 1 000 kbit/s.
+Le contrôleur peut fonctionner en mode normal ou en écoute passive selon
+l'adaptateur. Les commandes de démarrage et d'arrêt sont explicites ; restaurer
+un profil ne démarre jamais le bus.
 
-### Courbes synchronisées et historique
+L'état de connexion, les erreurs et la finalisation restent visibles. La
+réception, l'écriture et la présentation utilisent des traitements séparés.
 
-Chaque signal dispose d'une courbe, d'une couleur et d'un axe vertical. L'axe
-temporel commun facilite la comparaison de grandeurs différentes, par exemple
-le courant moteur, la vitesse du véhicule et la tension batterie.
+![Configuration d'un enregistrement ASC avec dossier et nom d'essai génériques](docs/images/recording.png)
 
-- Zoom et déplacement sur la période étudiée.
-- Ajustement **X + Y** pour retrouver l'étendue complète, ou **Y seulement**
-  pour adapter les amplitudes sans perdre la fenêtre temporelle choisie.
-- Suivi de toute la durée de l'acquisition ou d'une fenêtre glissante.
-- Navigation manuelle qui désactive le suivi pour conserver la zone examinée.
-- Historique de session sur disque, chargement selon la fenêtre visible et
-  réduction du nombre de points pour les vues d'ensemble.
-
-L'historique des courbes permet de revenir sur des échantillons plus anciens que
-la projection en mémoire. Il reste distinct du fichier ASC/TRC à conserver pour
-une analyse ultérieure.
-
-### Curseurs A/B et mesures
-
-Les curseurs A et B sont communs aux courbes et gardent leur position pendant
-l'arrivée de nouvelles données. La barre affiche leur position et leur écart
-temporel. La table de mesures donne, pour chaque signal :
-
-- les valeurs en A et B et leur différence ;
-- le nombre d'échantillons dans l'intervalle ;
-- le minimum, le maximum, la moyenne, l'écart-type et la valeur efficace (RMS) ;
-- la distribution des valeurs pour les signaux énumérés.
-
-La table peut être masquée pour agrandir les courbes sans supprimer les curseurs.
-
-### Trace CAN et inspecteur de trames
-
-La trace chronologique affiche les trames et les événements de session. Les
-filtres portent sur l'identifiant, le message, le signal, la direction, le type
-d'événement, le statut de décodage et la plage temporelle. Les filtres actifs
-sont visibles et peuvent être retirés individuellement.
-
-Les colonnes sont configurables : visibilité, ordre, largeur et format des
-valeurs. Les commandes de copie facilitent la réutilisation des informations
-dans un compte rendu ou une investigation.
-
-Sélectionner une trame ouvre son détail dans l'inspecteur : horodatage,
-identifiant, charge utile, octets, message résolu et valeurs physiques décodées.
-Les trames non décodables restent identifiables avec leur statut.
-**Les filtres d'affichage ne filtrent pas l'enregistrement.**
-
-![Trace CAN et inspecteur détaillant une trame de l'extrait de roulage](docs/images/trace.png)
-
-### Enregistrement ASC ou TRC
-
-L'enregistrement se configure par profil et peut être désactivé pour une simple
-surveillance. Les formats proposés sont **ASC (Vector)** et **TRC texte
-(PCAN-View)**.
-
-Le dossier, le format, le modèle de nom, le texte de l'essai et la prochaine
-itération sont configurables, avec un aperçu du nom produit. Exemple de modèle :
+L'enregistrement **ASC (Vector)** ou **TRC texte (PCAN-View)** se configure par
+profil : dossier, modèle de nom, texte d'essai et prochaine itération. Un aperçu
+montre le nom produit, par exemple :
 
 ```text
 {date}_{time}_{profile}_{text}_{iteration:03d}_{segment:03d}.asc
 ```
 
-La numérotation évite d'écraser une capture existante. L'enregistrement gère la
-rotation en segments et les seuils d'espace disque. Les marqueurs de fichier
-partiel et les métadonnées distinguent une session finalisée d'une interruption.
-Les événements complémentaires sont conservés dans un fichier associé
-`.peaklive-events.jsonl`.
+La numérotation évite d'écraser une capture. La rotation en segments, les seuils
+d'espace disque et les marqueurs de fichier partiel accompagnent les sessions
+longues ou interrompues. Les événements sont conservés dans un fichier associé.
 
-![Paramètres d'enregistrement : format, dossier, modèle de nom et numéro d'itération](docs/images/recording.png)
-
-### Relecture et export
+## Relire, synthétiser et exporter
 
 Ouvrez une capture **ASC** ou une variante prise en charge de **TRC texte**,
-chargez les DBC correspondants et utilisez les mêmes outils de visualisation,
-d'inspection et de mesure. Le chargement se fait en arrière-plan avec une
-progression et le signalement des enregistrements non pris en charge.
+chargez les DBC et retrouvez les mêmes outils de visualisation et de mesure.
+Le chargement s'effectue en arrière-plan avec une progression.
 
-L'export des signaux décodés propose **CSV** et **Parquet**, avec sélection des
-signaux et de la portée : intervalle A/B, fenêtre visible ou ensemble du tampon
-conservé. Il affiche sa progression et peut être annulé.
+![Rapport de l'extrait de démonstration avec identifiants et charges utiles masqués](docs/images/report.png)
 
-La portée de l'export dépend des échantillons disponibles dans le tampon de
-signaux ; elle ne correspond pas nécessairement à tout le fichier brut ni à
-l'historique de navigation des courbes.
+Le rapport synthétise le nombre de trames, la cadence, la couverture de décodage,
+les bases chargées et les anomalies. Il peut être actualisé et exporté en texte.
+Sa couverture dépend des DBC effectivement chargés : le visuel ci-dessus décrit
+uniquement l'extrait de démonstration et sa base.
 
-### Rapport de session
-
-La vue **Report** synthétise les volumes de trames, la cadence, la couverture de
-décodage, les DBC chargés, les identifiants les plus présents et les anomalies
-regroupées par type. Le rapport peut être actualisé et exporté en texte pour
-accompagner un compte rendu d'essai.
-
-![Rapport de session calculé sur l'extrait 370–530 secondes avec les trois DBC de démonstration](docs/images/report.png)
-
-*Ce rapport porte sur l'extrait illustré et les trois DBC chargés pour ces
-visuels, pas sur l'ensemble du roulage ni sur toutes les bases du véhicule.*
-
-### Profils réutilisables
-
-Un profil conserve les réglages du bus, les DBC et leurs résolutions de conflits,
-les favoris, les signaux affichés, les filtres, la disposition et les paramètres
-d'enregistrement. **Setup → Save setup as** crée une copie indépendante pour
-préparer un autre véhicule ou un nouvel essai.
-
-Le dernier profil sélectionné est restauré au lancement. Les références aux
-DBC absents sont signalées et conservées pour permettre de retrouver les fichiers.
-
-## À propos des captures d'écran
-
-Les visuels sont produits avec les widgets Qt du dépôt et les données réelles
-de `demo_capture_010_001.asc`, limitées à **370–530 s**.
-Les curseurs sont placés à **400 s** et **480 s**.
-
-Les titres ont été adaptés pour la documentation, sans modifier les DBC ni les
-valeurs. Ces alias ne représentent pas une fonction de renommage dans l'interface.
-
-| Signal source | Libellé du visuel | Unité | DBC |
-| --- | --- | --- | --- |
-| `Edrv_iAct` | Courant moteur | A | `demo_motor.dbc` |
-| `Ecran1.Vitesse` | Vitesse | km/h | `demo_dashboard.dbc` |
-| `DCDC_ELEC_VALUE.DCDC_UHV` | Tension batterie | V | `DCDC_generic_DB.dbc` |
-
-Le signal demandé comme `DCDC_Elec_Value_UHV` correspond, dans le DBC fourni, à
-`DCDC_ELEC_VALUE.DCDC_UHV`. Les fichiers d'acquisition et les DBC privés ne sont
-pas ajoutés au dépôt. Les captures sont rendues hors écran sous Linux ; les
-décorations de fenêtre peuvent différer de Windows.
-
-Voir la [procédure de reproduction des captures](docs/screenshots.md).
-
-## Interface en français ou en anglais
-
-Le choix se fait dans **Configuration > Langue** (**Setup > Language**), entre
-**Français** et **English**. Le changement est immédiat, sans redémarrage :
-menus, panneaux, boîtes de dialogue, en-têtes de tableaux, axes des graphiques,
-infobulles, descriptions d'accessibilité, messages d'état, erreurs et rapport de
-session affiché suivent la langue choisie.
-
-L'anglais reste la langue par défaut au premier lancement et la langue de
-repli ; PeakLive ne suit pas la langue du système. Le choix est conservé entre
-les lancements dans `ui-settings.json`, à côté des profils de mesure mais
-indépendamment d'eux : changer de profil ne change jamais la langue, et changer
-de langue ne modifie aucun profil.
-
-Changer de langue **ne touche pas à la session ni aux données**. Une acquisition
-ou une relecture en cours conserve son worker, son identité de session et toutes
-ses trames ; les filtres, les signaux affichés, les favoris, la trame
-sélectionnée, les curseurs, le zoom, le défilement, la disposition et les saisies
-en cours restent tels quels. Les identifiants CAN et DBC, les noms de messages et
-de signaux, les énumérations DBC, les unités, les chemins de fichiers, les noms
-saisis par l'opérateur et toutes les valeurs numériques sont inchangés, de même
-que les fichiers ASC/TRC, leurs sidecars JSON, les schémas CSV/Parquet, les codes
-d'état machine et le journal de diagnostic. Les détails techniques fournis par un
-pilote, le système ou un fichier DBC sont repris tels quels à l'intérieur du
-message traduit qui les entoure.
+Exportez les signaux décodés en **CSV** ou **Parquet**, pour l'intervalle A/B,
+la fenêtre visible ou le tampon conservé. La portée dépend des échantillons
+disponibles dans ce tampon ; elle ne représente pas nécessairement tout le
+fichier brut ni tout l'historique de navigation.
 
 ## Prise en main
 
-### Analyser un enregistrement
+### Analyser un fichier
 
-1. Charger les DBC avec `Ctrl+D`, puis ouvrir la capture avec `Ctrl+O`.
-2. Rechercher les signaux et activer leur affichage dans l'explorateur.
-3. Passer en **Graphs**, ajuster les axes et zoomer sur la période utile.
-4. Placer A et B pour mesurer, puis exporter les signaux avec `Ctrl+E`.
-5. Consulter **Trace** et **Report** pour rapprocher les observations des trames
-   et des anomalies.
+1. Charger les DBC avec `Ctrl+D`, puis la capture avec `Ctrl+O`.
+2. Rechercher les signaux et activer leur affichage.
+3. Passer en **Graphiques**, ajuster les axes et placer les curseurs A/B.
+4. Utiliser **Trace** et **Rapport** pour compléter l'analyse.
+5. Exporter les signaux souhaités avec `Ctrl+E`.
 
-### Réaliser une acquisition
+### Préparer une acquisition
 
 1. Installer le pilote PEAK et connecter l'interface PCAN.
-2. Choisir le profil, le canal, le débit et le mode du contrôleur dans
-   **Configuration** (**Setup**).
-3. Charger les DBC et préparer la sélection de signaux.
-4. Configurer l'enregistrement dans le menu **Recording**.
-5. Démarrer avec `F5`, surveiller les courbes et l'état du bus, puis arrêter avec
-   `F6` et attendre la finalisation.
+2. Choisir le canal, le débit et le mode du contrôleur dans **Configuration**.
+3. Charger les DBC, sélectionner les signaux et configurer l'enregistrement.
+4. Démarrer avec `F5`, arrêter avec `F6` et attendre la fin de la finalisation.
 
-## Raccourcis
+Un profil conserve les réglages du bus, les DBC, les signaux, les favoris, les
+filtres et la disposition. **Enregistrer la configuration de mesure sous…**
+(`Ctrl+Shift+S`) crée une copie indépendante pour un autre essai.
+
+La langue se choisit dans **Configuration → Langue** : **Français** ou
+**English**. Le changement est immédiat et mémorisé indépendamment du profil.
+Il conserve la session, les sélections et les valeurs. Les noms issus des DBC
+et les données techniques restent ceux de la source.
+
+### Raccourcis utiles
 
 | Raccourci | Action |
 | --- | --- |
 | `F5` / `F6` | Démarrer / arrêter l'acquisition |
-| `Ctrl+D` | Charger des DBC |
-| `Ctrl+O` | Ouvrir une trace ASC ou TRC |
+| `Ctrl+D` / `Ctrl+O` | Charger des DBC / ouvrir une capture |
 | `Ctrl+E` | Exporter les signaux |
-| `Ctrl+Shift+S` | Copier le profil avec Save setup as |
+| `Ctrl+Shift+S` | Enregistrer une copie du profil |
 | `Ctrl+1` / `Ctrl+2` | Placer le curseur A / B |
-| `Ctrl+0` | Ajuster les courbes à l'étendue complète |
+| `Ctrl+0` | Ajuster les courbes |
 | `Ctrl+F` | Accéder au filtre de trace |
-| `Ctrl+B` | Replier / déplier le panneau de signaux |
+| `Ctrl+B` | Replier / déplier les signaux |
 | `F11` | Basculer en plein écran |
-| `Ctrl+Q` | Quitter |
 
-## Développement
+## À propos des visuels
+
+Les cinq captures sont rendues avec les **widgets Qt du dépôt**, à partir de
+la capture et du DBC de démonstration fournis pour la documentation. Les courbes
+ne sont pas redessinées et les valeurs décodées ne sont pas modifiées.
+
+Les identifiants CAN, les charges utiles et le détail des octets sont remplacés
+avant la capture. Les noms de messages visibles dans la trace et l'inspecteur,
+les empreintes DBC et les références aux fichiers privés sont également cachés
+ou remplacés par des libellés génériques. Les titres français des trois courbes
+sont des alias documentaires, pas une fonction de renommage du produit.
+
+Les fichiers sources ne sont pas distribués dans le dépôt. Ce masquage porte
+sur les informations visibles dans les images ; les courbes, valeurs physiques
+et statistiques restent consultables. Le rendu hors écran sous Linux peut
+différer légèrement des décorations Windows.
+
+Voir la [procédure de reproduction et de masquage](docs/screenshots.md).
+
+## Développement et exécutable Windows
 
 Prérequis : **Python 3.13+** et [uv](https://docs.astral.sh/uv/).
 
@@ -275,47 +177,28 @@ uv run pytest
 uv build
 ```
 
-La pile repose sur **PySide6/Qt**, **pyqtgraph**, **python-can** et **cantools**.
-L'historique de session utilise SQLite. Pour les tests Qt sans écran sous Linux
-ou en CI :
+Pour les tests Qt sans écran : `QT_QPA_PLATFORM=offscreen uv run pytest`.
+`PEAKLIVE_DATA_DIR` isole les profils et les données de développement ;
+`PEAKLIVE_ADAPTER=fake` active l'adaptateur simulé.
 
-```bash
-QT_QPA_PLATFORM=offscreen uv run pytest
-```
+Depuis PowerShell, `./scripts/build-windows.ps1` produit `dist/PeakLive.exe`.
+Le pilote PEAK s'installe séparément. La pile repose sur **PySide6/Qt**,
+**pyqtgraph**, **python-can** et **cantools**, avec un historique SQLite.
 
-`PEAKLIVE_DATA_DIR` isole les profils et données de développement.
-`PEAKLIVE_ADAPTER=fake` force l'adaptateur simulé, également utilisé par défaut
-hors Windows. Une simulation ne qualifie pas l'acquisition PCAN réelle.
-
-## Exécutable Windows et périmètre
-
-Exécuter `scripts/build-windows.ps1` depuis PowerShell pour produire
-`dist/PeakLive.exe`, un exécutable autonome. Le pilote de l'adaptateur doit être
-installé séparément.
-
-Le périmètre actuel reste centré sur la réception d'un canal Classic CAN.
-Le CAN FD, le LIN, l'émission de trames, la capture multicanal synchronisée,
-les protocoles de diagnostic et les services cloud ne sont pas proposés.
-
-La validation logicielle et la qualification sur bus réel sont distinctes.
-Les procédures de [qualification Windows](docs/windows-qualification.md),
-d'[acceptation matérielle](docs/windows-hardware-acceptance.md) et
-d'[essai véhicule de dix minutes](docs/vehicle-test-10m.md) décrivent les preuves
-à recueillir pour une livraison.
+Le périmètre actuel est la **réception d'un canal Classic CAN**. Le CAN FD,
+le LIN, l'émission de trames, l'acquisition multicanal synchronisée et les
+protocoles de diagnostic ne sont pas proposés. La simulation et les tests
+logiciels ne remplacent pas une qualification sur le matériel réel.
 
 ## Documentation
 
-- [Périmètre produit et limites initiales](docs/product-scope.md)
-- [Architecture](docs/architecture.md)
+- [Périmètre produit](docs/product-scope.md) et [architecture](docs/architecture.md)
 - [Identité des builds](docs/build-identity.md)
-- [Vérification bilingue sous Windows](docs/bilingual-windows-smoke.md)
-- [Choix de Python et Qt](docs/adr/0001-native-python-qt-stack.md)
-- [Enregistrement et projections bornées](docs/adr/0002-lossless-recording-bounded-projections.md)
-- [Interface d'adaptation matérielle](docs/adr/0003-hardware-adapter-boundary.md)
+- [Qualification Windows](docs/windows-qualification.md)
+- [Vérification bilingue](docs/bilingual-windows-smoke.md)
+- [Acceptation matérielle](docs/windows-hardware-acceptance.md)
+- [Essai véhicule de dix minutes](docs/vehicle-test-10m.md)
 - [Notes de version 0.1.2](docs/release-notes-0.1.2.md)
 
-Les demandes, décisions, tâches et validations sont suivies dans `logics/`.
-
-## Licence
-
+Les demandes, décisions et validations sont suivies dans `logics/`.
 PeakLive est distribué sous [licence Apache 2.0](LICENSE).

@@ -1,13 +1,15 @@
 """Render README screenshots from a private ASC file using the actual Qt widgets.
 
-Only display titles are adapted for documentation; source frames, DBCs, decoded
-values and timestamps are unchanged. No CAN connection is opened.
+Display titles are adapted and sensitive fields are redacted in the widgets
+before capture. Source frames, DBCs, decoded values and timestamps are unchanged.
+No CAN connection is opened and no private input is copied into the repository.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import time
 from contextlib import ExitStack
 from pathlib import Path
@@ -21,15 +23,56 @@ from peaklive.analysis.dbc import signal_display_title
 from peaklive.analysis.replay import iter_trace
 from peaklive.app import apply_application_identity, apply_application_theme
 from peaklive.domain import CanFrame
+from peaklive.i18n import translate
 from peaklive.services.profiles import ProfileStore
+from peaklive.services.ui_settings import UiSettingsStore
 from peaklive.ui import MainWindow
 from peaklive.ui.dialogs.recording import RecordingSettingsDialog
+from peaklive.ui.panels.trace_view import RECORD_INDEX_ROLE
 
 SOURCES = {
-    "Edrv_iAct": ("demo_motor.dbc", "Courant moteur"),
-    "Vitesse": ("demo_dashboard.dbc", "Vitesse"),
-    "DCDC_UHV": ("DCDC_generic_DB.dbc", "Tension batterie"),
+    "Motor_Current": ("transparent_signals.dbc", "Courant moteur"),
+    "Vehicle_Speed": ("transparent_signals.dbc", "Vitesse"),
+    "High_Voltage": ("transparent_signals.dbc", "Tension haute"),
 }
+
+
+def redact_widgets(window: MainWindow) -> None:
+    """Redact actual widget text, so sensitive pixels never enter the PNG."""
+    tree = window.explorer_panel.tree
+    tree.blockSignals(True)
+    for index in range(tree.topLevelItemCount()):
+        database = tree.topLevelItem(index)
+        database.setText(0, "Base de démonstration")
+        for child in range(database.childCount()):
+            message = database.child(child)
+            message.setText(0, f"Message {child + 1} · ID masqué")
+            for row in range(message.childCount()):
+                signal = message.child(row)
+                for source, (_, label) in SOURCES.items():
+                    if signal.text(0).startswith(source):
+                        signal.setText(0, signal.text(0).replace(source, label, 1))
+    tree.blockSignals(False)
+    for column, spec in enumerate(c for c in window.trace_panel.columns if c.visible):
+        if spec.key in {"id", "data", "message"}:
+            for row in range(window.trace_table.rowCount()):
+                window.trace_table.item(row, column).setText("Masqué")
+    body = window.inspector.body.text()
+    for key in ("arbitration_id", "payload", "payload_bytes", "database", "message"):
+        label = translate(f"inspector.{key}")
+        body = re.sub(rf"(?m)^{re.escape(label)}:.*$", f"{label}: Masqué", body)
+    window.inspector.body.setText(body)
+    report = window.report_panel.view.toPlainText()
+    report = re.sub(r"0x[0-9A-Fa-f]+x?", "[ID masqué]", report)
+    report = re.sub(r"latest=.*? count=", "latest=[octets masqués] count=", report)
+    for summary in window._dbc_summaries():
+        report = report.replace(summary.name, "Base de démonstration")
+        report = report.replace(summary.short_hash, "empreinte masquée")
+        assert summary.name not in report and summary.short_hash not in report
+    assert not re.search(r"0x[0-9A-Fa-f]+", report)
+    assert not re.search(r"latest=(?!\[octets masqués\])", report)
+    window.report_panel.view.setPlainText(report)
+    window.report_panel.view.moveCursor(window.report_panel.view.textCursor().MoveOperation.Start)
 
 
 def pump(app: QApplication, seconds: float = 0.5) -> None:
@@ -50,15 +93,19 @@ def main() -> None:
     apply_application_theme(app)
     apply_application_identity(app)
     with TemporaryDirectory(prefix="peaklive-readme-") as directory, ExitStack() as stack:
-        window = MainWindow(ProfileStore(Path(directory)), adapter_factory=FakeCanAdapter)
+        ui_settings = UiSettingsStore(Path(directory))
+        ui_settings.save_locale("fr")
+        window = MainWindow(
+            ProfileStore(Path(directory)), adapter_factory=FakeCanAdapter,
+            ui_settings=ui_settings,
+        )
         try:
-            for filename, _ in SOURCES.values():
+            for filename in sorted({source[0] for source in SOURCES.values()}):
                 window._load_dbc_path(args.dbc_directory / filename)
             references = {
                 ref.signal_key: ref
                 for ref in window._catalog.signal_references()
                 if ref.signal_name in SOURCES
-                and (ref.signal_name != "Vitesse" or ref.message_name == "Ecran1")
             }
             if len(references) != 3:
                 raise RuntimeError(f"Expected exactly three source signals, got {references}")
@@ -67,7 +114,7 @@ def main() -> None:
             def title(name: str) -> str:
                 return aliases.get(name, signal_display_title(name))
 
-            for module in ("graph_lane_header", "measurement", "signal_summary"):
+            for module in ("graph_lane_header", "signal_summary"):
                 stack.enter_context(patch(
                     f"peaklive.ui.panels.{module}.signal_display_title", side_effect=title
                 ))
@@ -80,7 +127,7 @@ def main() -> None:
             # A cropped extract must retain the original acquisition clock,
             # rather than rebasing its first sample to zero.
             window._series._origin = 0.0
-            window._facts.source = f"{args.capture.name} · 370–530 s"
+            window._facts.source = "Capture de démonstration · 370–530 s"
             window.resize(1680, 1050)
             window.show()
             # Keep the source timestamps and values; order the excerpt for the
@@ -112,7 +159,7 @@ def main() -> None:
                     raise RuntimeError(f"Missing samples: {key}")
                 print(f"{title(key)}: {len(series)} samples, {series.bounds}", flush=True)
             window.acquisition_bar.set_bus_state("disconnected")
-            window.status.showMessage("ASC · extrait 370–530 s · données réelles")
+            window.status.showMessage("Démonstration · 370–530 s · identifiants et octets masqués")
             window.inspector_panel.set_hidden(True)
             window.workspace.setSizes([330, 1350, 0])
             graph = window.graph_panel
@@ -149,6 +196,7 @@ def main() -> None:
                         assert 370 <= series.bounds[0] <= series.bounds[1] <= 530
                     for row in range(graph.measurement.table.rowCount()):
                         assert int(graph.measurement.table.item(row, 4).text()) > 0
+                redact_widgets(window)
                 if not widget.grab().save(str(args.output / name)):
                     raise RuntimeError(f"Could not save {name}")
                 print(f"Saved {name}", flush=True)
@@ -168,8 +216,9 @@ def main() -> None:
             window.inspector_panel.set_hidden(False)
             window.workspace.setSizes([280, 1000, 400])
             for row in range(window.trace_table.rowCount()):
-                record = window.trace_table.item(row, 2)
-                if record is not None and "A3" in record.text().upper():
+                item = window.trace_table.item(row, 0)
+                record = window._trace.record(item.data(RECORD_INDEX_ROLE))
+                if record is not None and record.message_name == "Motor_Status":
                     window.trace_table.setCurrentCell(row, 0)
                     break
             else:
@@ -180,6 +229,9 @@ def main() -> None:
             mode("report")
             window._refresh_report()
             capture("report.png")
+            window.selected_profile.name = "Démonstration"
+            window.selected_profile.recording.directory = "C:/Captures"
+            window.selected_profile.recording.text = "essai"
             dialog = RecordingSettingsDialog(window.selected_profile, parent=window)
             dialog.resize(850, 450)
             dialog.show()

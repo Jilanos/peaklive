@@ -1,35 +1,45 @@
 # Captures du README
 
-Les images de `docs/images/` sont des captures des widgets Qt de PeakLive,
-rendues hors écran avec le thème de l'application. Elles utilisent un extrait
-réel, sans génération de valeurs synthétiques ni retouche des courbes.
+Les images de `docs/images/` sont rendues avec les widgets Qt de PeakLive et le
+thème de l'application, en français. Elles utilisent les fichiers de
+démonstration fournis localement : `dummy_data.asc` et `transparent_signals.dbc`.
+Ces fichiers ne sont pas ajoutés au dépôt.
 
-## Données utilisées
+## Sélection présentée
 
-- Acquisition : `demo_capture_010_001.asc`.
-- Intervalle inclusif : **370 à 530 secondes**, dans le repère de l'acquisition.
-- Trames CAN dans l'intervalle : **28 482**.
-- Curseur A : **400 s** ; curseur B : **480 s**.
-- DBC : `demo_motor.dbc`, `demo_dashboard.dbc`, `DCDC_generic_DB.dbc`.
+L'extrait contient **28 482 trames**, de **370 à 530 secondes** dans le repère
+du fichier. Les curseurs A et B sont placés à **400 s** et **480 s**.
 
-| Signal DBC | Titre de présentation | Unité | Échantillons dans l'extrait |
+| Signal de démonstration | Titre du visuel | Unité | Échantillons |
 | --- | --- | --- | --- |
-| `Edrv_Act_1.Edrv_iAct` | Courant moteur | A | 1 526 |
-| `Ecran1.Vitesse` | Vitesse | km/h | 1 532 |
-| `DCDC_ELEC_VALUE.DCDC_UHV` | Tension batterie | V | 1 556 |
+| `Motor_Current` | Courant moteur | A | 1 526 |
+| `Vehicle_Speed` | Vitesse | km/h | 1 532 |
+| `High_Voltage` | Tension haute | V | 1 556 |
 
-Le signal désigné comme `DCDC_Elec_Value_UHV` dans la demande est nommé
-`DCDC_ELEC_VALUE.DCDC_UHV` dans le DBC fourni. Les alias français sont appliqués
-uniquement aux titres des courbes, au récapitulatif des signaux et à la table de
-mesures pendant la génération. Les identités des signaux, les unités, les valeurs
-et les fichiers DBC restent inchangés. L'explorateur et l'inspecteur montrent les
-noms DBC originaux. Ce dispositif documentaire n'ajoute pas une fonction de
-renommage au produit.
+Les alias ne changent ni le décodage ni les valeurs. Ils sont appliqués au rendu
+documentaire et ne constituent pas une fonction de renommage dans l'application.
+Le rapport décrit uniquement l'extrait et le DBC chargé, pas la capture complète.
 
-La capture Report résume uniquement cet extrait, avec ces trois DBC : sa
-couverture de décodage ne décrit pas le roulage complet avec toutes les bases.
-La capture Recording montre le dialogue de configuration ; aucune acquisition
-matérielle n'est démarrée pour produire les images.
+## Masquage avant capture
+
+Le script remplace les textes sensibles directement dans les widgets avant
+leur export en PNG. Aucun identifiant ni octet brut n'est conservé sous un
+flou ou une couche transparente dans l'image finale.
+
+- **Trace** : identifiants CAN, données brutes et noms de messages remplacés
+  par « Masqué ».
+- **Inspecteur** : identifiant, charge utile, détail des octets, message et
+  empreinte DBC remplacés par « Masqué ».
+- **Explorateur** : base et groupes de messages nommés génériquement,
+  identifiants supprimés des libellés visibles.
+- **Rapport** : identifiants, derniers octets et empreintes masqués ; source
+  et nom de base génériques. Volumes, cadence et couverture conservés.
+- **Enregistrement** : profil, texte d'essai et dossier de destination de
+  démonstration, sans chemin utilisateur.
+
+Les valeurs physiques, les courbes, les horodatages et les statistiques restent
+visibles. Ce dispositif masque les champs documentés ; il ne transforme pas les
+fichiers sources et ne constitue pas un export anonymisé de la session.
 
 ## Reproduction
 
@@ -37,24 +47,24 @@ Depuis la racine du dépôt, après `uv sync --all-extras` :
 
 ```bash
 QT_QPA_PLATFORM=offscreen uv run python scripts/capture_readme.py \
-  /chemin/vers/demo_capture_010_001.asc \
-  /chemin/vers/dbc
+  /chemin/vers/dummy_data.asc \
+  /chemin/vers/dossier-dbc
 ```
 
-Les arguments désignent le fichier ASC et le dossier contenant les trois DBC.
-Utiliser `--output /chemin/vers/images` pour changer le dossier de sortie.
-Les données privées doivent être disponibles localement ; elles ne sont pas
-distribuées avec le dépôt.
+Le second argument désigne le dossier contenant `transparent_signals.dbc`.
+`--output /chemin/vers/images` permet de changer le dossier de sortie.
 
-Le script utilise un profil temporaire et l'adaptateur simulé sans connexion.
-Il charge les DBC, transmet les trames de l'extrait au traitement de l'application,
-ordonne l'extrait chronologiquement sans changer ses horodatages ni ses valeurs,
-attend la persistance, conserve l'origine temporelle du fichier et capture cinq
-vues : courbes, espace combiné, trace et inspecteur, rapport, enregistrement.
-Il vérifie la présence des trois signaux, la fenêtre 370–530 s et l'existence de
-mesures dans l'intervalle A/B. Les décomptes et les correspondances de signaux
-sont imprimés en fin d'exécution pour vérifier la provenance.
+Le script utilise un profil et des préférences de langue temporaires. Il
+n'ouvre aucune connexion CAN. Les trames sont triées chronologiquement, puis
+transmises au traitement de l'application sans changer leurs horodatages ou
+leur contenu. Le rendu attend la fin de la persistance et vérifie les trois
+signaux, la fenêtre temporelle et les mesures A/B.
 
-Le rendu repose sur les interfaces internes de PeakLive : ce script doit être
-adapté si les widgets ou les contrôleurs évoluent. Les décorations et polices
-peuvent varier entre Linux et Windows.
+Les cinq fichiers produits sont `graphs.png`, `workspace.png`, `trace.png`,
+`report.png` et `recording.png`. Les décomptes d'échantillons sont imprimés en
+fin d'exécution. Vérifier visuellement chaque image avant publication, notamment
+si un panneau ou le format du rapport a évolué.
+
+Le rendu utilise les interfaces internes de PeakLive ; il doit être adapté
+lorsque celles-ci changent. Les polices et décorations peuvent différer entre
+Linux et Windows.
