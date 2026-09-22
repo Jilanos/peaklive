@@ -1,11 +1,32 @@
 """Shared test isolation, plus a narrow quarantine for Windows offscreen layout."""
 
+import gc
 import os
 import sys
 
 import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 
+from peaklive.diagnostics import set_operator_notifier
 from peaklive.i18n import reset_locale_state
+
+
+@pytest.fixture(autouse=True)
+def _isolated_window_cycles():
+    """Do not charge a previous test's dead windows to a live UI benchmark.
+
+    pytest-qt deletes native widgets, but their Python cycles can survive until
+    the application's GUI GC timer fires during a later test (CI 35622384079).
+    The diagnostic callback also retains the last window after Qt deletes it.
+    Release that root and collect on the test/GUI thread before creating the
+    next fixture. The application's GC remains active throughout each test;
+    neither its scheduling nor the responsiveness budgets are changed.
+    """
+    set_operator_notifier(None)
+    # processEvents() alone does not deliver deleteLater() outside exec().
+    if QCoreApplication.instance() is not None:
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    gc.collect()
 
 
 @pytest.fixture(autouse=True)
