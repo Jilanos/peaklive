@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Menu ownership and acquisition configuration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-14 16:30:50
+> Indicators reviewed: 2026-09-22 11:56:12
 > Owner: maintainer@example.invalid
 
 # AI Context
