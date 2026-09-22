@@ -1,5 +1,9 @@
 # Windows Hardware Acceptance
 
+Raw recordings referenced below are private evidence. They have been removed
+from the repository and its published history; the observations are retained.
+See [the privacy review](privacy-audit.md).
+
 Run this on a Windows 10/11 x64 workstation with the supported USB CAN driver
 installed and a known active Classic CAN bus.
 

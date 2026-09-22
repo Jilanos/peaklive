@@ -15,20 +15,22 @@ every visible identifier was recognized. Common private-key and access-token
 signatures were not found; this is not an exhaustive secret-detection result.
 
 Historical versions contain private reference databases, identifying filenames,
-personal/professional email addresses and unredacted screenshots. A separate
-filtered mirror is prepared for review: it removes historical local-reference
-files and superseded screenshots, anonymizes matching text and commit identities,
-and preserves the current application code and redacted screenshots. Original
-history remains sensitive until the filtered history is adopted and published.
+personal/professional email addresses and unredacted screenshots. The authorized
+history rewrite removes historical local-reference files, superseded screenshots
+and raw hardware-acceptance recordings, and anonymizes matching text and email
+identities. Current application code and README screenshots are preserved.
+Original data is retained only in a private backup outside the repository.
 Rewriting changes commit IDs and may invalidate historical CI/build references.
 
-Additional material requiring a confidentiality decision:
+Confidentiality decisions confirmed by the maintainer:
 
-- Two tracked hardware-acceptance ASC recordings contain actual CAN identifiers,
-  payloads and timestamps. Removing names does not anonymize those measurements.
-- Current screenshots retain measured curves and some decoded motor signal names
-  and values, despite masking database names, identifiers and payloads.
-- GitHub account and CI links identify the repository owner.
+- The two raw hardware-acceptance ASC recordings and historical private DBCs
+  and screenshots are removed from the published history. Capture locations in
+  historical validation notes refer to private evidence, not distributable files.
+- Current README screenshots, including visible motor signals, measured curves
+  and values, are explicitly approved and remain unchanged.
+- The GitHub account, CI links and other additionally reported identifiers are
+  approved. Targeted personal/professional addresses remain anonymized.
 - Ignored local reference databases/screenshots, generated builds, virtual
   environments and caches are not distributable sanitized source artifacts.
   Ignoring a file does not remove its previously committed versions.

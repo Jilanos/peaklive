@@ -26,6 +26,8 @@ test-data-private/
 *.partial
 *.peaklive-events.jsonl
 artifacts/windows-qualification/
+# Raw hardware captures and their sidecars are private evidence.
+/artifacts/hardware-acceptance/
 
 # Editors and operating systems
 .idea/
