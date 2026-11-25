@@ -185,6 +185,9 @@ Depuis PowerShell, `./scripts/build-windows.ps1` produit `dist/PeakLive.exe`.
 Le pilote PEAK s'installe séparément. La pile repose sur **PySide6/Qt**,
 **pyqtgraph**, **python-can** et **cantools**, avec un historique SQLite.
 
+Version actuelle : **0.1.2**. Sous Linux, la suite de tests (850 tests, mode
+`offscreen`) passe ; la qualification matérielle se fait sous Windows.
+
 Le périmètre actuel est la **réception d'un canal Classic CAN**. Le CAN FD,
 le LIN, l'émission de trames, l'acquisition multicanal synchronisée et les
 protocoles de diagnostic ne sont pas proposés. La simulation et les tests
